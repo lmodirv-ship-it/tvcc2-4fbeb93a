@@ -24,14 +24,22 @@ import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedBackupsRouteImport } from './routes/_authenticated/backups'
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
 import { Route as AuthenticatedEditorIndexRouteImport } from './routes/_authenticated/editor.index'
+import { Route as AuthenticatedEditorUsersRouteImport } from './routes/_authenticated/editor.users'
+import { Route as AuthenticatedEditorSubscriptionsRouteImport } from './routes/_authenticated/editor.subscriptions'
 import { Route as AuthenticatedEditorStorageRouteImport } from './routes/_authenticated/editor.storage'
+import { Route as AuthenticatedEditorSocialRouteImport } from './routes/_authenticated/editor.social'
 import { Route as AuthenticatedEditorSeoRouteImport } from './routes/_authenticated/editor.seo'
+import { Route as AuthenticatedEditorSecurityRouteImport } from './routes/_authenticated/editor.security'
 import { Route as AuthenticatedEditorScriptsRouteImport } from './routes/_authenticated/editor.scripts'
+import { Route as AuthenticatedEditorModesRouteImport } from './routes/_authenticated/editor.modes'
 import { Route as AuthenticatedEditorGeneralRouteImport } from './routes/_authenticated/editor.general'
+import { Route as AuthenticatedEditorDnsRouteImport } from './routes/_authenticated/editor.dns'
 import { Route as AuthenticatedEditorDesignRouteImport } from './routes/_authenticated/editor.design'
 import { Route as AuthenticatedEditorDatabaseRouteImport } from './routes/_authenticated/editor.database'
 import { Route as AuthenticatedEditorContentRouteImport } from './routes/_authenticated/editor.content'
 import { Route as AuthenticatedEditorBulkRouteImport } from './routes/_authenticated/editor.bulk'
+import { Route as AuthenticatedEditorBackupRouteImport } from './routes/_authenticated/editor.backup'
+import { Route as AuthenticatedEditorAiRouteImport } from './routes/_authenticated/editor.ai'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -109,10 +117,28 @@ const AuthenticatedEditorIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedEditorRoute,
   } as any)
+const AuthenticatedEditorUsersRoute =
+  AuthenticatedEditorUsersRouteImport.update({
+    id: '/users',
+    path: '/users',
+    getParentRoute: () => AuthenticatedEditorRoute,
+  } as any)
+const AuthenticatedEditorSubscriptionsRoute =
+  AuthenticatedEditorSubscriptionsRouteImport.update({
+    id: '/subscriptions',
+    path: '/subscriptions',
+    getParentRoute: () => AuthenticatedEditorRoute,
+  } as any)
 const AuthenticatedEditorStorageRoute =
   AuthenticatedEditorStorageRouteImport.update({
     id: '/storage',
     path: '/storage',
+    getParentRoute: () => AuthenticatedEditorRoute,
+  } as any)
+const AuthenticatedEditorSocialRoute =
+  AuthenticatedEditorSocialRouteImport.update({
+    id: '/social',
+    path: '/social',
     getParentRoute: () => AuthenticatedEditorRoute,
   } as any)
 const AuthenticatedEditorSeoRoute = AuthenticatedEditorSeoRouteImport.update({
@@ -120,10 +146,22 @@ const AuthenticatedEditorSeoRoute = AuthenticatedEditorSeoRouteImport.update({
   path: '/seo',
   getParentRoute: () => AuthenticatedEditorRoute,
 } as any)
+const AuthenticatedEditorSecurityRoute =
+  AuthenticatedEditorSecurityRouteImport.update({
+    id: '/security',
+    path: '/security',
+    getParentRoute: () => AuthenticatedEditorRoute,
+  } as any)
 const AuthenticatedEditorScriptsRoute =
   AuthenticatedEditorScriptsRouteImport.update({
     id: '/scripts',
     path: '/scripts',
+    getParentRoute: () => AuthenticatedEditorRoute,
+  } as any)
+const AuthenticatedEditorModesRoute =
+  AuthenticatedEditorModesRouteImport.update({
+    id: '/modes',
+    path: '/modes',
     getParentRoute: () => AuthenticatedEditorRoute,
   } as any)
 const AuthenticatedEditorGeneralRoute =
@@ -132,6 +170,11 @@ const AuthenticatedEditorGeneralRoute =
     path: '/general',
     getParentRoute: () => AuthenticatedEditorRoute,
   } as any)
+const AuthenticatedEditorDnsRoute = AuthenticatedEditorDnsRouteImport.update({
+  id: '/dns',
+  path: '/dns',
+  getParentRoute: () => AuthenticatedEditorRoute,
+} as any)
 const AuthenticatedEditorDesignRoute =
   AuthenticatedEditorDesignRouteImport.update({
     id: '/design',
@@ -155,6 +198,17 @@ const AuthenticatedEditorBulkRoute = AuthenticatedEditorBulkRouteImport.update({
   path: '/bulk',
   getParentRoute: () => AuthenticatedEditorRoute,
 } as any)
+const AuthenticatedEditorBackupRoute =
+  AuthenticatedEditorBackupRouteImport.update({
+    id: '/backup',
+    path: '/backup',
+    getParentRoute: () => AuthenticatedEditorRoute,
+  } as any)
+const AuthenticatedEditorAiRoute = AuthenticatedEditorAiRouteImport.update({
+  id: '/ai',
+  path: '/ai',
+  getParentRoute: () => AuthenticatedEditorRoute,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -170,14 +224,22 @@ export interface FileRoutesByFullPath {
   '/subscriptions': typeof AuthenticatedSubscriptionsRoute
   '/users': typeof AuthenticatedUsersRoute
   '/websites': typeof AuthenticatedWebsitesRoute
+  '/editor/ai': typeof AuthenticatedEditorAiRoute
+  '/editor/backup': typeof AuthenticatedEditorBackupRoute
   '/editor/bulk': typeof AuthenticatedEditorBulkRoute
   '/editor/content': typeof AuthenticatedEditorContentRoute
   '/editor/database': typeof AuthenticatedEditorDatabaseRoute
   '/editor/design': typeof AuthenticatedEditorDesignRoute
+  '/editor/dns': typeof AuthenticatedEditorDnsRoute
   '/editor/general': typeof AuthenticatedEditorGeneralRoute
+  '/editor/modes': typeof AuthenticatedEditorModesRoute
   '/editor/scripts': typeof AuthenticatedEditorScriptsRoute
+  '/editor/security': typeof AuthenticatedEditorSecurityRoute
   '/editor/seo': typeof AuthenticatedEditorSeoRoute
+  '/editor/social': typeof AuthenticatedEditorSocialRoute
   '/editor/storage': typeof AuthenticatedEditorStorageRoute
+  '/editor/subscriptions': typeof AuthenticatedEditorSubscriptionsRoute
+  '/editor/users': typeof AuthenticatedEditorUsersRoute
   '/editor/': typeof AuthenticatedEditorIndexRoute
 }
 export interface FileRoutesByTo {
@@ -193,14 +255,22 @@ export interface FileRoutesByTo {
   '/subscriptions': typeof AuthenticatedSubscriptionsRoute
   '/users': typeof AuthenticatedUsersRoute
   '/websites': typeof AuthenticatedWebsitesRoute
+  '/editor/ai': typeof AuthenticatedEditorAiRoute
+  '/editor/backup': typeof AuthenticatedEditorBackupRoute
   '/editor/bulk': typeof AuthenticatedEditorBulkRoute
   '/editor/content': typeof AuthenticatedEditorContentRoute
   '/editor/database': typeof AuthenticatedEditorDatabaseRoute
   '/editor/design': typeof AuthenticatedEditorDesignRoute
+  '/editor/dns': typeof AuthenticatedEditorDnsRoute
   '/editor/general': typeof AuthenticatedEditorGeneralRoute
+  '/editor/modes': typeof AuthenticatedEditorModesRoute
   '/editor/scripts': typeof AuthenticatedEditorScriptsRoute
+  '/editor/security': typeof AuthenticatedEditorSecurityRoute
   '/editor/seo': typeof AuthenticatedEditorSeoRoute
+  '/editor/social': typeof AuthenticatedEditorSocialRoute
   '/editor/storage': typeof AuthenticatedEditorStorageRoute
+  '/editor/subscriptions': typeof AuthenticatedEditorSubscriptionsRoute
+  '/editor/users': typeof AuthenticatedEditorUsersRoute
   '/editor': typeof AuthenticatedEditorIndexRoute
 }
 export interface FileRoutesById {
@@ -219,14 +289,22 @@ export interface FileRoutesById {
   '/_authenticated/subscriptions': typeof AuthenticatedSubscriptionsRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/websites': typeof AuthenticatedWebsitesRoute
+  '/_authenticated/editor/ai': typeof AuthenticatedEditorAiRoute
+  '/_authenticated/editor/backup': typeof AuthenticatedEditorBackupRoute
   '/_authenticated/editor/bulk': typeof AuthenticatedEditorBulkRoute
   '/_authenticated/editor/content': typeof AuthenticatedEditorContentRoute
   '/_authenticated/editor/database': typeof AuthenticatedEditorDatabaseRoute
   '/_authenticated/editor/design': typeof AuthenticatedEditorDesignRoute
+  '/_authenticated/editor/dns': typeof AuthenticatedEditorDnsRoute
   '/_authenticated/editor/general': typeof AuthenticatedEditorGeneralRoute
+  '/_authenticated/editor/modes': typeof AuthenticatedEditorModesRoute
   '/_authenticated/editor/scripts': typeof AuthenticatedEditorScriptsRoute
+  '/_authenticated/editor/security': typeof AuthenticatedEditorSecurityRoute
   '/_authenticated/editor/seo': typeof AuthenticatedEditorSeoRoute
+  '/_authenticated/editor/social': typeof AuthenticatedEditorSocialRoute
   '/_authenticated/editor/storage': typeof AuthenticatedEditorStorageRoute
+  '/_authenticated/editor/subscriptions': typeof AuthenticatedEditorSubscriptionsRoute
+  '/_authenticated/editor/users': typeof AuthenticatedEditorUsersRoute
   '/_authenticated/editor/': typeof AuthenticatedEditorIndexRoute
 }
 export interface FileRouteTypes {
@@ -245,14 +323,22 @@ export interface FileRouteTypes {
     | '/subscriptions'
     | '/users'
     | '/websites'
+    | '/editor/ai'
+    | '/editor/backup'
     | '/editor/bulk'
     | '/editor/content'
     | '/editor/database'
     | '/editor/design'
+    | '/editor/dns'
     | '/editor/general'
+    | '/editor/modes'
     | '/editor/scripts'
+    | '/editor/security'
     | '/editor/seo'
+    | '/editor/social'
     | '/editor/storage'
+    | '/editor/subscriptions'
+    | '/editor/users'
     | '/editor/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -268,14 +354,22 @@ export interface FileRouteTypes {
     | '/subscriptions'
     | '/users'
     | '/websites'
+    | '/editor/ai'
+    | '/editor/backup'
     | '/editor/bulk'
     | '/editor/content'
     | '/editor/database'
     | '/editor/design'
+    | '/editor/dns'
     | '/editor/general'
+    | '/editor/modes'
     | '/editor/scripts'
+    | '/editor/security'
     | '/editor/seo'
+    | '/editor/social'
     | '/editor/storage'
+    | '/editor/subscriptions'
+    | '/editor/users'
     | '/editor'
   id:
     | '__root__'
@@ -293,14 +387,22 @@ export interface FileRouteTypes {
     | '/_authenticated/subscriptions'
     | '/_authenticated/users'
     | '/_authenticated/websites'
+    | '/_authenticated/editor/ai'
+    | '/_authenticated/editor/backup'
     | '/_authenticated/editor/bulk'
     | '/_authenticated/editor/content'
     | '/_authenticated/editor/database'
     | '/_authenticated/editor/design'
+    | '/_authenticated/editor/dns'
     | '/_authenticated/editor/general'
+    | '/_authenticated/editor/modes'
     | '/_authenticated/editor/scripts'
+    | '/_authenticated/editor/security'
     | '/_authenticated/editor/seo'
+    | '/_authenticated/editor/social'
     | '/_authenticated/editor/storage'
+    | '/_authenticated/editor/subscriptions'
+    | '/_authenticated/editor/users'
     | '/_authenticated/editor/'
   fileRoutesById: FileRoutesById
 }
@@ -417,11 +519,32 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEditorIndexRouteImport
       parentRoute: typeof AuthenticatedEditorRoute
     }
+    '/_authenticated/editor/users': {
+      id: '/_authenticated/editor/users'
+      path: '/users'
+      fullPath: '/editor/users'
+      preLoaderRoute: typeof AuthenticatedEditorUsersRouteImport
+      parentRoute: typeof AuthenticatedEditorRoute
+    }
+    '/_authenticated/editor/subscriptions': {
+      id: '/_authenticated/editor/subscriptions'
+      path: '/subscriptions'
+      fullPath: '/editor/subscriptions'
+      preLoaderRoute: typeof AuthenticatedEditorSubscriptionsRouteImport
+      parentRoute: typeof AuthenticatedEditorRoute
+    }
     '/_authenticated/editor/storage': {
       id: '/_authenticated/editor/storage'
       path: '/storage'
       fullPath: '/editor/storage'
       preLoaderRoute: typeof AuthenticatedEditorStorageRouteImport
+      parentRoute: typeof AuthenticatedEditorRoute
+    }
+    '/_authenticated/editor/social': {
+      id: '/_authenticated/editor/social'
+      path: '/social'
+      fullPath: '/editor/social'
+      preLoaderRoute: typeof AuthenticatedEditorSocialRouteImport
       parentRoute: typeof AuthenticatedEditorRoute
     }
     '/_authenticated/editor/seo': {
@@ -431,6 +554,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEditorSeoRouteImport
       parentRoute: typeof AuthenticatedEditorRoute
     }
+    '/_authenticated/editor/security': {
+      id: '/_authenticated/editor/security'
+      path: '/security'
+      fullPath: '/editor/security'
+      preLoaderRoute: typeof AuthenticatedEditorSecurityRouteImport
+      parentRoute: typeof AuthenticatedEditorRoute
+    }
     '/_authenticated/editor/scripts': {
       id: '/_authenticated/editor/scripts'
       path: '/scripts'
@@ -438,11 +568,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEditorScriptsRouteImport
       parentRoute: typeof AuthenticatedEditorRoute
     }
+    '/_authenticated/editor/modes': {
+      id: '/_authenticated/editor/modes'
+      path: '/modes'
+      fullPath: '/editor/modes'
+      preLoaderRoute: typeof AuthenticatedEditorModesRouteImport
+      parentRoute: typeof AuthenticatedEditorRoute
+    }
     '/_authenticated/editor/general': {
       id: '/_authenticated/editor/general'
       path: '/general'
       fullPath: '/editor/general'
       preLoaderRoute: typeof AuthenticatedEditorGeneralRouteImport
+      parentRoute: typeof AuthenticatedEditorRoute
+    }
+    '/_authenticated/editor/dns': {
+      id: '/_authenticated/editor/dns'
+      path: '/dns'
+      fullPath: '/editor/dns'
+      preLoaderRoute: typeof AuthenticatedEditorDnsRouteImport
       parentRoute: typeof AuthenticatedEditorRoute
     }
     '/_authenticated/editor/design': {
@@ -473,30 +617,60 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEditorBulkRouteImport
       parentRoute: typeof AuthenticatedEditorRoute
     }
+    '/_authenticated/editor/backup': {
+      id: '/_authenticated/editor/backup'
+      path: '/backup'
+      fullPath: '/editor/backup'
+      preLoaderRoute: typeof AuthenticatedEditorBackupRouteImport
+      parentRoute: typeof AuthenticatedEditorRoute
+    }
+    '/_authenticated/editor/ai': {
+      id: '/_authenticated/editor/ai'
+      path: '/ai'
+      fullPath: '/editor/ai'
+      preLoaderRoute: typeof AuthenticatedEditorAiRouteImport
+      parentRoute: typeof AuthenticatedEditorRoute
+    }
   }
 }
 
 interface AuthenticatedEditorRouteChildren {
+  AuthenticatedEditorAiRoute: typeof AuthenticatedEditorAiRoute
+  AuthenticatedEditorBackupRoute: typeof AuthenticatedEditorBackupRoute
   AuthenticatedEditorBulkRoute: typeof AuthenticatedEditorBulkRoute
   AuthenticatedEditorContentRoute: typeof AuthenticatedEditorContentRoute
   AuthenticatedEditorDatabaseRoute: typeof AuthenticatedEditorDatabaseRoute
   AuthenticatedEditorDesignRoute: typeof AuthenticatedEditorDesignRoute
+  AuthenticatedEditorDnsRoute: typeof AuthenticatedEditorDnsRoute
   AuthenticatedEditorGeneralRoute: typeof AuthenticatedEditorGeneralRoute
+  AuthenticatedEditorModesRoute: typeof AuthenticatedEditorModesRoute
   AuthenticatedEditorScriptsRoute: typeof AuthenticatedEditorScriptsRoute
+  AuthenticatedEditorSecurityRoute: typeof AuthenticatedEditorSecurityRoute
   AuthenticatedEditorSeoRoute: typeof AuthenticatedEditorSeoRoute
+  AuthenticatedEditorSocialRoute: typeof AuthenticatedEditorSocialRoute
   AuthenticatedEditorStorageRoute: typeof AuthenticatedEditorStorageRoute
+  AuthenticatedEditorSubscriptionsRoute: typeof AuthenticatedEditorSubscriptionsRoute
+  AuthenticatedEditorUsersRoute: typeof AuthenticatedEditorUsersRoute
   AuthenticatedEditorIndexRoute: typeof AuthenticatedEditorIndexRoute
 }
 
 const AuthenticatedEditorRouteChildren: AuthenticatedEditorRouteChildren = {
+  AuthenticatedEditorAiRoute: AuthenticatedEditorAiRoute,
+  AuthenticatedEditorBackupRoute: AuthenticatedEditorBackupRoute,
   AuthenticatedEditorBulkRoute: AuthenticatedEditorBulkRoute,
   AuthenticatedEditorContentRoute: AuthenticatedEditorContentRoute,
   AuthenticatedEditorDatabaseRoute: AuthenticatedEditorDatabaseRoute,
   AuthenticatedEditorDesignRoute: AuthenticatedEditorDesignRoute,
+  AuthenticatedEditorDnsRoute: AuthenticatedEditorDnsRoute,
   AuthenticatedEditorGeneralRoute: AuthenticatedEditorGeneralRoute,
+  AuthenticatedEditorModesRoute: AuthenticatedEditorModesRoute,
   AuthenticatedEditorScriptsRoute: AuthenticatedEditorScriptsRoute,
+  AuthenticatedEditorSecurityRoute: AuthenticatedEditorSecurityRoute,
   AuthenticatedEditorSeoRoute: AuthenticatedEditorSeoRoute,
+  AuthenticatedEditorSocialRoute: AuthenticatedEditorSocialRoute,
   AuthenticatedEditorStorageRoute: AuthenticatedEditorStorageRoute,
+  AuthenticatedEditorSubscriptionsRoute: AuthenticatedEditorSubscriptionsRoute,
+  AuthenticatedEditorUsersRoute: AuthenticatedEditorUsersRoute,
   AuthenticatedEditorIndexRoute: AuthenticatedEditorIndexRoute,
 }
 

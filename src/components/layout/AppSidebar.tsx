@@ -1,28 +1,11 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
-  LayoutDashboard,
-  Globe,
-  Database,
-  HardDrive,
-  CloudUpload,
-  Users,
-  CreditCard,
-  UserCog,
-  Activity,
-  Settings,
-  Code2,
-  LogOut,
+  LayoutDashboard, Globe, Database, HardDrive, CloudUpload, Users,
+  CreditCard, UserCog, Activity, Settings, Code2, LogOut, Wand2,
 } from "lucide-react";
 import {
-  Sidebar,
-  SidebarContent,
-  SidebarGroup,
-  SidebarGroupContent,
-  SidebarMenu,
-  SidebarMenuButton,
-  SidebarMenuItem,
-  SidebarHeader,
-  SidebarFooter,
+  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
+  SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter,
 } from "@/components/ui/sidebar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
@@ -31,6 +14,7 @@ import { exportDashboardHtml } from "@/lib/html-export";
 const items = [
   { title: "الرئيسية", url: "/dashboard", icon: LayoutDashboard },
   { title: "المواقع", url: "/websites", icon: Globe },
+  { title: "المحرر", url: "/editor", icon: Wand2 },
   { title: "قواعد البيانات", url: "/databases", icon: Database },
   { title: "التخزين والملفات", url: "/storage", icon: HardDrive },
   { title: "النسخ الاحتياطية", url: "/backups", icon: CloudUpload },

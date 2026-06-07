@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedWebsitesRouteImport } from './routes/_authenticated/websites'
+import { Route as AuthenticatedVaultRouteImport } from './routes/_authenticated/vault'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 import { Route as AuthenticatedTemplatesRouteImport } from './routes/_authenticated/templates'
 import { Route as AuthenticatedSubscriptionsRouteImport } from './routes/_authenticated/subscriptions'
@@ -59,6 +60,11 @@ const IndexRoute = IndexRouteImport.update({
 const AuthenticatedWebsitesRoute = AuthenticatedWebsitesRouteImport.update({
   id: '/websites',
   path: '/websites',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedVaultRoute = AuthenticatedVaultRouteImport.update({
+  id: '/vault',
+  path: '/vault',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
@@ -230,6 +236,7 @@ export interface FileRoutesByFullPath {
   '/subscriptions': typeof AuthenticatedSubscriptionsRoute
   '/templates': typeof AuthenticatedTemplatesRoute
   '/users': typeof AuthenticatedUsersRoute
+  '/vault': typeof AuthenticatedVaultRoute
   '/websites': typeof AuthenticatedWebsitesRoute
   '/editor/ai': typeof AuthenticatedEditorAiRoute
   '/editor/bulk': typeof AuthenticatedEditorBulkRoute
@@ -262,6 +269,7 @@ export interface FileRoutesByTo {
   '/subscriptions': typeof AuthenticatedSubscriptionsRoute
   '/templates': typeof AuthenticatedTemplatesRoute
   '/users': typeof AuthenticatedUsersRoute
+  '/vault': typeof AuthenticatedVaultRoute
   '/websites': typeof AuthenticatedWebsitesRoute
   '/editor/ai': typeof AuthenticatedEditorAiRoute
   '/editor/bulk': typeof AuthenticatedEditorBulkRoute
@@ -297,6 +305,7 @@ export interface FileRoutesById {
   '/_authenticated/subscriptions': typeof AuthenticatedSubscriptionsRoute
   '/_authenticated/templates': typeof AuthenticatedTemplatesRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
+  '/_authenticated/vault': typeof AuthenticatedVaultRoute
   '/_authenticated/websites': typeof AuthenticatedWebsitesRoute
   '/_authenticated/editor/ai': typeof AuthenticatedEditorAiRoute
   '/_authenticated/editor/bulk': typeof AuthenticatedEditorBulkRoute
@@ -332,6 +341,7 @@ export interface FileRouteTypes {
     | '/subscriptions'
     | '/templates'
     | '/users'
+    | '/vault'
     | '/websites'
     | '/editor/ai'
     | '/editor/bulk'
@@ -364,6 +374,7 @@ export interface FileRouteTypes {
     | '/subscriptions'
     | '/templates'
     | '/users'
+    | '/vault'
     | '/websites'
     | '/editor/ai'
     | '/editor/bulk'
@@ -398,6 +409,7 @@ export interface FileRouteTypes {
     | '/_authenticated/subscriptions'
     | '/_authenticated/templates'
     | '/_authenticated/users'
+    | '/_authenticated/vault'
     | '/_authenticated/websites'
     | '/_authenticated/editor/ai'
     | '/_authenticated/editor/bulk'
@@ -451,6 +463,13 @@ declare module '@tanstack/react-router' {
       path: '/websites'
       fullPath: '/websites'
       preLoaderRoute: typeof AuthenticatedWebsitesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/vault': {
+      id: '/_authenticated/vault'
+      path: '/vault'
+      fullPath: '/vault'
+      preLoaderRoute: typeof AuthenticatedVaultRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/users': {
@@ -703,6 +722,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedSubscriptionsRoute: typeof AuthenticatedSubscriptionsRoute
   AuthenticatedTemplatesRoute: typeof AuthenticatedTemplatesRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
+  AuthenticatedVaultRoute: typeof AuthenticatedVaultRoute
   AuthenticatedWebsitesRoute: typeof AuthenticatedWebsitesRoute
 }
 
@@ -720,6 +740,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedSubscriptionsRoute: AuthenticatedSubscriptionsRoute,
   AuthenticatedTemplatesRoute: AuthenticatedTemplatesRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
+  AuthenticatedVaultRoute: AuthenticatedVaultRoute,
   AuthenticatedWebsitesRoute: AuthenticatedWebsitesRoute,
 }
 
@@ -736,3 +757,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

@@ -102,6 +102,14 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  useEffect(() => {
+    import("@/i18n").then(({ applyDirection, default: i18n }) => {
+      applyDirection(i18n.language);
+      const onChange = (lng: string) => applyDirection(lng);
+      i18n.on("languageChanged", onChange);
+    });
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
@@ -109,3 +117,4 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
+

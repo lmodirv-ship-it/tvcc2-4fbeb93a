@@ -67,12 +67,12 @@ function WebsitesPage() {
 
   const { data: storages } = useQuery({
     queryKey: ["storages-list"],
-    queryFn: async () => (await supabase.from("storages").select("website_id,name,used_bytes")).data || [],
+    queryFn: async () => (await supabase.from("storages").select("website_id,name,used_gb")).data || [],
   });
 
   const { data: clients } = useQuery({
     queryKey: ["clients-list"],
-    queryFn: async () => (await supabase.from("clients").select("website_id,name")).data || [],
+    queryFn: async () => (await supabase.from("clients").select("website_id,full_name")).data || [],
   });
 
   const enriched = useMemo(() => {
@@ -164,10 +164,11 @@ function WebsitesPage() {
     { label: "المواقع المتوقفة", value: paused, sub: `من أصل ${total} موقع`, icon: XCircle, ring: "ring-destructive/40", text: "text-destructive", bg: "bg-destructive/15" },
   ];
 
-  const fmtBytes = (b?: number | null) => {
-    if (!b) return "—";
-    const gb = b / 1024 ** 3;
-    return gb >= 1 ? `${gb.toFixed(1)} GB` : `${(b / 1024 ** 2).toFixed(0)} MB`;
+  const fmtGb = (g?: number | string | null) => {
+    if (g === null || g === undefined) return "—";
+    const n = typeof g === "string" ? Number(g) : g;
+    if (!n) return "0 GB";
+    return `${n.toFixed(1)} GB`;
   };
 
   const timeAgo = (iso?: string | null) => {
@@ -347,10 +348,10 @@ function WebsitesPage() {
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 rounded-full border-2 border-primary/40 border-t-primary animate-none" />
-                          <span className="text-sm">{fmtBytes(w.storage?.used_bytes)}</span>
+                          <span className="text-sm">{fmtGb(w.storage?.used_gb)}</span>
                         </div>
                       </TableCell>
-                      <TableCell className="text-sm text-muted-foreground">{w.client?.name || "—"}</TableCell>
+                      <TableCell className="text-sm text-muted-foreground">{w.client?.full_name || "—"}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <Button size="icon" variant="ghost" className="w-8 h-8" title="ربط">

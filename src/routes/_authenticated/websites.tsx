@@ -193,7 +193,7 @@ function WebsitesPage() {
                     </TableCell>
                     <TableCell>{w.is_active ? "نعم" : "لا"}</TableCell>
                     <TableCell>
-                      <Button size="sm" variant="ghost" onClick={() => verifyWebsite(w.id, w.domain, w.verify_code)}>
+                      <Button size="sm" variant="ghost" onClick={() => verifyWebsite(w.id, w.domain)}>
                         <RefreshCw className="w-3 h-3 ml-1" /> تحقق
                       </Button>
                     </TableCell>

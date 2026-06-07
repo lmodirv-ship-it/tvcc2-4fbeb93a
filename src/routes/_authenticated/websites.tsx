@@ -18,7 +18,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2, RefreshCw, Power, PowerOff, Copy, Loader2 } from "lucide-react";
+import { Plus, Trash2, RefreshCw, Power, PowerOff, Copy, Loader2, Globe, CheckCircle2, WifiOff, XCircle } from "lucide-react";
+import { verifyDns } from "@/lib/dns.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/websites")({
@@ -77,28 +78,42 @@ function WebsitesPage() {
     qc.invalidateQueries({ queryKey: ["websites"] });
   };
 
-  const verifyWebsite = async (id: string, domain: string, code: string) => {
-    toast.loading("جاري التحقق...", { id: `verify-${id}` });
+  const verifyWebsite = async (id: string, domain: string) => {
+    toast.loading("جاري فحص DNS...", { id: `verify-${id}` });
     try {
-      const url = domain.startsWith("http") ? domain : `https://${domain}`;
-      const res = await fetch(url, { mode: "no-cors" });
-      // no-cors can't read body; we mark as online if fetch resolves
-      const verified = res.type === "opaque" || res.ok;
+      const res = await verifyDns({ data: { domain } });
       await supabase
         .from("websites")
-        .update({ verified, status: verified ? "online" : "offline", last_checked_at: new Date().toISOString() })
+        .update({
+          verified: res.verified,
+          status: res.verified ? "online" : "offline",
+          last_checked_at: new Date().toISOString(),
+        })
         .eq("id", id);
-      toast.success(verified ? "تم التحقق — الموقع متصل" : "الموقع غير متصل", { id: `verify-${id}` });
+      toast.success(
+        res.verified ? `تم التحقق عبر ${res.method} — الموقع في الشبكة` : "لم يتم العثور على سجل _tvcc في DNS",
+        { id: `verify-${id}` }
+      );
       qc.invalidateQueries({ queryKey: ["websites"] });
     } catch {
-      await supabase.from("websites").update({ status: "offline", last_checked_at: new Date().toISOString() }).eq("id", id);
-      toast.error("تعذر الوصول إلى الموقع", { id: `verify-${id}` });
-      qc.invalidateQueries({ queryKey: ["websites"] });
+      toast.error("تعذر فحص DNS", { id: `verify-${id}` });
     }
   };
 
   const statusVariant = (s: string) =>
     s === "online" ? "default" : s === "warning" ? "secondary" : s === "offline" ? "destructive" : "outline";
+
+  const total = websites?.length || 0;
+  const online = websites?.filter((w) => w.status === "online").length || 0;
+  const offline = websites?.filter((w) => w.status === "offline").length || 0;
+  const paused = websites?.filter((w) => !w.is_active).length || 0;
+
+  const statCards = [
+    { label: "إجمالي المواقع", value: total, sub: "جميع المواقع", icon: Globe, ring: "ring-primary/40", text: "text-primary", bg: "bg-primary/15" },
+    { label: "المواقع المتصلة", value: online, sub: `من أصل ${total} موقع`, icon: CheckCircle2, ring: "ring-success/40", text: "text-success", bg: "bg-success/15" },
+    { label: "المواقع غير متصلة", value: offline, sub: `من أصل ${total} موقع`, icon: WifiOff, ring: "ring-warning/40", text: "text-warning", bg: "bg-warning/15" },
+    { label: "المواقع المتوقفة", value: paused, sub: `من أصل ${total} موقع`, icon: XCircle, ring: "ring-destructive/40", text: "text-destructive", bg: "bg-destructive/15" },
+  ];
 
   return (
     <div className="space-y-6">
@@ -113,6 +128,25 @@ function WebsitesPage() {
           </DialogTrigger>
           <AddWebsiteDialog onDone={() => { setAddOpen(false); qc.invalidateQueries({ queryKey: ["websites"] }); }} />
         </Dialog>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {statCards.map((c) => (
+          <Card key={c.label} className={`ring-1 ${c.ring}`}>
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className={`text-xs ${c.text}`}>{c.label}</p>
+                  <p className="text-3xl font-bold mt-2">{c.value}</p>
+                  <p className="text-[11px] text-muted-foreground mt-1">{c.sub}</p>
+                </div>
+                <div className={`w-12 h-12 rounded-full ${c.bg} flex items-center justify-center`}>
+                  <c.icon className={`w-6 h-6 ${c.text}`} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       <Card>
@@ -190,7 +224,7 @@ function WebsitesPage() {
                     </TableCell>
                     <TableCell>{w.is_active ? "نعم" : "لا"}</TableCell>
                     <TableCell>
-                      <Button size="sm" variant="ghost" onClick={() => verifyWebsite(w.id, w.domain, w.verify_code)}>
+                      <Button size="sm" variant="ghost" onClick={() => verifyWebsite(w.id, w.domain)}>
                         <RefreshCw className="w-3 h-3 ml-1" /> تحقق
                       </Button>
                     </TableCell>

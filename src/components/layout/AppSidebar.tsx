@@ -2,6 +2,7 @@ import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard, Globe, Database, HardDrive, CloudUpload, Users,
   CreditCard, UserCog, Activity, Settings, Code2, LogOut, Wand2,
+  FolderOpen, LayoutTemplate, Radio, Rocket,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
@@ -14,6 +15,10 @@ import { exportDashboardHtml } from "@/lib/html-export";
 const items = [
   { title: "الرئيسية", url: "/dashboard", icon: LayoutDashboard },
   { title: "المواقع", url: "/websites", icon: Globe },
+  { title: "المجموعات", url: "/groups", icon: FolderOpen },
+  { title: "القوالب", url: "/templates", icon: LayoutTemplate },
+  { title: "المراقبة", url: "/monitoring", icon: Radio },
+  { title: "النشر", url: "/deployments", icon: Rocket },
   { title: "المحرر", url: "/editor", icon: Wand2 },
   { title: "قواعد البيانات", url: "/databases", icon: Database },
   { title: "التخزين والملفات", url: "/storage", icon: HardDrive },

@@ -48,6 +48,7 @@ const adminItems = [
 
 
 export function AppSidebar() {
+  const { t } = useTranslation();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
 

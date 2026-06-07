@@ -568,6 +568,45 @@ export type Database = {
         }
         Relationships: []
       }
+      website_android_releases: {
+        Row: {
+          aab_url: string | null
+          apk_url: string | null
+          created_at: string
+          id: string
+          is_current: boolean
+          notes: string | null
+          owner_id: string
+          version_code: number
+          version_name: string
+          website_id: string
+        }
+        Insert: {
+          aab_url?: string | null
+          apk_url?: string | null
+          created_at?: string
+          id?: string
+          is_current?: boolean
+          notes?: string | null
+          owner_id: string
+          version_code: number
+          version_name: string
+          website_id: string
+        }
+        Update: {
+          aab_url?: string | null
+          apk_url?: string | null
+          created_at?: string
+          id?: string
+          is_current?: boolean
+          notes?: string | null
+          owner_id?: string
+          version_code?: number
+          version_name?: string
+          website_id?: string
+        }
+        Relationships: []
+      }
       website_group_members: {
         Row: {
           created_at: string
@@ -672,42 +711,78 @@ export type Database = {
       }
       websites: {
         Row: {
+          android_aab_url: string | null
+          android_apk_url: string | null
+          android_enabled: boolean
+          android_latest_version: string | null
+          android_status: string | null
+          android_updated_at: string | null
+          android_version_code: number | null
+          api_config_url: string | null
           created_at: string
           description: string | null
           domain: string
+          frontend_domain: string | null
+          hn_cloud_storage_id: string | null
+          hn_db_connection_id: string | null
           id: string
           is_active: boolean
           last_checked_at: string | null
           name: string
           owner_id: string
+          site_id: string | null
           status: Database["public"]["Enums"]["site_status"]
           updated_at: string
           verified: boolean
           verify_code: string
         }
         Insert: {
+          android_aab_url?: string | null
+          android_apk_url?: string | null
+          android_enabled?: boolean
+          android_latest_version?: string | null
+          android_status?: string | null
+          android_updated_at?: string | null
+          android_version_code?: number | null
+          api_config_url?: string | null
           created_at?: string
           description?: string | null
           domain: string
+          frontend_domain?: string | null
+          hn_cloud_storage_id?: string | null
+          hn_db_connection_id?: string | null
           id?: string
           is_active?: boolean
           last_checked_at?: string | null
           name: string
           owner_id: string
+          site_id?: string | null
           status?: Database["public"]["Enums"]["site_status"]
           updated_at?: string
           verified?: boolean
           verify_code?: string
         }
         Update: {
+          android_aab_url?: string | null
+          android_apk_url?: string | null
+          android_enabled?: boolean
+          android_latest_version?: string | null
+          android_status?: string | null
+          android_updated_at?: string | null
+          android_version_code?: number | null
+          api_config_url?: string | null
           created_at?: string
           description?: string | null
           domain?: string
+          frontend_domain?: string | null
+          hn_cloud_storage_id?: string | null
+          hn_db_connection_id?: string | null
           id?: string
           is_active?: boolean
           last_checked_at?: string | null
           name?: string
           owner_id?: string
+          site_id?: string | null
           status?: Database["public"]["Enums"]["site_status"]
           updated_at?: string
           verified?: boolean

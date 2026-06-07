@@ -78,7 +78,7 @@ export function AppSidebar() {
           >
             TVCC
           </div>
-          <div className="text-[11px] text-muted-foreground">مركز قيادة المواقع</div>
+          <div className="text-[11px] text-muted-foreground">{t("sidebar.tagline")}</div>
         </div>
       </SidebarHeader>
 

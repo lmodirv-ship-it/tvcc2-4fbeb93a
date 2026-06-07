@@ -75,11 +75,11 @@ export const Route = createFileRoute("/api/public/notifications/ingest")({
           title: e.title,
           message: e.message ?? null,
           website_id: e.website_id ?? null,
-          metadata: e.metadata ?? {},
+          metadata: (e.metadata ?? {}) as any,
           is_read: false,
         }));
 
-        const { error, data } = await supabaseAdmin.from("notifications").insert(rows).select("id");
+        const { error, data } = await supabaseAdmin.from("notifications").insert(rows as any).select("id");
         if (error) return Response.json({ error: error.message }, { status: 500 });
 
         return Response.json({ ok: true, inserted: data?.length ?? 0 });

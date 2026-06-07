@@ -50,6 +50,7 @@ import { Route as AuthenticatedEditorDesignRouteImport } from './routes/_authent
 import { Route as AuthenticatedEditorContentRouteImport } from './routes/_authenticated/editor.content'
 import { Route as AuthenticatedEditorBulkRouteImport } from './routes/_authenticated/editor.bulk'
 import { Route as AuthenticatedEditorAiRouteImport } from './routes/_authenticated/editor.ai'
+import { Route as ApiPublicNotificationsIngestRouteImport } from './routes/api/public/notifications.ingest'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -270,6 +271,12 @@ const AuthenticatedEditorAiRoute = AuthenticatedEditorAiRouteImport.update({
   path: '/ai',
   getParentRoute: () => AuthenticatedEditorRoute,
 } as any)
+const ApiPublicNotificationsIngestRoute =
+  ApiPublicNotificationsIngestRouteImport.update({
+    id: '/api/public/notifications/ingest',
+    path: '/api/public/notifications/ingest',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -312,6 +319,7 @@ export interface FileRoutesByFullPath {
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/editor/': typeof AuthenticatedEditorIndexRoute
+  '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -353,6 +361,7 @@ export interface FileRoutesByTo {
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/editor': typeof AuthenticatedEditorIndexRoute
+  '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -397,6 +406,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/_authenticated/editor/': typeof AuthenticatedEditorIndexRoute
+  '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -441,6 +451,7 @@ export interface FileRouteTypes {
     | '/settings/notifications'
     | '/api/public/site-config'
     | '/editor/'
+    | '/api/public/notifications/ingest'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -482,6 +493,7 @@ export interface FileRouteTypes {
     | '/settings/notifications'
     | '/api/public/site-config'
     | '/editor'
+    | '/api/public/notifications/ingest'
   id:
     | '__root__'
     | '/'
@@ -525,6 +537,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/notifications'
     | '/api/public/site-config'
     | '/_authenticated/editor/'
+    | '/api/public/notifications/ingest'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -532,6 +545,7 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AuthRoute: typeof AuthRoute
   ApiPublicSiteConfigRoute: typeof ApiPublicSiteConfigRoute
+  ApiPublicNotificationsIngestRoute: typeof ApiPublicNotificationsIngestRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -823,6 +837,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEditorAiRouteImport
       parentRoute: typeof AuthenticatedEditorRoute
     }
+    '/api/public/notifications/ingest': {
+      id: '/api/public/notifications/ingest'
+      path: '/api/public/notifications/ingest'
+      fullPath: '/api/public/notifications/ingest'
+      preLoaderRoute: typeof ApiPublicNotificationsIngestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -936,6 +957,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AuthRoute: AuthRoute,
   ApiPublicSiteConfigRoute: ApiPublicSiteConfigRoute,
+  ApiPublicNotificationsIngestRoute: ApiPublicNotificationsIngestRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

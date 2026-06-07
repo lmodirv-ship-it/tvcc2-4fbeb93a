@@ -53,7 +53,7 @@ function DashboardPage() {
 
   const total = websites?.length || 0;
   const online = websites?.filter((w) => w.status === "online").length || 0;
-  const warning = websites?.filter((w) => w.status === "warning" || w.status === "paused").length || 0;
+  const warning = websites?.filter((w) => w.status === "pending").length || 0;
   const offline = websites?.filter((w) => w.status === "offline").length || 0;
   const usedGb = storages?.reduce((s, x) => s + Number(x.used_gb || 0), 0) || 0;
   const revenue = subs?.reduce((s, x) => s + Number(x.price || 0), 0) || 0;

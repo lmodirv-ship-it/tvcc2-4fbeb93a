@@ -103,6 +103,18 @@ function WebsitesPage() {
   const statusVariant = (s: string) =>
     s === "online" ? "default" : s === "warning" ? "secondary" : s === "offline" ? "destructive" : "outline";
 
+  const total = websites?.length || 0;
+  const online = websites?.filter((w) => w.status === "online").length || 0;
+  const offline = websites?.filter((w) => w.status === "offline").length || 0;
+  const paused = websites?.filter((w) => !w.is_active).length || 0;
+
+  const statCards = [
+    { label: "إجمالي المواقع", value: total, sub: "جميع المواقع", icon: Globe, ring: "ring-primary/40", text: "text-primary", bg: "bg-primary/15" },
+    { label: "المواقع المتصلة", value: online, sub: `من أصل ${total} موقع`, icon: CheckCircle2, ring: "ring-success/40", text: "text-success", bg: "bg-success/15" },
+    { label: "المواقع غير متصلة", value: offline, sub: `من أصل ${total} موقع`, icon: WifiOff, ring: "ring-warning/40", text: "text-warning", bg: "bg-warning/15" },
+    { label: "المواقع المتوقفة", value: paused, sub: `من أصل ${total} موقع`, icon: XCircle, ring: "ring-destructive/40", text: "text-destructive", bg: "bg-destructive/15" },
+  ];
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between flex-wrap gap-3">
@@ -116,6 +128,25 @@ function WebsitesPage() {
           </DialogTrigger>
           <AddWebsiteDialog onDone={() => { setAddOpen(false); qc.invalidateQueries({ queryKey: ["websites"] }); }} />
         </Dialog>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        {statCards.map((c) => (
+          <Card key={c.label} className={`ring-1 ${c.ring}`}>
+            <CardContent className="p-5">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className={`text-xs ${c.text}`}>{c.label}</p>
+                  <p className="text-3xl font-bold mt-2">{c.value}</p>
+                  <p className="text-[11px] text-muted-foreground mt-1">{c.sub}</p>
+                </div>
+                <div className={`w-12 h-12 rounded-full ${c.bg} flex items-center justify-center`}>
+                  <c.icon className={`w-6 h-6 ${c.text}`} />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        ))}
       </div>
 
       <Card>

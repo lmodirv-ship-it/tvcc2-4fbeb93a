@@ -23,7 +23,7 @@ const items = [
   { title: "المستخدمون", url: "/users", icon: UserCog },
   { title: "الاشتراكات", url: "/subscriptions", icon: CreditCard },
   { title: "سجل النشاط", url: "/activity", icon: Activity },
-  { title: "التكاملات", url: "/settings/integrations", icon: Plug },
+  { title: "التكاملات", url: "/integrations", icon: Plug },
   { title: "الإعدادات", url: "/settings", icon: Settings },
 ];
 

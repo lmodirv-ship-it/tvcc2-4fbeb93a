@@ -84,9 +84,9 @@ export function AppSidebar() {
 
       <SidebarContent className="px-2 py-3">
         {[
-          { label: "Core", items: coreItems },
-          { label: "Operations", items: opsItems },
-          { label: "Admin", items: adminItems },
+          { label: t("sidebar.core"), items: coreItems },
+          { label: t("sidebar.operations"), items: opsItems },
+          { label: t("sidebar.admin"), items: adminItems },
 
         ].map((section) => (
           <SidebarGroup key={section.label}>

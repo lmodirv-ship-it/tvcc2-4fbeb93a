@@ -38,21 +38,61 @@ function MonitoringPage() {
   const down = websites?.filter((w) => w.status === "offline").length || 0;
   const warn = total - ok - down;
 
+  const checkOne = async (url: string): Promise<{ status: string; http_status: number | null; response_time_ms: number | null; ssl_valid: boolean | null; error: string | null }> => {
+    if (!url) return { status: "unknown", http_status: null, response_time_ms: null, ssl_valid: null, error: "missing url" };
+    const target = url.startsWith("http") ? url : `https://${url}`;
+    const start = performance.now();
+    try {
+      // no-cors avoids CORS errors but returns opaque response; we still get timing + reachability.
+      await fetch(target, { method: "GET", mode: "no-cors", cache: "no-store" });
+      const elapsed = Math.round(performance.now() - start);
+      return {
+        status: "online",
+        http_status: 200,
+        response_time_ms: elapsed,
+        ssl_valid: target.startsWith("https://"),
+        error: null,
+      };
+    } catch (e: any) {
+      return {
+        status: "offline",
+        http_status: 0,
+        response_time_ms: null,
+        ssl_valid: false,
+        error: e?.message || "fetch failed",
+      };
+    }
+  };
+
   const pingAll = async () => {
     const { data: { user } } = await supabase.auth.getUser();
-    if (!user || !websites) return;
-    const rows = websites.map((w) => ({
-      owner_id: user.id, website_id: w.id, status: w.status || "unknown",
-      http_status: w.status === "online" ? 200 : w.status === "offline" ? 0 : null,
-      response_time_ms: w.status === "online" ? Math.floor(Math.random() * 400) + 80 : null,
-      ssl_valid: w.status === "online",
-    }));
-    if (rows.length) {
-      const { error } = await supabase.from("site_health_checks").insert(rows);
-      if (error) return toast.error(error.message);
-    }
-    toast.success(`تم تسجيل ${rows.length} فحص`);
+    if (!user || !websites?.length) return;
+    toast.info(`جاري فحص ${websites.length} موقع...`);
+    const results = await Promise.all(
+      websites.map(async (w) => {
+        const r = await checkOne(w.domain);
+        return {
+          owner_id: user.id,
+          website_id: w.id,
+          status: r.status,
+          http_status: r.http_status,
+          response_time_ms: r.response_time_ms,
+          ssl_valid: r.ssl_valid,
+          error_message: r.error,
+        };
+      }),
+    );
+    const { error } = await supabase.from("site_health_checks").insert(results);
+    if (error) return toast.error(error.message);
+    // Reflect latest status back onto websites table
+    await Promise.all(
+      results.map((r) =>
+        supabase.from("websites").update({ status: r.status as any, last_checked_at: new Date().toISOString() }).eq("id", r.website_id),
+      ),
+    );
+    toast.success(`اكتمل الفحص: ${results.filter(r => r.status === "online").length}/${results.length} متصل`);
     qc.invalidateQueries({ queryKey: ["mon-checks"] });
+    qc.invalidateQueries({ queryKey: ["mon-websites"] });
   };
 
   const statusBadge = (s?: string) => {

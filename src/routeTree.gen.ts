@@ -19,13 +19,13 @@ import { Route as AuthenticatedSubscriptionsRouteImport } from './routes/_authen
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedMonitoringRouteImport } from './routes/_authenticated/monitoring'
 import { Route as AuthenticatedJobsRouteImport } from './routes/_authenticated/jobs'
+import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authenticated/integrations'
 import { Route as AuthenticatedGroupsRouteImport } from './routes/_authenticated/groups'
 import { Route as AuthenticatedEditorRouteImport } from './routes/_authenticated/editor'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
 import { Route as AuthenticatedEditorIndexRouteImport } from './routes/_authenticated/editor.index'
-import { Route as AuthenticatedSettingsIntegrationsRouteImport } from './routes/_authenticated/settings.integrations'
 import { Route as AuthenticatedEditorUsersRouteImport } from './routes/_authenticated/editor.users'
 import { Route as AuthenticatedEditorSubscriptionsRouteImport } from './routes/_authenticated/editor.subscriptions'
 import { Route as AuthenticatedEditorSocialRouteImport } from './routes/_authenticated/editor.social'
@@ -90,6 +90,12 @@ const AuthenticatedJobsRoute = AuthenticatedJobsRouteImport.update({
   path: '/jobs',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedIntegrationsRoute =
+  AuthenticatedIntegrationsRouteImport.update({
+    id: '/integrations',
+    path: '/integrations',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedGroupsRoute = AuthenticatedGroupsRouteImport.update({
   id: '/groups',
   path: '/groups',
@@ -120,12 +126,6 @@ const AuthenticatedEditorIndexRoute =
     id: '/',
     path: '/',
     getParentRoute: () => AuthenticatedEditorRoute,
-  } as any)
-const AuthenticatedSettingsIntegrationsRoute =
-  AuthenticatedSettingsIntegrationsRouteImport.update({
-    id: '/integrations',
-    path: '/integrations',
-    getParentRoute: () => AuthenticatedSettingsRoute,
   } as any)
 const AuthenticatedEditorUsersRoute =
   AuthenticatedEditorUsersRouteImport.update({
@@ -210,9 +210,10 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/editor': typeof AuthenticatedEditorRouteWithChildren
   '/groups': typeof AuthenticatedGroupsRoute
+  '/integrations': typeof AuthenticatedIntegrationsRoute
   '/jobs': typeof AuthenticatedJobsRoute
   '/monitoring': typeof AuthenticatedMonitoringRoute
-  '/settings': typeof AuthenticatedSettingsRouteWithChildren
+  '/settings': typeof AuthenticatedSettingsRoute
   '/subscriptions': typeof AuthenticatedSubscriptionsRoute
   '/templates': typeof AuthenticatedTemplatesRoute
   '/users': typeof AuthenticatedUsersRoute
@@ -230,7 +231,6 @@ export interface FileRoutesByFullPath {
   '/editor/social': typeof AuthenticatedEditorSocialRoute
   '/editor/subscriptions': typeof AuthenticatedEditorSubscriptionsRoute
   '/editor/users': typeof AuthenticatedEditorUsersRoute
-  '/settings/integrations': typeof AuthenticatedSettingsIntegrationsRoute
   '/editor/': typeof AuthenticatedEditorIndexRoute
 }
 export interface FileRoutesByTo {
@@ -240,9 +240,10 @@ export interface FileRoutesByTo {
   '/clients': typeof AuthenticatedClientsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/groups': typeof AuthenticatedGroupsRoute
+  '/integrations': typeof AuthenticatedIntegrationsRoute
   '/jobs': typeof AuthenticatedJobsRoute
   '/monitoring': typeof AuthenticatedMonitoringRoute
-  '/settings': typeof AuthenticatedSettingsRouteWithChildren
+  '/settings': typeof AuthenticatedSettingsRoute
   '/subscriptions': typeof AuthenticatedSubscriptionsRoute
   '/templates': typeof AuthenticatedTemplatesRoute
   '/users': typeof AuthenticatedUsersRoute
@@ -260,7 +261,6 @@ export interface FileRoutesByTo {
   '/editor/social': typeof AuthenticatedEditorSocialRoute
   '/editor/subscriptions': typeof AuthenticatedEditorSubscriptionsRoute
   '/editor/users': typeof AuthenticatedEditorUsersRoute
-  '/settings/integrations': typeof AuthenticatedSettingsIntegrationsRoute
   '/editor': typeof AuthenticatedEditorIndexRoute
 }
 export interface FileRoutesById {
@@ -273,9 +273,10 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/editor': typeof AuthenticatedEditorRouteWithChildren
   '/_authenticated/groups': typeof AuthenticatedGroupsRoute
+  '/_authenticated/integrations': typeof AuthenticatedIntegrationsRoute
   '/_authenticated/jobs': typeof AuthenticatedJobsRoute
   '/_authenticated/monitoring': typeof AuthenticatedMonitoringRoute
-  '/_authenticated/settings': typeof AuthenticatedSettingsRouteWithChildren
+  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/subscriptions': typeof AuthenticatedSubscriptionsRoute
   '/_authenticated/templates': typeof AuthenticatedTemplatesRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
@@ -293,7 +294,6 @@ export interface FileRoutesById {
   '/_authenticated/editor/social': typeof AuthenticatedEditorSocialRoute
   '/_authenticated/editor/subscriptions': typeof AuthenticatedEditorSubscriptionsRoute
   '/_authenticated/editor/users': typeof AuthenticatedEditorUsersRoute
-  '/_authenticated/settings/integrations': typeof AuthenticatedSettingsIntegrationsRoute
   '/_authenticated/editor/': typeof AuthenticatedEditorIndexRoute
 }
 export interface FileRouteTypes {
@@ -306,6 +306,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/editor'
     | '/groups'
+    | '/integrations'
     | '/jobs'
     | '/monitoring'
     | '/settings'
@@ -326,7 +327,6 @@ export interface FileRouteTypes {
     | '/editor/social'
     | '/editor/subscriptions'
     | '/editor/users'
-    | '/settings/integrations'
     | '/editor/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -336,6 +336,7 @@ export interface FileRouteTypes {
     | '/clients'
     | '/dashboard'
     | '/groups'
+    | '/integrations'
     | '/jobs'
     | '/monitoring'
     | '/settings'
@@ -356,7 +357,6 @@ export interface FileRouteTypes {
     | '/editor/social'
     | '/editor/subscriptions'
     | '/editor/users'
-    | '/settings/integrations'
     | '/editor'
   id:
     | '__root__'
@@ -368,6 +368,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/editor'
     | '/_authenticated/groups'
+    | '/_authenticated/integrations'
     | '/_authenticated/jobs'
     | '/_authenticated/monitoring'
     | '/_authenticated/settings'
@@ -388,7 +389,6 @@ export interface FileRouteTypes {
     | '/_authenticated/editor/social'
     | '/_authenticated/editor/subscriptions'
     | '/_authenticated/editor/users'
-    | '/_authenticated/settings/integrations'
     | '/_authenticated/editor/'
   fileRoutesById: FileRoutesById
 }
@@ -470,6 +470,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedJobsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/integrations': {
+      id: '/_authenticated/integrations'
+      path: '/integrations'
+      fullPath: '/integrations'
+      preLoaderRoute: typeof AuthenticatedIntegrationsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/groups': {
       id: '/_authenticated/groups'
       path: '/groups'
@@ -511,13 +518,6 @@ declare module '@tanstack/react-router' {
       fullPath: '/editor/'
       preLoaderRoute: typeof AuthenticatedEditorIndexRouteImport
       parentRoute: typeof AuthenticatedEditorRoute
-    }
-    '/_authenticated/settings/integrations': {
-      id: '/_authenticated/settings/integrations'
-      path: '/integrations'
-      fullPath: '/settings/integrations'
-      preLoaderRoute: typeof AuthenticatedSettingsIntegrationsRouteImport
-      parentRoute: typeof AuthenticatedSettingsRoute
     }
     '/_authenticated/editor/users': {
       id: '/_authenticated/editor/users'
@@ -650,29 +650,16 @@ const AuthenticatedEditorRouteChildren: AuthenticatedEditorRouteChildren = {
 const AuthenticatedEditorRouteWithChildren =
   AuthenticatedEditorRoute._addFileChildren(AuthenticatedEditorRouteChildren)
 
-interface AuthenticatedSettingsRouteChildren {
-  AuthenticatedSettingsIntegrationsRoute: typeof AuthenticatedSettingsIntegrationsRoute
-}
-
-const AuthenticatedSettingsRouteChildren: AuthenticatedSettingsRouteChildren = {
-  AuthenticatedSettingsIntegrationsRoute:
-    AuthenticatedSettingsIntegrationsRoute,
-}
-
-const AuthenticatedSettingsRouteWithChildren =
-  AuthenticatedSettingsRoute._addFileChildren(
-    AuthenticatedSettingsRouteChildren,
-  )
-
 interface AuthenticatedRouteChildren {
   AuthenticatedActivityRoute: typeof AuthenticatedActivityRoute
   AuthenticatedClientsRoute: typeof AuthenticatedClientsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedEditorRoute: typeof AuthenticatedEditorRouteWithChildren
   AuthenticatedGroupsRoute: typeof AuthenticatedGroupsRoute
+  AuthenticatedIntegrationsRoute: typeof AuthenticatedIntegrationsRoute
   AuthenticatedJobsRoute: typeof AuthenticatedJobsRoute
   AuthenticatedMonitoringRoute: typeof AuthenticatedMonitoringRoute
-  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRouteWithChildren
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedSubscriptionsRoute: typeof AuthenticatedSubscriptionsRoute
   AuthenticatedTemplatesRoute: typeof AuthenticatedTemplatesRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
@@ -685,9 +672,10 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedEditorRoute: AuthenticatedEditorRouteWithChildren,
   AuthenticatedGroupsRoute: AuthenticatedGroupsRoute,
+  AuthenticatedIntegrationsRoute: AuthenticatedIntegrationsRoute,
   AuthenticatedJobsRoute: AuthenticatedJobsRoute,
   AuthenticatedMonitoringRoute: AuthenticatedMonitoringRoute,
-  AuthenticatedSettingsRoute: AuthenticatedSettingsRouteWithChildren,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedSubscriptionsRoute: AuthenticatedSubscriptionsRoute,
   AuthenticatedTemplatesRoute: AuthenticatedTemplatesRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
@@ -706,3 +694,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

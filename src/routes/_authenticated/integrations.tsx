@@ -7,7 +7,7 @@ import { Badge } from "@/components/ui/badge";
 import { Plug, Database, HardDrive, ExternalLink, Info } from "lucide-react";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/settings/integrations")({
+export const Route = createFileRoute("/_authenticated/integrations")({
   component: IntegrationsPage,
   head: () => ({ meta: [{ title: "التكاملات — TVCC" }] }),
 });
@@ -65,7 +65,7 @@ function IntegrationsPage() {
       <div className="flex items-center gap-2 text-xs text-muted-foreground">
         <Link to="/dashboard" className="hover:text-foreground">الرئيسية</Link>
         <span>/</span>
-        <Link to="/settings" className="hover:text-foreground">الإعدادات</Link>
+        
         <span>/</span>
         <span className="text-foreground">التكاملات</span>
       </div>

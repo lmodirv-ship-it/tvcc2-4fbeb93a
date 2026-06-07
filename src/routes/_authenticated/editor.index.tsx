@@ -22,7 +22,7 @@ const groups: { title: string; tools: Tool[] }[] = [
       { to: "/editor/seo", label: "SEO", desc: "Title · Meta · Open Graph · Twitter", icon: Search, tone: "success" },
       { to: "/editor/design", label: "التصميم", desc: "الألوان، الخطوط، الثيم، الأزرار", icon: Palette, tone: "warning" },
       { to: "/editor/content", label: "الإعلانات والبانرات", desc: "Banner · Popup · شرائط علوية", icon: Megaphone, tone: "primary" },
-      { to: "/editor/social", label: "السوشيال ميديا", desc: "FB · IG · TikTok · WhatsApp · YouTube", icon: Share2, tone: "info" },
+      { to: "/editor/social", label: "السوشيال ميديا", desc: "FB · IG · TikTok · WhatsApp · YouTube", icon: Share2, tone: "primary" },
     ],
   },
   {
@@ -32,7 +32,7 @@ const groups: { title: string; tools: Tool[] }[] = [
       { to: "/editor/ai", label: "الذكاء الاصطناعي", desc: "Chatbot · AI Search · توصيات", icon: Sparkles, tone: "primary" },
       { to: "/editor/database", label: "قواعد البيانات", desc: "اتصال، مزامنة، نقل قاعدة", icon: DbIcon, tone: "success" },
       { to: "/editor/storage", label: "التخزين والملفات", desc: "Storage Provider · Region · مزامنة", icon: HardDrive, tone: "warning" },
-      { to: "/editor/backup", label: "النسخ الاحتياطي", desc: "تشغيل، جدولة، استعادة Backup", icon: CloudUpload, tone: "info" },
+      { to: "/editor/backup", label: "النسخ الاحتياطي", desc: "تشغيل، جدولة، استعادة Backup", icon: CloudUpload, tone: "primary" },
     ],
   },
   {
@@ -41,7 +41,7 @@ const groups: { title: string; tools: Tool[] }[] = [
       { to: "/editor/users", label: "المستخدمون", desc: "إضافة، حذف، صلاحيات، إيقاف", icon: Users, tone: "primary" },
       { to: "/editor/subscriptions", label: "الاشتراكات", desc: "ترقية، تخفيض، تمديد، إيقاف", icon: CreditCard, tone: "success" },
       { to: "/editor/security", label: "الأمان", desc: "2FA · CAPTCHA · IP · HTTPS", icon: ShieldCheck, tone: "destructive" },
-      { to: "/editor/dns", label: "النطاقات DNS", desc: "Domain · Subdomain · سجلات DNS", icon: Globe, tone: "info" },
+      { to: "/editor/dns", label: "النطاقات DNS", desc: "Domain · Subdomain · سجلات DNS", icon: Globe, tone: "primary" },
       { to: "/editor/modes", label: "أوضاع الموقع", desc: "تشغيل · إيقاف · صيانة · طوارئ", icon: Power, tone: "warning" },
       { to: "/editor/bulk", label: "العمليات الجماعية", desc: "تنفيذ إجراءات على 1 أو 100 موقع", icon: Layers, tone: "primary" },
     ],
@@ -53,7 +53,6 @@ const toneMap: Record<string, { ring: string; text: string; bg: string }> = {
   success: { ring: "ring-success/40", text: "text-success", bg: "bg-success/15" },
   warning: { ring: "ring-warning/40", text: "text-warning", bg: "bg-warning/15" },
   destructive: { ring: "ring-destructive/40", text: "text-destructive", bg: "bg-destructive/15" },
-  info: { ring: "ring-info/40", text: "text-info", bg: "bg-info/15" },
 };
 
 function EditorHub() {

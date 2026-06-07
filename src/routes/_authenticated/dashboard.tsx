@@ -44,11 +44,18 @@ function DashboardPage() {
   });
 
   const cards = [
-    { label: "المواقع", value: stats?.websites ?? "—", icon: Globe, color: "text-primary" },
-    { label: "العملاء", value: stats?.clients ?? "—", icon: Users, color: "text-success" },
-    { label: "الاشتراكات", value: stats?.subscriptions ?? "—", icon: CreditCard, color: "text-warning" },
-    { label: "قواعد البيانات", value: stats?.databases ?? "—", icon: Database, color: "text-primary-glow" },
-  ];
+    { label: "إجمالي المواقع", value: stats?.websites ?? 0, sub: "جميع المواقع", icon: Globe, color: "primary" },
+    { label: "العملاء", value: stats?.clients ?? 0, sub: "إجمالي العملاء", icon: Users, color: "success" },
+    { label: "الاشتراكات", value: stats?.subscriptions ?? 0, sub: "اشتراك نشط", icon: CreditCard, color: "warning" },
+    { label: "قواعد البيانات", value: stats?.databases ?? 0, sub: "قاعدة مرتبطة", icon: Database, color: "primary-glow" },
+  ] as const;
+
+  const colorMap: Record<string, { bg: string; text: string; ring: string }> = {
+    primary: { bg: "bg-primary/15", text: "text-primary", ring: "ring-primary/40" },
+    success: { bg: "bg-success/15", text: "text-success", ring: "ring-success/40" },
+    warning: { bg: "bg-warning/15", text: "text-warning", ring: "ring-warning/40" },
+    "primary-glow": { bg: "bg-primary/10", text: "text-primary-glow", ring: "ring-primary/40" },
+  };
 
   return (
     <div className="space-y-6">
@@ -58,21 +65,25 @@ function DashboardPage() {
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-        {cards.map((c) => (
-          <Card key={c.label} style={{ background: "var(--gradient-card)", boxShadow: "var(--shadow-card)" }}>
-            <CardContent className="p-6">
-              <div className="flex items-start justify-between">
-                <div>
-                  <p className="text-sm text-muted-foreground">{c.label}</p>
-                  <p className="text-3xl font-bold mt-2">{c.value}</p>
+        {cards.map((c) => {
+          const cc = colorMap[c.color];
+          return (
+            <Card key={c.label} className={`relative overflow-hidden ring-1 ${cc.ring}`}>
+              <CardContent className="p-5">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className={`text-xs ${cc.text}`}>{c.label}</p>
+                    <p className="text-3xl font-bold mt-2">{c.value}</p>
+                    <p className="text-[11px] text-muted-foreground mt-1">{c.sub}</p>
+                  </div>
+                  <div className={`w-12 h-12 rounded-full ${cc.bg} flex items-center justify-center`}>
+                    <c.icon className={`w-6 h-6 ${cc.text}`} />
+                  </div>
                 </div>
-                <div className="w-11 h-11 rounded-lg bg-accent flex items-center justify-center">
-                  <c.icon className={`w-5 h-5 ${c.color}`} />
-                </div>
-              </div>
-            </CardContent>
-          </Card>
-        ))}
+              </CardContent>
+            </Card>
+          );
+        })}
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">

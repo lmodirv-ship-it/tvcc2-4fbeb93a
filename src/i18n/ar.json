@@ -79,5 +79,17 @@
     "deleted": "تم الحذف",
     "error_generic": "حدث خطأ ما",
     "language_changed": "تم تغيير اللغة"
+  },
+  "notifications": {
+    "title": "الإشعارات",
+    "center": "مركز الإشعارات",
+    "subtitle": "جميع التنبيهات وقنوات الإرسال",
+    "empty": "لا توجد إشعارات",
+    "mark_all_read": "تعليم الكل كمقروء",
+    "all_marked": "تم تعليم الكل كمقروء",
+    "view_all": "عرض كل الإشعارات",
+    "channels": "قنوات الإرسال",
+    "no_channels": "لم تُضف قنوات بعد",
+    "search_placeholder": "ابحث في الإشعارات..."
   }
 }

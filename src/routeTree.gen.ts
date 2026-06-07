@@ -17,6 +17,7 @@ import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedSubscriptionsRouteImport } from './routes/_authenticated/subscriptions'
 import { Route as AuthenticatedStorageRouteImport } from './routes/_authenticated/storage'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedEditorRouteImport } from './routes/_authenticated/editor'
 import { Route as AuthenticatedDatabasesRouteImport } from './routes/_authenticated/databases'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
@@ -63,6 +64,11 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedEditorRoute = AuthenticatedEditorRouteImport.update({
+  id: '/editor',
+  path: '/editor',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedDatabasesRoute = AuthenticatedDatabasesRouteImport.update({
   id: '/databases',
   path: '/databases',
@@ -97,6 +103,7 @@ export interface FileRoutesByFullPath {
   '/clients': typeof AuthenticatedClientsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/databases': typeof AuthenticatedDatabasesRoute
+  '/editor': typeof AuthenticatedEditorRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/storage': typeof AuthenticatedStorageRoute
   '/subscriptions': typeof AuthenticatedSubscriptionsRoute
@@ -111,6 +118,7 @@ export interface FileRoutesByTo {
   '/clients': typeof AuthenticatedClientsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/databases': typeof AuthenticatedDatabasesRoute
+  '/editor': typeof AuthenticatedEditorRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/storage': typeof AuthenticatedStorageRoute
   '/subscriptions': typeof AuthenticatedSubscriptionsRoute
@@ -127,6 +135,7 @@ export interface FileRoutesById {
   '/_authenticated/clients': typeof AuthenticatedClientsRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/databases': typeof AuthenticatedDatabasesRoute
+  '/_authenticated/editor': typeof AuthenticatedEditorRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/storage': typeof AuthenticatedStorageRoute
   '/_authenticated/subscriptions': typeof AuthenticatedSubscriptionsRoute
@@ -143,6 +152,7 @@ export interface FileRouteTypes {
     | '/clients'
     | '/dashboard'
     | '/databases'
+    | '/editor'
     | '/settings'
     | '/storage'
     | '/subscriptions'
@@ -157,6 +167,7 @@ export interface FileRouteTypes {
     | '/clients'
     | '/dashboard'
     | '/databases'
+    | '/editor'
     | '/settings'
     | '/storage'
     | '/subscriptions'
@@ -172,6 +183,7 @@ export interface FileRouteTypes {
     | '/_authenticated/clients'
     | '/_authenticated/dashboard'
     | '/_authenticated/databases'
+    | '/_authenticated/editor'
     | '/_authenticated/settings'
     | '/_authenticated/storage'
     | '/_authenticated/subscriptions'
@@ -243,6 +255,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/editor': {
+      id: '/_authenticated/editor'
+      path: '/editor'
+      fullPath: '/editor'
+      preLoaderRoute: typeof AuthenticatedEditorRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/databases': {
       id: '/_authenticated/databases'
       path: '/databases'
@@ -287,6 +306,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedClientsRoute: typeof AuthenticatedClientsRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDatabasesRoute: typeof AuthenticatedDatabasesRoute
+  AuthenticatedEditorRoute: typeof AuthenticatedEditorRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedStorageRoute: typeof AuthenticatedStorageRoute
   AuthenticatedSubscriptionsRoute: typeof AuthenticatedSubscriptionsRoute
@@ -300,6 +320,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedClientsRoute: AuthenticatedClientsRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDatabasesRoute: AuthenticatedDatabasesRoute,
+  AuthenticatedEditorRoute: AuthenticatedEditorRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedStorageRoute: AuthenticatedStorageRoute,
   AuthenticatedSubscriptionsRoute: AuthenticatedSubscriptionsRoute,
@@ -319,3 +340,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

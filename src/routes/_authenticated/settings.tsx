@@ -13,6 +13,30 @@ export const Route = createFileRoute("/_authenticated/settings")({
 });
 
 function SettingsPage() {
+  const [editingSection, setEditingSection] = useState<string | null>(null);
+
+  // Platform settings
+  const [platformName, setPlatformName] = useState("TVCC");
+  const [language, setLanguage] = useState("ar");
+  const [darkMode, setDarkMode] = useState(true);
+
+  // Contact settings
+  const [email, setEmail] = useState("admin@tvcc.ma");
+  const [phone, setPhone] = useState("+212 5XX-XXXXXX");
+
+  // Notification settings
+  const [emailAlerts, setEmailAlerts] = useState(true);
+  const [siteDownAlerts, setSiteDownAlerts] = useState(true);
+  const [backupAlerts, setBackupAlerts] = useState(false);
+
+  const handleSave = (section: string) => {
+    setEditingSection(null);
+  };
+
+  const handleCancel = () => {
+    setEditingSection(null);
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center gap-3">
@@ -25,8 +49,191 @@ function SettingsPage() {
         </div>
       </div>
 
+      {/* Platform Settings */}
       <Card>
-        <CardHeader><CardTitle className="text-base">إعدادات DNS Zone للربط الموحد</CardTitle></CardHeader>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Globe className="w-4 h-4 text-primary" />
+            إعدادات المنصة
+          </CardTitle>
+          {editingSection !== "platform" && (
+            <Button variant="outline" size="sm" onClick={() => setEditingSection("platform")}>
+              <Pencil className="w-3.5 h-3.5 ml-1.5" />
+              تغيير
+            </Button>
+          )}
+        </CardHeader>
+        <CardContent className="space-y-4 text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>اسم المنصة</Label>
+              {editingSection === "platform" ? (
+                <Input value={platformName} onChange={(e) => setPlatformName(e.target.value)} />
+              ) : (
+                <p className="text-muted-foreground">{platformName}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label>اللغة الافتراضية</Label>
+              {editingSection === "platform" ? (
+                <select
+                  className="w-full h-9 rounded-md border border-input bg-background px-3 text-sm"
+                  value={language}
+                  onChange={(e) => setLanguage(e.target.value)}
+                >
+                  <option value="ar">العربية</option>
+                  <option value="fr">Français</option>
+                  <option value="en">English</option>
+                </select>
+              ) : (
+                <p className="text-muted-foreground">{language === "ar" ? "العربية" : language === "fr" ? "Français" : "English"}</p>
+              )}
+            </div>
+          </div>
+          <div className="flex items-center justify-between">
+            <Label className="cursor-pointer">الوضع الداكن</Label>
+            {editingSection === "platform" ? (
+              <Switch checked={darkMode} onCheckedChange={setDarkMode} />
+            ) : (
+              <span className="text-muted-foreground">{darkMode ? "مفعل" : "معطل"}</span>
+            )}
+          </div>
+          {editingSection === "platform" && (
+            <div className="flex gap-2 justify-end pt-2">
+              <Button variant="ghost" size="sm" onClick={handleCancel}>
+                <X className="w-3.5 h-3.5 ml-1.5" />
+                إلغاء
+              </Button>
+              <Button size="sm" onClick={() => handleSave("platform")}>
+                <Save className="w-3.5 h-3.5 ml-1.5" />
+                حفظ
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Contact Settings */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Mail className="w-4 h-4 text-primary" />
+            معلومات الاتصال
+          </CardTitle>
+          {editingSection !== "contact" && (
+            <Button variant="outline" size="sm" onClick={() => setEditingSection("contact")}>
+              <Pencil className="w-3.5 h-3.5 ml-1.5" />
+              تغيير
+            </Button>
+          )}
+        </CardHeader>
+        <CardContent className="space-y-4 text-sm">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+            <div className="space-y-2">
+              <Label>البريد الإلكتروني</Label>
+              {editingSection === "contact" ? (
+                <Input value={email} onChange={(e) => setEmail(e.target.value)} type="email" />
+              ) : (
+                <p className="text-muted-foreground">{email}</p>
+              )}
+            </div>
+            <div className="space-y-2">
+              <Label>رقم الهاتف</Label>
+              {editingSection === "contact" ? (
+                <Input value={phone} onChange={(e) => setPhone(e.target.value)} />
+              ) : (
+                <p className="text-muted-foreground">{phone}</p>
+              )}
+            </div>
+          </div>
+          {editingSection === "contact" && (
+            <div className="flex gap-2 justify-end pt-2">
+              <Button variant="ghost" size="sm" onClick={handleCancel}>
+                <X className="w-3.5 h-3.5 ml-1.5" />
+                إلغاء
+              </Button>
+              <Button size="sm" onClick={() => handleSave("contact")}>
+                <Save className="w-3.5 h-3.5 ml-1.5" />
+                حفظ
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* Notification Settings */}
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Bell className="w-4 h-4 text-primary" />
+            الإشعارات
+          </CardTitle>
+          {editingSection !== "notifications" && (
+            <Button variant="outline" size="sm" onClick={() => setEditingSection("notifications")}>
+              <Pencil className="w-3.5 h-3.5 ml-1.5" />
+              تغيير
+            </Button>
+          )}
+        </CardHeader>
+        <CardContent className="space-y-4 text-sm">
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">إشعارات البريد</p>
+                <p className="text-xs text-muted-foreground">استلام إشعارات على البريد الإلكتروني</p>
+              </div>
+              {editingSection === "notifications" ? (
+                <Switch checked={emailAlerts} onCheckedChange={setEmailAlerts} />
+              ) : (
+                <span className="text-muted-foreground">{emailAlerts ? "مفعل" : "معطل"}</span>
+              )}
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">تنبيه انقطاع المواقع</p>
+                <p className="text-xs text-muted-foreground">إشعار فوري عند انقطاع موقع</p>
+              </div>
+              {editingSection === "notifications" ? (
+                <Switch checked={siteDownAlerts} onCheckedChange={setSiteDownAlerts} />
+              ) : (
+                <span className="text-muted-foreground">{siteDownAlerts ? "مفعل" : "معطل"}</span>
+              )}
+            </div>
+            <div className="flex items-center justify-between">
+              <div>
+                <p className="font-medium">تنبيهات النسخ الاحتياطي</p>
+                <p className="text-xs text-muted-foreground">إشعار بنتيجة عمليات النسخ الاحتياطي</p>
+              </div>
+              {editingSection === "notifications" ? (
+                <Switch checked={backupAlerts} onCheckedChange={setBackupAlerts} />
+              ) : (
+                <span className="text-muted-foreground">{backupAlerts ? "مفعل" : "معطل"}</span>
+              )}
+            </div>
+          </div>
+          {editingSection === "notifications" && (
+            <div className="flex gap-2 justify-end pt-2">
+              <Button variant="ghost" size="sm" onClick={handleCancel}>
+                <X className="w-3.5 h-3.5 ml-1.5" />
+                إلغاء
+              </Button>
+              <Button size="sm" onClick={() => handleSave("notifications")}>
+                <Save className="w-3.5 h-3.5 ml-1.5" />
+                حفظ
+              </Button>
+            </div>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* DNS Settings */}
+      <Card>
+        <CardHeader>
+          <CardTitle className="text-base flex items-center gap-2">
+            <Shield className="w-4 h-4 text-primary" />
+            إعدادات DNS Zone للربط الموحد
+          </CardTitle>
+        </CardHeader>
         <CardContent className="space-y-3 text-sm">
           <p className="text-muted-foreground">
             لربط أي موقع بشبكة TVCC، أضف أحد السجلات التالية إلى DNS Zone الخاص بالموقع:

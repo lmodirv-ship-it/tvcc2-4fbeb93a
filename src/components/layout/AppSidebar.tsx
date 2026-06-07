@@ -129,13 +129,13 @@ export function AppSidebar() {
           style={{ background: "linear-gradient(135deg, oklch(0.28 0.06 280 / 0.4), transparent)" }}
         >
           <Code2 className="w-4 h-4 text-primary" />
-          <span className="text-xs font-medium">تصدير HTML</span>
+          <span className="text-xs font-medium">{t("sidebar.export_html")}</span>
         </button>
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton onClick={handleLogout} className="text-muted-foreground">
               <LogOut className="w-4 h-4" />
-              <span>تسجيل الخروج</span>
+              <span>{t("common.logout")}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>

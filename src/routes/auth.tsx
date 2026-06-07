@@ -98,6 +98,7 @@ function AuthPage() {
               <div className="absolute inset-0 flex items-center"><span className="w-full border-t" /></div>
               <div className="relative flex justify-center text-xs"><span className="bg-card px-2 text-muted-foreground">أو</span></div>
             </div>
+            <Tabs defaultValue="login">
               <TabsList className="grid grid-cols-2 w-full">
                 <TabsTrigger value="login">تسجيل الدخول</TabsTrigger>
                 <TabsTrigger value="signup">حساب جديد</TabsTrigger>

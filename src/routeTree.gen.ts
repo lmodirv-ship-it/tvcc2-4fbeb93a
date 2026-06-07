@@ -19,10 +19,12 @@ import { Route as AuthenticatedTemplatesRouteImport } from './routes/_authentica
 import { Route as AuthenticatedSubscriptionsRouteImport } from './routes/_authenticated/subscriptions'
 import { Route as AuthenticatedSslRouteImport } from './routes/_authenticated/ssl'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedMonitoringRouteImport } from './routes/_authenticated/monitoring'
 import { Route as AuthenticatedJobsRouteImport } from './routes/_authenticated/jobs'
 import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authenticated/integrations'
 import { Route as AuthenticatedGroupsRouteImport } from './routes/_authenticated/groups'
+import { Route as AuthenticatedEnvironmentRouteImport } from './routes/_authenticated/environment'
 import { Route as AuthenticatedEditorRouteImport } from './routes/_authenticated/editor'
 import { Route as AuthenticatedDomainsRouteImport } from './routes/_authenticated/domains'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -95,6 +97,12 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   path: '/settings',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedNotificationsRoute =
+  AuthenticatedNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedMonitoringRoute = AuthenticatedMonitoringRouteImport.update({
   id: '/monitoring',
   path: '/monitoring',
@@ -116,6 +124,12 @@ const AuthenticatedGroupsRoute = AuthenticatedGroupsRouteImport.update({
   path: '/groups',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedEnvironmentRoute =
+  AuthenticatedEnvironmentRouteImport.update({
+    id: '/environment',
+    path: '/environment',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedEditorRoute = AuthenticatedEditorRouteImport.update({
   id: '/editor',
   path: '/editor',
@@ -241,10 +255,12 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/domains': typeof AuthenticatedDomainsRoute
   '/editor': typeof AuthenticatedEditorRouteWithChildren
+  '/environment': typeof AuthenticatedEnvironmentRoute
   '/groups': typeof AuthenticatedGroupsRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/jobs': typeof AuthenticatedJobsRoute
   '/monitoring': typeof AuthenticatedMonitoringRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/ssl': typeof AuthenticatedSslRoute
   '/subscriptions': typeof AuthenticatedSubscriptionsRoute
@@ -276,10 +292,12 @@ export interface FileRoutesByTo {
   '/clients': typeof AuthenticatedClientsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/domains': typeof AuthenticatedDomainsRoute
+  '/environment': typeof AuthenticatedEnvironmentRoute
   '/groups': typeof AuthenticatedGroupsRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/jobs': typeof AuthenticatedJobsRoute
   '/monitoring': typeof AuthenticatedMonitoringRoute
+  '/notifications': typeof AuthenticatedNotificationsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/ssl': typeof AuthenticatedSslRoute
   '/subscriptions': typeof AuthenticatedSubscriptionsRoute
@@ -314,10 +332,12 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/domains': typeof AuthenticatedDomainsRoute
   '/_authenticated/editor': typeof AuthenticatedEditorRouteWithChildren
+  '/_authenticated/environment': typeof AuthenticatedEnvironmentRoute
   '/_authenticated/groups': typeof AuthenticatedGroupsRoute
   '/_authenticated/integrations': typeof AuthenticatedIntegrationsRoute
   '/_authenticated/jobs': typeof AuthenticatedJobsRoute
   '/_authenticated/monitoring': typeof AuthenticatedMonitoringRoute
+  '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/ssl': typeof AuthenticatedSslRoute
   '/_authenticated/subscriptions': typeof AuthenticatedSubscriptionsRoute
@@ -352,10 +372,12 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/domains'
     | '/editor'
+    | '/environment'
     | '/groups'
     | '/integrations'
     | '/jobs'
     | '/monitoring'
+    | '/notifications'
     | '/settings'
     | '/ssl'
     | '/subscriptions'
@@ -387,10 +409,12 @@ export interface FileRouteTypes {
     | '/clients'
     | '/dashboard'
     | '/domains'
+    | '/environment'
     | '/groups'
     | '/integrations'
     | '/jobs'
     | '/monitoring'
+    | '/notifications'
     | '/settings'
     | '/ssl'
     | '/subscriptions'
@@ -424,10 +448,12 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/domains'
     | '/_authenticated/editor'
+    | '/_authenticated/environment'
     | '/_authenticated/groups'
     | '/_authenticated/integrations'
     | '/_authenticated/jobs'
     | '/_authenticated/monitoring'
+    | '/_authenticated/notifications'
     | '/_authenticated/settings'
     | '/_authenticated/ssl'
     | '/_authenticated/subscriptions'
@@ -531,6 +557,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/notifications': {
+      id: '/_authenticated/notifications'
+      path: '/notifications'
+      fullPath: '/notifications'
+      preLoaderRoute: typeof AuthenticatedNotificationsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/monitoring': {
       id: '/_authenticated/monitoring'
       path: '/monitoring'
@@ -557,6 +590,13 @@ declare module '@tanstack/react-router' {
       path: '/groups'
       fullPath: '/groups'
       preLoaderRoute: typeof AuthenticatedGroupsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/environment': {
+      id: '/_authenticated/environment'
+      path: '/environment'
+      fullPath: '/environment'
+      preLoaderRoute: typeof AuthenticatedEnvironmentRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/editor': {
@@ -753,10 +793,12 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDomainsRoute: typeof AuthenticatedDomainsRoute
   AuthenticatedEditorRoute: typeof AuthenticatedEditorRouteWithChildren
+  AuthenticatedEnvironmentRoute: typeof AuthenticatedEnvironmentRoute
   AuthenticatedGroupsRoute: typeof AuthenticatedGroupsRoute
   AuthenticatedIntegrationsRoute: typeof AuthenticatedIntegrationsRoute
   AuthenticatedJobsRoute: typeof AuthenticatedJobsRoute
   AuthenticatedMonitoringRoute: typeof AuthenticatedMonitoringRoute
+  AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedSslRoute: typeof AuthenticatedSslRoute
   AuthenticatedSubscriptionsRoute: typeof AuthenticatedSubscriptionsRoute
@@ -773,10 +815,12 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDomainsRoute: AuthenticatedDomainsRoute,
   AuthenticatedEditorRoute: AuthenticatedEditorRouteWithChildren,
+  AuthenticatedEnvironmentRoute: AuthenticatedEnvironmentRoute,
   AuthenticatedGroupsRoute: AuthenticatedGroupsRoute,
   AuthenticatedIntegrationsRoute: AuthenticatedIntegrationsRoute,
   AuthenticatedJobsRoute: AuthenticatedJobsRoute,
   AuthenticatedMonitoringRoute: AuthenticatedMonitoringRoute,
+  AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedSslRoute: AuthenticatedSslRoute,
   AuthenticatedSubscriptionsRoute: AuthenticatedSubscriptionsRoute,
@@ -799,3 +843,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

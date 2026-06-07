@@ -2,6 +2,7 @@ import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard, Globe, Users, CreditCard, UserCog, Activity, Settings,
   Code2, LogOut, Wand2, FolderOpen, LayoutTemplate, Radio, ListChecks, Plug,
+  Smartphone,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
@@ -24,6 +25,7 @@ const items = [
   { title: "الاشتراكات", url: "/subscriptions", icon: CreditCard },
   { title: "سجل النشاط", url: "/activity", icon: Activity },
   { title: "التكاملات", url: "/integrations", icon: Plug },
+  { title: "APK Manager", url: "/apk-manager", icon: Smartphone },
   { title: "الإعدادات", url: "/settings", icon: Settings },
 ];
 

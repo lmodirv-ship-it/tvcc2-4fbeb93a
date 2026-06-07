@@ -320,6 +320,81 @@ export type Database = {
         }
         Relationships: []
       }
+      notification_logs: {
+        Row: {
+          channel_type: string
+          created_at: string
+          error_message: string | null
+          id: string
+          notification_id: string | null
+          owner_id: string
+          provider_response: Json | null
+          status: string
+          target: string
+        }
+        Insert: {
+          channel_type: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          notification_id?: string | null
+          owner_id: string
+          provider_response?: Json | null
+          status?: string
+          target: string
+        }
+        Update: {
+          channel_type?: string
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          notification_id?: string | null
+          owner_id?: string
+          provider_response?: Json | null
+          status?: string
+          target?: string
+        }
+        Relationships: []
+      }
+      notification_preferences: {
+        Row: {
+          created_at: string
+          email: boolean
+          event_type: string
+          id: string
+          in_app: boolean
+          min_severity: string
+          owner_id: string
+          telegram: boolean
+          updated_at: string
+          webhook: boolean
+        }
+        Insert: {
+          created_at?: string
+          email?: boolean
+          event_type: string
+          id?: string
+          in_app?: boolean
+          min_severity?: string
+          owner_id: string
+          telegram?: boolean
+          updated_at?: string
+          webhook?: boolean
+        }
+        Update: {
+          created_at?: string
+          email?: boolean
+          event_type?: string
+          id?: string
+          in_app?: boolean
+          min_severity?: string
+          owner_id?: string
+          telegram?: boolean
+          updated_at?: string
+          webhook?: boolean
+        }
+        Relationships: []
+      }
       notifications: {
         Row: {
           created_at: string

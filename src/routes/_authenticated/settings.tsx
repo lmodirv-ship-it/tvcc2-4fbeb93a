@@ -1,6 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Settings as SettingsIcon } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Switch } from "@/components/ui/switch";
+import { Settings as SettingsIcon, Save, X, Pencil, Bell, Globe, Shield, Mail } from "lucide-react";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   component: SettingsPage,

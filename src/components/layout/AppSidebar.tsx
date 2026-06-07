@@ -81,9 +81,10 @@ export function AppSidebar() {
 
       <SidebarContent className="px-2 py-3">
         {[
-          { label: "الأساسية", items: mainItems },
-          { label: "العمليات", items: opsItems },
-          { label: "الإدارة", items: adminItems },
+          { label: "Core", items: coreItems },
+          { label: "Operations", items: opsItems },
+          { label: "Admin", items: adminItems },
+
         ].map((section) => (
           <SidebarGroup key={section.label}>
             <SidebarGroupLabel className="text-[10px] text-muted-foreground/70 px-2">

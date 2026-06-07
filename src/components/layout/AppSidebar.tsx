@@ -14,35 +14,36 @@ import { toast } from "sonner";
 import { exportDashboardHtml } from "@/lib/html-export";
 
 const coreItems = [
-  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
-  { title: "Websites", url: "/websites", icon: Globe },
-  { title: "Groups", url: "/groups", icon: FolderOpen },
-  { title: "Templates", url: "/templates", icon: LayoutTemplate },
-  { title: "Editor Center", url: "/editor", icon: Wand2 },
-  { title: "Monitoring Center", url: "/monitoring", icon: Radio },
-  { title: "Jobs Center", url: "/jobs", icon: ListChecks },
-  { title: "Integrations", url: "/integrations", icon: Plug },
+  { titleKey: "sidebar.dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { titleKey: "sidebar.websites", url: "/websites", icon: Globe },
+  { titleKey: "sidebar.groups", url: "/groups", icon: FolderOpen },
+  { titleKey: "sidebar.templates", url: "/templates", icon: LayoutTemplate },
+  { titleKey: "sidebar.editor", url: "/editor", icon: Wand2 },
+  { titleKey: "sidebar.monitoring", url: "/monitoring", icon: Radio },
+  { titleKey: "sidebar.jobs", url: "/jobs", icon: ListChecks },
+  { titleKey: "sidebar.integrations", url: "/integrations", icon: Plug },
 ];
 
 const opsItems = [
-  { title: "Domain Manager", url: "/domains", icon: Server },
-  { title: "SSL Monitor", url: "/ssl", icon: ShieldCheck },
-  { title: "Notifications", url: "/notifications", icon: Bell },
-  { title: "Environment Manager", url: "/environment", icon: FileCog },
-  { title: "Activity Log", url: "/activity", icon: Activity },
-  { title: "Reports", url: "/reports", icon: FileBarChart },
+  { titleKey: "sidebar.domains", url: "/domains", icon: Server },
+  { titleKey: "sidebar.ssl", url: "/ssl", icon: ShieldCheck },
+  { titleKey: "sidebar.notifications", url: "/notifications", icon: Bell },
+  { titleKey: "sidebar.environment", url: "/environment", icon: FileCog },
+  { titleKey: "sidebar.activity", url: "/activity", icon: Activity },
+  { titleKey: "sidebar.reports", url: "/reports", icon: FileBarChart },
 ];
 
 const adminItems = [
-  { title: "Vault", url: "/vault", icon: KeyRound },
-  { title: "Recovery", url: "/recovery", icon: LifeBuoy },
-  { title: "APK Manager", url: "/apk-manager", icon: Smartphone },
-  { title: "Clients", url: "/clients", icon: Users },
-  { title: "Users", url: "/users", icon: UserCog },
-  { title: "Subscriptions", url: "/subscriptions", icon: CreditCard },
-  { title: "System Audit", url: "/audit", icon: ClipboardCheck },
-  { title: "Settings", url: "/settings", icon: Settings },
+  { titleKey: "sidebar.vault", url: "/vault", icon: KeyRound },
+  { titleKey: "sidebar.recovery", url: "/recovery", icon: LifeBuoy },
+  { titleKey: "sidebar.apk_manager", url: "/apk-manager", icon: Smartphone },
+  { titleKey: "sidebar.clients", url: "/clients", icon: Users },
+  { titleKey: "sidebar.users", url: "/users", icon: UserCog },
+  { titleKey: "sidebar.subscriptions", url: "/subscriptions", icon: CreditCard },
+  { titleKey: "sidebar.audit", url: "/audit", icon: ClipboardCheck },
+  { titleKey: "sidebar.settings", url: "/settings", icon: Settings },
 ];
+
 
 
 export function AppSidebar() {

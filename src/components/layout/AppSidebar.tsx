@@ -2,17 +2,17 @@ import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard, Globe, Users, CreditCard, UserCog, Activity, Settings,
   Code2, LogOut, Wand2, FolderOpen, LayoutTemplate, Radio, ListChecks, Plug,
-  Smartphone,
+  Smartphone, KeyRound, Server, ShieldCheck, Bell, FileCog, LifeBuoy,
 } from "lucide-react";
 import {
-  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
+  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter,
 } from "@/components/ui/sidebar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { exportDashboardHtml } from "@/lib/html-export";
 
-const items = [
+const mainItems = [
   { title: "لوحة القيادة", url: "/dashboard", icon: LayoutDashboard },
   { title: "المواقع", url: "/websites", icon: Globe },
   { title: "المجموعات", url: "/groups", icon: FolderOpen },
@@ -20,12 +20,24 @@ const items = [
   { title: "المراقبة", url: "/monitoring", icon: Radio },
   { title: "المهام", url: "/jobs", icon: ListChecks },
   { title: "مركز التعديل", url: "/editor", icon: Wand2 },
+];
+
+const opsItems = [
+  { title: "مدير الأسرار", url: "/vault", icon: KeyRound },
+  { title: "مدير النطاقات", url: "/domains", icon: Server },
+  { title: "مراقبة SSL", url: "/ssl", icon: ShieldCheck },
+  { title: "الإشعارات", url: "/notifications", icon: Bell },
+  { title: "متغيرات البيئة", url: "/environment", icon: FileCog },
+  { title: "مركز الاسترداد", url: "/recovery", icon: LifeBuoy },
+  { title: "APK Manager", url: "/apk-manager", icon: Smartphone },
+];
+
+const adminItems = [
   { title: "العملاء", url: "/clients", icon: Users },
   { title: "المستخدمون", url: "/users", icon: UserCog },
   { title: "الاشتراكات", url: "/subscriptions", icon: CreditCard },
   { title: "سجل النشاط", url: "/activity", icon: Activity },
   { title: "التكاملات", url: "/integrations", icon: Plug },
-  { title: "APK Manager", url: "/apk-manager", icon: Smartphone },
   { title: "الإعدادات", url: "/settings", icon: Settings },
 ];
 
@@ -64,33 +76,42 @@ export function AppSidebar() {
       </SidebarHeader>
 
       <SidebarContent className="px-2 py-3">
-        <SidebarGroup>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {items.map((item) => {
-                const active = isActive(item.url);
-                return (
-                  <SidebarMenuItem key={item.url}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={active}
-                      className={
-                        active
-                          ? "bg-primary/15 text-primary border-r-2 border-primary rounded-md"
-                          : "hover:bg-sidebar-accent"
-                      }
-                    >
-                      <Link to={item.url}>
-                        <item.icon className="w-4 h-4" />
-                        <span>{item.title}</span>
-                      </Link>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                );
-              })}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
+        {[
+          { label: "الأساسية", items: mainItems },
+          { label: "العمليات", items: opsItems },
+          { label: "الإدارة", items: adminItems },
+        ].map((section) => (
+          <SidebarGroup key={section.label}>
+            <SidebarGroupLabel className="text-[10px] text-muted-foreground/70 px-2">
+              {section.label}
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {section.items.map((item) => {
+                  const active = isActive(item.url);
+                  return (
+                    <SidebarMenuItem key={item.url}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={active}
+                        className={
+                          active
+                            ? "bg-primary/15 text-primary border-r-2 border-primary rounded-md"
+                            : "hover:bg-sidebar-accent"
+                        }
+                      >
+                        <Link to={item.url}>
+                          <item.icon className="w-4 h-4" />
+                          <span>{item.title}</span>
+                        </Link>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        ))}
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border p-3 space-y-2">

@@ -236,6 +236,129 @@ export type Database = {
         }
         Relationships: []
       }
+      domains: {
+        Row: {
+          auto_renew: boolean
+          created_at: string
+          dns_status: string
+          domain: string
+          expires_at: string | null
+          id: string
+          nameservers: string[] | null
+          notes: string | null
+          owner_id: string
+          registrar: string | null
+          ssl_expires_at: string | null
+          ssl_status: string
+          updated_at: string
+          website_id: string | null
+        }
+        Insert: {
+          auto_renew?: boolean
+          created_at?: string
+          dns_status?: string
+          domain: string
+          expires_at?: string | null
+          id?: string
+          nameservers?: string[] | null
+          notes?: string | null
+          owner_id: string
+          registrar?: string | null
+          ssl_expires_at?: string | null
+          ssl_status?: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Update: {
+          auto_renew?: boolean
+          created_at?: string
+          dns_status?: string
+          domain?: string
+          expires_at?: string | null
+          id?: string
+          nameservers?: string[] | null
+          notes?: string | null
+          owner_id?: string
+          registrar?: string | null
+          ssl_expires_at?: string | null
+          ssl_status?: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Relationships: []
+      }
+      notification_channels: {
+        Row: {
+          channel_type: string
+          created_at: string
+          events: string[]
+          id: string
+          is_active: boolean
+          owner_id: string
+          target: string
+          updated_at: string
+        }
+        Insert: {
+          channel_type: string
+          created_at?: string
+          events?: string[]
+          id?: string
+          is_active?: boolean
+          owner_id: string
+          target: string
+          updated_at?: string
+        }
+        Update: {
+          channel_type?: string
+          created_at?: string
+          events?: string[]
+          id?: string
+          is_active?: boolean
+          owner_id?: string
+          target?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      notifications: {
+        Row: {
+          created_at: string
+          id: string
+          is_read: boolean
+          message: string | null
+          metadata: Json
+          owner_id: string
+          severity: string
+          title: string
+          type: string
+          website_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string | null
+          metadata?: Json
+          owner_id: string
+          severity?: string
+          title: string
+          type: string
+          website_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_read?: boolean
+          message?: string | null
+          metadata?: Json
+          owner_id?: string
+          severity?: string
+          title?: string
+          type?: string
+          website_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -257,6 +380,45 @@ export type Database = {
           full_name?: string | null
           id?: string
           updated_at?: string
+        }
+        Relationships: []
+      }
+      recovery_points: {
+        Row: {
+          created_at: string
+          id: string
+          label: string | null
+          notes: string | null
+          owner_id: string
+          point_type: string
+          size_mb: number | null
+          status: string
+          storage_path: string | null
+          website_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          label?: string | null
+          notes?: string | null
+          owner_id: string
+          point_type?: string
+          size_mb?: number | null
+          status?: string
+          storage_path?: string | null
+          website_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          label?: string | null
+          notes?: string | null
+          owner_id?: string
+          point_type?: string
+          size_mb?: number | null
+          status?: string
+          storage_path?: string | null
+          website_id?: string
         }
         Relationships: []
       }
@@ -568,6 +730,45 @@ export type Database = {
         }
         Relationships: []
       }
+      vault_secrets: {
+        Row: {
+          category: string
+          created_at: string
+          description: string | null
+          id: string
+          last_rotated_at: string | null
+          name: string
+          owner_id: string
+          updated_at: string
+          value_encrypted: string
+          website_id: string | null
+        }
+        Insert: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          last_rotated_at?: string | null
+          name: string
+          owner_id: string
+          updated_at?: string
+          value_encrypted: string
+          website_id?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          last_rotated_at?: string | null
+          name?: string
+          owner_id?: string
+          updated_at?: string
+          value_encrypted?: string
+          website_id?: string | null
+        }
+        Relationships: []
+      }
       website_android_releases: {
         Row: {
           aab_url: string | null
@@ -603,6 +804,45 @@ export type Database = {
           owner_id?: string
           version_code?: number
           version_name?: string
+          website_id?: string
+        }
+        Relationships: []
+      }
+      website_env_vars: {
+        Row: {
+          created_at: string
+          description: string | null
+          environment: string
+          id: string
+          is_secret: boolean
+          key: string
+          owner_id: string
+          updated_at: string
+          value: string
+          website_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          environment?: string
+          id?: string
+          is_secret?: boolean
+          key: string
+          owner_id: string
+          updated_at?: string
+          value: string
+          website_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          environment?: string
+          id?: string
+          is_secret?: boolean
+          key?: string
+          owner_id?: string
+          updated_at?: string
+          value?: string
           website_id?: string
         }
         Relationships: []

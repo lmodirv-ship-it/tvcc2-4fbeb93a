@@ -141,6 +141,101 @@ export type Database = {
           },
         ]
       }
+      deployment_job_targets: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          id: string
+          job_id: string
+          owner_id: string
+          processed_at: string | null
+          status: string
+          website_id: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          job_id: string
+          owner_id: string
+          processed_at?: string | null
+          status?: string
+          website_id: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          job_id?: string
+          owner_id?: string
+          processed_at?: string | null
+          status?: string
+          website_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "deployment_job_targets_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "deployment_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      deployment_jobs: {
+        Row: {
+          action_type: string
+          completed_at: string | null
+          created_at: string
+          error_count: number
+          id: string
+          owner_id: string
+          payload: Json
+          scope_id: string | null
+          scope_type: string
+          started_at: string | null
+          status: string
+          success_count: number
+          target_count: number
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          action_type: string
+          completed_at?: string | null
+          created_at?: string
+          error_count?: number
+          id?: string
+          owner_id: string
+          payload?: Json
+          scope_id?: string | null
+          scope_type: string
+          started_at?: string | null
+          status?: string
+          success_count?: number
+          target_count?: number
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          action_type?: string
+          completed_at?: string | null
+          created_at?: string
+          error_count?: number
+          id?: string
+          owner_id?: string
+          payload?: Json
+          scope_id?: string | null
+          scope_type?: string
+          started_at?: string | null
+          status?: string
+          success_count?: number
+          target_count?: number
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string
@@ -161,6 +256,108 @@ export type Database = {
           email?: string | null
           full_name?: string | null
           id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      site_groups: {
+        Row: {
+          color: string
+          created_at: string
+          description: string | null
+          icon: string
+          id: string
+          name: string
+          owner_id: string
+          updated_at: string
+        }
+        Insert: {
+          color?: string
+          created_at?: string
+          description?: string | null
+          icon?: string
+          id?: string
+          name: string
+          owner_id: string
+          updated_at?: string
+        }
+        Update: {
+          color?: string
+          created_at?: string
+          description?: string | null
+          icon?: string
+          id?: string
+          name?: string
+          owner_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      site_health_checks: {
+        Row: {
+          checked_at: string
+          error_message: string | null
+          http_status: number | null
+          id: string
+          owner_id: string
+          response_time_ms: number | null
+          ssl_valid: boolean | null
+          status: string
+          website_id: string
+        }
+        Insert: {
+          checked_at?: string
+          error_message?: string | null
+          http_status?: number | null
+          id?: string
+          owner_id: string
+          response_time_ms?: number | null
+          ssl_valid?: boolean | null
+          status?: string
+          website_id: string
+        }
+        Update: {
+          checked_at?: string
+          error_message?: string | null
+          http_status?: number | null
+          id?: string
+          owner_id?: string
+          response_time_ms?: number | null
+          ssl_valid?: boolean | null
+          status?: string
+          website_id?: string
+        }
+        Relationships: []
+      }
+      site_templates: {
+        Row: {
+          created_at: string
+          default_settings: Json
+          description: string | null
+          id: string
+          name: string
+          owner_id: string
+          template_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          default_settings?: Json
+          description?: string | null
+          id?: string
+          name: string
+          owner_id: string
+          template_type?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          default_settings?: Json
+          description?: string | null
+          id?: string
+          name?: string
+          owner_id?: string
+          template_type?: string
           updated_at?: string
         }
         Relationships: []
@@ -371,6 +568,38 @@ export type Database = {
         }
         Relationships: []
       }
+      website_group_members: {
+        Row: {
+          created_at: string
+          group_id: string
+          id: string
+          owner_id: string
+          website_id: string
+        }
+        Insert: {
+          created_at?: string
+          group_id: string
+          id?: string
+          owner_id: string
+          website_id: string
+        }
+        Update: {
+          created_at?: string
+          group_id?: string
+          id?: string
+          owner_id?: string
+          website_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "website_group_members_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "site_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       website_settings: {
         Row: {
           created_at: string
@@ -405,6 +634,38 @@ export type Database = {
             columns: ["website_id"]
             isOneToOne: false
             referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      website_template_links: {
+        Row: {
+          created_at: string
+          id: string
+          owner_id: string
+          template_id: string
+          website_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_id: string
+          template_id: string
+          website_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          template_id?: string
+          website_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "website_template_links_template_id_fkey"
+            columns: ["template_id"]
+            isOneToOne: false
+            referencedRelation: "site_templates"
             referencedColumns: ["id"]
           },
         ]

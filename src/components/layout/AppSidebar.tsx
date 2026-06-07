@@ -3,6 +3,7 @@ import {
   LayoutDashboard, Globe, Users, CreditCard, UserCog, Activity, Settings,
   Code2, LogOut, Wand2, FolderOpen, LayoutTemplate, Radio, ListChecks, Plug,
   Smartphone, KeyRound, Server, ShieldCheck, Bell, FileCog, LifeBuoy, ClipboardCheck,
+  FileBarChart,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -12,35 +13,37 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { exportDashboardHtml } from "@/lib/html-export";
 
-const mainItems = [
-  { title: "لوحة القيادة", url: "/dashboard", icon: LayoutDashboard },
-  { title: "المواقع", url: "/websites", icon: Globe },
-  { title: "المجموعات", url: "/groups", icon: FolderOpen },
-  { title: "القوالب", url: "/templates", icon: LayoutTemplate },
-  { title: "المراقبة", url: "/monitoring", icon: Radio },
-  { title: "المهام", url: "/jobs", icon: ListChecks },
-  { title: "مركز التعديل", url: "/editor", icon: Wand2 },
+const coreItems = [
+  { title: "Dashboard", url: "/dashboard", icon: LayoutDashboard },
+  { title: "Websites", url: "/websites", icon: Globe },
+  { title: "Groups", url: "/groups", icon: FolderOpen },
+  { title: "Templates", url: "/templates", icon: LayoutTemplate },
+  { title: "Editor Center", url: "/editor", icon: Wand2 },
+  { title: "Monitoring Center", url: "/monitoring", icon: Radio },
+  { title: "Jobs Center", url: "/jobs", icon: ListChecks },
+  { title: "Integrations", url: "/integrations", icon: Plug },
 ];
 
 const opsItems = [
-  { title: "مدير الأسرار", url: "/vault", icon: KeyRound },
-  { title: "مدير النطاقات", url: "/domains", icon: Server },
-  { title: "مراقبة SSL", url: "/ssl", icon: ShieldCheck },
-  { title: "الإشعارات", url: "/notifications", icon: Bell },
-  { title: "متغيرات البيئة", url: "/environment", icon: FileCog },
-  { title: "مركز الاسترداد", url: "/recovery", icon: LifeBuoy },
-  { title: "APK Manager", url: "/apk-manager", icon: Smartphone },
+  { title: "Domain Manager", url: "/domains", icon: Server },
+  { title: "SSL Monitor", url: "/ssl", icon: ShieldCheck },
+  { title: "Notifications", url: "/notifications", icon: Bell },
+  { title: "Environment Manager", url: "/environment", icon: FileCog },
+  { title: "Activity Log", url: "/activity", icon: Activity },
+  { title: "Reports", url: "/reports", icon: FileBarChart },
 ];
 
 const adminItems = [
-  { title: "العملاء", url: "/clients", icon: Users },
-  { title: "المستخدمون", url: "/users", icon: UserCog },
-  { title: "الاشتراكات", url: "/subscriptions", icon: CreditCard },
-  { title: "سجل النشاط", url: "/activity", icon: Activity },
-  { title: "التكاملات", url: "/integrations", icon: Plug },
-  { title: "فحص النظام", url: "/audit", icon: ClipboardCheck },
-  { title: "الإعدادات", url: "/settings", icon: Settings },
+  { title: "Vault", url: "/vault", icon: KeyRound },
+  { title: "Recovery", url: "/recovery", icon: LifeBuoy },
+  { title: "APK Manager", url: "/apk-manager", icon: Smartphone },
+  { title: "Clients", url: "/clients", icon: Users },
+  { title: "Users", url: "/users", icon: UserCog },
+  { title: "Subscriptions", url: "/subscriptions", icon: CreditCard },
+  { title: "System Audit", url: "/audit", icon: ClipboardCheck },
+  { title: "Settings", url: "/settings", icon: Settings },
 ];
+
 
 export function AppSidebar() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -78,9 +81,10 @@ export function AppSidebar() {
 
       <SidebarContent className="px-2 py-3">
         {[
-          { label: "الأساسية", items: mainItems },
-          { label: "العمليات", items: opsItems },
-          { label: "الإدارة", items: adminItems },
+          { label: "Core", items: coreItems },
+          { label: "Operations", items: opsItems },
+          { label: "Admin", items: adminItems },
+
         ].map((section) => (
           <SidebarGroup key={section.label}>
             <SidebarGroupLabel className="text-[10px] text-muted-foreground/70 px-2">

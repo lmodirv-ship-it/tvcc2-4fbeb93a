@@ -1,0 +1,83 @@
+{
+  "common": {
+    "save": "Save",
+    "cancel": "Cancel",
+    "delete": "Delete",
+    "edit": "Edit",
+    "create": "Create",
+    "search": "Search...",
+    "loading": "Loading...",
+    "empty": "No data",
+    "actions": "Actions",
+    "status": "Status",
+    "name": "Name",
+    "type": "Type",
+    "date": "Date",
+    "refresh": "Refresh",
+    "logout": "Logout",
+    "settings": "Settings",
+    "back": "Back",
+    "next": "Next",
+    "yes": "Yes",
+    "no": "No",
+    "confirm": "Confirm"
+  },
+  "status": {
+    "online": "Online",
+    "offline": "Offline",
+    "warning": "Warning",
+    "active": "Active",
+    "inactive": "Inactive",
+    "pending": "Pending",
+    "success": "Success",
+    "error": "Error"
+  },
+  "header": {
+    "admin": "Administrator",
+    "search_placeholder": "Search...",
+    "notifications": "Notifications",
+    "language": "Language"
+  },
+  "sidebar": {
+    "tagline": "Site command center",
+    "core": "Core",
+    "operations": "Operations",
+    "admin": "Admin",
+    "export_html": "Export HTML",
+    "dashboard": "Dashboard",
+    "websites": "Websites",
+    "groups": "Groups",
+    "templates": "Templates",
+    "editor": "Editor Center",
+    "monitoring": "Monitoring",
+    "jobs": "Jobs Center",
+    "integrations": "Integrations",
+    "domains": "Domain Manager",
+    "ssl": "SSL Monitor",
+    "notifications": "Notifications",
+    "environment": "Environment",
+    "activity": "Activity Log",
+    "reports": "Reports",
+    "vault": "Vault",
+    "recovery": "Recovery",
+    "apk_manager": "APK Manager",
+    "clients": "Clients",
+    "users": "Users",
+    "subscriptions": "Subscriptions",
+    "audit": "System Audit",
+    "settings": "Settings"
+  },
+  "dashboard": {
+    "title": "Dashboard",
+    "total_websites": "Total Websites",
+    "online_sites": "Online Sites",
+    "offline_sites": "Offline Sites",
+    "warning_sites": "Warning Sites"
+  },
+  "toast": {
+    "saved": "Saved successfully",
+    "deleted": "Deleted",
+    "error_generic": "Something went wrong",
+    "language_changed": "Language changed"
+  }
+}

@@ -58,6 +58,9 @@ bun run build
 ## 4. Run with PM2
 
 ```bash
+# Recommended — uses ecosystem.config.cjs (already in repo)
+pm2 start ecosystem.config.cjs
+# or directly:
 pm2 start .output/server/index.mjs --name tvcc --env production
 pm2 save
 pm2 startup systemd

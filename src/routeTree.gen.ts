@@ -14,9 +14,11 @@ import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedWebsitesRouteImport } from './routes/_authenticated/websites'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
+import { Route as AuthenticatedTemplatesRouteImport } from './routes/_authenticated/templates'
 import { Route as AuthenticatedSubscriptionsRouteImport } from './routes/_authenticated/subscriptions'
 import { Route as AuthenticatedStorageRouteImport } from './routes/_authenticated/storage'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
+import { Route as AuthenticatedGroupsRouteImport } from './routes/_authenticated/groups'
 import { Route as AuthenticatedEditorRouteImport } from './routes/_authenticated/editor'
 import { Route as AuthenticatedDatabasesRouteImport } from './routes/_authenticated/databases'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -65,6 +67,11 @@ const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
   path: '/users',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedTemplatesRoute = AuthenticatedTemplatesRouteImport.update({
+  id: '/templates',
+  path: '/templates',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedSubscriptionsRoute =
   AuthenticatedSubscriptionsRouteImport.update({
     id: '/subscriptions',
@@ -79,6 +86,11 @@ const AuthenticatedStorageRoute = AuthenticatedStorageRouteImport.update({
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedGroupsRoute = AuthenticatedGroupsRouteImport.update({
+  id: '/groups',
+  path: '/groups',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedEditorRoute = AuthenticatedEditorRouteImport.update({
@@ -219,9 +231,11 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/databases': typeof AuthenticatedDatabasesRoute
   '/editor': typeof AuthenticatedEditorRouteWithChildren
+  '/groups': typeof AuthenticatedGroupsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/storage': typeof AuthenticatedStorageRoute
   '/subscriptions': typeof AuthenticatedSubscriptionsRoute
+  '/templates': typeof AuthenticatedTemplatesRoute
   '/users': typeof AuthenticatedUsersRoute
   '/websites': typeof AuthenticatedWebsitesRoute
   '/editor/ai': typeof AuthenticatedEditorAiRoute
@@ -250,9 +264,11 @@ export interface FileRoutesByTo {
   '/clients': typeof AuthenticatedClientsRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/databases': typeof AuthenticatedDatabasesRoute
+  '/groups': typeof AuthenticatedGroupsRoute
   '/settings': typeof AuthenticatedSettingsRoute
   '/storage': typeof AuthenticatedStorageRoute
   '/subscriptions': typeof AuthenticatedSubscriptionsRoute
+  '/templates': typeof AuthenticatedTemplatesRoute
   '/users': typeof AuthenticatedUsersRoute
   '/websites': typeof AuthenticatedWebsitesRoute
   '/editor/ai': typeof AuthenticatedEditorAiRoute
@@ -284,9 +300,11 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/databases': typeof AuthenticatedDatabasesRoute
   '/_authenticated/editor': typeof AuthenticatedEditorRouteWithChildren
+  '/_authenticated/groups': typeof AuthenticatedGroupsRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
   '/_authenticated/storage': typeof AuthenticatedStorageRoute
   '/_authenticated/subscriptions': typeof AuthenticatedSubscriptionsRoute
+  '/_authenticated/templates': typeof AuthenticatedTemplatesRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/websites': typeof AuthenticatedWebsitesRoute
   '/_authenticated/editor/ai': typeof AuthenticatedEditorAiRoute
@@ -318,9 +336,11 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/databases'
     | '/editor'
+    | '/groups'
     | '/settings'
     | '/storage'
     | '/subscriptions'
+    | '/templates'
     | '/users'
     | '/websites'
     | '/editor/ai'
@@ -349,9 +369,11 @@ export interface FileRouteTypes {
     | '/clients'
     | '/dashboard'
     | '/databases'
+    | '/groups'
     | '/settings'
     | '/storage'
     | '/subscriptions'
+    | '/templates'
     | '/users'
     | '/websites'
     | '/editor/ai'
@@ -382,9 +404,11 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/databases'
     | '/_authenticated/editor'
+    | '/_authenticated/groups'
     | '/_authenticated/settings'
     | '/_authenticated/storage'
     | '/_authenticated/subscriptions'
+    | '/_authenticated/templates'
     | '/_authenticated/users'
     | '/_authenticated/websites'
     | '/_authenticated/editor/ai'
@@ -449,6 +473,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedUsersRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/templates': {
+      id: '/_authenticated/templates'
+      path: '/templates'
+      fullPath: '/templates'
+      preLoaderRoute: typeof AuthenticatedTemplatesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/subscriptions': {
       id: '/_authenticated/subscriptions'
       path: '/subscriptions'
@@ -468,6 +499,13 @@ declare module '@tanstack/react-router' {
       path: '/settings'
       fullPath: '/settings'
       preLoaderRoute: typeof AuthenticatedSettingsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/groups': {
+      id: '/_authenticated/groups'
+      path: '/groups'
+      fullPath: '/groups'
+      preLoaderRoute: typeof AuthenticatedGroupsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/editor': {
@@ -684,9 +722,11 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDatabasesRoute: typeof AuthenticatedDatabasesRoute
   AuthenticatedEditorRoute: typeof AuthenticatedEditorRouteWithChildren
+  AuthenticatedGroupsRoute: typeof AuthenticatedGroupsRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
   AuthenticatedStorageRoute: typeof AuthenticatedStorageRoute
   AuthenticatedSubscriptionsRoute: typeof AuthenticatedSubscriptionsRoute
+  AuthenticatedTemplatesRoute: typeof AuthenticatedTemplatesRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedWebsitesRoute: typeof AuthenticatedWebsitesRoute
 }
@@ -698,9 +738,11 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDatabasesRoute: AuthenticatedDatabasesRoute,
   AuthenticatedEditorRoute: AuthenticatedEditorRouteWithChildren,
+  AuthenticatedGroupsRoute: AuthenticatedGroupsRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
   AuthenticatedStorageRoute: AuthenticatedStorageRoute,
   AuthenticatedSubscriptionsRoute: AuthenticatedSubscriptionsRoute,
+  AuthenticatedTemplatesRoute: AuthenticatedTemplatesRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
   AuthenticatedWebsitesRoute: AuthenticatedWebsitesRoute,
 }
@@ -717,3 +759,13 @@ const rootRouteChildren: RootRouteChildren = {
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
   ._addFileTypes<FileRouteTypes>()
+
+import type { getRouter } from './router.tsx'
+import type { startInstance } from './start.ts'
+declare module '@tanstack/react-start' {
+  interface Register {
+    ssr: true
+    router: Awaited<ReturnType<typeof getRouter>>
+    config: Awaited<ReturnType<typeof startInstance.getOptions>>
+  }
+}

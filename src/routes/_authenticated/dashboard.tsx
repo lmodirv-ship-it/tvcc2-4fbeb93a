@@ -5,9 +5,9 @@ import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
-  Globe, Users, CreditCard, Database, Activity, HardDrive,
+  Globe, Users, CreditCard, Activity,
   CheckCircle2, AlertTriangle, XCircle, TrendingUp, Home,
-  Layers, ArrowUpRight, Clock,
+  Layers, ArrowUpRight, Clock, Database, HardDrive,
 } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 
@@ -38,14 +38,6 @@ function DashboardPage() {
     queryKey: ["dash-subs"],
     queryFn: async () => (await supabase.from("subscriptions").select("id,price,plan_name,status")).data || [],
   });
-  const { data: dbs } = useQuery({
-    queryKey: ["dash-dbs"],
-    queryFn: async () => (await supabase.from("databases").select("id,size_mb,status")).data || [],
-  });
-  const { data: storages } = useQuery({
-    queryKey: ["dash-storages"],
-    queryFn: async () => (await supabase.from("storages").select("id,used_gb,size_gb,status")).data || [],
-  });
   const { data: activity } = useQuery({
     queryKey: ["dash-activity"],
     queryFn: async () => (await supabase.from("activity_log").select("*").order("created_at", { ascending: false }).limit(6)).data || [],
@@ -55,7 +47,7 @@ function DashboardPage() {
   const online = websites?.filter((w) => w.status === "online").length || 0;
   const warning = websites?.filter((w) => w.status === "pending").length || 0;
   const offline = websites?.filter((w) => w.status === "offline").length || 0;
-  const usedGb = storages?.reduce((s, x) => s + Number(x.used_gb || 0), 0) || 0;
+  const usedGb = 0;
   const revenue = subs?.reduce((s, x) => s + Number(x.price || 0), 0) || 0;
   const systemOk = offline === 0 && warning < 2;
 
@@ -148,13 +140,18 @@ function DashboardPage() {
 
         <Card className="ring-1 ring-accent/40 bg-card/60">
           <CardContent className="p-5 flex items-center justify-between">
-            <div className="w-11 h-11 rounded-xl bg-accent/30 flex items-center justify-center">
-              <HardDrive className="w-5 h-5" />
+            <div className="flex gap-1">
+              <div className="w-9 h-9 rounded-lg bg-success/15 text-success flex items-center justify-center" title="HN-DB">
+                <Database className="w-4 h-4" />
+              </div>
+              <div className="w-9 h-9 rounded-lg bg-warning/15 text-warning flex items-center justify-center" title="HN-Cloud">
+                <HardDrive className="w-4 h-4" />
+              </div>
             </div>
             <div className="text-right">
-              <p className="text-xs text-muted-foreground">التخزين المستخدم</p>
-              <p className="text-2xl font-bold mt-1">{usedGb.toFixed(1)} <span className="text-sm text-muted-foreground">GB</span></p>
-              <p className="text-[11px] text-muted-foreground">{storages?.length || 0} مساحة · {dbs?.length || 0} قاعدة بيانات</p>
+              <p className="text-xs text-muted-foreground">الخدمات الخارجية</p>
+              <p className="text-lg font-semibold mt-1">HN-DB · HN-Cloud</p>
+              <Link to="/integrations" className="text-[11px] text-primary hover:underline">إدارة التكاملات</Link>
             </div>
           </CardContent>
         </Card>

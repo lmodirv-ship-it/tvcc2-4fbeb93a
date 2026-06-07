@@ -2,8 +2,8 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Settings as SettingsIcon, Search, Palette, Megaphone, Code2,
-  Database as DbIcon, HardDrive, Layers, Wand2, ArrowLeft,
-  Share2, Sparkles, CloudUpload, Users, CreditCard, ShieldCheck,
+  Layers, Wand2, ArrowLeft,
+  Share2, Sparkles, Users, CreditCard, ShieldCheck,
   Globe, Power,
 } from "lucide-react";
 
@@ -30,9 +30,6 @@ const groups: { title: string; tools: Tool[] }[] = [
     tools: [
       { to: "/editor/scripts", label: "السكربتات", desc: "GA · Pixel · GTM · Custom JS", icon: Code2, tone: "destructive" },
       { to: "/editor/ai", label: "الذكاء الاصطناعي", desc: "Chatbot · AI Search · توصيات", icon: Sparkles, tone: "primary" },
-      { to: "/editor/database", label: "قواعد البيانات", desc: "اتصال، مزامنة، نقل قاعدة", icon: DbIcon, tone: "success" },
-      { to: "/editor/storage", label: "التخزين والملفات", desc: "Storage Provider · Region · مزامنة", icon: HardDrive, tone: "warning" },
-      { to: "/editor/backup", label: "النسخ الاحتياطي", desc: "تشغيل، جدولة، استعادة Backup", icon: CloudUpload, tone: "primary" },
     ],
   },
   {

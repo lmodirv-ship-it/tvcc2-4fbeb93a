@@ -1,8 +1,7 @@
 import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
-  LayoutDashboard, Globe, Database, HardDrive, CloudUpload, Users,
-  CreditCard, UserCog, Activity, Settings, Code2, LogOut, Wand2,
-  FolderOpen, LayoutTemplate, Radio, Rocket,
+  LayoutDashboard, Globe, Users, CreditCard, UserCog, Activity, Settings,
+  Code2, LogOut, Wand2, FolderOpen, LayoutTemplate, Radio, ListChecks, Plug,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
@@ -13,20 +12,18 @@ import { toast } from "sonner";
 import { exportDashboardHtml } from "@/lib/html-export";
 
 const items = [
-  { title: "الرئيسية", url: "/dashboard", icon: LayoutDashboard },
+  { title: "لوحة القيادة", url: "/dashboard", icon: LayoutDashboard },
   { title: "المواقع", url: "/websites", icon: Globe },
   { title: "المجموعات", url: "/groups", icon: FolderOpen },
   { title: "القوالب", url: "/templates", icon: LayoutTemplate },
   { title: "المراقبة", url: "/monitoring", icon: Radio },
-  { title: "النشر", url: "/deployments", icon: Rocket },
-  { title: "المحرر", url: "/editor", icon: Wand2 },
-  { title: "قواعد البيانات", url: "/databases", icon: Database },
-  { title: "التخزين والملفات", url: "/storage", icon: HardDrive },
-  { title: "النسخ الاحتياطية", url: "/backups", icon: CloudUpload },
+  { title: "المهام", url: "/jobs", icon: ListChecks },
+  { title: "مركز التعديل", url: "/editor", icon: Wand2 },
   { title: "العملاء", url: "/clients", icon: Users },
-  { title: "الاشتراكات", url: "/subscriptions", icon: CreditCard },
   { title: "المستخدمون", url: "/users", icon: UserCog },
-  { title: "سجل العمليات", url: "/activity", icon: Activity },
+  { title: "الاشتراكات", url: "/subscriptions", icon: CreditCard },
+  { title: "سجل النشاط", url: "/activity", icon: Activity },
+  { title: "التكاملات", url: "/integrations", icon: Plug },
   { title: "الإعدادات", url: "/settings", icon: Settings },
 ];
 
@@ -60,7 +57,7 @@ export function AppSidebar() {
           >
             TVCC
           </div>
-          <div className="text-[11px] text-muted-foreground">مركز إدارة المواقع</div>
+          <div className="text-[11px] text-muted-foreground">مركز قيادة المواقع</div>
         </div>
       </SidebarHeader>
 

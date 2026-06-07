@@ -1,14 +1,16 @@
-import { Link, useRouterState } from "@tanstack/react-router";
+import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard,
   Globe,
   Database,
   HardDrive,
+  CloudUpload,
   Users,
   CreditCard,
   UserCog,
   Activity,
-  Download,
+  Settings,
+  Code2,
   LogOut,
 } from "lucide-react";
 import {
@@ -16,36 +18,30 @@ import {
   SidebarContent,
   SidebarGroup,
   SidebarGroupContent,
-  SidebarGroupLabel,
   SidebarMenu,
   SidebarMenuButton,
   SidebarMenuItem,
   SidebarHeader,
   SidebarFooter,
-  useSidebar,
 } from "@/components/ui/sidebar";
 import { supabase } from "@/integrations/supabase/client";
-import { useNavigate } from "@tanstack/react-router";
 import { toast } from "sonner";
 import { exportDashboardHtml } from "@/lib/html-export";
 
-const mainItems = [
-  { title: "لوحة التحكم", url: "/dashboard", icon: LayoutDashboard },
+const items = [
+  { title: "الرئيسية", url: "/dashboard", icon: LayoutDashboard },
   { title: "المواقع", url: "/websites", icon: Globe },
+  { title: "قواعد البيانات", url: "/databases", icon: Database },
+  { title: "التخزين والملفات", url: "/storage", icon: HardDrive },
+  { title: "النسخ الاحتياطية", url: "/backups", icon: CloudUpload },
   { title: "العملاء", url: "/clients", icon: Users },
   { title: "الاشتراكات", url: "/subscriptions", icon: CreditCard },
-];
-
-const resourceItems = [
-  { title: "قواعد البيانات", url: "/databases", icon: Database },
-  { title: "التخزين", url: "/storage", icon: HardDrive },
-  { title: "المستخدمون الموحدون", url: "/users", icon: UserCog },
+  { title: "المستخدمون", url: "/users", icon: UserCog },
   { title: "سجل العمليات", url: "/activity", icon: Activity },
+  { title: "الإعدادات", url: "/settings", icon: Settings },
 ];
 
 export function AppSidebar() {
-  const { state } = useSidebar();
-  const collapsed = state === "collapsed";
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
 
@@ -60,86 +56,67 @@ export function AppSidebar() {
     try {
       await exportDashboardHtml();
       toast.success("تم تصدير HTML بنجاح");
-    } catch (e) {
+    } catch {
       toast.error("فشل التصدير");
     }
   };
 
   return (
-    <Sidebar collapsible="icon" side="right">
-      <SidebarHeader className="border-b border-sidebar-border p-4">
-        <div className="flex items-center gap-3">
+    <Sidebar collapsible="icon" side="right" className="border-l border-sidebar-border">
+      <SidebarHeader className="border-b border-sidebar-border p-5">
+        <div className="flex flex-col items-center gap-1 text-center">
           <div
-            className="w-9 h-9 rounded-lg flex items-center justify-center shrink-0"
-            style={{ background: "var(--gradient-primary)" }}
+            className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent"
+            style={{ backgroundImage: "var(--gradient-primary)" }}
           >
-            <LayoutDashboard className="w-5 h-5 text-primary-foreground" />
+            TVCC
           </div>
-          {!collapsed && (
-            <div>
-              <div className="font-bold text-sm">TVCC</div>
-              <div className="text-xs text-muted-foreground">إدارة المواقع</div>
-            </div>
-          )}
+          <div className="text-[11px] text-muted-foreground">مركز إدارة المواقع</div>
         </div>
       </SidebarHeader>
 
-      <SidebarContent>
+      <SidebarContent className="px-2 py-3">
         <SidebarGroup>
-          <SidebarGroupLabel>الرئيسية</SidebarGroupLabel>
           <SidebarGroupContent>
             <SidebarMenu>
-              {mainItems.map((item) => (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                    <Link to={item.url}>
-                      <item.icon className="w-4 h-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>الموارد</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {resourceItems.map((item) => (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton asChild isActive={isActive(item.url)}>
-                    <Link to={item.url}>
-                      <item.icon className="w-4 h-4" />
-                      <span>{item.title}</span>
-                    </Link>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
-        </SidebarGroup>
-
-        <SidebarGroup>
-          <SidebarGroupLabel>تصدير</SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              <SidebarMenuItem>
-                <SidebarMenuButton onClick={handleExport}>
-                  <Download className="w-4 h-4" />
-                  <span>تصدير HTML ثابت</span>
-                </SidebarMenuButton>
-              </SidebarMenuItem>
+              {items.map((item) => {
+                const active = isActive(item.url);
+                return (
+                  <SidebarMenuItem key={item.url}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={active}
+                      className={
+                        active
+                          ? "bg-primary/15 text-primary border-r-2 border-primary rounded-md"
+                          : "hover:bg-sidebar-accent"
+                      }
+                    >
+                      <Link to={item.url}>
+                        <item.icon className="w-4 h-4" />
+                        <span>{item.title}</span>
+                      </Link>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                );
+              })}
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-2">
+      <SidebarFooter className="border-t border-sidebar-border p-3 space-y-2">
+        <button
+          onClick={handleExport}
+          className="w-full text-right rounded-lg p-3 border border-primary/30 hover:bg-primary/10 transition flex items-center gap-2"
+          style={{ background: "linear-gradient(135deg, oklch(0.28 0.06 280 / 0.4), transparent)" }}
+        >
+          <Code2 className="w-4 h-4 text-primary" />
+          <span className="text-xs font-medium">تصدير HTML</span>
+        </button>
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={handleLogout}>
+            <SidebarMenuButton onClick={handleLogout} className="text-muted-foreground">
               <LogOut className="w-4 h-4" />
               <span>تسجيل الخروج</span>
             </SidebarMenuButton>

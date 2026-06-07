@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
+import "@/i18n";
 
 function NotFoundComponent() {
   return (
@@ -102,6 +103,14 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
 
+  useEffect(() => {
+    import("@/i18n").then(({ applyDirection, default: i18n }) => {
+      applyDirection(i18n.language);
+      const onChange = (lng: string) => applyDirection(lng);
+      i18n.on("languageChanged", onChange);
+    });
+  }, []);
+
   return (
     <QueryClientProvider client={queryClient}>
       <Outlet />
@@ -109,3 +118,4 @@ function RootComponent() {
     </QueryClientProvider>
   );
 }
+

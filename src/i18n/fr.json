@@ -1,0 +1,83 @@
+{
+  "common": {
+    "save": "Enregistrer",
+    "cancel": "Annuler",
+    "delete": "Supprimer",
+    "edit": "Modifier",
+    "create": "Créer",
+    "search": "Rechercher...",
+    "loading": "Chargement...",
+    "empty": "Aucune donnée",
+    "actions": "Actions",
+    "status": "Statut",
+    "name": "Nom",
+    "type": "Type",
+    "date": "Date",
+    "refresh": "Actualiser",
+    "logout": "Se déconnecter",
+    "settings": "Paramètres",
+    "back": "Retour",
+    "next": "Suivant",
+    "yes": "Oui",
+    "no": "Non",
+    "confirm": "Confirmer"
+  },
+  "status": {
+    "online": "En ligne",
+    "offline": "Hors ligne",
+    "warning": "Avertissement",
+    "active": "Actif",
+    "inactive": "Inactif",
+    "pending": "En attente",
+    "success": "Succès",
+    "error": "Erreur"
+  },
+  "header": {
+    "admin": "Administrateur",
+    "search_placeholder": "Rechercher...",
+    "notifications": "Notifications",
+    "language": "Langue"
+  },
+  "sidebar": {
+    "tagline": "Centre de commande",
+    "core": "Principal",
+    "operations": "Opérations",
+    "admin": "Administration",
+    "export_html": "Exporter HTML",
+    "dashboard": "Tableau de bord",
+    "websites": "Sites web",
+    "groups": "Groupes",
+    "templates": "Modèles",
+    "editor": "Éditeur",
+    "monitoring": "Surveillance",
+    "jobs": "Tâches",
+    "integrations": "Intégrations",
+    "domains": "Domaines",
+    "ssl": "Moniteur SSL",
+    "notifications": "Notifications",
+    "environment": "Environnement",
+    "activity": "Journal d'activité",
+    "reports": "Rapports",
+    "vault": "Coffre-fort",
+    "recovery": "Restauration",
+    "apk_manager": "Gestion APK",
+    "clients": "Clients",
+    "users": "Utilisateurs",
+    "subscriptions": "Abonnements",
+    "audit": "Audit système",
+    "settings": "Paramètres"
+  },
+  "dashboard": {
+    "title": "Tableau de bord",
+    "total_websites": "Total des sites",
+    "online_sites": "Sites en ligne",
+    "offline_sites": "Sites hors ligne",
+    "warning_sites": "Sites en alerte"
+  },
+  "toast": {
+    "saved": "Enregistré avec succès",
+    "deleted": "Supprimé",
+    "error_generic": "Une erreur est survenue",
+    "language_changed": "Langue modifiée"
+  }
+}

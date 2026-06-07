@@ -38,6 +38,7 @@ const adminItems = [
   { title: "الاشتراكات", url: "/subscriptions", icon: CreditCard },
   { title: "سجل النشاط", url: "/activity", icon: Activity },
   { title: "التكاملات", url: "/integrations", icon: Plug },
+  { title: "فحص النظام", url: "/audit", icon: ClipboardCheck },
   { title: "الإعدادات", url: "/settings", icon: Settings },
 ];
 

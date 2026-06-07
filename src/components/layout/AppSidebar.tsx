@@ -2,7 +2,7 @@ import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard, Globe, Users, CreditCard, UserCog, Activity, Settings,
   Code2, LogOut, Wand2, FolderOpen, LayoutTemplate, Radio, ListChecks, Plug,
-  Smartphone, KeyRound, Server, ShieldCheck, Bell, FileCog, LifeBuoy,
+  Smartphone, KeyRound, Server, ShieldCheck, Bell, FileCog, LifeBuoy, ClipboardCheck,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -38,6 +38,7 @@ const adminItems = [
   { title: "الاشتراكات", url: "/subscriptions", icon: CreditCard },
   { title: "سجل النشاط", url: "/activity", icon: Activity },
   { title: "التكاملات", url: "/integrations", icon: Plug },
+  { title: "فحص النظام", url: "/audit", icon: ClipboardCheck },
   { title: "الإعدادات", url: "/settings", icon: Settings },
 ];
 

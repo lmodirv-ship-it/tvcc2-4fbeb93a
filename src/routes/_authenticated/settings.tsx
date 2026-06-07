@@ -40,6 +40,19 @@ function SettingsPage() {
           <p className="text-xs text-muted-foreground">
             بمجرد اكتشاف السجل، يصبح الموقع متصلاً تلقائياً بكل خدمات TVCC: قواعد البيانات، التخزين، النسخ الاحتياطي، ونظام المستخدمين الموحد.
           </p>
+
+          <div className="mt-4 rounded-lg border border-warning/40 bg-warning/10 p-4 space-y-2">
+            <div className="flex items-center gap-2">
+              <span className="inline-block w-2 h-2 rounded-full bg-warning" />
+              <h3 className="text-sm font-semibold text-warning">ملاحظة عند نقل الموقع إلى استضافة جديدة</h3>
+            </div>
+            <ul className="text-xs text-muted-foreground space-y-1 list-disc pr-5">
+              <li>عند تغيير الاستضافة، عادةً يتم تحديث سجلات <span className="font-mono text-foreground">A</span> و <span className="font-mono text-foreground">NS</span> فقط — وليس سجل <span className="font-mono text-foreground">_tvcc</span>.</li>
+              <li>إذا انتقلت إلى مزود DNS مختلف (Cloudflare، Route53…)، يجب إعادة إضافة سجل <span className="font-mono text-foreground">_tvcc</span> في DNS Zone الجديد بنفس القيم أعلاه.</li>
+              <li>بعد التغيير، اضغط زر <span className="text-foreground font-medium">"تحقق"</span> في صفحة المواقع لإعادة التأكد من الاتصال.</li>
+              <li>سجل <span className="font-mono text-foreground">_tvcc</span> مستقل عن عنوان IP الخاص بالاستضافة، لذا يبقى صالحاً حتى لو تغير الـ IP.</li>
+            </ul>
+          </div>
         </CardContent>
       </Card>
     </div>

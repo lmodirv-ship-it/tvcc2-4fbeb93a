@@ -1,79 +1,91 @@
-# خطة Phase 1 — TVCC: Change Once, Apply Everywhere
 
-الهدف: تقليل التكرار عبر 50+ موقعاً. كل ميزة هنا تجتاز اختبار "هل تقلل التكرار؟".
+# تجهيز TVCC للربط مع HN-DB و HN-Cloud
 
-## 1) قاعدة البيانات (Migration واحدة)
+الهدف: تحويل صفحتي `/databases` و `/storage` داخل TVCC من تخزين محلي إلى **عميل (client) يستهلك APIs خارجية** من HN-DB و HN-Cloud، مع شاشة Settings لإدارة الروابط والتوكنات.
 
-أربعة جداول جديدة + RLS + GRANTs:
+## 1) أسرار جديدة (Secrets)
 
-- **site_groups** — `name, color, icon, description, owner_id`
-- **website_group_members** — ربط `website_id` بـ `group_id` (many-to-many)
-- **site_templates** — `name, template_type, default_settings (jsonb), owner_id`
-- **website_template_links** — ربط `website_id` بـ `template_id`
-- **site_health_checks** — `website_id, status, response_time_ms, http_status, ssl_valid, checked_at`
-- **deployment_jobs** — `title, scope_type (site|group|template|all), scope_id, action_type, status (queued|running|success|failed), target_count, success_count, error_count, payload jsonb, started_at, completed_at`
-- **deployment_job_targets** — `job_id, website_id, status, error_message`
+أطلب من المستخدم إضافة 4 أسرار عبر أداة الأسرار:
+- `HN_DB_API_URL` (مثال: `https://hn-db.lovable.app`)
+- `HN_DB_API_TOKEN`
+- `HN_CLOUD_API_URL`
+- `HN_CLOUD_API_TOKEN`
 
-كل جدول: RLS مفعّل + سياسة `owner_id = auth.uid()` + GRANTs لـ authenticated و service_role.
+تُقرأ فقط داخل Server Functions عبر `process.env`. لا تُسرَّب للعميل.
 
-## 2) الواجهات الجديدة
+## 2) صفحة Settings → Integrations
 
-```text
-/groups          → قائمة المجموعات (إنشاء/تعديل/لون/أيقونة + ربط المواقع)
-/templates       → قائمة القوالب (Store/News/Business) + محرر default_settings
-/templates/$id   → تفاصيل قالب + المواقع المرتبطة + زر "تطبيق على الكل"
-/monitoring      → شبكة بطاقات لكل موقع: Online/DB/Storage/SSL + ملخص علوي
-/deployments     → سجل المهام مع progress bar وحالة كل موقع
-```
+مسار جديد: `/_authenticated/settings.integrations.tsx`
 
-تحديث Sidebar لإضافة هذه الأقسام الأربعة قبل "Editor".
+- بطاقتان: HN-DB و HN-Cloud.
+- كل بطاقة تعرض:
+  - حالة الاتصال (Connected / Not configured / Error) عبر استدعاء `pingHnDb` / `pingHnCloud` (server fn).
+  - زر "Test Connection".
+  - رابط للأسرار (إرشاد للمستخدم لتعديلها من Project Settings).
+- إذا الأسرار غير مضبوطة → رسالة واضحة + تعليمات.
 
-## 3) منطق "Change Once" (Scope Selector)
+## 3) Server Functions (عميل للـ APIs الخارجية)
 
-في Editor وعند أي تعديل إعدادات: مُحدِّد نطاق:
-- موقع واحد (الحالي)
-- مجموعة (يطبّق على كل أعضائها)
-- قالب (يطبّق على كل المواقع المرتبطة)
-- الكل
+ملف `src/lib/hn-db.functions.ts`:
+- `pingHnDb` → GET `/api/public/v1/health`
+- `listRemoteDatabases` → GET `/api/public/v1/databases`
+- `createRemoteDatabase(input)` → POST `/api/public/v1/databases`
+- `deleteRemoteDatabase(id)` → DELETE
+- `listRemoteBackups(dbId)` → GET
 
-عند الضغط "تطبيق" → ينشئ **Deployment Job** بدل التحديث المباشر:
-- Job يظهر فوراً في `/deployments`
-- ينفّذ خطوة بخطوة عبر `deployment_job_targets`
-- كل موقع له حالة مستقلة (success/failed + رسالة الخطأ)
-- قابل لإعادة المحاولة على الفاشل فقط
+ملف `src/lib/hn-cloud.functions.ts`:
+- `pingHnCloud`
+- `listRemoteSpaces`
+- `createRemoteSpace`
+- `listRemoteFiles(spaceId, path)`
 
-## 4) Monitoring (المرحلة الأولى: بيانات + UI)
+كلها:
+- محمية بـ `requireSupabaseAuth`.
+- تستخدم `fetch` مع `Authorization: Bearer ${process.env.HN_*_API_TOKEN}`.
+- تُرجع DTO عادي + معالجة فشل بشكل `{ data, error }` بدل throw.
+- في حالة غياب الأسرار → ترجع `{ configured: false }` بدل crash.
 
-- جدول `site_health_checks` جاهز
-- صفحة `/monitoring`: تقرأ آخر فحص لكل موقع وتعرض ملخص (Online/Offline/Warning)
-- زر "فحص الآن" يدوي يستدعي server function تجريبية (HEAD request للدومين)
-- **لاحقاً Phase 1.5**: pg_cron كل 5 دقائق يستدعي `/api/public/hooks/health-check`
+## 4) تحديث صفحات TVCC الحالية
 
-## 5) التنفيذ على دفعتين
+**`/databases`**:
+- استبدال استعلام Supabase المحلي بـ `listRemoteDatabases` عبر `useQuery`.
+- نموذج "إضافة قاعدة" يستدعي `createRemoteDatabase` (يرسل لـ HN-DB، لا يحفظ محلياً).
+- شريط حالة أعلى الصفحة: "Connected to HN-DB" أو "Not configured — اذهب للإعدادات".
+- جدول `databases` المحلي **يبقى موجوداً** كـ fallback/cache فقط ولا يُستخدم بشكل افتراضي.
 
-**الدفعة A (هذه الجلسة):**
-- Migration كاملة (الجداول السبعة + RLS + GRANTs)
-- `/groups` صفحة كاملة CRUD + ربط المواقع
-- `/templates` صفحة كاملة CRUD + محرر JSON للإعدادات الافتراضية + ربط المواقع
-- تحديث Sidebar
+**`/storage`**:
+- نفس النمط مع `listRemoteSpaces`.
 
-**الدفعة B (بعد موافقتك على A):**
-- `/monitoring` + server function للفحص اليدوي
-- `/deployments` + منطق Job runner
-- تكامل Editor مع Scope Selector
+**`/databases/$id/backups`** (جديد، اختياري): يستدعي HN-DB + HN-Cloud لعرض النسخ الاحتياطية.
 
-## تفاصيل تقنية
+## 5) تحديث Sidebar
 
-- كل الاستعلامات عبر `createServerFn` + `requireSupabaseAuth` (RLS تطبّق كالمستخدم)
-- لا Edge Functions — كل المنطق داخل TanStack Start
-- Job runner: server function تشتغل عند إنشاء Job، تمر على المواقع، تحدّث `deployment_job_targets`
-- محرر default_settings: مبدئياً Monaco/textarea JSON، لاحقاً Form builder حسب template_type
+إضافة:
+- "الإعدادات → Integrations"
+- مؤشر صغير (نقطة خضراء/حمراء) بجوار "قواعد البيانات" و"التخزين" حسب حالة الاتصال (يقرأها من React Query cache).
 
-## خارج النطاق الآن (يأتي لاحقاً)
-- Command Center (`/command`) — Phase 1.5
-- Client Portal / Billing / AI Assistant — Phase 2-4
-- pg_cron الحقيقي للـ health checks — Phase 1.5
+## 6) ما لا يتغير الآن
+
+- لا تعديل على جداول Supabase الحالية لـ TVCC (نتركها كـ fallback).
+- لا حذف لصفحات `/databases` و`/storage` — فقط استبدال مصدر البيانات.
+- لا بناء لـ HN-DB أو HN-Cloud هنا (يُبنيا في مشروعين منفصلين كما شُرح في الرسالة السابقة).
+- الدفعة B من خطة TVCC السابقة (Monitoring / Deployment runner / Scope Selector) تُؤجَّل لجلسة لاحقة.
+
+## 7) تسلسل التنفيذ في هذه الجلسة
+
+1. طلب الأسرار الأربعة من المستخدم.
+2. إنشاء `src/lib/hn-db.functions.ts` و `src/lib/hn-cloud.functions.ts`.
+3. إنشاء `src/routes/_authenticated/settings.integrations.tsx`.
+4. تحديث `/databases` و `/storage` لاستخدام الـ server fns الجديدة (مع شريط حالة + fallback).
+5. تحديث `AppSidebar` (إضافة Integrations + مؤشرات حالة).
+
+## تفاصيل تقنية مختصرة
+
+- كل `fetch` يضع timeout 10s ويعالج 401/403/5xx برسالة عربية واضحة.
+- لا يتم تخزين أي bearer في `localStorage`.
+- DTO فقط (objects/arrays) من الـ server fns.
+- استدعاء الـ server fns عبر `useServerFn` داخل `useQuery` (ليس في loader، لأن الأسرار قد لا تكون مضبوطة → لا نريد كسر SSR/prerender).
 
 ---
 
-**هل أبدأ بالدفعة A؟** اضغط "Implement plan" للموافقة.
+**اضغط "Implement plan" للبدء، وسأطلب الأسرار الأربعة كأول خطوة.**

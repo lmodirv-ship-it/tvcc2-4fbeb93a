@@ -26,6 +26,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
 import { Route as AuthenticatedEditorIndexRouteImport } from './routes/_authenticated/editor.index'
+import { Route as ApiPublicSiteConfigRouteImport } from './routes/api/public/site-config'
 import { Route as AuthenticatedEditorUsersRouteImport } from './routes/_authenticated/editor.users'
 import { Route as AuthenticatedEditorSubscriptionsRouteImport } from './routes/_authenticated/editor.subscriptions'
 import { Route as AuthenticatedEditorSocialRouteImport } from './routes/_authenticated/editor.social'
@@ -127,6 +128,11 @@ const AuthenticatedEditorIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedEditorRoute,
   } as any)
+const ApiPublicSiteConfigRoute = ApiPublicSiteConfigRouteImport.update({
+  id: '/api/public/site-config',
+  path: '/api/public/site-config',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AuthenticatedEditorUsersRoute =
   AuthenticatedEditorUsersRouteImport.update({
     id: '/users',
@@ -231,6 +237,7 @@ export interface FileRoutesByFullPath {
   '/editor/social': typeof AuthenticatedEditorSocialRoute
   '/editor/subscriptions': typeof AuthenticatedEditorSubscriptionsRoute
   '/editor/users': typeof AuthenticatedEditorUsersRoute
+  '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/editor/': typeof AuthenticatedEditorIndexRoute
 }
 export interface FileRoutesByTo {
@@ -261,6 +268,7 @@ export interface FileRoutesByTo {
   '/editor/social': typeof AuthenticatedEditorSocialRoute
   '/editor/subscriptions': typeof AuthenticatedEditorSubscriptionsRoute
   '/editor/users': typeof AuthenticatedEditorUsersRoute
+  '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/editor': typeof AuthenticatedEditorIndexRoute
 }
 export interface FileRoutesById {
@@ -294,6 +302,7 @@ export interface FileRoutesById {
   '/_authenticated/editor/social': typeof AuthenticatedEditorSocialRoute
   '/_authenticated/editor/subscriptions': typeof AuthenticatedEditorSubscriptionsRoute
   '/_authenticated/editor/users': typeof AuthenticatedEditorUsersRoute
+  '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/_authenticated/editor/': typeof AuthenticatedEditorIndexRoute
 }
 export interface FileRouteTypes {
@@ -327,6 +336,7 @@ export interface FileRouteTypes {
     | '/editor/social'
     | '/editor/subscriptions'
     | '/editor/users'
+    | '/api/public/site-config'
     | '/editor/'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -357,6 +367,7 @@ export interface FileRouteTypes {
     | '/editor/social'
     | '/editor/subscriptions'
     | '/editor/users'
+    | '/api/public/site-config'
     | '/editor'
   id:
     | '__root__'
@@ -389,6 +400,7 @@ export interface FileRouteTypes {
     | '/_authenticated/editor/social'
     | '/_authenticated/editor/subscriptions'
     | '/_authenticated/editor/users'
+    | '/api/public/site-config'
     | '/_authenticated/editor/'
   fileRoutesById: FileRoutesById
 }
@@ -396,6 +408,7 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AuthRoute: typeof AuthRoute
+  ApiPublicSiteConfigRoute: typeof ApiPublicSiteConfigRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -518,6 +531,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/editor/'
       preLoaderRoute: typeof AuthenticatedEditorIndexRouteImport
       parentRoute: typeof AuthenticatedEditorRoute
+    }
+    '/api/public/site-config': {
+      id: '/api/public/site-config'
+      path: '/api/public/site-config'
+      fullPath: '/api/public/site-config'
+      preLoaderRoute: typeof ApiPublicSiteConfigRouteImport
+      parentRoute: typeof rootRouteImport
     }
     '/_authenticated/editor/users': {
       id: '/_authenticated/editor/users'
@@ -690,6 +710,7 @@ const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AuthRoute: AuthRoute,
+  ApiPublicSiteConfigRoute: ApiPublicSiteConfigRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

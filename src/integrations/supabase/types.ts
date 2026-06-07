@@ -14,16 +14,424 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      activity_log: {
+        Row: {
+          action: string
+          created_at: string
+          details: Json | null
+          entity_id: string | null
+          entity_type: string | null
+          id: string
+          owner_id: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          owner_id: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          details?: Json | null
+          entity_id?: string | null
+          entity_type?: string | null
+          id?: string
+          owner_id?: string
+        }
+        Relationships: []
+      }
+      clients: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string
+          id: string
+          notes: string | null
+          owner_id: string
+          phone: string | null
+          updated_at: string
+          website_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name: string
+          id?: string
+          notes?: string | null
+          owner_id: string
+          phone?: string | null
+          updated_at?: string
+          website_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          phone?: string | null
+          updated_at?: string
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "clients_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      databases: {
+        Row: {
+          created_at: string
+          db_type: string
+          db_user: string | null
+          host: string | null
+          id: string
+          name: string
+          owner_id: string
+          password_hash: string | null
+          size_mb: number | null
+          status: string
+          updated_at: string
+          website_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          db_type?: string
+          db_user?: string | null
+          host?: string | null
+          id?: string
+          name: string
+          owner_id: string
+          password_hash?: string | null
+          size_mb?: number | null
+          status?: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          db_type?: string
+          db_user?: string | null
+          host?: string | null
+          id?: string
+          name?: string
+          owner_id?: string
+          password_hash?: string | null
+          size_mb?: number | null
+          status?: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "databases_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      profiles: {
+        Row: {
+          created_at: string
+          email: string | null
+          full_name: string | null
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string | null
+          full_name?: string | null
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      site_user_access: {
+        Row: {
+          access_level: string
+          created_at: string
+          id: string
+          owner_id: string
+          site_user_id: string
+          website_id: string
+        }
+        Insert: {
+          access_level?: string
+          created_at?: string
+          id?: string
+          owner_id: string
+          site_user_id: string
+          website_id: string
+        }
+        Update: {
+          access_level?: string
+          created_at?: string
+          id?: string
+          owner_id?: string
+          site_user_id?: string
+          website_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_user_access_site_user_id_fkey"
+            columns: ["site_user_id"]
+            isOneToOne: false
+            referencedRelation: "site_users"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_user_access_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_users: {
+        Row: {
+          created_at: string
+          email: string
+          external_id: string
+          full_name: string | null
+          id: string
+          is_active: boolean
+          owner_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          external_id?: string
+          full_name?: string | null
+          id?: string
+          is_active?: boolean
+          owner_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          external_id?: string
+          full_name?: string | null
+          id?: string
+          is_active?: boolean
+          owner_id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      storages: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          owner_id: string
+          region: string | null
+          size_gb: number | null
+          status: string
+          storage_type: string
+          updated_at: string
+          used_gb: number | null
+          website_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          owner_id: string
+          region?: string | null
+          size_gb?: number | null
+          status?: string
+          storage_type?: string
+          updated_at?: string
+          used_gb?: number | null
+          website_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          owner_id?: string
+          region?: string | null
+          size_gb?: number | null
+          status?: string
+          storage_type?: string
+          updated_at?: string
+          used_gb?: number | null
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storages_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscriptions: {
+        Row: {
+          client_id: string | null
+          created_at: string
+          currency: string
+          expires_at: string | null
+          id: string
+          owner_id: string
+          plan_name: string
+          price: number
+          starts_at: string
+          status: string
+          updated_at: string
+          website_id: string | null
+        }
+        Insert: {
+          client_id?: string | null
+          created_at?: string
+          currency?: string
+          expires_at?: string | null
+          id?: string
+          owner_id: string
+          plan_name: string
+          price?: number
+          starts_at?: string
+          status?: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Update: {
+          client_id?: string | null
+          created_at?: string
+          currency?: string
+          expires_at?: string | null
+          id?: string
+          owner_id?: string
+          plan_name?: string
+          price?: number
+          starts_at?: string
+          status?: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscriptions_client_id_fkey"
+            columns: ["client_id"]
+            isOneToOne: false
+            referencedRelation: "clients"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscriptions_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      user_roles: {
+        Row: {
+          created_at: string
+          id: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role: Database["public"]["Enums"]["app_role"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: Database["public"]["Enums"]["app_role"]
+          user_id?: string
+        }
+        Relationships: []
+      }
+      websites: {
+        Row: {
+          created_at: string
+          description: string | null
+          domain: string
+          id: string
+          is_active: boolean
+          last_checked_at: string | null
+          name: string
+          owner_id: string
+          status: Database["public"]["Enums"]["site_status"]
+          updated_at: string
+          verified: boolean
+          verify_code: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          domain: string
+          id?: string
+          is_active?: boolean
+          last_checked_at?: string | null
+          name: string
+          owner_id: string
+          status?: Database["public"]["Enums"]["site_status"]
+          updated_at?: string
+          verified?: boolean
+          verify_code?: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          domain?: string
+          id?: string
+          is_active?: boolean
+          last_checked_at?: string | null
+          name?: string
+          owner_id?: string
+          status?: Database["public"]["Enums"]["site_status"]
+          updated_at?: string
+          verified?: boolean
+          verify_code?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      has_role: {
+        Args: {
+          _role: Database["public"]["Enums"]["app_role"]
+          _user_id: string
+        }
+        Returns: boolean
+      }
     }
     Enums: {
-      [_ in never]: never
+      app_role: "admin" | "editor" | "viewer"
+      site_status: "online" | "offline" | "warning" | "pending"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -150,6 +558,9 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      app_role: ["admin", "editor", "viewer"],
+      site_status: ["online", "offline", "warning", "pending"],
+    },
   },
 } as const

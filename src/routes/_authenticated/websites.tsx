@@ -18,7 +18,8 @@ import {
   AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2, RefreshCw, Power, PowerOff, Copy, Loader2 } from "lucide-react";
+import { Plus, Trash2, RefreshCw, Power, PowerOff, Copy, Loader2, Globe, CheckCircle2, WifiOff, XCircle } from "lucide-react";
+import { verifyDns } from "@/lib/dns.functions";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/websites")({
@@ -77,23 +78,25 @@ function WebsitesPage() {
     qc.invalidateQueries({ queryKey: ["websites"] });
   };
 
-  const verifyWebsite = async (id: string, domain: string, code: string) => {
-    toast.loading("جاري التحقق...", { id: `verify-${id}` });
+  const verifyWebsite = async (id: string, domain: string) => {
+    toast.loading("جاري فحص DNS...", { id: `verify-${id}` });
     try {
-      const url = domain.startsWith("http") ? domain : `https://${domain}`;
-      const res = await fetch(url, { mode: "no-cors" });
-      // no-cors can't read body; we mark as online if fetch resolves
-      const verified = res.type === "opaque" || res.ok;
+      const res = await verifyDns({ data: { domain } });
       await supabase
         .from("websites")
-        .update({ verified, status: verified ? "online" : "offline", last_checked_at: new Date().toISOString() })
+        .update({
+          verified: res.verified,
+          status: res.verified ? "online" : "offline",
+          last_checked_at: new Date().toISOString(),
+        })
         .eq("id", id);
-      toast.success(verified ? "تم التحقق — الموقع متصل" : "الموقع غير متصل", { id: `verify-${id}` });
+      toast.success(
+        res.verified ? `تم التحقق عبر ${res.method} — الموقع في الشبكة` : "لم يتم العثور على سجل _tvcc في DNS",
+        { id: `verify-${id}` }
+      );
       qc.invalidateQueries({ queryKey: ["websites"] });
     } catch {
-      await supabase.from("websites").update({ status: "offline", last_checked_at: new Date().toISOString() }).eq("id", id);
-      toast.error("تعذر الوصول إلى الموقع", { id: `verify-${id}` });
-      qc.invalidateQueries({ queryKey: ["websites"] });
+      toast.error("تعذر فحص DNS", { id: `verify-${id}` });
     }
   };
 

@@ -17,6 +17,7 @@ import { Route as AuthenticatedVaultRouteImport } from './routes/_authenticated/
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 import { Route as AuthenticatedTemplatesRouteImport } from './routes/_authenticated/templates'
 import { Route as AuthenticatedSubscriptionsRouteImport } from './routes/_authenticated/subscriptions'
+import { Route as AuthenticatedSslRouteImport } from './routes/_authenticated/ssl'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedMonitoringRouteImport } from './routes/_authenticated/monitoring'
 import { Route as AuthenticatedJobsRouteImport } from './routes/_authenticated/jobs'
@@ -84,6 +85,11 @@ const AuthenticatedSubscriptionsRoute =
     path: '/subscriptions',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedSslRoute = AuthenticatedSslRouteImport.update({
+  id: '/ssl',
+  path: '/ssl',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
   id: '/settings',
   path: '/settings',
@@ -240,6 +246,7 @@ export interface FileRoutesByFullPath {
   '/jobs': typeof AuthenticatedJobsRoute
   '/monitoring': typeof AuthenticatedMonitoringRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/ssl': typeof AuthenticatedSslRoute
   '/subscriptions': typeof AuthenticatedSubscriptionsRoute
   '/templates': typeof AuthenticatedTemplatesRoute
   '/users': typeof AuthenticatedUsersRoute
@@ -274,6 +281,7 @@ export interface FileRoutesByTo {
   '/jobs': typeof AuthenticatedJobsRoute
   '/monitoring': typeof AuthenticatedMonitoringRoute
   '/settings': typeof AuthenticatedSettingsRoute
+  '/ssl': typeof AuthenticatedSslRoute
   '/subscriptions': typeof AuthenticatedSubscriptionsRoute
   '/templates': typeof AuthenticatedTemplatesRoute
   '/users': typeof AuthenticatedUsersRoute
@@ -311,6 +319,7 @@ export interface FileRoutesById {
   '/_authenticated/jobs': typeof AuthenticatedJobsRoute
   '/_authenticated/monitoring': typeof AuthenticatedMonitoringRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/ssl': typeof AuthenticatedSslRoute
   '/_authenticated/subscriptions': typeof AuthenticatedSubscriptionsRoute
   '/_authenticated/templates': typeof AuthenticatedTemplatesRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
@@ -348,6 +357,7 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/monitoring'
     | '/settings'
+    | '/ssl'
     | '/subscriptions'
     | '/templates'
     | '/users'
@@ -382,6 +392,7 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/monitoring'
     | '/settings'
+    | '/ssl'
     | '/subscriptions'
     | '/templates'
     | '/users'
@@ -418,6 +429,7 @@ export interface FileRouteTypes {
     | '/_authenticated/jobs'
     | '/_authenticated/monitoring'
     | '/_authenticated/settings'
+    | '/_authenticated/ssl'
     | '/_authenticated/subscriptions'
     | '/_authenticated/templates'
     | '/_authenticated/users'
@@ -503,6 +515,13 @@ declare module '@tanstack/react-router' {
       path: '/subscriptions'
       fullPath: '/subscriptions'
       preLoaderRoute: typeof AuthenticatedSubscriptionsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/ssl': {
+      id: '/_authenticated/ssl'
+      path: '/ssl'
+      fullPath: '/ssl'
+      preLoaderRoute: typeof AuthenticatedSslRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/settings': {
@@ -739,6 +758,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedJobsRoute: typeof AuthenticatedJobsRoute
   AuthenticatedMonitoringRoute: typeof AuthenticatedMonitoringRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedSslRoute: typeof AuthenticatedSslRoute
   AuthenticatedSubscriptionsRoute: typeof AuthenticatedSubscriptionsRoute
   AuthenticatedTemplatesRoute: typeof AuthenticatedTemplatesRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
@@ -758,6 +778,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedJobsRoute: AuthenticatedJobsRoute,
   AuthenticatedMonitoringRoute: AuthenticatedMonitoringRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedSslRoute: AuthenticatedSslRoute,
   AuthenticatedSubscriptionsRoute: AuthenticatedSubscriptionsRoute,
   AuthenticatedTemplatesRoute: AuthenticatedTemplatesRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,

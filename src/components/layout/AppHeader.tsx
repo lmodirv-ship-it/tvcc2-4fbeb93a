@@ -1,10 +1,12 @@
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
-import { Bell, Search, Settings as SettingsIcon } from "lucide-react";
+import { Search, Settings as SettingsIcon } from "lucide-react";
+import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "./LanguageSwitcher";
+import { NotificationBell } from "./NotificationBell";
 
 export function AppHeader() {
   const [email, setEmail] = useState<string>("");
@@ -33,18 +35,10 @@ export function AppHeader() {
 
       <LanguageSwitcher />
 
-      <button className="relative w-9 h-9 rounded-lg bg-secondary/60 hover:bg-secondary flex items-center justify-center">
+      <Link to="/settings" aria-label={t("header.settings") as string} className="relative w-9 h-9 rounded-lg bg-secondary/60 hover:bg-secondary flex items-center justify-center">
         <SettingsIcon className="w-4 h-4 text-muted-foreground" />
-      </button>
-      <button
-        aria-label={t("header.notifications")}
-        className="relative w-9 h-9 rounded-lg bg-secondary/60 hover:bg-secondary flex items-center justify-center"
-      >
-        <Bell className="w-4 h-4 text-muted-foreground" />
-        <span className="absolute -top-1 -right-1 w-4 h-4 rounded-full bg-primary text-white text-[10px] flex items-center justify-center">
-          5
-        </span>
-      </button>
+      </Link>
+      <NotificationBell />
 
       <div className="flex-1 max-w-xl mx-auto relative">
         <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />

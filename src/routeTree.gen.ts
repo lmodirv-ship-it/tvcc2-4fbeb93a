@@ -36,6 +36,7 @@ import { Route as AuthenticatedApkManagerRouteImport } from './routes/_authentic
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
 import { Route as AuthenticatedEditorIndexRouteImport } from './routes/_authenticated/editor.index'
 import { Route as ApiPublicSiteConfigRouteImport } from './routes/api/public/site-config'
+import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes/_authenticated/settings.notifications'
 import { Route as AuthenticatedEditorUsersRouteImport } from './routes/_authenticated/editor.users'
 import { Route as AuthenticatedEditorSubscriptionsRouteImport } from './routes/_authenticated/editor.subscriptions'
 import { Route as AuthenticatedEditorSocialRouteImport } from './routes/_authenticated/editor.social'
@@ -49,6 +50,7 @@ import { Route as AuthenticatedEditorDesignRouteImport } from './routes/_authent
 import { Route as AuthenticatedEditorContentRouteImport } from './routes/_authenticated/editor.content'
 import { Route as AuthenticatedEditorBulkRouteImport } from './routes/_authenticated/editor.bulk'
 import { Route as AuthenticatedEditorAiRouteImport } from './routes/_authenticated/editor.ai'
+import { Route as ApiPublicNotificationsIngestRouteImport } from './routes/api/public/notifications.ingest'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -189,6 +191,12 @@ const ApiPublicSiteConfigRoute = ApiPublicSiteConfigRouteImport.update({
   path: '/api/public/site-config',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedSettingsNotificationsRoute =
+  AuthenticatedSettingsNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedSettingsRoute,
+  } as any)
 const AuthenticatedEditorUsersRoute =
   AuthenticatedEditorUsersRouteImport.update({
     id: '/users',
@@ -263,6 +271,12 @@ const AuthenticatedEditorAiRoute = AuthenticatedEditorAiRouteImport.update({
   path: '/ai',
   getParentRoute: () => AuthenticatedEditorRoute,
 } as any)
+const ApiPublicNotificationsIngestRoute =
+  ApiPublicNotificationsIngestRouteImport.update({
+    id: '/api/public/notifications/ingest',
+    path: '/api/public/notifications/ingest',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -282,7 +296,7 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/recovery': typeof AuthenticatedRecoveryRoute
   '/reports': typeof AuthenticatedReportsRoute
-  '/settings': typeof AuthenticatedSettingsRoute
+  '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/ssl': typeof AuthenticatedSslRoute
   '/subscriptions': typeof AuthenticatedSubscriptionsRoute
   '/templates': typeof AuthenticatedTemplatesRoute
@@ -302,8 +316,10 @@ export interface FileRoutesByFullPath {
   '/editor/social': typeof AuthenticatedEditorSocialRoute
   '/editor/subscriptions': typeof AuthenticatedEditorSubscriptionsRoute
   '/editor/users': typeof AuthenticatedEditorUsersRoute
+  '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/editor/': typeof AuthenticatedEditorIndexRoute
+  '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -322,7 +338,7 @@ export interface FileRoutesByTo {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/recovery': typeof AuthenticatedRecoveryRoute
   '/reports': typeof AuthenticatedReportsRoute
-  '/settings': typeof AuthenticatedSettingsRoute
+  '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/ssl': typeof AuthenticatedSslRoute
   '/subscriptions': typeof AuthenticatedSubscriptionsRoute
   '/templates': typeof AuthenticatedTemplatesRoute
@@ -342,8 +358,10 @@ export interface FileRoutesByTo {
   '/editor/social': typeof AuthenticatedEditorSocialRoute
   '/editor/subscriptions': typeof AuthenticatedEditorSubscriptionsRoute
   '/editor/users': typeof AuthenticatedEditorUsersRoute
+  '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/editor': typeof AuthenticatedEditorIndexRoute
+  '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -365,7 +383,7 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/recovery': typeof AuthenticatedRecoveryRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
-  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/_authenticated/ssl': typeof AuthenticatedSslRoute
   '/_authenticated/subscriptions': typeof AuthenticatedSubscriptionsRoute
   '/_authenticated/templates': typeof AuthenticatedTemplatesRoute
@@ -385,8 +403,10 @@ export interface FileRoutesById {
   '/_authenticated/editor/social': typeof AuthenticatedEditorSocialRoute
   '/_authenticated/editor/subscriptions': typeof AuthenticatedEditorSubscriptionsRoute
   '/_authenticated/editor/users': typeof AuthenticatedEditorUsersRoute
+  '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/_authenticated/editor/': typeof AuthenticatedEditorIndexRoute
+  '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -428,8 +448,10 @@ export interface FileRouteTypes {
     | '/editor/social'
     | '/editor/subscriptions'
     | '/editor/users'
+    | '/settings/notifications'
     | '/api/public/site-config'
     | '/editor/'
+    | '/api/public/notifications/ingest'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -468,8 +490,10 @@ export interface FileRouteTypes {
     | '/editor/social'
     | '/editor/subscriptions'
     | '/editor/users'
+    | '/settings/notifications'
     | '/api/public/site-config'
     | '/editor'
+    | '/api/public/notifications/ingest'
   id:
     | '__root__'
     | '/'
@@ -510,8 +534,10 @@ export interface FileRouteTypes {
     | '/_authenticated/editor/social'
     | '/_authenticated/editor/subscriptions'
     | '/_authenticated/editor/users'
+    | '/_authenticated/settings/notifications'
     | '/api/public/site-config'
     | '/_authenticated/editor/'
+    | '/api/public/notifications/ingest'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -519,6 +545,7 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AuthRoute: typeof AuthRoute
   ApiPublicSiteConfigRoute: typeof ApiPublicSiteConfigRoute
+  ApiPublicNotificationsIngestRoute: typeof ApiPublicNotificationsIngestRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -712,6 +739,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSiteConfigRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/settings/notifications': {
+      id: '/_authenticated/settings/notifications'
+      path: '/notifications'
+      fullPath: '/settings/notifications'
+      preLoaderRoute: typeof AuthenticatedSettingsNotificationsRouteImport
+      parentRoute: typeof AuthenticatedSettingsRoute
+    }
     '/_authenticated/editor/users': {
       id: '/_authenticated/editor/users'
       path: '/users'
@@ -803,6 +837,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEditorAiRouteImport
       parentRoute: typeof AuthenticatedEditorRoute
     }
+    '/api/public/notifications/ingest': {
+      id: '/api/public/notifications/ingest'
+      path: '/api/public/notifications/ingest'
+      fullPath: '/api/public/notifications/ingest'
+      preLoaderRoute: typeof ApiPublicNotificationsIngestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -843,6 +884,20 @@ const AuthenticatedEditorRouteChildren: AuthenticatedEditorRouteChildren = {
 const AuthenticatedEditorRouteWithChildren =
   AuthenticatedEditorRoute._addFileChildren(AuthenticatedEditorRouteChildren)
 
+interface AuthenticatedSettingsRouteChildren {
+  AuthenticatedSettingsNotificationsRoute: typeof AuthenticatedSettingsNotificationsRoute
+}
+
+const AuthenticatedSettingsRouteChildren: AuthenticatedSettingsRouteChildren = {
+  AuthenticatedSettingsNotificationsRoute:
+    AuthenticatedSettingsNotificationsRoute,
+}
+
+const AuthenticatedSettingsRouteWithChildren =
+  AuthenticatedSettingsRoute._addFileChildren(
+    AuthenticatedSettingsRouteChildren,
+  )
+
 interface AuthenticatedRouteChildren {
   AuthenticatedActivityRoute: typeof AuthenticatedActivityRoute
   AuthenticatedApkManagerRoute: typeof AuthenticatedApkManagerRoute
@@ -859,7 +914,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedRecoveryRoute: typeof AuthenticatedRecoveryRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
-  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRouteWithChildren
   AuthenticatedSslRoute: typeof AuthenticatedSslRoute
   AuthenticatedSubscriptionsRoute: typeof AuthenticatedSubscriptionsRoute
   AuthenticatedTemplatesRoute: typeof AuthenticatedTemplatesRoute
@@ -884,7 +939,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedRecoveryRoute: AuthenticatedRecoveryRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
-  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRouteWithChildren,
   AuthenticatedSslRoute: AuthenticatedSslRoute,
   AuthenticatedSubscriptionsRoute: AuthenticatedSubscriptionsRoute,
   AuthenticatedTemplatesRoute: AuthenticatedTemplatesRoute,
@@ -902,6 +957,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AuthRoute: AuthRoute,
   ApiPublicSiteConfigRoute: ApiPublicSiteConfigRoute,
+  ApiPublicNotificationsIngestRoute: ApiPublicNotificationsIngestRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

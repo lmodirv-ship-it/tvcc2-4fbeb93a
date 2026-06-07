@@ -79,5 +79,17 @@
     "deleted": "Deleted",
     "error_generic": "Something went wrong",
     "language_changed": "Language changed"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "center": "Notification Center",
+    "subtitle": "All alerts and delivery channels",
+    "empty": "No notifications",
+    "mark_all_read": "Mark all read",
+    "all_marked": "All marked as read",
+    "view_all": "View all notifications",
+    "channels": "Delivery channels",
+    "no_channels": "No channels configured yet",
+    "search_placeholder": "Search notifications..."
   }
 }

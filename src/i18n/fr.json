@@ -79,5 +79,17 @@
     "deleted": "Supprimé",
     "error_generic": "Une erreur est survenue",
     "language_changed": "Langue modifiée"
+  },
+  "notifications": {
+    "title": "Notifications",
+    "center": "Centre de notifications",
+    "subtitle": "Toutes les alertes et canaux de diffusion",
+    "empty": "Aucune notification",
+    "mark_all_read": "Tout marquer comme lu",
+    "all_marked": "Tout marqué comme lu",
+    "view_all": "Voir toutes les notifications",
+    "channels": "Canaux de diffusion",
+    "no_channels": "Aucun canal configuré",
+    "search_placeholder": "Rechercher des notifications..."
   }
 }

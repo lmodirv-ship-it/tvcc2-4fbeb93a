@@ -18,11 +18,13 @@ git clone <your-repo-url> tvcc && cd tvcc
 
 ## 3. Install dependencies
 
+Bun is the official package manager for TVCC (`bun.lock` is the source of truth).
+
 ```bash
 bun install
-# or
-npm install
 ```
+
+> If you must use npm, run `npm install --legacy-peer-deps` — TanStack/Nitro/Lovable have strict peer ranges that npm enforces too strictly.
 
 ## 4. Configure environment
 

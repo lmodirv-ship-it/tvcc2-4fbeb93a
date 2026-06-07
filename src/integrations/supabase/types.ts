@@ -674,6 +674,63 @@ export type Database = {
         }
         Relationships: []
       }
+      ssl_certificates: {
+        Row: {
+          auto_renew: boolean
+          created_at: string
+          days_until_expiry: number | null
+          domain: string
+          domain_id: string | null
+          id: string
+          issuer: string | null
+          last_checked_at: string | null
+          notes: string | null
+          owner_id: string
+          status: string
+          subject: string | null
+          updated_at: string
+          valid_from: string | null
+          valid_to: string | null
+          website_id: string | null
+        }
+        Insert: {
+          auto_renew?: boolean
+          created_at?: string
+          days_until_expiry?: number | null
+          domain: string
+          domain_id?: string | null
+          id?: string
+          issuer?: string | null
+          last_checked_at?: string | null
+          notes?: string | null
+          owner_id: string
+          status?: string
+          subject?: string | null
+          updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
+          website_id?: string | null
+        }
+        Update: {
+          auto_renew?: boolean
+          created_at?: string
+          days_until_expiry?: number | null
+          domain?: string
+          domain_id?: string | null
+          id?: string
+          issuer?: string | null
+          last_checked_at?: string | null
+          notes?: string | null
+          owner_id?: string
+          status?: string
+          subject?: string | null
+          updated_at?: string
+          valid_from?: string | null
+          valid_to?: string | null
+          website_id?: string | null
+        }
+        Relationships: []
+      }
       storages: {
         Row: {
           created_at: string

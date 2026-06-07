@@ -371,6 +371,44 @@ export type Database = {
         }
         Relationships: []
       }
+      website_settings: {
+        Row: {
+          created_at: string
+          id: string
+          owner_id: string
+          setting_key: string
+          updated_at: string
+          value: Json
+          website_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_id: string
+          setting_key: string
+          updated_at?: string
+          value?: Json
+          website_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          setting_key?: string
+          updated_at?: string
+          value?: Json
+          website_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "website_settings_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       websites: {
         Row: {
           created_at: string

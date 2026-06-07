@@ -2,17 +2,17 @@ import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard, Globe, Users, CreditCard, UserCog, Activity, Settings,
   Code2, LogOut, Wand2, FolderOpen, LayoutTemplate, Radio, ListChecks, Plug,
-  Smartphone,
+  Smartphone, KeyRound, Server, ShieldCheck, Bell, FileCog, LifeBuoy,
 } from "lucide-react";
 import {
-  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent,
+  Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter,
 } from "@/components/ui/sidebar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { exportDashboardHtml } from "@/lib/html-export";
 
-const items = [
+const mainItems = [
   { title: "لوحة القيادة", url: "/dashboard", icon: LayoutDashboard },
   { title: "المواقع", url: "/websites", icon: Globe },
   { title: "المجموعات", url: "/groups", icon: FolderOpen },
@@ -20,12 +20,24 @@ const items = [
   { title: "المراقبة", url: "/monitoring", icon: Radio },
   { title: "المهام", url: "/jobs", icon: ListChecks },
   { title: "مركز التعديل", url: "/editor", icon: Wand2 },
+];
+
+const opsItems = [
+  { title: "مدير الأسرار", url: "/vault", icon: KeyRound },
+  { title: "مدير النطاقات", url: "/domains", icon: Server },
+  { title: "مراقبة SSL", url: "/ssl", icon: ShieldCheck },
+  { title: "الإشعارات", url: "/notifications", icon: Bell },
+  { title: "متغيرات البيئة", url: "/environment", icon: FileCog },
+  { title: "مركز الاسترداد", url: "/recovery", icon: LifeBuoy },
+  { title: "APK Manager", url: "/apk-manager", icon: Smartphone },
+];
+
+const adminItems = [
   { title: "العملاء", url: "/clients", icon: Users },
   { title: "المستخدمون", url: "/users", icon: UserCog },
   { title: "الاشتراكات", url: "/subscriptions", icon: CreditCard },
   { title: "سجل النشاط", url: "/activity", icon: Activity },
   { title: "التكاملات", url: "/integrations", icon: Plug },
-  { title: "APK Manager", url: "/apk-manager", icon: Smartphone },
   { title: "الإعدادات", url: "/settings", icon: Settings },
 ];
 

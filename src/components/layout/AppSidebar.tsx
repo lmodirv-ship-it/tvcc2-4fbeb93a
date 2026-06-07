@@ -110,7 +110,7 @@ export function AppSidebar() {
                       >
                         <Link to={item.url}>
                           <item.icon className="w-4 h-4" />
-                          <span>{item.title}</span>
+                          <span>{t(item.titleKey)}</span>
                         </Link>
                       </SidebarMenuButton>
                     </SidebarMenuItem>

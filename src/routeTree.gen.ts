@@ -36,6 +36,7 @@ import { Route as AuthenticatedApkManagerRouteImport } from './routes/_authentic
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
 import { Route as AuthenticatedEditorIndexRouteImport } from './routes/_authenticated/editor.index'
 import { Route as ApiPublicSiteConfigRouteImport } from './routes/api/public/site-config'
+import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes/_authenticated/settings.notifications'
 import { Route as AuthenticatedEditorUsersRouteImport } from './routes/_authenticated/editor.users'
 import { Route as AuthenticatedEditorSubscriptionsRouteImport } from './routes/_authenticated/editor.subscriptions'
 import { Route as AuthenticatedEditorSocialRouteImport } from './routes/_authenticated/editor.social'
@@ -189,6 +190,12 @@ const ApiPublicSiteConfigRoute = ApiPublicSiteConfigRouteImport.update({
   path: '/api/public/site-config',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedSettingsNotificationsRoute =
+  AuthenticatedSettingsNotificationsRouteImport.update({
+    id: '/notifications',
+    path: '/notifications',
+    getParentRoute: () => AuthenticatedSettingsRoute,
+  } as any)
 const AuthenticatedEditorUsersRoute =
   AuthenticatedEditorUsersRouteImport.update({
     id: '/users',
@@ -282,7 +289,7 @@ export interface FileRoutesByFullPath {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/recovery': typeof AuthenticatedRecoveryRoute
   '/reports': typeof AuthenticatedReportsRoute
-  '/settings': typeof AuthenticatedSettingsRoute
+  '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/ssl': typeof AuthenticatedSslRoute
   '/subscriptions': typeof AuthenticatedSubscriptionsRoute
   '/templates': typeof AuthenticatedTemplatesRoute
@@ -302,6 +309,7 @@ export interface FileRoutesByFullPath {
   '/editor/social': typeof AuthenticatedEditorSocialRoute
   '/editor/subscriptions': typeof AuthenticatedEditorSubscriptionsRoute
   '/editor/users': typeof AuthenticatedEditorUsersRoute
+  '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/editor/': typeof AuthenticatedEditorIndexRoute
 }
@@ -322,7 +330,7 @@ export interface FileRoutesByTo {
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/recovery': typeof AuthenticatedRecoveryRoute
   '/reports': typeof AuthenticatedReportsRoute
-  '/settings': typeof AuthenticatedSettingsRoute
+  '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/ssl': typeof AuthenticatedSslRoute
   '/subscriptions': typeof AuthenticatedSubscriptionsRoute
   '/templates': typeof AuthenticatedTemplatesRoute
@@ -342,6 +350,7 @@ export interface FileRoutesByTo {
   '/editor/social': typeof AuthenticatedEditorSocialRoute
   '/editor/subscriptions': typeof AuthenticatedEditorSubscriptionsRoute
   '/editor/users': typeof AuthenticatedEditorUsersRoute
+  '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/editor': typeof AuthenticatedEditorIndexRoute
 }
@@ -365,7 +374,7 @@ export interface FileRoutesById {
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/recovery': typeof AuthenticatedRecoveryRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
-  '/_authenticated/settings': typeof AuthenticatedSettingsRoute
+  '/_authenticated/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/_authenticated/ssl': typeof AuthenticatedSslRoute
   '/_authenticated/subscriptions': typeof AuthenticatedSubscriptionsRoute
   '/_authenticated/templates': typeof AuthenticatedTemplatesRoute
@@ -385,6 +394,7 @@ export interface FileRoutesById {
   '/_authenticated/editor/social': typeof AuthenticatedEditorSocialRoute
   '/_authenticated/editor/subscriptions': typeof AuthenticatedEditorSubscriptionsRoute
   '/_authenticated/editor/users': typeof AuthenticatedEditorUsersRoute
+  '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/_authenticated/editor/': typeof AuthenticatedEditorIndexRoute
 }
@@ -428,6 +438,7 @@ export interface FileRouteTypes {
     | '/editor/social'
     | '/editor/subscriptions'
     | '/editor/users'
+    | '/settings/notifications'
     | '/api/public/site-config'
     | '/editor/'
   fileRoutesByTo: FileRoutesByTo
@@ -468,6 +479,7 @@ export interface FileRouteTypes {
     | '/editor/social'
     | '/editor/subscriptions'
     | '/editor/users'
+    | '/settings/notifications'
     | '/api/public/site-config'
     | '/editor'
   id:
@@ -510,6 +522,7 @@ export interface FileRouteTypes {
     | '/_authenticated/editor/social'
     | '/_authenticated/editor/subscriptions'
     | '/_authenticated/editor/users'
+    | '/_authenticated/settings/notifications'
     | '/api/public/site-config'
     | '/_authenticated/editor/'
   fileRoutesById: FileRoutesById
@@ -712,6 +725,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicSiteConfigRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/settings/notifications': {
+      id: '/_authenticated/settings/notifications'
+      path: '/notifications'
+      fullPath: '/settings/notifications'
+      preLoaderRoute: typeof AuthenticatedSettingsNotificationsRouteImport
+      parentRoute: typeof AuthenticatedSettingsRoute
+    }
     '/_authenticated/editor/users': {
       id: '/_authenticated/editor/users'
       path: '/users'
@@ -843,6 +863,20 @@ const AuthenticatedEditorRouteChildren: AuthenticatedEditorRouteChildren = {
 const AuthenticatedEditorRouteWithChildren =
   AuthenticatedEditorRoute._addFileChildren(AuthenticatedEditorRouteChildren)
 
+interface AuthenticatedSettingsRouteChildren {
+  AuthenticatedSettingsNotificationsRoute: typeof AuthenticatedSettingsNotificationsRoute
+}
+
+const AuthenticatedSettingsRouteChildren: AuthenticatedSettingsRouteChildren = {
+  AuthenticatedSettingsNotificationsRoute:
+    AuthenticatedSettingsNotificationsRoute,
+}
+
+const AuthenticatedSettingsRouteWithChildren =
+  AuthenticatedSettingsRoute._addFileChildren(
+    AuthenticatedSettingsRouteChildren,
+  )
+
 interface AuthenticatedRouteChildren {
   AuthenticatedActivityRoute: typeof AuthenticatedActivityRoute
   AuthenticatedApkManagerRoute: typeof AuthenticatedApkManagerRoute
@@ -859,7 +893,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedRecoveryRoute: typeof AuthenticatedRecoveryRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
-  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRoute
+  AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRouteWithChildren
   AuthenticatedSslRoute: typeof AuthenticatedSslRoute
   AuthenticatedSubscriptionsRoute: typeof AuthenticatedSubscriptionsRoute
   AuthenticatedTemplatesRoute: typeof AuthenticatedTemplatesRoute
@@ -884,7 +918,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedRecoveryRoute: AuthenticatedRecoveryRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
-  AuthenticatedSettingsRoute: AuthenticatedSettingsRoute,
+  AuthenticatedSettingsRoute: AuthenticatedSettingsRouteWithChildren,
   AuthenticatedSslRoute: AuthenticatedSslRoute,
   AuthenticatedSubscriptionsRoute: AuthenticatedSubscriptionsRoute,
   AuthenticatedTemplatesRoute: AuthenticatedTemplatesRoute,

@@ -13,6 +13,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { exportDashboardHtml } from "@/lib/html-export";
 import { useTranslation } from "react-i18next";
+import tvccLogo from "@/assets/tvcc-logo.asset.json";
 
 const coreItems = [
   { titleKey: "sidebar.dashboard", url: "/dashboard", icon: LayoutDashboard },
@@ -71,13 +72,12 @@ export function AppSidebar() {
   return (
     <Sidebar collapsible="icon" side="right" className="border-l border-sidebar-border">
       <SidebarHeader className="border-b border-sidebar-border p-5">
-        <div className="flex flex-col items-center gap-1 text-center">
-          <div
-            className="text-3xl font-extrabold tracking-tight bg-clip-text text-transparent"
-            style={{ backgroundImage: "var(--gradient-primary)" }}
-          >
-            TVCC
-          </div>
+        <div className="flex flex-col items-center gap-2 text-center">
+          <img
+            src={tvccLogo.url}
+            alt="TVCC"
+            className="w-14 h-14 rounded-xl object-cover shadow-md"
+          />
           <div className="text-[11px] text-muted-foreground">{t("sidebar.tagline")}</div>
         </div>
       </SidebarHeader>

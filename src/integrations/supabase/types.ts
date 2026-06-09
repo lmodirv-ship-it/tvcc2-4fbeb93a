@@ -44,6 +44,39 @@ export type Database = {
         }
         Relationships: []
       }
+      brand_settings: {
+        Row: {
+          created_at: string
+          favicon_url: string | null
+          id: string
+          logo_url: string
+          name: string
+          singleton: boolean
+          tagline: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          favicon_url?: string | null
+          id?: string
+          logo_url: string
+          name?: string
+          singleton?: boolean
+          tagline?: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          favicon_url?: string | null
+          id?: string
+          logo_url?: string
+          name?: string
+          singleton?: boolean
+          tagline?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       clients: {
         Row: {
           created_at: string

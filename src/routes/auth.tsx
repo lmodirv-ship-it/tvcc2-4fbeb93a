@@ -8,7 +8,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
-import { LayoutDashboard, Loader2 } from "lucide-react";
+import { Loader2 } from "lucide-react";
+import tvccLogo from "@/assets/tvcc-logo.asset.json";
 
 export const Route = createFileRoute("/auth")({
   component: AuthPage,
@@ -56,12 +57,12 @@ function AuthPage() {
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <div className="w-full max-w-md">
         <div className="flex flex-col items-center mb-8">
-          <div
-            className="w-16 h-16 rounded-2xl flex items-center justify-center mb-4"
-            style={{ background: "var(--gradient-primary)", boxShadow: "var(--shadow-elegant)" }}
-          >
-            <LayoutDashboard className="w-8 h-8 text-primary-foreground" />
-          </div>
+          <img
+            src={tvccLogo.url}
+            alt="TVCC"
+            className="w-20 h-20 rounded-2xl object-cover mb-4 shadow-lg"
+            style={{ boxShadow: "var(--shadow-elegant)" }}
+          />
           <h1 className="text-3xl font-bold">TVCC</h1>
           <p className="text-muted-foreground text-sm mt-1">مركز إدارة المواقع</p>
         </div>

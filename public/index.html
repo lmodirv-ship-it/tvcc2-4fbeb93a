@@ -1,222 +1,105 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
-  <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>DBStorage — منصة متكاملة لإدارة قواعد البيانات والتخزين السحابي</title>
-    <meta name="description" content="حلول قوية وآمنة لإدارة بياناتك وتخزين ملفاتك بأعلى مستويات الأداء والموثوقية." />
-    <link rel="canonical" href="/" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800;900&display=swap" rel="stylesheet" />
-    <style>
-      *,*::before,*::after{box-sizing:border-box}
-      html,body{margin:0;padding:0;font-family:'Cairo',system-ui,sans-serif;background:#02030a;color:#e6edf7;min-height:100%}
-      a{text-decoration:none;color:inherit}
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>TVCC | فحص شهادات SSL</title>
+  <meta name="description" content="فحص شهادات SSL/TLS بسرعة ودقة عالية — تحقق من صلاحية الشهادة، تاريخ الانتهاء، درجة الأمان، وسلسلة التوقيع." />
+  <link rel="canonical" href="/" />
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Tahoma", sans-serif; }
+    body { background: #f5f7fb; color: #111827; }
 
-      /* ===== Background ===== */
-      .bg{
-        position:fixed;inset:0;z-index:-1;overflow:hidden;
-        background:
-          radial-gradient(ellipse at 30% 50%, #0a1a55 0%, #050a2a 45%, #02030a 100%);
-      }
-      .bg::before{
-        content:"";position:absolute;inset:-20%;
-        background:
-          repeating-radial-gradient(circle at 35% 55%, transparent 0 14px, rgba(80,160,255,0.08) 14px 15px);
-        mask-image:radial-gradient(circle at 35% 55%, #000 0%, #000 40%, transparent 75%);
-        animation:pulse 8s ease-in-out infinite;
-      }
-      @keyframes pulse{0%,100%{opacity:.7}50%{opacity:1}}
+    header { background: linear-gradient(135deg, #07111f, #101b3f); color: white; padding: 24px 8%; }
+    nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 80px; }
+    .logo { font-size: 30px; font-weight: bold; color: #8b5cf6; }
+    .menu a { color: white; text-decoration: none; margin: 0 14px; font-size: 15px; }
+    .login { background: #7c3aed; padding: 12px 22px; border-radius: 10px; color: white; text-decoration: none; }
 
-      /* ===== Header ===== */
-      header{
-        position:sticky;top:0;z-index:10;
-        display:flex;align-items:center;justify-content:space-between;
-        padding:1.2rem 2.5rem;
-        backdrop-filter:blur(8px);
-      }
-      .brand{display:flex;align-items:center;gap:.6rem;font-weight:800;font-size:1.25rem;letter-spacing:.5px}
-      .brand-mark{
-        width:34px;height:34px;border-radius:8px;
-        background:linear-gradient(135deg,#3b82f6,#22d3ee);
-        display:grid;place-items:center;color:#021;
-        box-shadow:0 0 18px rgba(59,130,246,.55);
-        font-weight:900;
-      }
-      nav ul{display:flex;gap:2.2rem;list-style:none;margin:0;padding:0;font-size:.98rem}
-      nav a{opacity:.8;padding:.4rem .2rem;border-bottom:2px solid transparent;transition:.2s}
-      nav a:hover{opacity:1}
-      nav a.active{color:#22d3ee;border-bottom-color:#22d3ee;text-shadow:0 0 12px rgba(34,211,238,.6)}
-      .login{
-        display:inline-flex;align-items:center;gap:.5rem;
-        padding:.55rem 1.1rem;border:1px solid rgba(255,255,255,.25);
-        border-radius:999px;font-size:.9rem;transition:.2s
-      }
-      .login:hover{background:rgba(255,255,255,.06);border-color:#22d3ee}
+    .hero { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 40px; padding-bottom: 80px; }
+    .hero h1 { font-size: 48px; line-height: 1.4; margin-bottom: 20px; }
+    .hero h1 span { color: #8b5cf6; }
+    .hero p { font-size: 18px; color: #d1d5db; margin-bottom: 30px; }
 
-      /* ===== Hero ===== */
-      .hero{
-        display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center;
-        padding:5rem 6vw 6rem;max-width:1400px;margin:0 auto;min-height:80vh;
-      }
-      .copy h1{
-        font-size:clamp(2.2rem,4.6vw,4rem);line-height:1.2;margin:0 0 1.5rem;
-        font-weight:900;
-      }
-      .copy h1 .accent{
-        background:linear-gradient(90deg,#22d3ee,#60a5fa);
-        -webkit-background-clip:text;background-clip:text;color:transparent;
-        text-shadow:0 0 30px rgba(34,211,238,.25);
-      }
-      .copy p{font-size:1.1rem;opacity:.78;line-height:1.9;margin:0 0 2.2rem;max-width:520px;margin-inline-start:auto}
-      .ctas{display:flex;gap:1rem;justify-content:flex-end;flex-wrap:wrap}
-      .btn{
-        display:inline-flex;align-items:center;gap:.6rem;
-        padding:.95rem 1.8rem;border-radius:999px;font-weight:700;font-size:1rem;
-        transition:.25s;cursor:pointer;border:0;
-      }
-      .btn-primary{
-        background:linear-gradient(135deg,#3b82f6,#7c3aed);
-        color:#fff;box-shadow:0 0 24px rgba(59,130,246,.5),inset 0 0 0 1px rgba(255,255,255,.15);
-      }
-      .btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 36px rgba(59,130,246,.75)}
-      .btn-ghost{
-        background:rgba(255,255,255,.04);color:#e6edf7;
-        border:1px solid rgba(255,255,255,.18);
-      }
-      .btn-ghost:hover{border-color:#22d3ee;color:#22d3ee}
+    .search-box { display: flex; background: white; padding: 8px; border-radius: 14px; max-width: 560px; }
+    .search-box input { flex: 1; border: none; outline: none; padding: 16px; font-size: 16px; }
+    .search-box button { border: none; background: #7c3aed; color: white; padding: 0 28px; border-radius: 10px; font-size: 16px; cursor: pointer; }
 
-      /* ===== Visual ===== */
-      .visual{position:relative;height:520px}
-      .stack{
-        position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
-        width:180px;height:230px;
-      }
-      .disk{
-        position:absolute;left:0;right:0;height:46px;border-radius:50%/22px;
-        background:linear-gradient(180deg,#1e63ff,#0a2a8a);
-        border:2px solid #5cc8ff;
-        box-shadow:0 0 22px rgba(92,200,255,.7),inset 0 0 18px rgba(120,210,255,.5);
-      }
-      .disk::after{
-        content:"";position:absolute;inset:6px 10px;border-radius:50%/14px;
-        background:repeating-linear-gradient(90deg,rgba(255,255,255,.25) 0 2px,transparent 2px 6px);
-        opacity:.7;
-      }
-      .disk:nth-child(1){top:0}
-      .disk:nth-child(2){top:60px}
-      .disk:nth-child(3){top:120px}
-      .disk:nth-child(4){top:180px}
+    .shield { width: 280px; height: 280px; margin: auto; border-radius: 40px;
+      background: linear-gradient(135deg, #2563eb, #9333ea);
+      display: flex; align-items: center; justify-content: center;
+      font-size: 100px; box-shadow: 0 30px 80px rgba(124, 58, 237, 0.5); }
 
-      .cloud{
-        position:absolute;top:8%;right:18%;width:90px;height:54px;
-        background:radial-gradient(circle at 30% 60%,#bfe9ff,#5fb3e8);
-        border-radius:50px;filter:drop-shadow(0 0 18px rgba(120,200,255,.6));
-      }
-      .cloud::before,.cloud::after{content:"";position:absolute;background:inherit;border-radius:50%}
-      .cloud::before{width:40px;height:40px;left:14px;top:-18px}
-      .cloud::after{width:30px;height:30px;right:18px;top:-12px}
+    section { padding: 70px 8%; }
+    .section-title { text-align: center; font-size: 34px; margin-bottom: 45px; }
 
-      .node{
-        position:absolute;padding:.45rem .7rem;font-size:.72rem;
-        background:rgba(10,30,80,.7);border:1px solid rgba(92,200,255,.5);
-        border-radius:6px;color:#bfe9ff;backdrop-filter:blur(4px);
-        box-shadow:0 0 14px rgba(60,160,255,.3);white-space:nowrap;
-      }
-      .node .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#5cc8ff;margin-inline-start:.4rem;box-shadow:0 0 8px #5cc8ff}
-      .n1{top:18%;left:8%}
-      .n2{top:48%;left:2%}
-      .n3{bottom:18%;left:14%}
-      .n4{bottom:8%;right:10%}
+    .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
+    .card { background: white; padding: 30px; border-radius: 18px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
+    .card .icon { font-size: 42px; margin-bottom: 16px; }
+    .card h3 { margin-bottom: 12px; font-size: 20px; }
+    .card p { color: #6b7280; font-size: 15px; line-height: 1.8; }
 
-      .sql{
-        position:absolute;top:42%;left:6%;width:170px;height:70px;
-        background:linear-gradient(135deg,rgba(20,50,120,.85),rgba(8,20,60,.85));
-        border:1px solid rgba(92,200,255,.5);border-radius:6px;
-        padding:.5rem .7rem;font-family:'Courier New',monospace;font-size:.7rem;
-        color:#7fd4ff;box-shadow:0 0 18px rgba(60,160,255,.35);
-      }
-      .sql .row{height:6px;background:rgba(127,212,255,.3);border-radius:2px;margin-top:5px}
-      .sql .row.s{width:60%}.sql .row.m{width:85%}
+    .stats { background: #111827; color: white; border-radius: 24px; padding: 40px;
+      display: grid; grid-template-columns: repeat(4, 1fr); text-align: center; gap: 20px; }
+    .stat h2 { color: #8b5cf6; font-size: 32px; margin-bottom: 8px; }
 
-      svg.lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
-      svg.lines line{stroke:rgba(92,200,255,.45);stroke-width:1;stroke-dasharray:4 4}
+    footer { background: #07111f; color: #9ca3af; text-align: center; padding: 28px; }
 
-      /* ===== Responsive ===== */
-      @media (max-width:900px){
-        nav{display:none}
-        .hero{grid-template-columns:1fr;text-align:center;padding:3rem 1.5rem}
-        .copy p{margin:0 auto 2rem}
-        .ctas{justify-content:center}
-        .visual{height:380px;order:-1}
-        header{padding:1rem 1.2rem}
-      }
-    </style>
-  </head>
-  <body>
-    <div class="bg"></div>
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; text-align: center; }
+      .search-box { margin: auto; }
+      .cards, .stats { grid-template-columns: 1fr; }
+      .menu { display: none; }
+    }
+  </style>
+</head>
+<body>
 
-    <header>
-      <a class="login" href="/auth">
-        <span>👤</span><span>دخول</span>
-      </a>
-      <nav>
-        <ul>
-          <li><a href="#contact">تواصل معنا</a></li>
-          <li><a href="#docs">الوثائق</a></li>
-          <li><a href="#pricing">الأسعار</a></li>
-          <li><a href="#features">الميزات</a></li>
-          <li><a href="#" class="active">الرئيسية</a></li>
-        </ul>
-      </nav>
-      <div class="brand">
-        <span>DBStorage</span>
-        <span class="brand-mark">S</span>
+  <header>
+    <nav>
+      <div class="logo">TVCC</div>
+      <div class="menu">
+        <a href="#">الرئيسية</a>
+        <a href="#tools">فحص الشهادات</a>
+        <a href="#tools">الأدوات</a>
+        <a href="#api">API</a>
+        <a href="#support">الدعم</a>
       </div>
-    </header>
+      <a class="login" href="/auth">تسجيل الدخول</a>
+    </nav>
 
-    <section class="hero">
-      <div class="visual" aria-hidden="true">
-        <svg class="lines" viewBox="0 0 500 520" preserveAspectRatio="none">
-          <line x1="80" y1="120" x2="250" y2="260"/>
-          <line x1="40" y1="270" x2="250" y2="280"/>
-          <line x1="100" y1="430" x2="250" y2="320"/>
-          <line x1="400" y1="80" x2="270" y2="220"/>
-          <line x1="430" y1="460" x2="280" y2="340"/>
-        </svg>
-        <div class="cloud"></div>
-        <div class="stack">
-          <div class="disk"></div>
-          <div class="disk"></div>
-          <div class="disk"></div>
-          <div class="disk"></div>
-        </div>
-        <div class="node n1">Database Cluster<span class="dot"></span></div>
-        <div class="sql">
-          <div style="color:#bfe9ff">&gt; SELECT * FROM users</div>
-          <div class="row m"></div>
-          <div class="row s"></div>
-          <div class="row m"></div>
-          <div style="margin-top:4px;opacity:.7">12.4k records</div>
-        </div>
-        <div class="node n2">AES-256 🔒</div>
-        <div class="node n3">Neon Connections ⚡</div>
-        <div class="node n4">Backup ✓</div>
+    <div class="hero">
+      <div>
+        <h1>فحص شهادات <span>SSL/TLS</span><br/>بسرعة ودقة عالية</h1>
+        <p>تحقق من صلاحية الشهادة، تاريخ الانتهاء، درجة الأمان، وسلسلة التوقيع لموقعك خلال ثوانٍ.</p>
+        <form class="search-box" onsubmit="event.preventDefault(); const d=this.domain.value.trim(); if(d) window.location.href='/dashboard?domain='+encodeURIComponent(d);">
+          <input name="domain" type="text" placeholder="أدخل اسم النطاق مثال: example.com" />
+          <button type="submit">فحص الآن</button>
+        </form>
       </div>
+      <div class="shield">🛡️</div>
+    </div>
+  </header>
 
-      <div class="copy">
-        <h1>
-          منصة متكاملة<br/>
-          لإدارة قواعد <span class="accent">البيانات</span><br/>
-          والتخزين <span class="accent">السحابي</span>
-        </h1>
-        <p>حلول قوية وآمنة لإدارة بياناتك وتخزين ملفاتك بأعلى مستويات الأداء والموثوقية.</p>
-        <div class="ctas">
-          <a href="/dashboard" class="btn btn-primary">ابدأ الآن <span>←</span></a>
-          <a href="#features" class="btn btn-ghost">⬢ استكشف الميزات</a>
-        </div>
-      </div>
-    </section>
-  </body>
+  <section id="tools">
+    <h2 class="section-title">أدوات TVCC</h2>
+    <div class="cards">
+      <div class="card"><div class="icon">🔐</div><h3>فحص SSL</h3><p>تحقق من حالة شهادة SSL وتاريخ انتهائها.</p></div>
+      <div class="card"><div class="icon">⛓️</div><h3>سلسلة الشهادة</h3><p>تحليل كامل لسلسلة التوقيع والتحقق.</p></div>
+      <div class="card"><div class="icon">⚡</div><h3>تنبيهات الانتهاء</h3><p>استقبل تنبيهات قبل انتهاء الشهادة.</p></div>
+      <div class="card"><div class="icon">🧩</div><h3>API قوي</h3><p>اربط TVCC مع تطبيقاتك بسهولة.</p></div>
+    </div>
+  </section>
+
+  <section>
+    <div class="stats">
+      <div class="stat"><h2>25K+</h2><p>مستخدم</p></div>
+      <div class="stat"><h2>1M+</h2><p>فحص شهادة</p></div>
+      <div class="stat"><h2>99.9%</h2><p>وقت تشغيل</p></div>
+      <div class="stat"><h2>180+</h2><p>دولة</p></div>
+    </div>
+  </section>
+
+  <footer>© 2026 TVCC - جميع الحقوق محفوظة</footer>
+</body>
 </html>

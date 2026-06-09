@@ -56,7 +56,7 @@ function AuthPage() {
   return (
     <div className="min-h-screen flex items-center justify-center p-4 bg-background">
       <div className="w-full max-w-md">
-        <div className="flex flex-col items-center mb-8">
+        <Link to="/" className="flex flex-col items-center mb-8">
           <img
             src={tvccLogo.url}
             alt="TVCC"
@@ -65,7 +65,7 @@ function AuthPage() {
           />
           <h1 className="text-3xl font-bold">TVCC</h1>
           <p className="text-muted-foreground text-sm mt-1">مركز إدارة المواقع</p>
-        </div>
+        </Link>
 
         <Card style={{ boxShadow: "var(--shadow-card)" }}>
           <CardHeader>

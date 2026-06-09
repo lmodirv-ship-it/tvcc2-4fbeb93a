@@ -3,24 +3,220 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>TVCC — Total Visual Control Center</title>
-    <meta name="description" content="منصة TVCC للتحكم المركزي بالمواقع والنطاقات والشهادات والإشعارات." />
-    <meta http-equiv="refresh" content="0; url=/dashboard" />
-    <link rel="canonical" href="/dashboard" />
+    <title>DBStorage — منصة متكاملة لإدارة قواعد البيانات والتخزين السحابي</title>
+    <meta name="description" content="حلول قوية وآمنة لإدارة بياناتك وتخزين ملفاتك بأعلى مستويات الأداء والموثوقية." />
+    <link rel="canonical" href="/" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;800;900&display=swap" rel="stylesheet" />
     <style>
-      html,body{margin:0;padding:0;background:#0b0f1a;color:#e6edf7;font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;height:100%}
-      .wrap{display:flex;align-items:center;justify-content:center;height:100%;flex-direction:column;gap:1rem;text-align:center;padding:2rem}
-      h1{font-size:1.75rem;margin:0;background:linear-gradient(90deg,#7c5cff,#22d3ee);-webkit-background-clip:text;color:transparent}
-      p{opacity:.7;margin:0}
-      a{color:#22d3ee;text-decoration:none;padding:.6rem 1.2rem;border:1px solid #22d3ee33;border-radius:.5rem}
-      a:hover{background:#22d3ee11}
+      *,*::before,*::after{box-sizing:border-box}
+      html,body{margin:0;padding:0;font-family:'Cairo',system-ui,sans-serif;background:#02030a;color:#e6edf7;min-height:100%}
+      a{text-decoration:none;color:inherit}
+
+      /* ===== Background ===== */
+      .bg{
+        position:fixed;inset:0;z-index:-1;overflow:hidden;
+        background:
+          radial-gradient(ellipse at 30% 50%, #0a1a55 0%, #050a2a 45%, #02030a 100%);
+      }
+      .bg::before{
+        content:"";position:absolute;inset:-20%;
+        background:
+          repeating-radial-gradient(circle at 35% 55%, transparent 0 14px, rgba(80,160,255,0.08) 14px 15px);
+        mask-image:radial-gradient(circle at 35% 55%, #000 0%, #000 40%, transparent 75%);
+        animation:pulse 8s ease-in-out infinite;
+      }
+      @keyframes pulse{0%,100%{opacity:.7}50%{opacity:1}}
+
+      /* ===== Header ===== */
+      header{
+        position:sticky;top:0;z-index:10;
+        display:flex;align-items:center;justify-content:space-between;
+        padding:1.2rem 2.5rem;
+        backdrop-filter:blur(8px);
+      }
+      .brand{display:flex;align-items:center;gap:.6rem;font-weight:800;font-size:1.25rem;letter-spacing:.5px}
+      .brand-mark{
+        width:34px;height:34px;border-radius:8px;
+        background:linear-gradient(135deg,#3b82f6,#22d3ee);
+        display:grid;place-items:center;color:#021;
+        box-shadow:0 0 18px rgba(59,130,246,.55);
+        font-weight:900;
+      }
+      nav ul{display:flex;gap:2.2rem;list-style:none;margin:0;padding:0;font-size:.98rem}
+      nav a{opacity:.8;padding:.4rem .2rem;border-bottom:2px solid transparent;transition:.2s}
+      nav a:hover{opacity:1}
+      nav a.active{color:#22d3ee;border-bottom-color:#22d3ee;text-shadow:0 0 12px rgba(34,211,238,.6)}
+      .login{
+        display:inline-flex;align-items:center;gap:.5rem;
+        padding:.55rem 1.1rem;border:1px solid rgba(255,255,255,.25);
+        border-radius:999px;font-size:.9rem;transition:.2s
+      }
+      .login:hover{background:rgba(255,255,255,.06);border-color:#22d3ee}
+
+      /* ===== Hero ===== */
+      .hero{
+        display:grid;grid-template-columns:1fr 1fr;gap:3rem;align-items:center;
+        padding:5rem 6vw 6rem;max-width:1400px;margin:0 auto;min-height:80vh;
+      }
+      .copy h1{
+        font-size:clamp(2.2rem,4.6vw,4rem);line-height:1.2;margin:0 0 1.5rem;
+        font-weight:900;
+      }
+      .copy h1 .accent{
+        background:linear-gradient(90deg,#22d3ee,#60a5fa);
+        -webkit-background-clip:text;background-clip:text;color:transparent;
+        text-shadow:0 0 30px rgba(34,211,238,.25);
+      }
+      .copy p{font-size:1.1rem;opacity:.78;line-height:1.9;margin:0 0 2.2rem;max-width:520px;margin-inline-start:auto}
+      .ctas{display:flex;gap:1rem;justify-content:flex-end;flex-wrap:wrap}
+      .btn{
+        display:inline-flex;align-items:center;gap:.6rem;
+        padding:.95rem 1.8rem;border-radius:999px;font-weight:700;font-size:1rem;
+        transition:.25s;cursor:pointer;border:0;
+      }
+      .btn-primary{
+        background:linear-gradient(135deg,#3b82f6,#7c3aed);
+        color:#fff;box-shadow:0 0 24px rgba(59,130,246,.5),inset 0 0 0 1px rgba(255,255,255,.15);
+      }
+      .btn-primary:hover{transform:translateY(-2px);box-shadow:0 0 36px rgba(59,130,246,.75)}
+      .btn-ghost{
+        background:rgba(255,255,255,.04);color:#e6edf7;
+        border:1px solid rgba(255,255,255,.18);
+      }
+      .btn-ghost:hover{border-color:#22d3ee;color:#22d3ee}
+
+      /* ===== Visual ===== */
+      .visual{position:relative;height:520px}
+      .stack{
+        position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+        width:180px;height:230px;
+      }
+      .disk{
+        position:absolute;left:0;right:0;height:46px;border-radius:50%/22px;
+        background:linear-gradient(180deg,#1e63ff,#0a2a8a);
+        border:2px solid #5cc8ff;
+        box-shadow:0 0 22px rgba(92,200,255,.7),inset 0 0 18px rgba(120,210,255,.5);
+      }
+      .disk::after{
+        content:"";position:absolute;inset:6px 10px;border-radius:50%/14px;
+        background:repeating-linear-gradient(90deg,rgba(255,255,255,.25) 0 2px,transparent 2px 6px);
+        opacity:.7;
+      }
+      .disk:nth-child(1){top:0}
+      .disk:nth-child(2){top:60px}
+      .disk:nth-child(3){top:120px}
+      .disk:nth-child(4){top:180px}
+
+      .cloud{
+        position:absolute;top:8%;right:18%;width:90px;height:54px;
+        background:radial-gradient(circle at 30% 60%,#bfe9ff,#5fb3e8);
+        border-radius:50px;filter:drop-shadow(0 0 18px rgba(120,200,255,.6));
+      }
+      .cloud::before,.cloud::after{content:"";position:absolute;background:inherit;border-radius:50%}
+      .cloud::before{width:40px;height:40px;left:14px;top:-18px}
+      .cloud::after{width:30px;height:30px;right:18px;top:-12px}
+
+      .node{
+        position:absolute;padding:.45rem .7rem;font-size:.72rem;
+        background:rgba(10,30,80,.7);border:1px solid rgba(92,200,255,.5);
+        border-radius:6px;color:#bfe9ff;backdrop-filter:blur(4px);
+        box-shadow:0 0 14px rgba(60,160,255,.3);white-space:nowrap;
+      }
+      .node .dot{display:inline-block;width:8px;height:8px;border-radius:50%;background:#5cc8ff;margin-inline-start:.4rem;box-shadow:0 0 8px #5cc8ff}
+      .n1{top:18%;left:8%}
+      .n2{top:48%;left:2%}
+      .n3{bottom:18%;left:14%}
+      .n4{bottom:8%;right:10%}
+
+      .sql{
+        position:absolute;top:42%;left:6%;width:170px;height:70px;
+        background:linear-gradient(135deg,rgba(20,50,120,.85),rgba(8,20,60,.85));
+        border:1px solid rgba(92,200,255,.5);border-radius:6px;
+        padding:.5rem .7rem;font-family:'Courier New',monospace;font-size:.7rem;
+        color:#7fd4ff;box-shadow:0 0 18px rgba(60,160,255,.35);
+      }
+      .sql .row{height:6px;background:rgba(127,212,255,.3);border-radius:2px;margin-top:5px}
+      .sql .row.s{width:60%}.sql .row.m{width:85%}
+
+      svg.lines{position:absolute;inset:0;width:100%;height:100%;pointer-events:none}
+      svg.lines line{stroke:rgba(92,200,255,.45);stroke-width:1;stroke-dasharray:4 4}
+
+      /* ===== Responsive ===== */
+      @media (max-width:900px){
+        nav{display:none}
+        .hero{grid-template-columns:1fr;text-align:center;padding:3rem 1.5rem}
+        .copy p{margin:0 auto 2rem}
+        .ctas{justify-content:center}
+        .visual{height:380px;order:-1}
+        header{padding:1rem 1.2rem}
+      }
     </style>
   </head>
   <body>
-    <main class="wrap">
-      <h1>TVCC</h1>
-      <p>جارٍ تحويلك إلى لوحة التحكم…</p>
-      <a href="/dashboard">الدخول إلى لوحة التحكم</a>
-    </main>
+    <div class="bg"></div>
+
+    <header>
+      <a class="login" href="/auth">
+        <span>👤</span><span>دخول</span>
+      </a>
+      <nav>
+        <ul>
+          <li><a href="#contact">تواصل معنا</a></li>
+          <li><a href="#docs">الوثائق</a></li>
+          <li><a href="#pricing">الأسعار</a></li>
+          <li><a href="#features">الميزات</a></li>
+          <li><a href="#" class="active">الرئيسية</a></li>
+        </ul>
+      </nav>
+      <div class="brand">
+        <span>DBStorage</span>
+        <span class="brand-mark">S</span>
+      </div>
+    </header>
+
+    <section class="hero">
+      <div class="visual" aria-hidden="true">
+        <svg class="lines" viewBox="0 0 500 520" preserveAspectRatio="none">
+          <line x1="80" y1="120" x2="250" y2="260"/>
+          <line x1="40" y1="270" x2="250" y2="280"/>
+          <line x1="100" y1="430" x2="250" y2="320"/>
+          <line x1="400" y1="80" x2="270" y2="220"/>
+          <line x1="430" y1="460" x2="280" y2="340"/>
+        </svg>
+        <div class="cloud"></div>
+        <div class="stack">
+          <div class="disk"></div>
+          <div class="disk"></div>
+          <div class="disk"></div>
+          <div class="disk"></div>
+        </div>
+        <div class="node n1">Database Cluster<span class="dot"></span></div>
+        <div class="sql">
+          <div style="color:#bfe9ff">&gt; SELECT * FROM users</div>
+          <div class="row m"></div>
+          <div class="row s"></div>
+          <div class="row m"></div>
+          <div style="margin-top:4px;opacity:.7">12.4k records</div>
+        </div>
+        <div class="node n2">AES-256 🔒</div>
+        <div class="node n3">Neon Connections ⚡</div>
+        <div class="node n4">Backup ✓</div>
+      </div>
+
+      <div class="copy">
+        <h1>
+          منصة متكاملة<br/>
+          لإدارة قواعد <span class="accent">البيانات</span><br/>
+          والتخزين <span class="accent">السحابي</span>
+        </h1>
+        <p>حلول قوية وآمنة لإدارة بياناتك وتخزين ملفاتك بأعلى مستويات الأداء والموثوقية.</p>
+        <div class="ctas">
+          <a href="/dashboard" class="btn btn-primary">ابدأ الآن <span>←</span></a>
+          <a href="#features" class="btn btn-ghost">⬢ استكشف الميزات</a>
+        </div>
+      </div>
+    </section>
   </body>
 </html>

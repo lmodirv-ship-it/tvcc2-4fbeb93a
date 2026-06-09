@@ -3,103 +3,265 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TVCC | فحص شهادات SSL</title>
-  <meta name="description" content="فحص شهادات SSL/TLS بسرعة ودقة عالية — تحقق من صلاحية الشهادة، تاريخ الانتهاء، درجة الأمان، وسلسلة التوقيع." />
+  <title>TVCC | فحص شهادات SSL/TLS</title>
+  <meta name="description" content="أداة احترافية لفحص شهادات SSL/TLS — تحقق من صلاحية الشهادة، تاريخ الانتهاء، سلسلة التوقيع والتشفير خلال ثوانٍ." />
   <link rel="canonical" href="/" />
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;800;900&display=swap" rel="stylesheet">
   <style>
-    * { margin: 0; padding: 0; box-sizing: border-box; font-family: "Tahoma", sans-serif; }
-    body { background: #f5f7fb; color: #111827; }
+    *{margin:0;padding:0;box-sizing:border-box;font-family:'Cairo',Tahoma,sans-serif}
+    body{background:#fff;color:#0f172a;line-height:1.6}
+    a{text-decoration:none;color:inherit}
 
-    header { background: linear-gradient(135deg, #07111f, #101b3f); color: white; padding: 24px 8%; }
-    nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 80px; }
-    .logo { font-size: 30px; font-weight: bold; color: #8b5cf6; }
-    .menu a { color: white; text-decoration: none; margin: 0 14px; font-size: 15px; }
-    .login { background: #7c3aed; padding: 12px 22px; border-radius: 10px; color: white; text-decoration: none; }
+    /* HERO WRAPPER (dark) */
+    .hero-wrap{
+      background:
+        radial-gradient(1200px 600px at 80% -10%, rgba(139,92,246,.25), transparent 60%),
+        radial-gradient(900px 500px at 10% 20%, rgba(59,130,246,.18), transparent 60%),
+        linear-gradient(180deg,#0b1020 0%, #0a0f1f 100%);
+      color:#fff;
+      position:relative;
+      overflow:hidden;
+      padding-bottom:60px;
+    }
+    .hero-wrap::before{
+      content:"";position:absolute;inset:0;
+      background-image:radial-gradient(rgba(255,255,255,.06) 1px, transparent 1px);
+      background-size:22px 22px;
+      mask-image:radial-gradient(ellipse at center, #000 40%, transparent 75%);
+      pointer-events:none;
+    }
 
-    .hero { display: grid; grid-template-columns: 1fr 1fr; align-items: center; gap: 40px; padding-bottom: 80px; }
-    .hero h1 { font-size: 48px; line-height: 1.4; margin-bottom: 20px; }
-    .hero h1 span { color: #8b5cf6; }
-    .hero p { font-size: 18px; color: #d1d5db; margin-bottom: 30px; }
+    /* NAV */
+    nav{
+      position:relative;z-index:5;
+      display:flex;align-items:center;justify-content:space-between;
+      padding:22px 6%;
+    }
+    .logo{display:flex;align-items:center;gap:10px;font-size:26px;font-weight:800}
+    .logo-badge{
+      width:42px;height:42px;border-radius:12px;
+      background:linear-gradient(135deg,#7c3aed,#4f46e5);
+      display:flex;align-items:center;justify-content:center;font-size:20px;
+      box-shadow:0 8px 24px rgba(124,58,237,.45);
+    }
+    .menu{display:flex;gap:30px;font-size:15px;color:#cbd5e1}
+    .menu a{position:relative;padding:6px 2px;transition:color .2s}
+    .menu a.active{color:#fff}
+    .menu a.active::after{
+      content:"";position:absolute;bottom:-6px;right:0;left:0;height:2px;
+      background:linear-gradient(90deg,#8b5cf6,#3b82f6);border-radius:2px;
+    }
+    .menu a:hover{color:#fff}
+    .nav-right{display:flex;align-items:center;gap:14px}
+    .theme-btn{
+      width:42px;height:42px;border-radius:50%;
+      background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1);
+      display:flex;align-items:center;justify-content:center;cursor:pointer;color:#cbd5e1;
+    }
+    .login{
+      background:linear-gradient(135deg,#7c3aed,#6366f1);
+      padding:12px 26px;border-radius:12px;color:#fff;font-weight:600;
+      box-shadow:0 10px 24px rgba(124,58,237,.4);
+    }
 
-    .search-box { display: flex; background: white; padding: 8px; border-radius: 14px; max-width: 560px; }
-    .search-box input { flex: 1; border: none; outline: none; padding: 16px; font-size: 16px; }
-    .search-box button { border: none; background: #7c3aed; color: white; padding: 0 28px; border-radius: 10px; font-size: 16px; cursor: pointer; }
+    /* HERO */
+    .hero{
+      position:relative;z-index:2;
+      display:grid;grid-template-columns:1fr 1fr;gap:50px;align-items:center;
+      padding:40px 6% 30px;
+    }
+    .shield-art{display:flex;align-items:center;justify-content:center;position:relative;min-height:460px}
+    .shield-art .glow{
+      position:absolute;width:380px;height:380px;border-radius:50%;
+      background:radial-gradient(circle,rgba(139,92,246,.45),transparent 60%);
+      filter:blur(20px);
+    }
+    .shield-art svg{position:relative;width:340px;height:auto;filter:drop-shadow(0 30px 60px rgba(124,58,237,.5))}
+    .rings{position:absolute;bottom:40px;width:360px;height:60px;border-radius:50%;
+      background:radial-gradient(ellipse,rgba(139,92,246,.4),transparent 70%);filter:blur(8px)}
 
-    .shield { width: 280px; height: 280px; margin: auto; border-radius: 40px;
-      background: linear-gradient(135deg, #2563eb, #9333ea);
-      display: flex; align-items: center; justify-content: center;
-      font-size: 100px; box-shadow: 0 30px 80px rgba(124, 58, 237, 0.5); }
+    .hero-text .pill{
+      display:inline-flex;align-items:center;gap:8px;
+      background:rgba(15,23,42,.6);border:1px solid rgba(139,92,246,.3);
+      padding:8px 16px;border-radius:999px;font-size:13px;color:#c4b5fd;margin-bottom:22px;
+    }
+    .pill .dot{width:18px;height:18px;border-radius:50%;background:#10b981;display:flex;align-items:center;justify-content:center;font-size:11px}
+    .hero-text h1{font-size:54px;font-weight:800;line-height:1.25;margin-bottom:20px}
+    .hero-text h1 .grad{
+      background:linear-gradient(90deg,#a78bfa,#60a5fa);
+      -webkit-background-clip:text;background-clip:text;color:transparent;
+    }
+    .hero-text p{font-size:17px;color:#cbd5e1;margin-bottom:28px;max-width:560px}
 
-    section { padding: 70px 8%; }
-    .section-title { text-align: center; font-size: 34px; margin-bottom: 45px; }
+    .search{
+      display:flex;align-items:center;background:#fff;border-radius:16px;padding:8px;
+      box-shadow:0 20px 50px rgba(0,0,0,.4);max-width:620px;
+    }
+    .search .globe{width:44px;height:44px;display:flex;align-items:center;justify-content:center;color:#94a3b8;font-size:20px}
+    .search input{flex:1;border:none;outline:none;font-size:16px;padding:14px 6px;color:#0f172a;background:transparent;font-family:inherit}
+    .search button{
+      background:linear-gradient(135deg,#7c3aed,#6366f1);
+      color:#fff;border:none;padding:14px 26px;border-radius:12px;font-size:16px;font-weight:700;cursor:pointer;
+      display:flex;align-items:center;gap:8px;font-family:inherit;
+    }
 
-    .cards { display: grid; grid-template-columns: repeat(4, 1fr); gap: 24px; }
-    .card { background: white; padding: 30px; border-radius: 18px; text-align: center; box-shadow: 0 10px 30px rgba(0,0,0,0.08); }
-    .card .icon { font-size: 42px; margin-bottom: 16px; }
-    .card h3 { margin-bottom: 12px; font-size: 20px; }
-    .card p { color: #6b7280; font-size: 15px; line-height: 1.8; }
+    .features-row{display:flex;flex-wrap:wrap;gap:22px;margin-top:24px;font-size:14px;color:#cbd5e1}
+    .feat{display:flex;align-items:center;gap:8px}
+    .feat .check{width:20px;height:20px;border-radius:50%;background:rgba(16,185,129,.15);color:#10b981;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
 
-    .stats { background: #111827; color: white; border-radius: 24px; padding: 40px;
-      display: grid; grid-template-columns: repeat(4, 1fr); text-align: center; gap: 20px; }
-    .stat h2 { color: #8b5cf6; font-size: 32px; margin-bottom: 8px; }
+    /* TOOLS */
+    .tools{padding:80px 6% 60px;background:#f8fafc}
+    .section-title{text-align:center;font-size:34px;font-weight:800;margin-bottom:10px;color:#0f172a}
+    .section-underline{width:60px;height:4px;background:linear-gradient(90deg,#8b5cf6,#3b82f6);margin:0 auto 50px;border-radius:2px}
+    .cards{display:grid;grid-template-columns:repeat(5,1fr);gap:20px;max-width:1300px;margin:0 auto}
+    .card{
+      background:#fff;border-radius:18px;padding:30px 22px;text-align:center;
+      box-shadow:0 4px 20px rgba(15,23,42,.06);transition:transform .25s, box-shadow .25s;
+    }
+    .card:hover{transform:translateY(-6px);box-shadow:0 20px 40px rgba(15,23,42,.1)}
+    .card .ic{
+      width:64px;height:64px;border-radius:16px;display:flex;align-items:center;justify-content:center;
+      font-size:28px;margin:0 auto 18px;
+    }
+    .ic.green{background:#dcfce7;color:#16a34a}
+    .ic.purple{background:#ede9fe;color:#7c3aed}
+    .ic.blue{background:#dbeafe;color:#2563eb}
+    .ic.orange{background:#ffedd5;color:#ea580c}
+    .ic.red{background:#fee2e2;color:#dc2626}
+    .card h3{font-size:18px;font-weight:700;margin-bottom:10px;color:#0f172a}
+    .card p{font-size:14px;color:#64748b;line-height:1.7}
 
-    footer { background: #07111f; color: #9ca3af; text-align: center; padding: 28px; }
+    /* STATS */
+    .stats-wrap{padding:0 6% 80px;background:#f8fafc}
+    .stats{
+      max-width:1300px;margin:0 auto;
+      background:linear-gradient(135deg,#0f172a,#1e1b4b);
+      border-radius:24px;padding:36px 40px;color:#fff;
+      display:grid;grid-template-columns:repeat(4,1fr);gap:30px;
+      position:relative;overflow:hidden;
+    }
+    .stats::after{
+      content:"";position:absolute;inset:0;
+      background:radial-gradient(600px 200px at 80% 100%, rgba(139,92,246,.3), transparent 60%);
+      pointer-events:none;
+    }
+    .stat{display:flex;align-items:center;gap:16px;position:relative;z-index:1}
+    .stat .sic{width:54px;height:54px;border-radius:14px;background:rgba(255,255,255,.08);display:flex;align-items:center;justify-content:center;font-size:22px}
+    .stat .num{font-size:28px;font-weight:800;background:linear-gradient(90deg,#a78bfa,#60a5fa);-webkit-background-clip:text;background-clip:text;color:transparent}
+    .stat .lbl{font-size:14px;color:#cbd5e1}
 
-    @media (max-width: 900px) {
-      .hero { grid-template-columns: 1fr; text-align: center; }
-      .search-box { margin: auto; }
-      .cards, .stats { grid-template-columns: 1fr; }
-      .menu { display: none; }
+    footer{background:#0b1020;color:#94a3b8;text-align:center;padding:24px;font-size:14px}
+
+    @media (max-width:1024px){
+      .cards{grid-template-columns:repeat(2,1fr)}
+      .stats{grid-template-columns:repeat(2,1fr)}
+    }
+    @media (max-width:768px){
+      .menu{display:none}
+      .hero{grid-template-columns:1fr;text-align:center}
+      .hero-text p{margin-left:auto;margin-right:auto}
+      .search{margin:0 auto}
+      .features-row{justify-content:center}
+      .hero-text h1{font-size:38px}
+      .cards,.stats{grid-template-columns:1fr}
+      .shield-art{min-height:320px}
+      .shield-art svg{width:240px}
     }
   </style>
 </head>
 <body>
 
-  <header>
+  <div class="hero-wrap">
     <nav>
-      <div class="logo">TVCC</div>
+      <div class="logo">
+        <div class="logo-badge">🛡️</div>
+        <span>TVCC</span>
+      </div>
       <div class="menu">
-        <a href="#">الرئيسية</a>
+        <a href="#" class="active">الرئيسية</a>
         <a href="#tools">فحص الشهادات</a>
         <a href="#tools">الأدوات</a>
-        <a href="#api">API</a>
+        <a href="#stats">الأسعار</a>
         <a href="#support">الدعم</a>
       </div>
-      <a class="login" href="/auth">تسجيل الدخول</a>
+      <div class="nav-right">
+        <button class="theme-btn" aria-label="theme">🌙</button>
+        <a class="login" href="/auth">تسجيل الدخول</a>
+      </div>
     </nav>
 
-    <div class="hero">
-      <div>
-        <h1>فحص شهادات <span>SSL/TLS</span><br/>بسرعة ودقة عالية</h1>
-        <p>تحقق من صلاحية الشهادة، تاريخ الانتهاء، درجة الأمان، وسلسلة التوقيع لموقعك خلال ثوانٍ.</p>
-        <form class="search-box" onsubmit="event.preventDefault(); const d=this.domain.value.trim(); if(d) window.location.href='/dashboard?domain='+encodeURIComponent(d);">
-          <input name="domain" type="text" placeholder="أدخل اسم النطاق مثال: example.com" />
-          <button type="submit">فحص الآن</button>
-        </form>
+    <section class="hero">
+      <div class="shield-art" aria-hidden="true">
+        <div class="glow"></div>
+        <svg viewBox="0 0 240 280" xmlns="http://www.w3.org/2000/svg">
+          <defs>
+            <linearGradient id="sg" x1="0" y1="0" x2="1" y2="1">
+              <stop offset="0%" stop-color="#a78bfa"/>
+              <stop offset="100%" stop-color="#4f46e5"/>
+            </linearGradient>
+            <linearGradient id="sg2" x1="0" y1="0" x2="0" y2="1">
+              <stop offset="0%" stop-color="#c4b5fd"/>
+              <stop offset="100%" stop-color="#7c3aed"/>
+            </linearGradient>
+          </defs>
+          <path d="M120 10 L220 50 V140 C220 200 175 240 120 270 C65 240 20 200 20 140 V50 Z"
+                fill="url(#sg)" stroke="url(#sg2)" stroke-width="2"/>
+          <path d="M120 25 L205 60 V140 C205 192 168 226 120 252 C72 226 35 192 35 140 V60 Z"
+                fill="none" stroke="rgba(255,255,255,.25)" stroke-width="1"/>
+          <rect x="92" y="118" width="56" height="60" rx="8" fill="#fff"/>
+          <path d="M102 118 V100 a18 18 0 0 1 36 0 V118" fill="none" stroke="#fff" stroke-width="8" stroke-linecap="round"/>
+          <circle cx="120" cy="148" r="6" fill="#7c3aed"/>
+          <rect x="117" y="152" width="6" height="14" rx="2" fill="#7c3aed"/>
+          <circle cx="178" cy="200" r="22" fill="#3b82f6"/>
+          <path d="M168 200 l8 8 l14 -16" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+        <div class="rings"></div>
       </div>
-      <div class="shield">🛡️</div>
-    </div>
-  </header>
 
-  <section id="tools">
-    <h2 class="section-title">أدوات TVCC</h2>
+      <div class="hero-text">
+        <span class="pill"><span class="dot">✓</span> أداة احترافية لفحص الشهادات SSL/TLS</span>
+        <h1>فحص شهادات <span class="grad">SSL/TLS</span><br/>بسرعة ودقة عالية</h1>
+        <p>تحقق من صلاحية الشهادة، تاريخ الانتهاء، سلسلة التوقيع، والتشفير المستخدم في موقعك خلال ثوانٍ فقط.</p>
+
+        <form class="search" onsubmit="event.preventDefault(); const d=this.domain.value.trim(); if(d) window.location.href='/dashboard?domain='+encodeURIComponent(d);">
+          <span class="globe">🌐</span>
+          <input name="domain" type="text" placeholder="example.com" />
+          <button type="submit">🔍 فحص الآن</button>
+        </form>
+
+        <div class="features-row">
+          <div class="feat"><span class="check">✓</span> دعم كامل لـ IPv6</div>
+          <div class="feat"><span class="check">✓</span> تحديث فوري</div>
+          <div class="feat"><span class="check">✓</span> دقة عالية</div>
+          <div class="feat"><span class="check">✓</span> بيانات موثوقة 100%</div>
+        </div>
+      </div>
+    </section>
+  </div>
+
+  <section class="tools" id="tools">
+    <h2 class="section-title">أدوات قوية لمتطلباتك</h2>
+    <div class="section-underline"></div>
     <div class="cards">
-      <div class="card"><div class="icon">🔐</div><h3>فحص SSL</h3><p>تحقق من حالة شهادة SSL وتاريخ انتهائها.</p></div>
-      <div class="card"><div class="icon">⛓️</div><h3>سلسلة الشهادة</h3><p>تحليل كامل لسلسلة التوقيع والتحقق.</p></div>
-      <div class="card"><div class="icon">⚡</div><h3>تنبيهات الانتهاء</h3><p>استقبل تنبيهات قبل انتهاء الشهادة.</p></div>
-      <div class="card"><div class="icon">🧩</div><h3>API قوي</h3><p>اربط TVCC مع تطبيقاتك بسهولة.</p></div>
+      <div class="card"><div class="ic green">🛡️</div><h3>فحص الشهادات</h3><p>تحقق من تاريخ الانتهاء وصلاحية شهادة SSL/TLS.</p></div>
+      <div class="card"><div class="ic purple">🔗</div><h3>سلسلة الشهادة</h3><p>عرض سلسلة التوقيع الكاملة والتحقق من صحة كل شهادة.</p></div>
+      <div class="card"><div class="ic blue">✔️</div><h3>درجة الأمان</h3><p>احصل على تقييم شامل لقوة التشفير والإعدادات الأمنية.</p></div>
+      <div class="card"><div class="ic orange">📄</div><h3>تفاصيل الشهادة</h3><p>عرض جميع معلومات الشهادة (المصدر، الخوارزميات، وغيرها).</p></div>
+      <div class="card"><div class="ic red">&lt;/&gt;</div><h3>API قوي</h3><p>تكامل سهل مع تطبيقاتك باستخدام API سريعة وموثوقة.</p></div>
     </div>
   </section>
 
-  <section>
+  <div class="stats-wrap" id="stats">
     <div class="stats">
-      <div class="stat"><h2>25K+</h2><p>مستخدم</p></div>
-      <div class="stat"><h2>1M+</h2><p>فحص شهادة</p></div>
-      <div class="stat"><h2>99.9%</h2><p>وقت تشغيل</p></div>
-      <div class="stat"><h2>180+</h2><p>دولة</p></div>
+      <div class="stat"><div class="sic">👥</div><div><div class="num">25,000+</div><div class="lbl">مستخدم نشط</div></div></div>
+      <div class="stat"><div class="sic">🛡️</div><div><div class="num">1,200,000+</div><div class="lbl">شهادة تم فحصها</div></div></div>
+      <div class="stat"><div class="sic">🌐</div><div><div class="num">180+</div><div class="lbl">دولة</div></div></div>
+      <div class="stat"><div class="sic">⚡</div><div><div class="num">99.9%</div><div class="lbl">وقت التشغيل</div></div></div>
     </div>
-  </section>
+  </div>
 
-  <footer>© 2026 TVCC - جميع الحقوق محفوظة</footer>
+  <footer id="support">© 2026 TVCC - جميع الحقوق محفوظة</footer>
 </body>
 </html>

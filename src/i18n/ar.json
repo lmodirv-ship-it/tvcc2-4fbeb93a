@@ -68,7 +68,8 @@
     "subscriptions": "الاشتراكات",
     "payment_providers": "مزودو الدفع",
     "audit": "فحص النظام",
-    "settings": "الإعدادات"
+    "settings": "الإعدادات",
+    "payments_hub": "بوابة الدفع الموحدة"
   },
   "dashboard": {
     "title": "لوحة التحكم",

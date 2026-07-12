@@ -45,6 +45,7 @@ const adminItems = [
   { titleKey: "sidebar.users", url: "/users", icon: UserCog },
   { titleKey: "sidebar.subscriptions", url: "/subscriptions", icon: CreditCard },
   { titleKey: "sidebar.payment_providers", url: "/payment-providers", icon: Wallet },
+  { titleKey: "sidebar.payments_hub", url: "/payments-hub", icon: Wallet },
   { titleKey: "sidebar.audit", url: "/audit", icon: ClipboardCheck },
   { titleKey: "sidebar.settings", url: "/settings", icon: Settings },
 ];

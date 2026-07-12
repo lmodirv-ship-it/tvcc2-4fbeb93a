@@ -68,7 +68,8 @@
     "subscriptions": "Subscriptions",
     "payment_providers": "Payment Providers",
     "audit": "System Audit",
-    "settings": "Settings"
+    "settings": "Settings",
+    "payments_hub": "Unified Payments Hub"
   },
   "dashboard": {
     "title": "Dashboard",

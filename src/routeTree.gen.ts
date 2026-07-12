@@ -22,6 +22,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedServicesRouteImport } from './routes/_authenticated/services'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedRecoveryRouteImport } from './routes/_authenticated/recovery'
+import { Route as AuthenticatedPaymentsHubRouteImport } from './routes/_authenticated/payments-hub'
 import { Route as AuthenticatedPaymentProvidersRouteImport } from './routes/_authenticated/payment-providers'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedMonitoringRouteImport } from './routes/_authenticated/monitoring'
@@ -53,6 +54,7 @@ import { Route as AuthenticatedEditorDesignRouteImport } from './routes/_authent
 import { Route as AuthenticatedEditorContentRouteImport } from './routes/_authenticated/editor.content'
 import { Route as AuthenticatedEditorBulkRouteImport } from './routes/_authenticated/editor.bulk'
 import { Route as AuthenticatedEditorAiRouteImport } from './routes/_authenticated/editor.ai'
+import { Route as ApiPublicPaymentsIngestRouteImport } from './routes/api/public/payments.ingest'
 import { Route as ApiPublicNotificationsIngestRouteImport } from './routes/api/public/notifications.ingest'
 import { Route as ApiPublicHooksHealthCheckRouteImport } from './routes/api/public/hooks/health-check'
 import { Route as ApiPublicCoreIngestRouteImport } from './routes/api/public/core.ingest'
@@ -122,6 +124,12 @@ const AuthenticatedRecoveryRoute = AuthenticatedRecoveryRouteImport.update({
   path: '/recovery',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedPaymentsHubRoute =
+  AuthenticatedPaymentsHubRouteImport.update({
+    id: '/payments-hub',
+    path: '/payments-hub',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedPaymentProvidersRoute =
   AuthenticatedPaymentProvidersRouteImport.update({
     id: '/payment-providers',
@@ -292,6 +300,11 @@ const AuthenticatedEditorAiRoute = AuthenticatedEditorAiRouteImport.update({
   path: '/ai',
   getParentRoute: () => AuthenticatedEditorRoute,
 } as any)
+const ApiPublicPaymentsIngestRoute = ApiPublicPaymentsIngestRouteImport.update({
+  id: '/api/public/payments/ingest',
+  path: '/api/public/payments/ingest',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicNotificationsIngestRoute =
   ApiPublicNotificationsIngestRouteImport.update({
     id: '/api/public/notifications/ingest',
@@ -328,6 +341,7 @@ export interface FileRoutesByFullPath {
   '/monitoring': typeof AuthenticatedMonitoringRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/payment-providers': typeof AuthenticatedPaymentProvidersRoute
+  '/payments-hub': typeof AuthenticatedPaymentsHubRoute
   '/recovery': typeof AuthenticatedRecoveryRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/services': typeof AuthenticatedServicesRoute
@@ -357,6 +371,7 @@ export interface FileRoutesByFullPath {
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
+  '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -375,6 +390,7 @@ export interface FileRoutesByTo {
   '/monitoring': typeof AuthenticatedMonitoringRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/payment-providers': typeof AuthenticatedPaymentProvidersRoute
+  '/payments-hub': typeof AuthenticatedPaymentsHubRoute
   '/recovery': typeof AuthenticatedRecoveryRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/services': typeof AuthenticatedServicesRoute
@@ -404,6 +420,7 @@ export interface FileRoutesByTo {
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
+  '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -425,6 +442,7 @@ export interface FileRoutesById {
   '/_authenticated/monitoring': typeof AuthenticatedMonitoringRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/payment-providers': typeof AuthenticatedPaymentProvidersRoute
+  '/_authenticated/payments-hub': typeof AuthenticatedPaymentsHubRoute
   '/_authenticated/recovery': typeof AuthenticatedRecoveryRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/services': typeof AuthenticatedServicesRoute
@@ -454,6 +472,7 @@ export interface FileRoutesById {
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
+  '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -475,6 +494,7 @@ export interface FileRouteTypes {
     | '/monitoring'
     | '/notifications'
     | '/payment-providers'
+    | '/payments-hub'
     | '/recovery'
     | '/reports'
     | '/services'
@@ -504,6 +524,7 @@ export interface FileRouteTypes {
     | '/api/public/core/ingest'
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
+    | '/api/public/payments/ingest'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -522,6 +543,7 @@ export interface FileRouteTypes {
     | '/monitoring'
     | '/notifications'
     | '/payment-providers'
+    | '/payments-hub'
     | '/recovery'
     | '/reports'
     | '/services'
@@ -551,6 +573,7 @@ export interface FileRouteTypes {
     | '/api/public/core/ingest'
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
+    | '/api/public/payments/ingest'
   id:
     | '__root__'
     | '/'
@@ -571,6 +594,7 @@ export interface FileRouteTypes {
     | '/_authenticated/monitoring'
     | '/_authenticated/notifications'
     | '/_authenticated/payment-providers'
+    | '/_authenticated/payments-hub'
     | '/_authenticated/recovery'
     | '/_authenticated/reports'
     | '/_authenticated/services'
@@ -600,6 +624,7 @@ export interface FileRouteTypes {
     | '/api/public/core/ingest'
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
+    | '/api/public/payments/ingest'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -610,6 +635,7 @@ export interface RootRouteChildren {
   ApiPublicCoreIngestRoute: typeof ApiPublicCoreIngestRoute
   ApiPublicHooksHealthCheckRoute: typeof ApiPublicHooksHealthCheckRoute
   ApiPublicNotificationsIngestRoute: typeof ApiPublicNotificationsIngestRoute
+  ApiPublicPaymentsIngestRoute: typeof ApiPublicPaymentsIngestRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -703,6 +729,13 @@ declare module '@tanstack/react-router' {
       path: '/recovery'
       fullPath: '/recovery'
       preLoaderRoute: typeof AuthenticatedRecoveryRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/payments-hub': {
+      id: '/_authenticated/payments-hub'
+      path: '/payments-hub'
+      fullPath: '/payments-hub'
+      preLoaderRoute: typeof AuthenticatedPaymentsHubRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/payment-providers': {
@@ -922,6 +955,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEditorAiRouteImport
       parentRoute: typeof AuthenticatedEditorRoute
     }
+    '/api/public/payments/ingest': {
+      id: '/api/public/payments/ingest'
+      path: '/api/public/payments/ingest'
+      fullPath: '/api/public/payments/ingest'
+      preLoaderRoute: typeof ApiPublicPaymentsIngestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/notifications/ingest': {
       id: '/api/public/notifications/ingest'
       path: '/api/public/notifications/ingest'
@@ -1013,6 +1053,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedMonitoringRoute: typeof AuthenticatedMonitoringRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedPaymentProvidersRoute: typeof AuthenticatedPaymentProvidersRoute
+  AuthenticatedPaymentsHubRoute: typeof AuthenticatedPaymentsHubRoute
   AuthenticatedRecoveryRoute: typeof AuthenticatedRecoveryRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedServicesRoute: typeof AuthenticatedServicesRoute
@@ -1041,6 +1082,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedMonitoringRoute: AuthenticatedMonitoringRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedPaymentProvidersRoute: AuthenticatedPaymentProvidersRoute,
+  AuthenticatedPaymentsHubRoute: AuthenticatedPaymentsHubRoute,
   AuthenticatedRecoveryRoute: AuthenticatedRecoveryRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedServicesRoute: AuthenticatedServicesRoute,
@@ -1065,6 +1107,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCoreIngestRoute: ApiPublicCoreIngestRoute,
   ApiPublicHooksHealthCheckRoute: ApiPublicHooksHealthCheckRoute,
   ApiPublicNotificationsIngestRoute: ApiPublicNotificationsIngestRoute,
+  ApiPublicPaymentsIngestRoute: ApiPublicPaymentsIngestRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

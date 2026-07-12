@@ -22,6 +22,7 @@ import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedServicesRouteImport } from './routes/_authenticated/services'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedRecoveryRouteImport } from './routes/_authenticated/recovery'
+import { Route as AuthenticatedPaymentsHubRouteImport } from './routes/_authenticated/payments-hub'
 import { Route as AuthenticatedPaymentProvidersRouteImport } from './routes/_authenticated/payment-providers'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedMonitoringRouteImport } from './routes/_authenticated/monitoring'
@@ -123,6 +124,12 @@ const AuthenticatedRecoveryRoute = AuthenticatedRecoveryRouteImport.update({
   path: '/recovery',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedPaymentsHubRoute =
+  AuthenticatedPaymentsHubRouteImport.update({
+    id: '/payments-hub',
+    path: '/payments-hub',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedPaymentProvidersRoute =
   AuthenticatedPaymentProvidersRouteImport.update({
     id: '/payment-providers',
@@ -334,6 +341,7 @@ export interface FileRoutesByFullPath {
   '/monitoring': typeof AuthenticatedMonitoringRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/payment-providers': typeof AuthenticatedPaymentProvidersRoute
+  '/payments-hub': typeof AuthenticatedPaymentsHubRoute
   '/recovery': typeof AuthenticatedRecoveryRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/services': typeof AuthenticatedServicesRoute
@@ -382,6 +390,7 @@ export interface FileRoutesByTo {
   '/monitoring': typeof AuthenticatedMonitoringRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/payment-providers': typeof AuthenticatedPaymentProvidersRoute
+  '/payments-hub': typeof AuthenticatedPaymentsHubRoute
   '/recovery': typeof AuthenticatedRecoveryRoute
   '/reports': typeof AuthenticatedReportsRoute
   '/services': typeof AuthenticatedServicesRoute
@@ -433,6 +442,7 @@ export interface FileRoutesById {
   '/_authenticated/monitoring': typeof AuthenticatedMonitoringRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/payment-providers': typeof AuthenticatedPaymentProvidersRoute
+  '/_authenticated/payments-hub': typeof AuthenticatedPaymentsHubRoute
   '/_authenticated/recovery': typeof AuthenticatedRecoveryRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
   '/_authenticated/services': typeof AuthenticatedServicesRoute
@@ -484,6 +494,7 @@ export interface FileRouteTypes {
     | '/monitoring'
     | '/notifications'
     | '/payment-providers'
+    | '/payments-hub'
     | '/recovery'
     | '/reports'
     | '/services'
@@ -532,6 +543,7 @@ export interface FileRouteTypes {
     | '/monitoring'
     | '/notifications'
     | '/payment-providers'
+    | '/payments-hub'
     | '/recovery'
     | '/reports'
     | '/services'
@@ -582,6 +594,7 @@ export interface FileRouteTypes {
     | '/_authenticated/monitoring'
     | '/_authenticated/notifications'
     | '/_authenticated/payment-providers'
+    | '/_authenticated/payments-hub'
     | '/_authenticated/recovery'
     | '/_authenticated/reports'
     | '/_authenticated/services'
@@ -716,6 +729,13 @@ declare module '@tanstack/react-router' {
       path: '/recovery'
       fullPath: '/recovery'
       preLoaderRoute: typeof AuthenticatedRecoveryRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/payments-hub': {
+      id: '/_authenticated/payments-hub'
+      path: '/payments-hub'
+      fullPath: '/payments-hub'
+      preLoaderRoute: typeof AuthenticatedPaymentsHubRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/payment-providers': {
@@ -1033,6 +1053,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedMonitoringRoute: typeof AuthenticatedMonitoringRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedPaymentProvidersRoute: typeof AuthenticatedPaymentProvidersRoute
+  AuthenticatedPaymentsHubRoute: typeof AuthenticatedPaymentsHubRoute
   AuthenticatedRecoveryRoute: typeof AuthenticatedRecoveryRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
   AuthenticatedServicesRoute: typeof AuthenticatedServicesRoute
@@ -1061,6 +1082,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedMonitoringRoute: AuthenticatedMonitoringRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedPaymentProvidersRoute: AuthenticatedPaymentProvidersRoute,
+  AuthenticatedPaymentsHubRoute: AuthenticatedPaymentsHubRoute,
   AuthenticatedRecoveryRoute: AuthenticatedRecoveryRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
   AuthenticatedServicesRoute: AuthenticatedServicesRoute,

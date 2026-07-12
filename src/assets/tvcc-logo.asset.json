@@ -1,11 +1,11 @@
 {
-  "version": 1,
   "asset_id": "cabd42ee-a07c-45eb-ac0f-021341b6d445",
-  "project_id": "9b50cc0f-c6df-42a9-977c-c23b34cb99ba",
-  "url": "/__l5e/assets-v1/cabd42ee-a07c-45eb-ac0f-021341b6d445/tvcc-logo.jpeg",
-  "r2_key": "a/v1/9b50cc0f-c6df-42a9-977c-c23b34cb99ba/cabd42ee-a07c-45eb-ac0f-021341b6d445/tvcc-logo.jpeg",
-  "original_filename": "tvcc-logo.jpeg",
-  "size": 91954,
   "content_type": "image/jpeg",
-  "created_at": "2026-06-09T22:09:59Z"
+  "created_at": "2026-06-09T22:09:59Z",
+  "original_filename": "tvcc-logo.jpeg",
+  "project_id": "b9dddb79-ad95-46ed-98b9-108ac864e770",
+  "r2_key": "a/v1/b9dddb79-ad95-46ed-98b9-108ac864e770/cabd42ee-a07c-45eb-ac0f-021341b6d445/tvcc-logo.jpeg",
+  "size": 91954,
+  "url": "/__l5e/assets-v1/cabd42ee-a07c-45eb-ac0f-021341b6d445/tvcc-logo.jpeg",
+  "version": 1
 }

@@ -1255,6 +1255,63 @@ export type Database = {
         }
         Relationships: []
       }
+      video_requests: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          duration_seconds: number | null
+          error_message: string | null
+          external_id: string | null
+          id: string
+          owner_id: string
+          payload: Json
+          prompt: string
+          provider: string
+          requester_channel: string
+          status: string
+          target_site: string | null
+          thumbnail_url: string | null
+          updated_at: string
+          video_url: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          error_message?: string | null
+          external_id?: string | null
+          id?: string
+          owner_id: string
+          payload?: Json
+          prompt: string
+          provider?: string
+          requester_channel?: string
+          status?: string
+          target_site?: string | null
+          thumbnail_url?: string | null
+          updated_at?: string
+          video_url?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          duration_seconds?: number | null
+          error_message?: string | null
+          external_id?: string | null
+          id?: string
+          owner_id?: string
+          payload?: Json
+          prompt?: string
+          provider?: string
+          requester_channel?: string
+          status?: string
+          target_site?: string | null
+          thumbnail_url?: string | null
+          updated_at?: string
+          video_url?: string | null
+        }
+        Relationships: []
+      }
       website_android_releases: {
         Row: {
           aab_url: string | null

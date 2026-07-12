@@ -1,14 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { autoFixAndReport } from "@/lib/health-check.functions";
+import { autoFixAndReport, broadcastGroupFooter } from "@/lib/health-check.functions";
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Radio, Database, HardDrive, RefreshCw, ShieldCheck, Loader2, Wrench } from "lucide-react";
+import { Radio, Database, HardDrive, RefreshCw, ShieldCheck, Loader2, Wrench, Copyright } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/monitoring")({
@@ -19,7 +19,9 @@ export const Route = createFileRoute("/_authenticated/monitoring")({
 function MonitoringPage() {
   const qc = useQueryClient();
   const runAutoFix = useServerFn(autoFixAndReport);
+  const runFooter = useServerFn(broadcastGroupFooter);
   const [fixing, setFixing] = useState(false);
+  const [pushingFooter, setPushingFooter] = useState(false);
 
   const { data: websites, isLoading } = useQuery({
     queryKey: ["mon-websites"],
@@ -136,6 +138,26 @@ function MonitoringPage() {
           >
             {fixing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wrench className="w-4 h-4" />}
             إصلاح تلقائي + إرسال تقرير
+          </Button>
+          <Button
+            variant="secondary"
+            disabled={pushingFooter}
+            onClick={async () => {
+              setPushingFooter(true);
+              toast.info("جاري نشر الفوتر على جميع المواقع...");
+              try {
+                const res: any = await runFooter();
+                toast.success(`تم نشر الفوتر: ${res.delivered}/${res.total} موقع`);
+              } catch (e: any) {
+                toast.error(e?.message || "فشل نشر الفوتر");
+              } finally {
+                setPushingFooter(false);
+              }
+            }}
+            className="gap-2"
+          >
+            {pushingFooter ? <Loader2 className="w-4 h-4 animate-spin" /> : <Copyright className="w-4 h-4" />}
+            نشر الفوتر الموحّد على المواقع
           </Button>
         </div>
         <div className="text-right">

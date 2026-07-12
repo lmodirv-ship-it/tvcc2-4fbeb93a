@@ -123,7 +123,12 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <Outlet />
+      <div className="min-h-screen flex flex-col">
+        <div className="flex-1"><Outlet /></div>
+        <footer className="border-t border-border/60 bg-background/60 py-4 text-center text-xs text-muted-foreground" dir="rtl">
+          © 2026 جميع الحقوق محفوظة El Hassani Moulay Ismail · Groupe HN
+        </footer>
+      </div>
       <Toaster richColors position="top-center" />
     </QueryClientProvider>
   );

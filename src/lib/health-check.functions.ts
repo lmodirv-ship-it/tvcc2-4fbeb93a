@@ -21,7 +21,7 @@ async function pingDomain(domain: string): Promise<{ status: "online" | "offline
 export const runHealthCheckAll = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
-    const { supabase } = context;
+    const { supabase, userId } = context;
     const { data: sites, error } = await supabase
       .from("websites")
       .select("id, domain")
@@ -32,11 +32,12 @@ export const runHealthCheckAll = createServerFn({ method: "POST" })
     const results = await Promise.all(
       (sites ?? []).map(async (s) => {
         const r = await pingDomain(s.domain);
-        await supabase.from("websites").update({ status: r.status, last_check_at: new Date().toISOString() }).eq("id", s.id);
+        await supabase.from("websites").update({ status: r.status }).eq("id", s.id);
         await supabase.from("site_health_checks").insert({
+          owner_id: userId,
           website_id: s.id,
           status: r.status,
-          latency_ms: r.latency_ms,
+          response_time_ms: r.latency_ms,
           http_status: r.http_status,
         });
         return { id: s.id, domain: s.domain, ...r };

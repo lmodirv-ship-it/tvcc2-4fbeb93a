@@ -40,11 +40,12 @@ export const Route = createFileRoute("/api/public/video/ingest")({
             if (status === "ready") {
               await (supabaseAdmin as any).from("notifications").insert({
                 owner_id: row.owner_id,
+                type: "video.ready",
+                severity: "success",
                 title: "فيديو جاهز من استوديو الشرح",
-                body: row.target_site ? `تم إنشاء شرح للموقع: ${row.target_site}` : "طلب الفيديو جاهز",
-                category: "video",
+                message: row.target_site ? `تم إنشاء شرح للموقع: ${row.target_site}` : "طلب الفيديو جاهز",
                 metadata: { video_url: patch.video_url, request_id: requestId, channel: row.requester_channel ?? "hn-nawat" },
-              }).select().maybeSingle();
+              });
             }
           }
 

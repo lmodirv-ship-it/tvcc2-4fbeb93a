@@ -131,7 +131,7 @@ export const broadcastDirective = createServerFn({ method: "POST" })
       action: "core.directive.broadcast",
       entity_type: "core_directive",
       entity_id: directive.id,
-      metadata: { total: rows.length, delivered, failed, core_url: coreUrl },
+      details: { total: rows.length, delivered, failed, core_url: coreUrl },
     });
 
     return { total: rows.length, delivered, failed, status: finalStatus };

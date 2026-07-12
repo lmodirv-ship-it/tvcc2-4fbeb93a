@@ -8,9 +8,10 @@ export const Route = createFileRoute("/api/public/core/ingest")({
           const body = await request.json().catch(() => ({}));
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           await (supabaseAdmin as any).from("activity_log").insert({
+            owner_id: "e3066a24-8c0b-4cee-af2a-b2646ae6cfbc",
             action: "core.hub.ingest",
             entity_type: "core_hub",
-            metadata: { received_at: new Date().toISOString(), payload: body },
+            details: { received_at: new Date().toISOString(), payload: body },
           });
           return Response.json({ ok: true });
         } catch (e: any) {

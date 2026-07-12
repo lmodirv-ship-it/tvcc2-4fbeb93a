@@ -1,6 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { autoFixAndReport } from "@/lib/health-check.functions";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,8 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import {
   ClipboardCheck, CheckCircle2, AlertTriangle, XCircle, Loader2,
-  RefreshCw, Rocket, FileWarning, Bell, KeyRound, Server, ShieldCheck,
-  Globe, Database, HardDrive, FileCog, Smartphone,
+  RefreshCw, Rocket, FileWarning, Wrench,
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 

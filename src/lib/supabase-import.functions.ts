@@ -39,10 +39,10 @@ export const importSupabaseProjects = createServerFn({ method: "POST" })
     // Existing databases for this user
     const { data: existingDbs } = await supabase
       .from("databases")
-      .select("connection_string, name")
+      .select("host, name")
       .eq("owner_id", userId);
     const existingDbKeys = new Set(
-      (existingDbs ?? []).map((r) => `${r.name}|${r.connection_string ?? ""}`),
+      (existingDbs ?? []).map((r) => `${r.name}|${r.host ?? ""}`),
     );
 
     let imported = 0;
@@ -76,11 +76,10 @@ export const importSupabaseProjects = createServerFn({ method: "POST" })
         const { error: dbErr } = await supabase.from("databases").insert({
           owner_id: userId,
           name: p.name || p.id,
-          provider: "supabase",
-          connection_string: p.database?.host ?? `db.${p.id}.supabase.co`,
+          db_type: "supabase",
+          host: p.database?.host ?? `db.${p.id}.supabase.co`,
           status: p.status === "ACTIVE_HEALTHY" ? "online" : "warning",
-          notes: `Auto-imported from Supabase account (project ref: ${p.id})`,
-        } as never);
+        });
         if (dbErr) errors.push(`db ${p.id}: ${dbErr.message}`);
       }
     }

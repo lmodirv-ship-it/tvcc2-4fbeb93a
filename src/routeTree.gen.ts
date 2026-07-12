@@ -32,6 +32,7 @@ import { Route as AuthenticatedEnvironmentRouteImport } from './routes/_authenti
 import { Route as AuthenticatedEditorRouteImport } from './routes/_authenticated/editor'
 import { Route as AuthenticatedDomainsRouteImport } from './routes/_authenticated/domains'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCoreHubRouteImport } from './routes/_authenticated/core-hub'
 import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedApkManagerRouteImport } from './routes/_authenticated/apk-manager'
@@ -54,6 +55,7 @@ import { Route as AuthenticatedEditorBulkRouteImport } from './routes/_authentic
 import { Route as AuthenticatedEditorAiRouteImport } from './routes/_authenticated/editor.ai'
 import { Route as ApiPublicNotificationsIngestRouteImport } from './routes/api/public/notifications.ingest'
 import { Route as ApiPublicHooksHealthCheckRouteImport } from './routes/api/public/hooks/health-check'
+import { Route as ApiPublicCoreIngestRouteImport } from './routes/api/public/core.ingest'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -172,6 +174,11 @@ const AuthenticatedDomainsRoute = AuthenticatedDomainsRouteImport.update({
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   id: '/dashboard',
   path: '/dashboard',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedCoreHubRoute = AuthenticatedCoreHubRouteImport.update({
+  id: '/core-hub',
+  path: '/core-hub',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedClientsRoute = AuthenticatedClientsRouteImport.update({
@@ -297,6 +304,11 @@ const ApiPublicHooksHealthCheckRoute =
     path: '/api/public/hooks/health-check',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCoreIngestRoute = ApiPublicCoreIngestRouteImport.update({
+  id: '/api/public/core/ingest',
+  path: '/api/public/core/ingest',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -305,6 +317,7 @@ export interface FileRoutesByFullPath {
   '/apk-manager': typeof AuthenticatedApkManagerRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/clients': typeof AuthenticatedClientsRoute
+  '/core-hub': typeof AuthenticatedCoreHubRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/domains': typeof AuthenticatedDomainsRoute
   '/editor': typeof AuthenticatedEditorRouteWithChildren
@@ -341,6 +354,7 @@ export interface FileRoutesByFullPath {
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/editor/': typeof AuthenticatedEditorIndexRoute
+  '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
 }
@@ -351,6 +365,7 @@ export interface FileRoutesByTo {
   '/apk-manager': typeof AuthenticatedApkManagerRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/clients': typeof AuthenticatedClientsRoute
+  '/core-hub': typeof AuthenticatedCoreHubRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/domains': typeof AuthenticatedDomainsRoute
   '/environment': typeof AuthenticatedEnvironmentRoute
@@ -386,6 +401,7 @@ export interface FileRoutesByTo {
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/editor': typeof AuthenticatedEditorIndexRoute
+  '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
 }
@@ -398,6 +414,7 @@ export interface FileRoutesById {
   '/_authenticated/apk-manager': typeof AuthenticatedApkManagerRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
   '/_authenticated/clients': typeof AuthenticatedClientsRoute
+  '/_authenticated/core-hub': typeof AuthenticatedCoreHubRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/domains': typeof AuthenticatedDomainsRoute
   '/_authenticated/editor': typeof AuthenticatedEditorRouteWithChildren
@@ -434,6 +451,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/_authenticated/editor/': typeof AuthenticatedEditorIndexRoute
+  '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
 }
@@ -446,6 +464,7 @@ export interface FileRouteTypes {
     | '/apk-manager'
     | '/audit'
     | '/clients'
+    | '/core-hub'
     | '/dashboard'
     | '/domains'
     | '/editor'
@@ -482,6 +501,7 @@ export interface FileRouteTypes {
     | '/settings/notifications'
     | '/api/public/site-config'
     | '/editor/'
+    | '/api/public/core/ingest'
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
   fileRoutesByTo: FileRoutesByTo
@@ -492,6 +512,7 @@ export interface FileRouteTypes {
     | '/apk-manager'
     | '/audit'
     | '/clients'
+    | '/core-hub'
     | '/dashboard'
     | '/domains'
     | '/environment'
@@ -527,6 +548,7 @@ export interface FileRouteTypes {
     | '/settings/notifications'
     | '/api/public/site-config'
     | '/editor'
+    | '/api/public/core/ingest'
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
   id:
@@ -538,6 +560,7 @@ export interface FileRouteTypes {
     | '/_authenticated/apk-manager'
     | '/_authenticated/audit'
     | '/_authenticated/clients'
+    | '/_authenticated/core-hub'
     | '/_authenticated/dashboard'
     | '/_authenticated/domains'
     | '/_authenticated/editor'
@@ -574,6 +597,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/notifications'
     | '/api/public/site-config'
     | '/_authenticated/editor/'
+    | '/api/public/core/ingest'
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
   fileRoutesById: FileRoutesById
@@ -583,6 +607,7 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AuthRoute: typeof AuthRoute
   ApiPublicSiteConfigRoute: typeof ApiPublicSiteConfigRoute
+  ApiPublicCoreIngestRoute: typeof ApiPublicCoreIngestRoute
   ApiPublicHooksHealthCheckRoute: typeof ApiPublicHooksHealthCheckRoute
   ApiPublicNotificationsIngestRoute: typeof ApiPublicNotificationsIngestRoute
 }
@@ -750,6 +775,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/core-hub': {
+      id: '/_authenticated/core-hub'
+      path: '/core-hub'
+      fullPath: '/core-hub'
+      preLoaderRoute: typeof AuthenticatedCoreHubRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/clients': {
       id: '/_authenticated/clients'
       path: '/clients'
@@ -904,6 +936,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksHealthCheckRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/core/ingest': {
+      id: '/api/public/core/ingest'
+      path: '/api/public/core/ingest'
+      fullPath: '/api/public/core/ingest'
+      preLoaderRoute: typeof ApiPublicCoreIngestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -963,6 +1002,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedApkManagerRoute: typeof AuthenticatedApkManagerRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
   AuthenticatedClientsRoute: typeof AuthenticatedClientsRoute
+  AuthenticatedCoreHubRoute: typeof AuthenticatedCoreHubRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDomainsRoute: typeof AuthenticatedDomainsRoute
   AuthenticatedEditorRoute: typeof AuthenticatedEditorRouteWithChildren
@@ -990,6 +1030,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedApkManagerRoute: AuthenticatedApkManagerRoute,
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
   AuthenticatedClientsRoute: AuthenticatedClientsRoute,
+  AuthenticatedCoreHubRoute: AuthenticatedCoreHubRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDomainsRoute: AuthenticatedDomainsRoute,
   AuthenticatedEditorRoute: AuthenticatedEditorRouteWithChildren,
@@ -1021,6 +1062,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AuthRoute: AuthRoute,
   ApiPublicSiteConfigRoute: ApiPublicSiteConfigRoute,
+  ApiPublicCoreIngestRoute: ApiPublicCoreIngestRoute,
   ApiPublicHooksHealthCheckRoute: ApiPublicHooksHealthCheckRoute,
   ApiPublicNotificationsIngestRoute: ApiPublicNotificationsIngestRoute,
 }

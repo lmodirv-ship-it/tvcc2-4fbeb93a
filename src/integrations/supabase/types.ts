@@ -121,6 +121,159 @@ export type Database = {
           },
         ]
       }
+      core_directive_targets: {
+        Row: {
+          created_at: string
+          delivered_at: string | null
+          directive_id: string
+          error_message: string | null
+          http_status: number | null
+          id: string
+          response_ms: number | null
+          status: string
+          website_id: string
+        }
+        Insert: {
+          created_at?: string
+          delivered_at?: string | null
+          directive_id: string
+          error_message?: string | null
+          http_status?: number | null
+          id?: string
+          response_ms?: number | null
+          status?: string
+          website_id: string
+        }
+        Update: {
+          created_at?: string
+          delivered_at?: string | null
+          directive_id?: string
+          error_message?: string | null
+          http_status?: number | null
+          id?: string
+          response_ms?: number | null
+          status?: string
+          website_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "core_directive_targets_directive_id_fkey"
+            columns: ["directive_id"]
+            isOneToOne: false
+            referencedRelation: "core_directives"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "core_directive_targets_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      core_directives: {
+        Row: {
+          body: string
+          broadcast_at: string | null
+          created_at: string
+          delivered_count: number
+          directive_type: string
+          failed_count: number
+          id: string
+          metadata: Json
+          owner_id: string
+          priority: string
+          scope: string
+          status: string
+          target_service_type: string | null
+          target_website_ids: string[]
+          title: string
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          broadcast_at?: string | null
+          created_at?: string
+          delivered_count?: number
+          directive_type?: string
+          failed_count?: number
+          id?: string
+          metadata?: Json
+          owner_id: string
+          priority?: string
+          scope?: string
+          status?: string
+          target_service_type?: string | null
+          target_website_ids?: string[]
+          title: string
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          broadcast_at?: string | null
+          created_at?: string
+          delivered_count?: number
+          directive_type?: string
+          failed_count?: number
+          id?: string
+          metadata?: Json
+          owner_id?: string
+          priority?: string
+          scope?: string
+          status?: string
+          target_service_type?: string | null
+          target_website_ids?: string[]
+          title?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      core_hub_config: {
+        Row: {
+          api_key: string | null
+          auto_broadcast: boolean
+          connection_status: string
+          core_url: string
+          created_at: string
+          id: string
+          last_ping_ms: number | null
+          last_sync_at: string | null
+          metadata: Json
+          owner_id: string
+          updated_at: string
+          webhook_path: string
+        }
+        Insert: {
+          api_key?: string | null
+          auto_broadcast?: boolean
+          connection_status?: string
+          core_url?: string
+          created_at?: string
+          id?: string
+          last_ping_ms?: number | null
+          last_sync_at?: string | null
+          metadata?: Json
+          owner_id: string
+          updated_at?: string
+          webhook_path?: string
+        }
+        Update: {
+          api_key?: string | null
+          auto_broadcast?: boolean
+          connection_status?: string
+          core_url?: string
+          created_at?: string
+          id?: string
+          last_ping_ms?: number | null
+          last_sync_at?: string | null
+          metadata?: Json
+          owner_id?: string
+          updated_at?: string
+          webhook_path?: string
+        }
+        Relationships: []
+      }
       databases: {
         Row: {
           created_at: string

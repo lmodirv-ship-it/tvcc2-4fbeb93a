@@ -53,6 +53,7 @@
     "jobs": "Tâches",
     "integrations": "Intégrations",
     "services": "Services croisés",
+    "core_hub": "Noyau central",
     "domains": "Domaines",
     "ssl": "Moniteur SSL",
     "notifications": "Notifications",

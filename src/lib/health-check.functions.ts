@@ -147,3 +147,79 @@ export const autoFixAndReport = createServerFn({ method: "POST" })
 
     return { summary, deliveries, checked_at: report.generated_at };
   });
+
+const FOOTER_HTML = `<footer id="hn-group-footer" style="border-top:1px solid rgba(148,163,184,.25);padding:14px 12px;text-align:center;font:500 12px/1.6 system-ui,'Cairo',sans-serif;color:#64748b;background:transparent" dir="rtl">© 2026 جميع الحقوق محفوظة El Hassani Moulay Ismail · Groupe HN</footer>`;
+const FOOTER_TEXT = "© 2026 جميع الحقوق محفوظة El Hassani Moulay Ismail · Groupe HN";
+
+export const broadcastGroupFooter = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const { data: sites } = await supabase
+      .from("websites")
+      .select("id, name, domain")
+      .limit(500);
+
+    const payload = {
+      source: "hn-tvcc",
+      type: "site.footer.set",
+      selector: "body",
+      position: "append",
+      element_id: "hn-group-footer",
+      html: FOOTER_HTML,
+      text: FOOTER_TEXT,
+      issued_at: new Date().toISOString(),
+    };
+
+    const endpoints = ["/api/public/directives/ingest", "/api/public/core.ingest", "/api/public/footer.set"];
+
+    const deliveries = await Promise.all((sites ?? []).map(async (s) => {
+      const clean = s.domain.replace(/^https?:\/\//, "").replace(/\/+$/, "");
+      for (const ep of endpoints) {
+        const url = `https://${clean}${ep}`;
+        const ac = new AbortController();
+        const t = setTimeout(() => ac.abort(), 6000);
+        try {
+          const res = await fetch(url, {
+            method: "POST",
+            headers: { "content-type": "application/json", "x-hn-source": "hn-tvcc" },
+            body: JSON.stringify(payload),
+            signal: ac.signal,
+          });
+          clearTimeout(t);
+          if (res.ok) return { website_id: s.id, domain: s.domain, ok: true, status: res.status, endpoint: ep };
+        } catch {
+          clearTimeout(t);
+        }
+      }
+      return { website_id: s.id, domain: s.domain, ok: false, status: 0, endpoint: null };
+    }));
+
+    const delivered = deliveries.filter((d) => d.ok).length;
+    const failed = deliveries.length - delivered;
+
+    await supabase.from("activity_log").insert({
+      owner_id: userId,
+      action: "sites.footer.broadcast",
+      entity_type: "monitoring",
+      details: { total: deliveries.length, delivered, failed, footer_text: FOOTER_TEXT, deliveries } as any,
+    });
+
+    // Notify hn-nawat
+    try {
+      await fetch("https://hn-nawat.lovable.app/api/public/reports.ingest", {
+        method: "POST",
+        headers: { "content-type": "application/json", "x-hn-source": "hn-tvcc" },
+        body: JSON.stringify({
+          source: "hn-tvcc",
+          type: "site.footer.broadcast.report",
+          generated_at: new Date().toISOString(),
+          summary: { total: deliveries.length, delivered, failed },
+          footer: FOOTER_TEXT,
+          deliveries,
+        }),
+      });
+    } catch {}
+
+    return { total: deliveries.length, delivered, failed, footer: FOOTER_TEXT };
+  });

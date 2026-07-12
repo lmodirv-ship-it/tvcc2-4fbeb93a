@@ -70,7 +70,7 @@ export const createJob = createServerFn({ method: "POST" })
         target_count: websiteIds.length,
         success_count: 0,
         error_count: 0,
-        payload: data.payload ?? {},
+        payload: (data.payload ?? {}) as never,
       })
       .select()
       .single();
@@ -194,8 +194,9 @@ export const runJob = createServerFn({ method: "POST" })
     }).eq("id", job.id);
 
     await supabase.from("activity_log").insert({
-      user_id: userId, action: `job.${job.action_type}`,
-      details: { job_id: job.id, success, failed, action: job.action_type },
+      owner_id: userId,
+      action: `job.${job.action_type}`,
+      details: { job_id: job.id, success, failed, action: job.action_type } as never,
     });
 
     return { ok: true, success, failed, status: finalStatus };

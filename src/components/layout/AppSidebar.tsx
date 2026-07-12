@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Globe, Users, CreditCard, UserCog, Activity, Settings,
   Code2, LogOut, Wand2, FolderOpen, LayoutTemplate, Radio, ListChecks, Plug,
   Smartphone, KeyRound, Server, ShieldCheck, Bell, FileCog, LifeBuoy, ClipboardCheck,
-  FileBarChart, Wallet,
+  FileBarChart, Wallet, Boxes,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -24,6 +24,7 @@ const coreItems = [
   { titleKey: "sidebar.monitoring", url: "/monitoring", icon: Radio },
   { titleKey: "sidebar.jobs", url: "/jobs", icon: ListChecks },
   { titleKey: "sidebar.integrations", url: "/integrations", icon: Plug },
+  { titleKey: "sidebar.services", url: "/services", icon: Boxes },
 ];
 
 const opsItems = [

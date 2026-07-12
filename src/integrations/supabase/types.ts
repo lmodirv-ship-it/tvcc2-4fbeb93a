@@ -530,6 +530,64 @@ export type Database = {
         }
         Relationships: []
       }
+      service_dependencies: {
+        Row: {
+          consumer_website_id: string
+          created_at: string
+          id: string
+          notes: string | null
+          owner_id: string | null
+          provider_website_id: string
+          service_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          consumer_website_id: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id?: string | null
+          provider_website_id: string
+          service_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          consumer_website_id?: string
+          created_at?: string
+          id?: string
+          notes?: string | null
+          owner_id?: string | null
+          provider_website_id?: string
+          service_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_dependencies_consumer_website_id_fkey"
+            columns: ["consumer_website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_dependencies_provider_website_id_fkey"
+            columns: ["provider_website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_dependencies_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "site_services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_groups: {
         Row: {
           color: string
@@ -598,6 +656,59 @@ export type Database = {
           website_id?: string
         }
         Relationships: []
+      }
+      site_services: {
+        Row: {
+          created_at: string
+          description: string | null
+          endpoint_url: string | null
+          id: string
+          is_public: boolean
+          metadata: Json | null
+          name: string
+          owner_id: string | null
+          service_type: string
+          status: string
+          updated_at: string
+          website_id: string
+        }
+        Insert: {
+          created_at?: string
+          description?: string | null
+          endpoint_url?: string | null
+          id?: string
+          is_public?: boolean
+          metadata?: Json | null
+          name: string
+          owner_id?: string | null
+          service_type: string
+          status?: string
+          updated_at?: string
+          website_id: string
+        }
+        Update: {
+          created_at?: string
+          description?: string | null
+          endpoint_url?: string | null
+          id?: string
+          is_public?: boolean
+          metadata?: Json | null
+          name?: string
+          owner_id?: string | null
+          service_type?: string
+          status?: string
+          updated_at?: string
+          website_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_services_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       site_templates: {
         Row: {

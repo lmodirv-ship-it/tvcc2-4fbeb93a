@@ -52,6 +52,7 @@
     "monitoring": "Surveillance",
     "jobs": "Tâches",
     "integrations": "Intégrations",
+    "services": "Services croisés",
     "domains": "Domaines",
     "ssl": "Moniteur SSL",
     "notifications": "Notifications",

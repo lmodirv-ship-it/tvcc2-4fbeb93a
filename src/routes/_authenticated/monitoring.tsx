@@ -1,11 +1,14 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { autoFixAndReport } from "@/lib/health-check.functions";
+import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Radio, Database, HardDrive, RefreshCw, ShieldCheck, Loader2 } from "lucide-react";
+import { Radio, Database, HardDrive, RefreshCw, ShieldCheck, Loader2, Wrench } from "lucide-react";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/monitoring")({
@@ -15,6 +18,8 @@ export const Route = createFileRoute("/_authenticated/monitoring")({
 
 function MonitoringPage() {
   const qc = useQueryClient();
+  const runAutoFix = useServerFn(autoFixAndReport);
+  const [fixing, setFixing] = useState(false);
 
   const { data: websites, isLoading } = useQuery({
     queryKey: ["mon-websites"],
@@ -104,9 +109,35 @@ function MonitoringPage() {
   return (
     <div className="space-y-6" dir="rtl">
       <div className="flex items-start justify-between gap-3 flex-wrap">
-        <Button onClick={pingAll} className="gap-2">
-          <RefreshCw className="w-4 h-4" /> فحص الآن
-        </Button>
+        <div className="flex gap-2">
+          <Button onClick={pingAll} variant="outline" className="gap-2">
+            <RefreshCw className="w-4 h-4" /> فحص الآن
+          </Button>
+          <Button
+            disabled={fixing}
+            onClick={async () => {
+              setFixing(true);
+              toast.info("جاري إصلاح المواقع غير المتصلة وإرسال التقرير إلى hn-nawat...");
+              try {
+                const res: any = await runAutoFix();
+                const s = res?.summary;
+                toast.success(
+                  `تم: متصلة ${s.online} / معطلة ${s.offline} / تم إصلاح ${s.fixed}. أُرسل التقرير إلى hn-nawat.`,
+                );
+                qc.invalidateQueries({ queryKey: ["mon-websites"] });
+                qc.invalidateQueries({ queryKey: ["mon-checks"] });
+              } catch (e: any) {
+                toast.error(e?.message || "فشل الإصلاح");
+              } finally {
+                setFixing(false);
+              }
+            }}
+            className="gap-2"
+          >
+            {fixing ? <Loader2 className="w-4 h-4 animate-spin" /> : <Wrench className="w-4 h-4" />}
+            إصلاح تلقائي + إرسال تقرير
+          </Button>
+        </div>
         <div className="text-right">
           <h1 className="text-3xl font-bold flex items-center gap-2 justify-end">
             <Radio className="w-7 h-7 text-primary" /> مركز المراقبة

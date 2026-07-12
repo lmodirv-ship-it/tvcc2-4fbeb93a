@@ -30,6 +30,8 @@ import {
   ChevronsLeft, ChevronsRight, CheckCircle, AlertCircle, Database as DbIcon,
 } from "lucide-react";
 import { verifyDns } from "@/lib/dns.functions";
+import { runHealthCheckAll } from "@/lib/health-check.functions";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/websites")({
@@ -41,6 +43,9 @@ type StatusKey = "all" | "online" | "offline" | "warning";
 
 function WebsitesPage() {
   const qc = useQueryClient();
+  const runCheckFn = useServerFn(runHealthCheckAll);
+  const [checking, setChecking] = useState(false);
+  const [lastCheck, setLastCheck] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [addOpen, setAddOpen] = useState(false);
   const [search, setSearch] = useState("");
@@ -434,9 +439,32 @@ function WebsitesPage() {
                 <Activity className="w-10 h-10 text-primary" />
               </div>
               <div className="text-success text-sm font-medium">جميع الأنظمة تعمل بشكل جيد</div>
-              <div className="text-xs text-muted-foreground">آخر فحص شامل: منذ 3 دقائق</div>
-              <Button className="w-full mt-2 bg-primary">
-                <Activity className="w-4 h-4 ml-2" /> فحص شامل الآن
+              <div className="text-xs text-muted-foreground">
+                {lastCheck ? `آخر فحص شامل: ${new Date(lastCheck).toLocaleTimeString("ar")}` : "لم يتم إجراء فحص بعد"}
+              </div>
+              <Button
+                className="w-full mt-2 bg-primary"
+                disabled={checking}
+                onClick={async () => {
+                  setChecking(true);
+                  const t = toast.loading("جاري فحص جميع المواقع...");
+                  try {
+                    const res = await runCheckFn();
+                    setLastCheck(res.checked_at);
+                    toast.success(
+                      `اكتمل الفحص: ${res.summary.online} متصل · ${res.summary.warning} تحذير · ${res.summary.offline} غير متصل`,
+                      { id: t },
+                    );
+                    qc.invalidateQueries({ queryKey: ["websites"] });
+                  } catch (e: any) {
+                    toast.error(e?.message || "فشل الفحص", { id: t });
+                  } finally {
+                    setChecking(false);
+                  }
+                }}
+              >
+                {checking ? <Loader2 className="w-4 h-4 ml-2 animate-spin" /> : <Activity className="w-4 h-4 ml-2" />}
+                فحص شامل الآن
               </Button>
             </div>
           </CardContent>

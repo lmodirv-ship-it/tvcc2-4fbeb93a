@@ -54,6 +54,7 @@ import { Route as AuthenticatedEditorBulkRouteImport } from './routes/_authentic
 import { Route as AuthenticatedEditorAiRouteImport } from './routes/_authenticated/editor.ai'
 import { Route as ApiPublicNotificationsIngestRouteImport } from './routes/api/public/notifications.ingest'
 import { Route as ApiPublicHooksHealthCheckRouteImport } from './routes/api/public/hooks/health-check'
+import { Route as ApiPublicCoreIngestRouteImport } from './routes/api/public/core.ingest'
 
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
@@ -297,6 +298,11 @@ const ApiPublicHooksHealthCheckRoute =
     path: '/api/public/hooks/health-check',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicCoreIngestRoute = ApiPublicCoreIngestRouteImport.update({
+  id: '/api/public/core/ingest',
+  path: '/api/public/core/ingest',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
@@ -341,6 +347,7 @@ export interface FileRoutesByFullPath {
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/editor/': typeof AuthenticatedEditorIndexRoute
+  '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
 }
@@ -386,6 +393,7 @@ export interface FileRoutesByTo {
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/editor': typeof AuthenticatedEditorIndexRoute
+  '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
 }
@@ -434,6 +442,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/_authenticated/editor/': typeof AuthenticatedEditorIndexRoute
+  '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
 }
@@ -482,6 +491,7 @@ export interface FileRouteTypes {
     | '/settings/notifications'
     | '/api/public/site-config'
     | '/editor/'
+    | '/api/public/core/ingest'
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
   fileRoutesByTo: FileRoutesByTo
@@ -527,6 +537,7 @@ export interface FileRouteTypes {
     | '/settings/notifications'
     | '/api/public/site-config'
     | '/editor'
+    | '/api/public/core/ingest'
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
   id:
@@ -574,6 +585,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/notifications'
     | '/api/public/site-config'
     | '/_authenticated/editor/'
+    | '/api/public/core/ingest'
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
   fileRoutesById: FileRoutesById
@@ -583,6 +595,7 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AuthRoute: typeof AuthRoute
   ApiPublicSiteConfigRoute: typeof ApiPublicSiteConfigRoute
+  ApiPublicCoreIngestRoute: typeof ApiPublicCoreIngestRoute
   ApiPublicHooksHealthCheckRoute: typeof ApiPublicHooksHealthCheckRoute
   ApiPublicNotificationsIngestRoute: typeof ApiPublicNotificationsIngestRoute
 }
@@ -904,6 +917,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksHealthCheckRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/core/ingest': {
+      id: '/api/public/core/ingest'
+      path: '/api/public/core/ingest'
+      fullPath: '/api/public/core/ingest'
+      preLoaderRoute: typeof ApiPublicCoreIngestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
@@ -1021,6 +1041,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AuthRoute: AuthRoute,
   ApiPublicSiteConfigRoute: ApiPublicSiteConfigRoute,
+  ApiPublicCoreIngestRoute: ApiPublicCoreIngestRoute,
   ApiPublicHooksHealthCheckRoute: ApiPublicHooksHealthCheckRoute,
   ApiPublicNotificationsIngestRoute: ApiPublicNotificationsIngestRoute,
 }

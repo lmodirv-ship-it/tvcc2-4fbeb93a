@@ -31,6 +31,7 @@ import {
 } from "lucide-react";
 import { verifyDns } from "@/lib/dns.functions";
 import { runHealthCheckAll } from "@/lib/health-check.functions";
+import { importSupabaseProjects } from "@/lib/supabase-import.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 
@@ -44,6 +45,8 @@ type StatusKey = "all" | "online" | "offline" | "warning";
 function WebsitesPage() {
   const qc = useQueryClient();
   const runCheckFn = useServerFn(runHealthCheckAll);
+  const importSbFn = useServerFn(importSupabaseProjects);
+  const [importing, setImporting] = useState(false);
   const [checking, setChecking] = useState(false);
   const [lastCheck, setLastCheck] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -298,6 +301,28 @@ function WebsitesPage() {
                 </DialogTrigger>
                 <AddWebsiteDialog onDone={() => { setAddOpen(false); qc.invalidateQueries({ queryKey: ["websites"] }); }} />
               </Dialog>
+              <Button
+                variant="outline"
+                disabled={importing}
+                onClick={async () => {
+                  setImporting(true);
+                  try {
+                    const r = await importSbFn();
+                    if (!r.ok) toast.error(r.error || "فشل الاستيراد");
+                    else {
+                      toast.success(`تم استيراد ${r.imported} مشروع (تخطي ${r.skipped} موجود مسبقاً من أصل ${r.total})`);
+                      qc.invalidateQueries({ queryKey: ["websites"] });
+                    }
+                  } catch (e) {
+                    toast.error(e instanceof Error ? e.message : "خطأ غير معروف");
+                  } finally {
+                    setImporting(false);
+                  }
+                }}
+              >
+                {importing ? <Loader2 className="w-4 h-4 ml-1 animate-spin" /> : <DbIcon className="w-4 h-4 ml-1" />}
+                استيراد من Supabase
+              </Button>
             </div>
           </div>
 

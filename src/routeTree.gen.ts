@@ -53,6 +53,7 @@ import { Route as AuthenticatedEditorDesignRouteImport } from './routes/_authent
 import { Route as AuthenticatedEditorContentRouteImport } from './routes/_authenticated/editor.content'
 import { Route as AuthenticatedEditorBulkRouteImport } from './routes/_authenticated/editor.bulk'
 import { Route as AuthenticatedEditorAiRouteImport } from './routes/_authenticated/editor.ai'
+import { Route as ApiPublicPaymentsIngestRouteImport } from './routes/api/public/payments.ingest'
 import { Route as ApiPublicNotificationsIngestRouteImport } from './routes/api/public/notifications.ingest'
 import { Route as ApiPublicHooksHealthCheckRouteImport } from './routes/api/public/hooks/health-check'
 import { Route as ApiPublicCoreIngestRouteImport } from './routes/api/public/core.ingest'
@@ -292,6 +293,11 @@ const AuthenticatedEditorAiRoute = AuthenticatedEditorAiRouteImport.update({
   path: '/ai',
   getParentRoute: () => AuthenticatedEditorRoute,
 } as any)
+const ApiPublicPaymentsIngestRoute = ApiPublicPaymentsIngestRouteImport.update({
+  id: '/api/public/payments/ingest',
+  path: '/api/public/payments/ingest',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicNotificationsIngestRoute =
   ApiPublicNotificationsIngestRouteImport.update({
     id: '/api/public/notifications/ingest',
@@ -357,6 +363,7 @@ export interface FileRoutesByFullPath {
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
+  '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -404,6 +411,7 @@ export interface FileRoutesByTo {
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
+  '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -454,6 +462,7 @@ export interface FileRoutesById {
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
+  '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -504,6 +513,7 @@ export interface FileRouteTypes {
     | '/api/public/core/ingest'
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
+    | '/api/public/payments/ingest'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -551,6 +561,7 @@ export interface FileRouteTypes {
     | '/api/public/core/ingest'
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
+    | '/api/public/payments/ingest'
   id:
     | '__root__'
     | '/'
@@ -600,6 +611,7 @@ export interface FileRouteTypes {
     | '/api/public/core/ingest'
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
+    | '/api/public/payments/ingest'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -610,6 +622,7 @@ export interface RootRouteChildren {
   ApiPublicCoreIngestRoute: typeof ApiPublicCoreIngestRoute
   ApiPublicHooksHealthCheckRoute: typeof ApiPublicHooksHealthCheckRoute
   ApiPublicNotificationsIngestRoute: typeof ApiPublicNotificationsIngestRoute
+  ApiPublicPaymentsIngestRoute: typeof ApiPublicPaymentsIngestRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -922,6 +935,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEditorAiRouteImport
       parentRoute: typeof AuthenticatedEditorRoute
     }
+    '/api/public/payments/ingest': {
+      id: '/api/public/payments/ingest'
+      path: '/api/public/payments/ingest'
+      fullPath: '/api/public/payments/ingest'
+      preLoaderRoute: typeof ApiPublicPaymentsIngestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/notifications/ingest': {
       id: '/api/public/notifications/ingest'
       path: '/api/public/notifications/ingest'
@@ -1065,6 +1085,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCoreIngestRoute: ApiPublicCoreIngestRoute,
   ApiPublicHooksHealthCheckRoute: ApiPublicHooksHealthCheckRoute,
   ApiPublicNotificationsIngestRoute: ApiPublicNotificationsIngestRoute,
+  ApiPublicPaymentsIngestRoute: ApiPublicPaymentsIngestRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

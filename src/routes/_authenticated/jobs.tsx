@@ -154,15 +154,16 @@ function JobsPage() {
                     <TableHead className="text-right">التقدم</TableHead>
                     <TableHead className="text-right">الحالة</TableHead>
                     <TableHead className="text-right">التاريخ</TableHead>
+                    <TableHead className="text-right">إجراءات</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
                   {isLoading ? (
-                    <TableRow><TableCell colSpan={6} className="text-center py-8">
+                    <TableRow><TableCell colSpan={7} className="text-center py-8">
                       <Loader2 className="w-5 h-5 animate-spin inline text-primary" />
                     </TableCell></TableRow>
                   ) : !filtered.length ? (
-                    <TableRow><TableCell colSpan={6} className="text-center py-10 text-muted-foreground">
+                    <TableRow><TableCell colSpan={7} className="text-center py-10 text-muted-foreground">
                       لا توجد مهام في هذا التصنيف
                     </TableCell></TableRow>
                   ) : filtered.map((j) => (

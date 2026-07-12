@@ -142,7 +142,7 @@ export const autoFixAndReport = createServerFn({ method: "POST" })
       owner_id: userId,
       action: "sites.autofix.report",
       entity_type: "monitoring",
-      metadata: { summary, deliveries } as any,
+      details: { summary, deliveries } as any,
     });
 
     return { summary, deliveries, checked_at: report.generated_at };

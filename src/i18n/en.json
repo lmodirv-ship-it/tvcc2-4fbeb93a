@@ -64,6 +64,7 @@
     "clients": "Clients",
     "users": "Users",
     "subscriptions": "Subscriptions",
+    "payment_providers": "Payment Providers",
     "audit": "System Audit",
     "settings": "Settings"
   },

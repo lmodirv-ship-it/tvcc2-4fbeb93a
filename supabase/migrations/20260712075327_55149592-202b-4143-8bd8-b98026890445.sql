@@ -1,0 +1,2 @@
+ALTER TABLE public.websites ADD COLUMN IF NOT EXISTS payments_provider_url text DEFAULT 'https://hnpay-ai.lovable.app';
+UPDATE public.websites SET payments_provider_url = 'https://hnpay-ai.lovable.app' WHERE payments_provider_url IS NULL OR payments_provider_url = '';

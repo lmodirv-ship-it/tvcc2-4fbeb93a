@@ -1135,6 +1135,7 @@ export type Database = {
           last_checked_at: string | null
           name: string
           owner_id: string | null
+          payments_provider_url: string | null
           site_id: string | null
           status: Database["public"]["Enums"]["site_status"]
           updated_at: string
@@ -1161,6 +1162,7 @@ export type Database = {
           last_checked_at?: string | null
           name: string
           owner_id?: string | null
+          payments_provider_url?: string | null
           site_id?: string | null
           status?: Database["public"]["Enums"]["site_status"]
           updated_at?: string
@@ -1187,6 +1189,7 @@ export type Database = {
           last_checked_at?: string | null
           name?: string
           owner_id?: string | null
+          payments_provider_url?: string | null
           site_id?: string | null
           status?: Database["public"]["Enums"]["site_status"]
           updated_at?: string

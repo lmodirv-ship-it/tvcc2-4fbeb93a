@@ -620,6 +620,63 @@ export type Database = {
         }
         Relationships: []
       }
+      payment_events: {
+        Row: {
+          amount: number | null
+          created_at: string
+          currency: string | null
+          event_type: string
+          external_id: string | null
+          fanout_delivered: number
+          fanout_failed: number
+          fanout_total: number
+          id: string
+          owner_id: string
+          payload: Json
+          provider: string
+          received_at: string
+          status: string
+          subscription_id: string | null
+          website_id: string | null
+        }
+        Insert: {
+          amount?: number | null
+          created_at?: string
+          currency?: string | null
+          event_type: string
+          external_id?: string | null
+          fanout_delivered?: number
+          fanout_failed?: number
+          fanout_total?: number
+          id?: string
+          owner_id: string
+          payload?: Json
+          provider?: string
+          received_at?: string
+          status?: string
+          subscription_id?: string | null
+          website_id?: string | null
+        }
+        Update: {
+          amount?: number | null
+          created_at?: string
+          currency?: string | null
+          event_type?: string
+          external_id?: string | null
+          fanout_delivered?: number
+          fanout_failed?: number
+          fanout_total?: number
+          id?: string
+          owner_id?: string
+          payload?: Json
+          provider?: string
+          received_at?: string
+          status?: string
+          subscription_id?: string | null
+          website_id?: string | null
+        }
+        Relationships: []
+      }
       profiles: {
         Row: {
           created_at: string

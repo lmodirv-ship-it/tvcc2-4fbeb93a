@@ -1134,7 +1134,7 @@ export type Database = {
           is_active: boolean
           last_checked_at: string | null
           name: string
-          owner_id: string
+          owner_id: string | null
           site_id: string | null
           status: Database["public"]["Enums"]["site_status"]
           updated_at: string
@@ -1160,7 +1160,7 @@ export type Database = {
           is_active?: boolean
           last_checked_at?: string | null
           name: string
-          owner_id: string
+          owner_id?: string | null
           site_id?: string | null
           status?: Database["public"]["Enums"]["site_status"]
           updated_at?: string
@@ -1186,7 +1186,7 @@ export type Database = {
           is_active?: boolean
           last_checked_at?: string | null
           name?: string
-          owner_id?: string
+          owner_id?: string | null
           site_id?: string | null
           status?: Database["public"]["Enums"]["site_status"]
           updated_at?: string

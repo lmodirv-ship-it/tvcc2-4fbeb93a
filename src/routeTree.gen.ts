@@ -32,6 +32,7 @@ import { Route as AuthenticatedEnvironmentRouteImport } from './routes/_authenti
 import { Route as AuthenticatedEditorRouteImport } from './routes/_authenticated/editor'
 import { Route as AuthenticatedDomainsRouteImport } from './routes/_authenticated/domains'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedCoreHubRouteImport } from './routes/_authenticated/core-hub'
 import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedApkManagerRouteImport } from './routes/_authenticated/apk-manager'
@@ -175,6 +176,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
   path: '/dashboard',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedCoreHubRoute = AuthenticatedCoreHubRouteImport.update({
+  id: '/core-hub',
+  path: '/core-hub',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedClientsRoute = AuthenticatedClientsRouteImport.update({
   id: '/clients',
   path: '/clients',
@@ -311,6 +317,7 @@ export interface FileRoutesByFullPath {
   '/apk-manager': typeof AuthenticatedApkManagerRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/clients': typeof AuthenticatedClientsRoute
+  '/core-hub': typeof AuthenticatedCoreHubRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/domains': typeof AuthenticatedDomainsRoute
   '/editor': typeof AuthenticatedEditorRouteWithChildren
@@ -358,6 +365,7 @@ export interface FileRoutesByTo {
   '/apk-manager': typeof AuthenticatedApkManagerRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/clients': typeof AuthenticatedClientsRoute
+  '/core-hub': typeof AuthenticatedCoreHubRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/domains': typeof AuthenticatedDomainsRoute
   '/environment': typeof AuthenticatedEnvironmentRoute
@@ -406,6 +414,7 @@ export interface FileRoutesById {
   '/_authenticated/apk-manager': typeof AuthenticatedApkManagerRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
   '/_authenticated/clients': typeof AuthenticatedClientsRoute
+  '/_authenticated/core-hub': typeof AuthenticatedCoreHubRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/domains': typeof AuthenticatedDomainsRoute
   '/_authenticated/editor': typeof AuthenticatedEditorRouteWithChildren
@@ -455,6 +464,7 @@ export interface FileRouteTypes {
     | '/apk-manager'
     | '/audit'
     | '/clients'
+    | '/core-hub'
     | '/dashboard'
     | '/domains'
     | '/editor'
@@ -502,6 +512,7 @@ export interface FileRouteTypes {
     | '/apk-manager'
     | '/audit'
     | '/clients'
+    | '/core-hub'
     | '/dashboard'
     | '/domains'
     | '/environment'
@@ -549,6 +560,7 @@ export interface FileRouteTypes {
     | '/_authenticated/apk-manager'
     | '/_authenticated/audit'
     | '/_authenticated/clients'
+    | '/_authenticated/core-hub'
     | '/_authenticated/dashboard'
     | '/_authenticated/domains'
     | '/_authenticated/editor'
@@ -761,6 +773,13 @@ declare module '@tanstack/react-router' {
       path: '/dashboard'
       fullPath: '/dashboard'
       preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/core-hub': {
+      id: '/_authenticated/core-hub'
+      path: '/core-hub'
+      fullPath: '/core-hub'
+      preLoaderRoute: typeof AuthenticatedCoreHubRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/clients': {
@@ -983,6 +1002,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedApkManagerRoute: typeof AuthenticatedApkManagerRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
   AuthenticatedClientsRoute: typeof AuthenticatedClientsRoute
+  AuthenticatedCoreHubRoute: typeof AuthenticatedCoreHubRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDomainsRoute: typeof AuthenticatedDomainsRoute
   AuthenticatedEditorRoute: typeof AuthenticatedEditorRouteWithChildren
@@ -1010,6 +1030,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedApkManagerRoute: AuthenticatedApkManagerRoute,
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
   AuthenticatedClientsRoute: AuthenticatedClientsRoute,
+  AuthenticatedCoreHubRoute: AuthenticatedCoreHubRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDomainsRoute: AuthenticatedDomainsRoute,
   AuthenticatedEditorRoute: AuthenticatedEditorRouteWithChildren,

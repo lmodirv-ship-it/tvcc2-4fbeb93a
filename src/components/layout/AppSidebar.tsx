@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Globe, Users, CreditCard, UserCog, Activity, Settings,
   Code2, LogOut, Wand2, FolderOpen, LayoutTemplate, Radio, ListChecks, Plug,
   Smartphone, KeyRound, Server, ShieldCheck, Bell, FileCog, LifeBuoy, ClipboardCheck,
-  FileBarChart,
+  FileBarChart, Wallet,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -42,6 +42,7 @@ const adminItems = [
   { titleKey: "sidebar.clients", url: "/clients", icon: Users },
   { titleKey: "sidebar.users", url: "/users", icon: UserCog },
   { titleKey: "sidebar.subscriptions", url: "/subscriptions", icon: CreditCard },
+  { titleKey: "sidebar.payment_providers", url: "/payment-providers", icon: Wallet },
   { titleKey: "sidebar.audit", url: "/audit", icon: ClipboardCheck },
   { titleKey: "sidebar.settings", url: "/settings", icon: Settings },
 ];

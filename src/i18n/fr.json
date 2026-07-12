@@ -64,6 +64,7 @@
     "clients": "Clients",
     "users": "Utilisateurs",
     "subscriptions": "Abonnements",
+    "payment_providers": "Fournisseurs de paiement",
     "audit": "Audit système",
     "settings": "Paramètres"
   },

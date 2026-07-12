@@ -13,6 +13,7 @@ import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedWebsitesRouteImport } from './routes/_authenticated/websites'
+import { Route as AuthenticatedVideoStudioRouteImport } from './routes/_authenticated/video-studio'
 import { Route as AuthenticatedVaultRouteImport } from './routes/_authenticated/vault'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
 import { Route as AuthenticatedTemplatesRouteImport } from './routes/_authenticated/templates'
@@ -79,6 +80,12 @@ const AuthenticatedWebsitesRoute = AuthenticatedWebsitesRouteImport.update({
   path: '/websites',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedVideoStudioRoute =
+  AuthenticatedVideoStudioRouteImport.update({
+    id: '/video-studio',
+    path: '/video-studio',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedVaultRoute = AuthenticatedVaultRouteImport.update({
   id: '/vault',
   path: '/vault',
@@ -357,6 +364,7 @@ export interface FileRoutesByFullPath {
   '/templates': typeof AuthenticatedTemplatesRoute
   '/users': typeof AuthenticatedUsersRoute
   '/vault': typeof AuthenticatedVaultRoute
+  '/video-studio': typeof AuthenticatedVideoStudioRoute
   '/websites': typeof AuthenticatedWebsitesRoute
   '/editor/ai': typeof AuthenticatedEditorAiRoute
   '/editor/bulk': typeof AuthenticatedEditorBulkRoute
@@ -407,6 +415,7 @@ export interface FileRoutesByTo {
   '/templates': typeof AuthenticatedTemplatesRoute
   '/users': typeof AuthenticatedUsersRoute
   '/vault': typeof AuthenticatedVaultRoute
+  '/video-studio': typeof AuthenticatedVideoStudioRoute
   '/websites': typeof AuthenticatedWebsitesRoute
   '/editor/ai': typeof AuthenticatedEditorAiRoute
   '/editor/bulk': typeof AuthenticatedEditorBulkRoute
@@ -460,6 +469,7 @@ export interface FileRoutesById {
   '/_authenticated/templates': typeof AuthenticatedTemplatesRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/vault': typeof AuthenticatedVaultRoute
+  '/_authenticated/video-studio': typeof AuthenticatedVideoStudioRoute
   '/_authenticated/websites': typeof AuthenticatedWebsitesRoute
   '/_authenticated/editor/ai': typeof AuthenticatedEditorAiRoute
   '/_authenticated/editor/bulk': typeof AuthenticatedEditorBulkRoute
@@ -513,6 +523,7 @@ export interface FileRouteTypes {
     | '/templates'
     | '/users'
     | '/vault'
+    | '/video-studio'
     | '/websites'
     | '/editor/ai'
     | '/editor/bulk'
@@ -563,6 +574,7 @@ export interface FileRouteTypes {
     | '/templates'
     | '/users'
     | '/vault'
+    | '/video-studio'
     | '/websites'
     | '/editor/ai'
     | '/editor/bulk'
@@ -615,6 +627,7 @@ export interface FileRouteTypes {
     | '/_authenticated/templates'
     | '/_authenticated/users'
     | '/_authenticated/vault'
+    | '/_authenticated/video-studio'
     | '/_authenticated/websites'
     | '/_authenticated/editor/ai'
     | '/_authenticated/editor/bulk'
@@ -679,6 +692,13 @@ declare module '@tanstack/react-router' {
       path: '/websites'
       fullPath: '/websites'
       preLoaderRoute: typeof AuthenticatedWebsitesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/video-studio': {
+      id: '/_authenticated/video-studio'
+      path: '/video-studio'
+      fullPath: '/video-studio'
+      preLoaderRoute: typeof AuthenticatedVideoStudioRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/vault': {
@@ -1083,6 +1103,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedTemplatesRoute: typeof AuthenticatedTemplatesRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedVaultRoute: typeof AuthenticatedVaultRoute
+  AuthenticatedVideoStudioRoute: typeof AuthenticatedVideoStudioRoute
   AuthenticatedWebsitesRoute: typeof AuthenticatedWebsitesRoute
 }
 
@@ -1112,6 +1133,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedTemplatesRoute: AuthenticatedTemplatesRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
   AuthenticatedVaultRoute: AuthenticatedVaultRoute,
+  AuthenticatedVideoStudioRoute: AuthenticatedVideoStudioRoute,
   AuthenticatedWebsitesRoute: AuthenticatedWebsitesRoute,
 }
 

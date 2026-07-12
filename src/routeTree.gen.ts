@@ -54,6 +54,7 @@ import { Route as AuthenticatedEditorDesignRouteImport } from './routes/_authent
 import { Route as AuthenticatedEditorContentRouteImport } from './routes/_authenticated/editor.content'
 import { Route as AuthenticatedEditorBulkRouteImport } from './routes/_authenticated/editor.bulk'
 import { Route as AuthenticatedEditorAiRouteImport } from './routes/_authenticated/editor.ai'
+import { Route as ApiPublicVideoIngestRouteImport } from './routes/api/public/video.ingest'
 import { Route as ApiPublicPaymentsIngestRouteImport } from './routes/api/public/payments.ingest'
 import { Route as ApiPublicNotificationsIngestRouteImport } from './routes/api/public/notifications.ingest'
 import { Route as ApiPublicHooksHealthCheckRouteImport } from './routes/api/public/hooks/health-check'
@@ -300,6 +301,11 @@ const AuthenticatedEditorAiRoute = AuthenticatedEditorAiRouteImport.update({
   path: '/ai',
   getParentRoute: () => AuthenticatedEditorRoute,
 } as any)
+const ApiPublicVideoIngestRoute = ApiPublicVideoIngestRouteImport.update({
+  id: '/api/public/video/ingest',
+  path: '/api/public/video/ingest',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicPaymentsIngestRoute = ApiPublicPaymentsIngestRouteImport.update({
   id: '/api/public/payments/ingest',
   path: '/api/public/payments/ingest',
@@ -372,6 +378,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
   '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
+  '/api/public/video/ingest': typeof ApiPublicVideoIngestRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -421,6 +428,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
   '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
+  '/api/public/video/ingest': typeof ApiPublicVideoIngestRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -473,6 +481,7 @@ export interface FileRoutesById {
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
   '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
+  '/api/public/video/ingest': typeof ApiPublicVideoIngestRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -525,6 +534,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
     | '/api/public/payments/ingest'
+    | '/api/public/video/ingest'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -574,6 +584,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
     | '/api/public/payments/ingest'
+    | '/api/public/video/ingest'
   id:
     | '__root__'
     | '/'
@@ -625,6 +636,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
     | '/api/public/payments/ingest'
+    | '/api/public/video/ingest'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -636,6 +648,7 @@ export interface RootRouteChildren {
   ApiPublicHooksHealthCheckRoute: typeof ApiPublicHooksHealthCheckRoute
   ApiPublicNotificationsIngestRoute: typeof ApiPublicNotificationsIngestRoute
   ApiPublicPaymentsIngestRoute: typeof ApiPublicPaymentsIngestRoute
+  ApiPublicVideoIngestRoute: typeof ApiPublicVideoIngestRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -955,6 +968,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEditorAiRouteImport
       parentRoute: typeof AuthenticatedEditorRoute
     }
+    '/api/public/video/ingest': {
+      id: '/api/public/video/ingest'
+      path: '/api/public/video/ingest'
+      fullPath: '/api/public/video/ingest'
+      preLoaderRoute: typeof ApiPublicVideoIngestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/payments/ingest': {
       id: '/api/public/payments/ingest'
       path: '/api/public/payments/ingest'
@@ -1108,6 +1128,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksHealthCheckRoute: ApiPublicHooksHealthCheckRoute,
   ApiPublicNotificationsIngestRoute: ApiPublicNotificationsIngestRoute,
   ApiPublicPaymentsIngestRoute: ApiPublicPaymentsIngestRoute,
+  ApiPublicVideoIngestRoute: ApiPublicVideoIngestRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

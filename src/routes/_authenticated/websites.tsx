@@ -30,6 +30,8 @@ import {
   ChevronsLeft, ChevronsRight, CheckCircle, AlertCircle, Database as DbIcon,
 } from "lucide-react";
 import { verifyDns } from "@/lib/dns.functions";
+import { runHealthCheckAll } from "@/lib/health-check.functions";
+import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/websites")({
@@ -41,6 +43,9 @@ type StatusKey = "all" | "online" | "offline" | "warning";
 
 function WebsitesPage() {
   const qc = useQueryClient();
+  const runCheckFn = useServerFn(runHealthCheckAll);
+  const [checking, setChecking] = useState(false);
+  const [lastCheck, setLastCheck] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
   const [addOpen, setAddOpen] = useState(false);
   const [search, setSearch] = useState("");

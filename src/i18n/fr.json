@@ -68,7 +68,8 @@
     "subscriptions": "Abonnements",
     "payment_providers": "Fournisseurs de paiement",
     "audit": "Audit système",
-    "settings": "Paramètres"
+    "settings": "Paramètres",
+    "payments_hub": "Hub de paiement unifié"
   },
   "dashboard": {
     "title": "Tableau de bord",

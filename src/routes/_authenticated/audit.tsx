@@ -38,6 +38,29 @@ function AuditPage() {
     queryFn: runAudit,
   });
 
+  const runAutoFix = useServerFn(autoFixAndReport);
+  const [fixing, setFixing] = useState(false);
+  const [fixReport, setFixReport] = useState<any>(null);
+
+  const problems = useMemo(
+    () => (data || []).filter((c) => c.severity === "error" || c.severity === "warn"),
+    [data],
+  );
+
+  async function handleAutoFix() {
+    setFixing(true);
+    try {
+      const res: any = await runAutoFix();
+      setFixReport(res.summary);
+      toast.success(`تم الإصلاح: ${res.summary.fixed} موقع أُعيد للخدمة · ${res.summary.still_offline.length} متبقّي`);
+      await refetch();
+    } catch (e: any) {
+      toast.error(e?.message || "فشل الإصلاح التلقائي");
+    } finally {
+      setFixing(false);
+    }
+  }
+
   const grouped = useMemo(() => {
     const g: Record<string, Check[]> = {};
     (data || []).forEach((c) => {

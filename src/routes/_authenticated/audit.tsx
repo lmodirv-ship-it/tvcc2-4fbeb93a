@@ -1,6 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery } from "@tanstack/react-query";
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
+import { useServerFn } from "@tanstack/react-start";
+import { autoFixAndReport } from "@/lib/health-check.functions";
+import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -8,8 +11,7 @@ import { Progress } from "@/components/ui/progress";
 import { Button } from "@/components/ui/button";
 import {
   ClipboardCheck, CheckCircle2, AlertTriangle, XCircle, Loader2,
-  RefreshCw, Rocket, FileWarning, Bell, KeyRound, Server, ShieldCheck,
-  Globe, Database, HardDrive, FileCog, Smartphone,
+  RefreshCw, Rocket, FileWarning, Wrench,
 } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 
@@ -35,6 +37,29 @@ function AuditPage() {
     queryKey: ["system-audit"],
     queryFn: runAudit,
   });
+
+  const runAutoFix = useServerFn(autoFixAndReport);
+  const [fixing, setFixing] = useState(false);
+  const [fixReport, setFixReport] = useState<any>(null);
+
+  const problems = useMemo(
+    () => (data || []).filter((c) => c.severity === "error" || c.severity === "warn"),
+    [data],
+  );
+
+  async function handleAutoFix() {
+    setFixing(true);
+    try {
+      const res: any = await runAutoFix();
+      setFixReport(res.summary);
+      toast.success(`تم الإصلاح: ${res.summary.fixed} موقع أُعيد للخدمة · ${res.summary.still_offline.length} متبقّي`);
+      await refetch();
+    } catch (e: any) {
+      toast.error(e?.message || "فشل الإصلاح التلقائي");
+    } finally {
+      setFixing(false);
+    }
+  }
 
   const grouped = useMemo(() => {
     const g: Record<string, Check[]> = {};
@@ -110,6 +135,64 @@ function AuditPage() {
           <Progress value={stats.score} className="h-2" />
         </CardContent>
       </Card>
+
+      {/* Auto-Fix Panel */}
+      {problems.length > 0 && (
+        <Card className="ring-1 ring-warning/30 bg-gradient-to-br from-warning/10 to-transparent">
+          <CardContent className="p-5 space-y-3">
+            <div className="flex items-start justify-between flex-wrap gap-3">
+              <div className="flex items-center gap-3">
+                <div className="w-11 h-11 rounded-lg bg-warning/20 flex items-center justify-center">
+                  <Wrench className="w-5 h-5 text-warning" />
+                </div>
+                <div>
+                  <h3 className="font-semibold text-base">إصلاح المشاكل تلقائياً</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
+                    تم رصد {problems.length} مشكلة — سيُعاد فحص جميع المواقع وتحديث حالتها الحقيقية في قاعدة البيانات، وإرسال تقرير إلى مركز nawat.
+                  </p>
+                </div>
+              </div>
+              <Button onClick={handleAutoFix} disabled={fixing} className="bg-warning hover:bg-warning/90 text-warning-foreground">
+                {fixing ? <Loader2 className="w-4 h-4 ml-1 animate-spin" /> : <Wrench className="w-4 h-4 ml-1" />}
+                {fixing ? "جاري الإصلاح..." : "إصلاح المشكل الآن"}
+              </Button>
+            </div>
+
+            {fixReport && (
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-2 text-center pt-2 border-t border-warning/20">
+                <div className="p-2 rounded bg-card/60">
+                  <p className="text-lg font-bold text-success">{fixReport.fixed}</p>
+                  <p className="text-[11px] text-muted-foreground">أُصلح</p>
+                </div>
+                <div className="p-2 rounded bg-card/60">
+                  <p className="text-lg font-bold text-success">{fixReport.online}</p>
+                  <p className="text-[11px] text-muted-foreground">يعمل الآن</p>
+                </div>
+                <div className="p-2 rounded bg-card/60">
+                  <p className="text-lg font-bold text-warning">{fixReport.warning}</p>
+                  <p className="text-[11px] text-muted-foreground">تحذير</p>
+                </div>
+                <div className="p-2 rounded bg-card/60">
+                  <p className="text-lg font-bold text-destructive">{fixReport.offline}</p>
+                  <p className="text-[11px] text-muted-foreground">متعطل (يحتاج DNS)</p>
+                </div>
+                {fixReport.still_offline?.length > 0 && (
+                  <div className="col-span-full text-right">
+                    <p className="text-xs font-semibold text-destructive mb-1">مواقع تحتاج إصلاح يدوي (DNS/CNAME):</p>
+                    <div className="flex flex-wrap gap-1">
+                      {fixReport.still_offline.slice(0, 20).map((s: any) => (
+                        <Badge key={s.domain} variant="outline" className="text-[10px] border-destructive/40 text-destructive">
+                          {s.domain}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            )}
+          </CardContent>
+        </Card>
+      )}
 
       {/* Loading */}
       {isLoading && (

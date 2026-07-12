@@ -74,7 +74,7 @@ export const broadcastDirective = createServerFn({ method: "POST" })
       targets = data ?? [];
     } else if (directive.scope === "service_type" && directive.target_service_type) {
       const { data: services } = await (supabase as any).from("site_services").select("website_id").eq("service_type", directive.target_service_type);
-      const ids = Array.from(new Set((services ?? []).map((s: any) => s.website_id)));
+      const ids: string[] = Array.from(new Set((services ?? []).map((s: any) => String(s.website_id))));
       if (ids.length) {
         const { data } = await supabase.from("websites").select("id, domain").in("id", ids);
         targets = data ?? [];
@@ -126,7 +126,7 @@ export const broadcastDirective = createServerFn({ method: "POST" })
       status: finalStatus, delivered_count: delivered, failed_count: failed,
     }).eq("id", directive.id);
 
-    await supabase.from("activity_log").insert({
+    await (supabase as any).from("activity_log").insert({
       owner_id: userId,
       action: "core.directive.broadcast",
       entity_type: "core_directive",

@@ -103,7 +103,6 @@ EOF
   echo "systemd service installed and started"
 }
 
-
 while true; do
   CPU=$(top -bn1 | awk '/Cpu\\(s\\)/{print 100 - $8}' | head -1)
   MEM_TOTAL=$(free -m | awk '/Mem:/{print $2}')
@@ -114,6 +113,7 @@ while true; do
   UPTIME=$(awk '{print int($1)}' /proc/uptime)
   PROCS=$(ps -e --no-headers | wc -l)
   OS=$(. /etc/os-release 2>/dev/null && echo "$PRETTY_NAME" || uname -s)
+  PUBLIC_IP=$( (curl -s --max-time 5 https://api.ipify.org || curl -s --max-time 5 https://ifconfig.me || echo "") | head -1 | tr -d '\\n')
 
   AI_RAW=$(curl -s --max-time 3 "$TVCC_AI_ENDPOINT/api/tags" || echo "")
   if [ -n "$AI_RAW" ]; then
@@ -132,7 +132,7 @@ for line in sys.stdin:
     m=re.search(r":(\\d+)$", local)
     if not m: continue
     addr=local[:m.start()].strip("[]")
-    pm=re.search(r"\\(\\(\\"([^\\"]+)\\"", line)
+    pm=re.search(r"\\(\\"([^\\"]*)\\"", line)
     out.append({"port":int(m.group(1)),"protocol":proto[:4],"address":addr or "*","process_name":pm.group(1) if pm else None})
 seen=set(); uniq=[]
 for o in out:
@@ -154,21 +154,22 @@ for kind,p in paths:
 print(json.dumps(out))' 2>/dev/null || echo "[]")
   fi
 
-  BODY="{\\"cpu_percent\\":\${CPU:-0},\\"mem_used_mb\\":\${MEM_USED:-0},\\"mem_total_mb\\":\${MEM_TOTAL:-0},\\"disk_used_gb\\":\${DISK_USED:-0},\\"disk_total_gb\\":\${DISK_TOTAL:-0},\\"load_avg\\":\${LOAD:-0},\\"uptime_seconds\\":\${UPTIME:-0},\\"process_count\\":\${PROCS:-0},\\"os\\":\\"\${OS}\\",\\"agent_version\\":\\"2.0.0\\",\\"ai_endpoint\\":\\"\${TVCC_AI_ENDPOINT}\\",\\"ai_models\\":\${AI_MODELS},\\"ports\\":\${PORTS},\\"configs\\":\${CONFIGS}}"
+  BODY="{\\"cpu_percent\\":\\${CPU:-0},\\"mem_used_mb\\":\\${MEM_USED:-0},\\"mem_total_mb\\":\\${MEM_TOTAL:-0},\\"disk_used_gb\\":\\${DISK_USED:-0},\\"disk_total_gb\\":\\${DISK_TOTAL:-0},\\"load_avg\\":\\${LOAD:-0},\\"uptime_seconds\\":\\${UPTIME:-0},\\"process_count\\":\\${PROCS:-0},\\"os\\":\\"\\${OS}\\",\\"agent_version\\":\\"\\${TVCC_AGENT_VERSION}\\",\\"public_ip\\":\\"\\${PUBLIC_IP}\\",\\"ai_endpoint\\":\\"\\${TVCC_AI_ENDPOINT}\\",\\"ai_models\\":\\${AI_MODELS},\\"ports\\":\\${PORTS},\\"configs\\":\\${CONFIGS}}"
 
   RESP=$(post "$BODY")
 
   # Execute any queued whitelisted commands, then report results back.
   CMDS=$(echo "$RESP" | python3 -c 'import sys,json;print(json.dumps(json.load(sys.stdin).get("commands",[])))' 2>/dev/null || echo "[]")
   COUNT=$(echo "$CMDS" | python3 -c 'import sys,json;print(len(json.load(sys.stdin)))' 2>/dev/null || echo 0)
-  if [ "\${COUNT:-0}" -gt 0 ]; then
+  if [ "\\${COUNT:-0}" -gt 0 ]; then
     RESULTS="["
     for i in $(seq 0 $((COUNT-1))); do
       ID=$(echo "$CMDS" | python3 -c "import sys,json;print(json.load(sys.stdin)[$i]['id'])")
       ACTION=$(echo "$CMDS" | python3 -c "import sys,json;print(json.load(sys.stdin)[$i]['action'])")
       ARGS=$(echo "$CMDS" | python3 -c "import sys,json;print(json.dumps(json.load(sys.stdin)[$i].get('args',{})))")
+      DRY=$(echo "$CMDS" | python3 -c "import sys,json;print('true' if json.load(sys.stdin)[$i].get('dry_run') else 'false')")
       set +e
-      OUT=$(run_command "$ACTION" "$ARGS" 2>&1 | tail -c 20000)
+      OUT=$(run_command "$ACTION" "$ARGS" "$DRY" 2>&1 | tail -c 20000)
       CODE=$?
       set -e
       OUT_J=$(printf '%s' "$OUT" | json_escape)
@@ -176,7 +177,7 @@ print(json.dumps(out))' 2>/dev/null || echo "[]")
       RESULTS="$RESULTS{\\"id\\":\\"$ID\\",\\"exit_code\\":$CODE,\\"output\\":$OUT_J}"
     done
     RESULTS="$RESULTS]"
-    post "{\\"agent_version\\":\\"2.0.0\\",\\"command_results\\":$RESULTS}" >/dev/null
+    post "{\\"agent_version\\":\\"\\${TVCC_AGENT_VERSION}\\",\\"command_results\\":$RESULTS}" >/dev/null
   fi
 
   sleep 60

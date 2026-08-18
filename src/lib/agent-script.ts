@@ -154,14 +154,14 @@ for kind,p in paths:
 print(json.dumps(out))' 2>/dev/null || echo "[]")
   fi
 
-  BODY="{\\"cpu_percent\\":\\${CPU:-0},\\"mem_used_mb\\":\\${MEM_USED:-0},\\"mem_total_mb\\":\\${MEM_TOTAL:-0},\\"disk_used_gb\\":\\${DISK_USED:-0},\\"disk_total_gb\\":\\${DISK_TOTAL:-0},\\"load_avg\\":\\${LOAD:-0},\\"uptime_seconds\\":\\${UPTIME:-0},\\"process_count\\":\\${PROCS:-0},\\"os\\":\\"\\${OS}\\",\\"agent_version\\":\\"\\${TVCC_AGENT_VERSION}\\",\\"public_ip\\":\\"\\${PUBLIC_IP}\\",\\"ai_endpoint\\":\\"\\${TVCC_AI_ENDPOINT}\\",\\"ai_models\\":\\${AI_MODELS},\\"ports\\":\\${PORTS},\\"configs\\":\\${CONFIGS}}"
+  BODY="{\\"cpu_percent\\":\${CPU:-0},\\"mem_used_mb\\":\${MEM_USED:-0},\\"mem_total_mb\\":\${MEM_TOTAL:-0},\\"disk_used_gb\\":\${DISK_USED:-0},\\"disk_total_gb\\":\${DISK_TOTAL:-0},\\"load_avg\\":\${LOAD:-0},\\"uptime_seconds\\":\${UPTIME:-0},\\"process_count\\":\${PROCS:-0},\\"os\\":\\"\${OS}\\",\\"agent_version\\":\\"\${TVCC_AGENT_VERSION}\\",\\"public_ip\\":\\"\${PUBLIC_IP}\\",\\"ai_endpoint\\":\\"\${TVCC_AI_ENDPOINT}\\",\\"ai_models\\":\${AI_MODELS},\\"ports\\":\${PORTS},\\"configs\\":\${CONFIGS}}"
 
   RESP=$(post "$BODY")
 
   # Execute any queued whitelisted commands, then report results back.
   CMDS=$(echo "$RESP" | python3 -c 'import sys,json;print(json.dumps(json.load(sys.stdin).get("commands",[])))' 2>/dev/null || echo "[]")
   COUNT=$(echo "$CMDS" | python3 -c 'import sys,json;print(len(json.load(sys.stdin)))' 2>/dev/null || echo 0)
-  if [ "\\${COUNT:-0}" -gt 0 ]; then
+  if [ "\${COUNT:-0}" -gt 0 ]; then
     RESULTS="["
     for i in $(seq 0 $((COUNT-1))); do
       ID=$(echo "$CMDS" | python3 -c "import sys,json;print(json.load(sys.stdin)[$i]['id'])") || continue
@@ -177,7 +177,7 @@ print(json.dumps(out))' 2>/dev/null || echo "[]")
       RESULTS="$RESULTS{\\"id\\":\\"$ID\\",\\"exit_code\\":$CODE,\\"output\\":$OUT_J}"
     done
     RESULTS="$RESULTS]"
-    post "{\\"agent_version\\":\\"\\${TVCC_AGENT_VERSION}\\",\\"command_results\\":$RESULTS}" >/dev/null
+    post "{\\"agent_version\\":\\"\${TVCC_AGENT_VERSION}\\",\\"command_results\\":$RESULTS}" >/dev/null
   fi
 
   sleep 60

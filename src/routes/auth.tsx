@@ -11,22 +11,41 @@ import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import tvccLogo from "@/assets/tvcc-logo.asset.json";
 
+/** Only same-origin relative paths are accepted as a post-auth destination. */
+function safeNext(value: unknown): string | undefined {
+  if (typeof value !== "string") return undefined;
+  if (!value.startsWith("/") || value.startsWith("//")) return undefined;
+  return value;
+}
+
 export const Route = createFileRoute("/auth")({
+  validateSearch: (s: Record<string, unknown>) => ({ next: safeNext(s.next) }),
   component: AuthPage,
 });
 
 function AuthPage() {
   const navigate = useNavigate();
+  const { next } = Route.useSearch();
   const [loading, setLoading] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
 
+  const goNext = () => {
+    if (next) {
+      window.location.href = next;
+      return;
+    }
+    navigate({ to: "/dashboard" });
+  };
+
   useEffect(() => {
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (session) navigate({ to: "/dashboard" });
+      if (!session) return;
+      if (next) window.location.href = next;
+      else navigate({ to: "/dashboard" });
     });
-  }, [navigate]);
+  }, [navigate, next]);
 
   const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -35,13 +54,13 @@ function AuthPage() {
     setLoading(false);
     if (error) return toast.error(error.message);
     toast.success("تم تسجيل الدخول");
-    navigate({ to: "/dashboard" });
+    goNext();
   };
 
   const handleSignup = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-    const redirectUrl = `${window.location.origin}/dashboard`;
+    const redirectUrl = `${window.location.origin}${next ?? "/dashboard"}`;
     const { error } = await supabase.auth.signUp({
       email,
       password,
@@ -50,7 +69,7 @@ function AuthPage() {
     setLoading(false);
     if (error) return toast.error(error.message);
     toast.success("تم إنشاء الحساب بنجاح");
-    navigate({ to: "/dashboard" });
+    goNext();
   };
 
   return (

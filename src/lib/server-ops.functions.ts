@@ -705,6 +705,8 @@ export const createVaultSecret = createServerFn({ method: "POST" })
     (input: {
       name: string;
       value: string;
+      category?: string;
+      description?: string;
       kind?: string;
       serverId?: string | null;
       websiteId?: string | null;
@@ -721,7 +723,8 @@ export const createVaultSecret = createServerFn({ method: "POST" })
         server_id: data.serverId ?? null,
         website_id: data.websiteId ?? null,
         name: data.name,
-        kind: data.kind ?? "generic",
+        kind: data.category ?? data.kind ?? "generic",
+        description: data.description ?? null,
         encrypted_value: ciphertext,
         iv,
         masked_value: mask(data.value),

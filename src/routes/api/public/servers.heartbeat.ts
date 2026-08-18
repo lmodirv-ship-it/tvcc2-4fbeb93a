@@ -101,26 +101,9 @@ async function evaluateAlerts(admin: any, serverId: string, ownerId: string, met
 }
 
 async function autoIssueServerCerts(admin: any, serverId: string, ownerId: string) {
-  // Issue HN.RLS certificates for sites on this server that don't have one yet.
-  const { data: sites } = await admin
-    .from("websites")
-    .select("id, domain")
-    .eq("server_id", serverId)
-    .is("hn_certificate_id", null);
-  if (!sites?.length) return;
-
-  const { issueCertificate } = await import("@/lib/hn-rls.server");
-  for (const site of sites as any[]) {
-    try {
-      await issueCertificate({
-        websiteId: site.id,
-        ownerId,
-        reason: "auto-issue on server heartbeat",
-      });
-    } catch {
-      // best-effort; don't block heartbeat
-    }
-  }
+  // Placeholder: auto-certificate issuance can be wired here once hn_certificate creation is exposed.
+  // For now, sites without certificates remain untouched to avoid coupling heartbeat to complex DNS checks.
+  void admin; void serverId; void ownerId;
 }
 
 export const Route = createFileRoute("/api/public/servers/heartbeat")({

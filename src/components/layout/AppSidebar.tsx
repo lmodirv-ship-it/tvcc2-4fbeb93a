@@ -32,6 +32,7 @@ const coreItems = [
 const opsItems = [
   { titleKey: "sidebar.domains", url: "/domains", icon: Server },
   { titleKey: "sidebar.ssl", url: "/ssl", icon: ShieldCheck },
+  { titleKey: "sidebar.certificates", url: "/certificates", icon: BadgeCheck },
   { titleKey: "sidebar.notifications", url: "/notifications", icon: Bell },
   { titleKey: "sidebar.environment", url: "/environment", icon: FileCog },
   { titleKey: "sidebar.activity", url: "/activity", icon: Activity },

@@ -471,7 +471,12 @@ echo "TVCC platform running for $DOMAIN"`;
       operation: "platform_deploy",
       title: `توليد أمر ترحيل المنصة إلى ${server.name}`,
       input: { domain },
-    });
+    return {
+      script,
+      install: `curl -fsSL '${origin}/api/public/platform/deploy.sh' | bash -s -- '${domain}'`,
+      domain,
+    };
+  });
 
 /* ---------------- backup schedules ---------------- */
 

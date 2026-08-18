@@ -79,12 +79,33 @@ export const Route = createFileRoute("/api/public/servers/heartbeat")({
           diskTotal ? ((diskUsed ?? 0) / diskTotal) * 100 : 0,
         );
 
+        const publicIp = typeof body.public_ip === "string" ? body.public_ip.slice(0, 64) : null;
+        const agentVersion = typeof body.agent_version === "string" ? body.agent_version.slice(0, 32) : null;
+
+        // Track IP changes
+        if (publicIp) {
+          const { data: prev } = await admin
+            .from("servers")
+            .select("public_ip")
+            .eq("id", serverId)
+            .maybeSingle();
+          if ((prev as any)?.public_ip !== publicIp) {
+            await admin.from("server_ip_history").insert({
+              owner_id: server.owner_id,
+              server_id: serverId,
+              public_ip: publicIp,
+              detected_at: now,
+            });
+          }
+        }
+
         await admin
           .from("servers")
           .update({
             status: worst >= 90 ? "warning" : "online",
             last_seen_at: now,
-            agent_version: typeof body.agent_version === "string" ? body.agent_version : null,
+            agent_version: agentVersion,
+            public_ip: publicIp,
             os: typeof body.os === "string" ? body.os : undefined,
             metadata: {
               ai_endpoint: typeof body.ai_endpoint === "string" ? body.ai_endpoint : null,

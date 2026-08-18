@@ -1,0 +1,53 @@
+/** Whitelisted actions the agent is allowed to run. Anything else is rejected. */
+export const COMMAND_WHITELIST = [
+  "scan_ports",
+  "read_configs",
+  "service_status",
+  "service_restart",
+  "service_logs",
+  "nginx_test",
+  "nginx_reload",
+  "firewall_list",
+  "firewall_allow",
+  "firewall_deny",
+  "disk_usage",
+  "write_config",
+  "site_backup",
+  "site_restore",
+  "db_dump",
+  "db_import",
+  "platform_deploy",
+] as const;
+
+export type CommandAction = (typeof COMMAND_WHITELIST)[number];
+
+export const COMMAND_LABELS: Record<string, string> = {
+  scan_ports: "فحص المنافذ المفتوحة",
+  read_configs: "قراءة ملفات الإعداد",
+  service_status: "حالة خدمة",
+  service_restart: "إعادة تشغيل خدمة",
+  service_logs: "سجلات خدمة",
+  nginx_test: "اختبار إعداد Nginx",
+  nginx_reload: "إعادة تحميل Nginx",
+  firewall_list: "قواعد الجدار الناري",
+  firewall_allow: "السماح بمنفذ",
+  firewall_deny: "منع منفذ",
+  disk_usage: "استهلاك القرص",
+  write_config: "كتابة ملف إعداد",
+  site_backup: "نسخة احتياطية لموقع",
+  site_restore: "استعادة نسخة",
+  db_dump: "تصدير قاعدة بيانات",
+  db_import: "استيراد قاعدة بيانات",
+  platform_deploy: "ترحيل المنصة",
+};
+
+/** Actions that take a free-text argument, with the arg key + placeholder. */
+export const COMMAND_ARG: Record<string, { key: string; placeholder: string }> = {
+  service_status: { key: "name", placeholder: "nginx" },
+  service_restart: { key: "name", placeholder: "nginx" },
+  service_logs: { key: "name", placeholder: "nginx" },
+  firewall_allow: { key: "port", placeholder: "443/tcp" },
+  firewall_deny: { key: "port", placeholder: "23/tcp" },
+  site_backup: { key: "domain", placeholder: "example.com" },
+  db_dump: { key: "domain", placeholder: "example.com" },
+};

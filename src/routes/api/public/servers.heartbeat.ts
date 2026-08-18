@@ -125,7 +125,118 @@ export const Route = createFileRoute("/api/public/servers/heartbeat")({
           );
         }
 
-        return Response.json({ ok: true, received_at: now }, { headers: CORS });
+        // Open ports discovered by the agent
+        const ports = Array.isArray(body.ports) ? body.ports.slice(0, 300) : [];
+        for (const p of ports as Array<Record<string, unknown>>) {
+          const port = num(p?.port);
+          if (!port) continue;
+          await admin.from("server_ports").upsert(
+            {
+              owner_id: server.owner_id,
+              server_id: serverId,
+              port,
+              protocol: typeof p.protocol === "string" ? p.protocol.slice(0, 8) : "tcp",
+              address: typeof p.address === "string" ? p.address.slice(0, 64) : "*",
+              process_name: typeof p.process_name === "string" ? p.process_name.slice(0, 80) : null,
+              service: typeof p.service === "string" ? p.service.slice(0, 80) : null,
+              is_public: typeof p.address === "string" ? !/^(127\.|::1|localhost)/.test(p.address) : false,
+              last_seen_at: now,
+            },
+            { onConflict: "server_id,port,protocol,address" },
+          );
+        }
+
+        // Config snapshots
+        const configs = Array.isArray(body.configs) ? body.configs.slice(0, 20) : [];
+        for (const c of configs as Array<Record<string, unknown>>) {
+          if (typeof c?.path !== "string" || typeof c?.kind !== "string") continue;
+          await admin.from("server_configs").upsert(
+            {
+              owner_id: server.owner_id,
+              server_id: serverId,
+              kind: c.kind.slice(0, 40),
+              path: c.path.slice(0, 300),
+              content: typeof c.content === "string" ? c.content.slice(0, 100000) : null,
+              collected_at: now,
+            },
+            { onConflict: "server_id,kind,path" },
+          );
+        }
+
+        // Command results reported by the agent
+        const results = Array.isArray(body.command_results) ? body.command_results.slice(0, 20) : [];
+        for (const r of results as Array<Record<string, unknown>>) {
+          if (typeof r?.id !== "string") continue;
+          const code = num(r.exit_code) ?? 0;
+          const output = typeof r.output === "string" ? r.output.slice(0, 40000) : null;
+          const { data: cmd } = await admin
+            .from("server_commands")
+            .update({
+              status: code === 0 ? "done" : "failed",
+              exit_code: code,
+              output,
+              completed_at: now,
+            })
+            .eq("id", r.id)
+            .eq("server_id", serverId)
+            .select("id, action, website_id, args")
+            .maybeSingle();
+
+          if (cmd) {
+            await admin.from("operation_log").insert({
+              owner_id: server.owner_id,
+              scope: cmd.website_id ? "website" : "server",
+              server_id: serverId,
+              website_id: cmd.website_id,
+              operation: cmd.action,
+              title: `تنفيذ ${cmd.action} على السيرفر`,
+              input: cmd.args ?? {},
+              result: { exit_code: code, output: output?.slice(0, 4000) ?? "" },
+              status: code === 0 ? "success" : "error",
+              actor: "agent",
+            });
+
+            const backupId = (cmd.args as Record<string, unknown> | null)?.["backup_id"];
+            if (typeof backupId === "string" && (cmd.action === "site_backup" || cmd.action === "db_dump")) {
+              const pathMatch = output?.match(/(\/\S+\.(?:tar\.gz|sql\.gz))/);
+              const sizeMatch = output?.match(/\((\d+)\s*MB\)/);
+              await admin
+                .from("site_backups")
+                .update({
+                  status: code === 0 ? "completed" : "failed",
+                  storage_path: pathMatch?.[1] ?? null,
+                  size_mb: sizeMatch ? Number(sizeMatch[1]) : null,
+                  error_message: code === 0 ? null : output?.slice(0, 500) ?? null,
+                  completed_at: now,
+                })
+                .eq("id", backupId);
+            }
+          }
+        }
+
+        // Hand back pending whitelisted commands for this server
+        const { data: pending } = await admin
+          .from("server_commands")
+          .select("id, action, args")
+          .eq("server_id", serverId)
+          .eq("status", "pending")
+          .order("created_at", { ascending: true })
+          .limit(5);
+
+        if (pending?.length) {
+          await admin
+            .from("server_commands")
+            .update({ status: "running", dispatched_at: now })
+            .in(
+              "id",
+              (pending as Array<{ id: string }>).map((p) => p.id),
+            );
+        }
+
+        return Response.json(
+          { ok: true, received_at: now, commands: pending ?? [] },
+          { headers: CORS },
+        );
       },
     },
   },

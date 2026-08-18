@@ -41,7 +41,7 @@
   "sidebar": {
     "tagline": "Centre de commande",
     "core": "Principal",
-    "operations": "Opérations",
+    "operations": "Journal des opérations",
     "admin": "Administration",
     "export_html": "Exporter HTML",
     "dashboard": "Tableau de bord",
@@ -76,7 +76,9 @@
     "ai": "IA",
     "ai_models": "Modèles",
     "ai_connect": "Connexion modèles",
-    "ai_chat": "Chat modèles"
+    "ai_chat": "Chat modèles",
+    "ai_tests": "Historique des tests",
+    "backups": "Sauvegardes"
   },
   "dashboard": {
     "title": "Tableau de bord",

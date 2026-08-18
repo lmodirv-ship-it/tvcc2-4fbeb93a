@@ -123,6 +123,68 @@ export type Database = {
           },
         ]
       }
+      ai_model_tests: {
+        Row: {
+          answer: string | null
+          completion_tokens: number | null
+          created_at: string
+          error_message: string | null
+          id: string
+          latency_ms: number | null
+          model_id: string | null
+          model_label: string
+          owner_id: string
+          prompt: string
+          prompt_tokens: number | null
+          provider_label: string | null
+          settings: Json
+          status: string
+          total_tokens: number | null
+        }
+        Insert: {
+          answer?: string | null
+          completion_tokens?: number | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          latency_ms?: number | null
+          model_id?: string | null
+          model_label?: string
+          owner_id: string
+          prompt?: string
+          prompt_tokens?: number | null
+          provider_label?: string | null
+          settings?: Json
+          status?: string
+          total_tokens?: number | null
+        }
+        Update: {
+          answer?: string | null
+          completion_tokens?: number | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          latency_ms?: number | null
+          model_id?: string | null
+          model_label?: string
+          owner_id?: string
+          prompt?: string
+          prompt_tokens?: number | null
+          provider_label?: string | null
+          settings?: Json
+          status?: string
+          total_tokens?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_model_tests_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "ai_models"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_models: {
         Row: {
           capabilities: string[]
@@ -945,6 +1007,69 @@ export type Database = {
         }
         Relationships: []
       }
+      operation_log: {
+        Row: {
+          actor: string
+          created_at: string
+          id: string
+          input: Json
+          notes: string | null
+          operation: string
+          owner_id: string
+          result: Json
+          scope: string
+          server_id: string | null
+          status: string
+          title: string
+          website_id: string | null
+        }
+        Insert: {
+          actor?: string
+          created_at?: string
+          id?: string
+          input?: Json
+          notes?: string | null
+          operation: string
+          owner_id: string
+          result?: Json
+          scope?: string
+          server_id?: string | null
+          status?: string
+          title: string
+          website_id?: string | null
+        }
+        Update: {
+          actor?: string
+          created_at?: string
+          id?: string
+          input?: Json
+          notes?: string | null
+          operation?: string
+          owner_id?: string
+          result?: Json
+          scope?: string
+          server_id?: string | null
+          status?: string
+          title?: string
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "operation_log_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "operation_log_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       payment_events: {
         Row: {
           amount: number | null
@@ -1065,6 +1190,116 @@ export type Database = {
         }
         Relationships: []
       }
+      server_commands: {
+        Row: {
+          action: string
+          args: Json
+          completed_at: string | null
+          created_at: string
+          dispatched_at: string | null
+          error_message: string | null
+          exit_code: number | null
+          id: string
+          output: string | null
+          owner_id: string
+          requested_by: string | null
+          server_id: string
+          status: string
+          website_id: string | null
+        }
+        Insert: {
+          action: string
+          args?: Json
+          completed_at?: string | null
+          created_at?: string
+          dispatched_at?: string | null
+          error_message?: string | null
+          exit_code?: number | null
+          id?: string
+          output?: string | null
+          owner_id: string
+          requested_by?: string | null
+          server_id: string
+          status?: string
+          website_id?: string | null
+        }
+        Update: {
+          action?: string
+          args?: Json
+          completed_at?: string | null
+          created_at?: string
+          dispatched_at?: string | null
+          error_message?: string | null
+          exit_code?: number | null
+          id?: string
+          output?: string | null
+          owner_id?: string
+          requested_by?: string | null
+          server_id?: string
+          status?: string
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "server_commands_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "server_commands_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      server_configs: {
+        Row: {
+          checksum: string | null
+          collected_at: string
+          content: string | null
+          created_at: string
+          id: string
+          kind: string
+          owner_id: string
+          path: string
+          server_id: string
+        }
+        Insert: {
+          checksum?: string | null
+          collected_at?: string
+          content?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          owner_id: string
+          path: string
+          server_id: string
+        }
+        Update: {
+          checksum?: string | null
+          collected_at?: string
+          content?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          owner_id?: string
+          path?: string
+          server_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "server_configs_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       server_metrics: {
         Row: {
           collected_at: string
@@ -1111,6 +1346,56 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "server_metrics_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      server_ports: {
+        Row: {
+          address: string | null
+          created_at: string
+          id: string
+          is_public: boolean
+          last_seen_at: string
+          owner_id: string
+          port: number
+          process_name: string | null
+          protocol: string
+          server_id: string
+          service: string | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          last_seen_at?: string
+          owner_id: string
+          port: number
+          process_name?: string | null
+          protocol?: string
+          server_id: string
+          service?: string | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          id?: string
+          is_public?: boolean
+          last_seen_at?: string
+          owner_id?: string
+          port?: number
+          process_name?: string | null
+          protocol?: string
+          server_id?: string
+          service?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "server_ports_server_id_fkey"
             columns: ["server_id"]
             isOneToOne: false
             referencedRelation: "servers"
@@ -1292,6 +1577,66 @@ export type Database = {
             columns: ["service_id"]
             isOneToOne: false
             referencedRelation: "site_services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_backups: {
+        Row: {
+          backup_type: string
+          completed_at: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          label: string | null
+          owner_id: string
+          server_id: string | null
+          size_mb: number | null
+          status: string
+          storage_path: string | null
+          website_id: string | null
+        }
+        Insert: {
+          backup_type?: string
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          label?: string | null
+          owner_id: string
+          server_id?: string | null
+          size_mb?: number | null
+          status?: string
+          storage_path?: string | null
+          website_id?: string | null
+        }
+        Update: {
+          backup_type?: string
+          completed_at?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          label?: string | null
+          owner_id?: string
+          server_id?: string | null
+          size_mb?: number | null
+          status?: string
+          storage_path?: string | null
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_backups_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_backups_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
             referencedColumns: ["id"]
           },
         ]

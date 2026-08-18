@@ -1,0 +1,247 @@
+import { createFileRoute } from "@tanstack/react-router";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
+import { useServerFn } from "@tanstack/react-start";
+import { useRef, useState } from "react";
+import { Card, CardContent } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
+import { Label } from "@/components/ui/label";
+import { Badge } from "@/components/ui/badge";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
+import {
+  Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
+} from "@/components/ui/table";
+import { Archive, Loader2, Trash2, RotateCcw, Download, Upload, Plus } from "lucide-react";
+import { toast } from "sonner";
+import { supabase } from "@/integrations/supabase/client";
+import {
+  listBackups, createBackup, deleteBackup, restoreBackup, exportSiteData, importSiteData,
+} from "@/lib/server-ops.functions";
+
+export const Route = createFileRoute("/_authenticated/backups")({
+  component: BackupsPage,
+  head: () => ({
+    meta: [
+      { title: "النسخ الاحتياطي والتصدير — TVCC" },
+      { name: "description", content: "أنشئ نسخاً احتياطية للمواقع وقواعد بياناتها، واستعدها، وصدّر أو استورد بيانات أي موقع." },
+      { property: "og:title", content: "النسخ الاحتياطي والتصدير — TVCC" },
+      { property: "og:description", content: "نسخ احتياطية واستعادة وتصدير واستيراد لبيانات المواقع." },
+      { property: "og:type", content: "website" },
+      { name: "twitter:card", content: "summary" },
+    ],
+  }),
+});
+
+const statusStyle = (s: string) =>
+  s === "completed"
+    ? "bg-success/20 text-success border-success/40"
+    : s === "failed"
+      ? "bg-destructive/20 text-destructive border-destructive/40"
+      : "bg-muted text-muted-foreground border-border";
+
+function BackupsPage() {
+  const qc = useQueryClient();
+  const fetchBackups = useServerFn(listBackups);
+  const make = useServerFn(createBackup);
+  const remove = useServerFn(deleteBackup);
+  const restore = useServerFn(restoreBackup);
+  const doExport = useServerFn(exportSiteData);
+  const doImport = useServerFn(importSiteData);
+
+  const [siteId, setSiteId] = useState("");
+  const [type, setType] = useState("full");
+  const [busy, setBusy] = useState(false);
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const { data: sites } = useQuery({
+    queryKey: ["backup-sites"],
+    queryFn: async () => {
+      const { data, error } = await supabase
+        .from("websites")
+        .select("id, name, domain, server_id")
+        .order("domain");
+      if (error) throw new Error(error.message);
+      return data ?? [];
+    },
+  });
+
+  const { data, isLoading } = useQuery({
+    queryKey: ["backups"],
+    queryFn: () => fetchBackups(),
+    refetchInterval: 30000,
+  });
+
+  const rows = (data ?? []) as any[];
+
+  const downloadExport = async () => {
+    if (!siteId) return toast.error("اختر موقعاً أولاً");
+    setBusy(true);
+    try {
+      const payload = await doExport({ data: { websiteId: siteId } });
+      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+      const a = document.createElement("a");
+      a.href = URL.createObjectURL(blob);
+      a.download = `${(payload as any).site.domain}-export.json`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      toast.success("تم التصدير");
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const uploadImport = async (file: File) => {
+    setBusy(true);
+    try {
+      const payload = JSON.parse(await file.text());
+      const r: any = await doImport({ data: { payload } });
+      toast.success(`تم الاستيراد (${r.envCount} متغيّر بيئة)`);
+      qc.invalidateQueries({ queryKey: ["backup-sites"] });
+      qc.invalidateQueries({ queryKey: ["operations"] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  return (
+    <div className="p-6 space-y-6">
+      <div>
+        <h1 className="text-2xl font-bold flex items-center gap-2"><Archive className="w-6 h-6 text-primary" /> النسخ الاحتياطي والتصدير</h1>
+        <p className="text-sm text-muted-foreground mt-1">نسخة كاملة للملفات وقاعدة البيانات لكل موقع، مع استعادة وتصدير/استيراد للبيانات.</p>
+      </div>
+
+      <Card>
+        <CardContent className="p-4 grid gap-3 md:grid-cols-4 items-end">
+          <div className="md:col-span-2">
+            <Label>الموقع</Label>
+            <Select value={siteId} onValueChange={setSiteId}>
+              <SelectTrigger><SelectValue placeholder="اختر موقعاً" /></SelectTrigger>
+              <SelectContent>
+                {((sites ?? []) as any[]).map((s) => (
+                  <SelectItem key={s.id} value={s.id}>{s.domain}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label>نوع النسخة</Label>
+            <Select value={type} onValueChange={setType}>
+              <SelectTrigger><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="full">كاملة (ملفات + قاعدة)</SelectItem>
+                <SelectItem value="files">الملفات فقط</SelectItem>
+                <SelectItem value="database">قاعدة البيانات فقط</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="flex gap-2 flex-wrap">
+            <Button
+              disabled={!siteId || busy}
+              onClick={async () => {
+                setBusy(true);
+                try {
+                  await make({ data: { websiteId: siteId, backupType: type } });
+                  qc.invalidateQueries({ queryKey: ["backups"] });
+                  toast.success("تم جدولة النسخة الاحتياطية");
+                } catch (e) {
+                  toast.error((e as Error).message);
+                } finally {
+                  setBusy(false);
+                }
+              }}
+            >
+              <Plus className="w-4 h-4 ml-1" /> نسخة جديدة
+            </Button>
+            <Button variant="outline" disabled={!siteId || busy} onClick={downloadExport}>
+              <Download className="w-4 h-4 ml-1" /> تصدير
+            </Button>
+            <Button variant="outline" disabled={busy} onClick={() => fileRef.current?.click()}>
+              <Upload className="w-4 h-4 ml-1" /> استيراد
+            </Button>
+            <input
+              ref={fileRef}
+              type="file"
+              accept="application/json"
+              className="hidden"
+              onChange={(e) => {
+                const f = e.target.files?.[0];
+                if (f) uploadImport(f);
+                e.target.value = "";
+              }}
+            />
+          </div>
+        </CardContent>
+      </Card>
+
+      {isLoading ? (
+        <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+      ) : rows.length === 0 ? (
+        <Card><CardContent className="p-10 text-center text-muted-foreground">لا توجد نسخ احتياطية بعد.</CardContent></Card>
+      ) : (
+        <Card>
+          <CardContent className="p-0 overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>الوقت</TableHead>
+                  <TableHead>الموقع</TableHead>
+                  <TableHead>النوع</TableHead>
+                  <TableHead>الحالة</TableHead>
+                  <TableHead>الحجم</TableHead>
+                  <TableHead>المسار</TableHead>
+                  <TableHead />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {rows.map((b) => (
+                  <TableRow key={b.id}>
+                    <TableCell className="text-xs whitespace-nowrap">{new Date(b.created_at).toLocaleString("ar")}</TableCell>
+                    <TableCell className="text-xs">{b.websites?.domain ?? "—"}</TableCell>
+                    <TableCell className="text-xs">{b.backup_type}</TableCell>
+                    <TableCell><Badge variant="outline" className={statusStyle(b.status)}>{b.status}</Badge></TableCell>
+                    <TableCell className="text-xs">{b.size_mb ? `${b.size_mb}MB` : "—"}</TableCell>
+                    <TableCell className="text-[11px] ltr text-left max-w-[18rem] truncate">{b.storage_path ?? "—"}</TableCell>
+                    <TableCell className="flex gap-1">
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        disabled={b.status !== "completed"}
+                        onClick={async () => {
+                          try {
+                            await restore({ data: { id: b.id } });
+                            toast.success("تم إرسال طلب الاستعادة للوكيل");
+                            qc.invalidateQueries({ queryKey: ["backups"] });
+                          } catch (e) {
+                            toast.error((e as Error).message);
+                          }
+                        }}
+                      >
+                        <RotateCcw className="w-3 h-3 ml-1" /> استعادة
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        className="text-destructive"
+                        onClick={async () => {
+                          await remove({ data: { id: b.id } });
+                          qc.invalidateQueries({ queryKey: ["backups"] });
+                        }}
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
+      )}
+    </div>
+  );
+}

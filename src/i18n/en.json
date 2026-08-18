@@ -41,7 +41,7 @@
   "sidebar": {
     "tagline": "Site command center",
     "core": "Core",
-    "operations": "Operations",
+    "operations": "Operations Log",
     "admin": "Admin",
     "export_html": "Export HTML",
     "dashboard": "Dashboard",
@@ -76,7 +76,9 @@
     "ai": "AI",
     "ai_models": "Models",
     "ai_connect": "Connect models",
-    "ai_chat": "Model chat"
+    "ai_chat": "Model chat",
+    "ai_tests": "Test History",
+    "backups": "Backups"
   },
   "dashboard": {
     "title": "Dashboard",

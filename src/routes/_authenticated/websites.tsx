@@ -46,6 +46,7 @@ function WebsitesPage() {
   const qc = useQueryClient();
   const runCheckFn = useServerFn(runHealthCheckAll);
   const importSbFn = useServerFn(importSupabaseProjects);
+  const verifyIssueRegisterFn = useServerFn(verifyIssueRegister);
   const [importing, setImporting] = useState(false);
   const [checking, setChecking] = useState(false);
   const [lastCheck, setLastCheck] = useState<string | null>(null);

@@ -243,9 +243,21 @@ function ServersPage() {
               <Card key={s.id} className="hover:border-primary/40 transition">
                 <CardContent className="p-4 space-y-3">
                   <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <div className="font-semibold">{s.name}</div>
-                      <div className="text-xs text-muted-foreground ltr text-left">{s.hostname}</div>
+                    <div className="flex items-start gap-2">
+                      <Checkbox
+                        checked={selectedServers.has(s.id)}
+                        onCheckedChange={(checked) => {
+                          const next = new Set(selectedServers);
+                          if (checked) next.add(s.id);
+                          else next.delete(s.id);
+                          setSelectedServers(next);
+                        }}
+                        className="mt-1"
+                      />
+                      <div>
+                        <div className="font-semibold">{s.name}</div>
+                        <div className="text-xs text-muted-foreground ltr text-left">{s.hostname}</div>
+                      </div>
                     </div>
                     <Badge variant="outline" className={statusColor(s.status)}>{s.status}</Badge>
                   </div>

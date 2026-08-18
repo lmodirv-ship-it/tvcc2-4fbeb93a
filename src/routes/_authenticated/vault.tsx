@@ -40,9 +40,10 @@ function VaultPage() {
   const createSecret = useServerFn(createVaultSecret);
   const rotate = useServerFn(rotateVaultSecret);
   const remove = useServerFn(deleteVaultSecret);
+  const reveal = useServerFn(revealVaultSecret);
 
   const [open, setOpen] = useState(false);
-  const [shown, setShown] = useState<Record<string, boolean>>({});
+  const [shown, setShown] = useState<Record<string, { open: boolean; value: string }>>({});
   const [form, setForm] = useState({ name: "", category: "general", value: "", description: "" });
 
   const { data: secrets, isLoading } = useQuery({

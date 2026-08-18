@@ -1,6 +1,6 @@
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
-import { Search, Settings as SettingsIcon } from "lucide-react";
+import { Search, Settings as SettingsIcon, Home } from "lucide-react";
 import { Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
@@ -32,6 +32,16 @@ export function AppHeader() {
           <div className="text-[11px] text-muted-foreground">{t("header.admin")}</div>
         </div>
       </div>
+
+      <Link
+        to="/dashboard"
+        aria-label="العودة للصفحة الرئيسية"
+        title="العودة للصفحة الرئيسية"
+        className="flex items-center gap-2 h-9 px-3 rounded-lg bg-secondary/60 hover:bg-secondary text-sm font-medium transition"
+      >
+        <Home className="w-4 h-4 text-primary" />
+        <span className="hidden sm:inline">الرئيسية</span>
+      </Link>
 
       <LanguageSwitcher />
 

@@ -316,6 +316,13 @@ export const Route = createFileRoute("/api/public/servers/heartbeat")({
                 })
                 .eq("id", backupId);
             }
+
+            if (cmd.action === "backup_delete" && typeof backupId === "string") {
+              await admin
+                .from("site_backups")
+                .update({ status: code === 0 ? "deleted" : "failed", completed_at: now })
+                .eq("id", backupId);
+            }
           }
         }
 

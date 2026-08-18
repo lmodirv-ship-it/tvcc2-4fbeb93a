@@ -40,6 +40,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCoreHubRouteImport } from './routes/_authenticated/core-hub'
 import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
 import { Route as AuthenticatedCertificatesRouteImport } from './routes/_authenticated/certificates'
+import { Route as AuthenticatedBackupsRouteImport } from './routes/_authenticated/backups'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedApkManagerRouteImport } from './routes/_authenticated/apk-manager'
 import { Route as AuthenticatedAiTestsRouteImport } from './routes/_authenticated/ai-tests'
@@ -238,6 +239,11 @@ const AuthenticatedCertificatesRoute =
     path: '/certificates',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedBackupsRoute = AuthenticatedBackupsRouteImport.update({
+  id: '/backups',
+  path: '/backups',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedAuditRoute = AuthenticatedAuditRouteImport.update({
   id: '/audit',
   path: '/audit',
@@ -444,6 +450,7 @@ export interface FileRoutesByFullPath {
   '/ai-tests': typeof AuthenticatedAiTestsRoute
   '/apk-manager': typeof AuthenticatedApkManagerRoute
   '/audit': typeof AuthenticatedAuditRoute
+  '/backups': typeof AuthenticatedBackupsRoute
   '/certificates': typeof AuthenticatedCertificatesRoute
   '/clients': typeof AuthenticatedClientsRoute
   '/core-hub': typeof AuthenticatedCoreHubRoute
@@ -511,6 +518,7 @@ export interface FileRoutesByTo {
   '/ai-tests': typeof AuthenticatedAiTestsRoute
   '/apk-manager': typeof AuthenticatedApkManagerRoute
   '/audit': typeof AuthenticatedAuditRoute
+  '/backups': typeof AuthenticatedBackupsRoute
   '/certificates': typeof AuthenticatedCertificatesRoute
   '/clients': typeof AuthenticatedClientsRoute
   '/core-hub': typeof AuthenticatedCoreHubRoute
@@ -579,6 +587,7 @@ export interface FileRoutesById {
   '/_authenticated/ai-tests': typeof AuthenticatedAiTestsRoute
   '/_authenticated/apk-manager': typeof AuthenticatedApkManagerRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
+  '/_authenticated/backups': typeof AuthenticatedBackupsRoute
   '/_authenticated/certificates': typeof AuthenticatedCertificatesRoute
   '/_authenticated/clients': typeof AuthenticatedClientsRoute
   '/_authenticated/core-hub': typeof AuthenticatedCoreHubRoute
@@ -648,6 +657,7 @@ export interface FileRouteTypes {
     | '/ai-tests'
     | '/apk-manager'
     | '/audit'
+    | '/backups'
     | '/certificates'
     | '/clients'
     | '/core-hub'
@@ -715,6 +725,7 @@ export interface FileRouteTypes {
     | '/ai-tests'
     | '/apk-manager'
     | '/audit'
+    | '/backups'
     | '/certificates'
     | '/clients'
     | '/core-hub'
@@ -782,6 +793,7 @@ export interface FileRouteTypes {
     | '/_authenticated/ai-tests'
     | '/_authenticated/apk-manager'
     | '/_authenticated/audit'
+    | '/_authenticated/backups'
     | '/_authenticated/certificates'
     | '/_authenticated/clients'
     | '/_authenticated/core-hub'
@@ -1074,6 +1086,13 @@ declare module '@tanstack/react-router' {
       path: '/certificates'
       fullPath: '/certificates'
       preLoaderRoute: typeof AuthenticatedCertificatesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/backups': {
+      id: '/_authenticated/backups'
+      path: '/backups'
+      fullPath: '/backups'
+      preLoaderRoute: typeof AuthenticatedBackupsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/audit': {
@@ -1383,6 +1402,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAiTestsRoute: typeof AuthenticatedAiTestsRoute
   AuthenticatedApkManagerRoute: typeof AuthenticatedApkManagerRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
+  AuthenticatedBackupsRoute: typeof AuthenticatedBackupsRoute
   AuthenticatedCertificatesRoute: typeof AuthenticatedCertificatesRoute
   AuthenticatedClientsRoute: typeof AuthenticatedClientsRoute
   AuthenticatedCoreHubRoute: typeof AuthenticatedCoreHubRoute
@@ -1420,6 +1440,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAiTestsRoute: AuthenticatedAiTestsRoute,
   AuthenticatedApkManagerRoute: AuthenticatedApkManagerRoute,
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
+  AuthenticatedBackupsRoute: AuthenticatedBackupsRoute,
   AuthenticatedCertificatesRoute: AuthenticatedCertificatesRoute,
   AuthenticatedClientsRoute: AuthenticatedClientsRoute,
   AuthenticatedCoreHubRoute: AuthenticatedCoreHubRoute,

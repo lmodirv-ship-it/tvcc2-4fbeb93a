@@ -308,6 +308,168 @@ function ServersPage() {
                   </div>
                 )}
               </div>
+
+              <Tabs defaultValue="ports">
+                <TabsList className="flex-wrap h-auto">
+                  <TabsTrigger value="ports"><Network className="w-3 h-3 ml-1" /> المنافذ</TabsTrigger>
+                  <TabsTrigger value="configs"><Settings2 className="w-3 h-3 ml-1" /> الإعدادات</TabsTrigger>
+                  <TabsTrigger value="tools"><Play className="w-3 h-3 ml-1" /> الأدوات</TabsTrigger>
+                  <TabsTrigger value="deploy"><Rocket className="w-3 h-3 ml-1" /> ترحيل المنصة</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="ports" className="space-y-2 pt-3">
+                  <div className="flex items-center justify-between">
+                    <span className="text-xs text-muted-foreground">المنافذ التي يرصدها الوكيل على السيرفر.</span>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={async () => {
+                        await queueCmd({ data: { serverId: detailId!, action: "scan_ports" } });
+                        toast.success("تم طلب فحص المنافذ — سيصل مع نبضة الوكيل القادمة");
+                        qc.invalidateQueries({ queryKey: ["server-ops", detailId] });
+                      }}
+                    >
+                      <RefreshCw className="w-3 h-3 ml-1" /> إعادة الفحص
+                    </Button>
+                  </div>
+                  {((ops as any)?.ports ?? []).length === 0 ? (
+                    <p className="text-xs text-muted-foreground">لم يُرسل الوكيل أي منافذ بعد.</p>
+                  ) : (
+                    <div className="grid gap-1 md:grid-cols-2">
+                      {((ops as any).ports as any[]).map((p) => (
+                        <div key={p.id} className="flex items-center justify-between rounded border p-2 text-xs">
+                          <span className="ltr text-left">{p.address}:{p.port}/{p.protocol}</span>
+                          <span className="text-muted-foreground">{p.process_name ?? "—"}</span>
+                          <Badge variant="outline" className={p.is_public ? "bg-warning/20 text-warning border-warning/40" : ""}>
+                            {p.is_public ? "عام" : "محلي"}
+                          </Badge>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="configs" className="space-y-2 pt-3">
+                  {((ops as any)?.configs ?? []).length === 0 ? (
+                    <p className="text-xs text-muted-foreground">لا توجد ملفات إعداد مقروءة بعد.</p>
+                  ) : (
+                    <div className="space-y-2">
+                      <div className="flex flex-wrap gap-2">
+                        {((ops as any).configs as any[]).map((c) => (
+                          <Button
+                            key={c.id}
+                            size="sm"
+                            variant={configPath === c.path ? "default" : "outline"}
+                            onClick={() => { setConfigPath(c.path); setConfigDraft(c.content ?? ""); }}
+                          >
+                            {c.kind}
+                          </Button>
+                        ))}
+                      </div>
+                      {configPath && (
+                        <div className="space-y-2">
+                          <div className="text-[11px] text-muted-foreground ltr text-left">{configPath}</div>
+                          <Textarea
+                            rows={12}
+                            className="font-mono text-[11px] ltr text-left"
+                            value={configDraft}
+                            onChange={(e) => setConfigDraft(e.target.value)}
+                          />
+                          <Button
+                            size="sm"
+                            onClick={async () => {
+                              const kind = ((ops as any).configs as any[]).find((c) => c.path === configPath)?.kind ?? "custom";
+                              await saveConfig({ data: { serverId: detailId!, kind, path: configPath, content: configDraft } });
+                              toast.success("تم إرسال التعديل للوكيل");
+                              qc.invalidateQueries({ queryKey: ["server-ops", detailId] });
+                            }}
+                          >
+                            <Save className="w-3 h-3 ml-1" /> حفظ على السيرفر
+                          </Button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </TabsContent>
+
+                <TabsContent value="tools" className="space-y-3 pt-3">
+                  <div className="flex gap-2 flex-wrap items-end">
+                    <div className="min-w-[12rem]">
+                      <Label className="text-xs">الأمر</Label>
+                      <select
+                        className="w-full h-9 rounded-md border bg-background px-2 text-sm"
+                        value={action}
+                        onChange={(e) => setAction(e.target.value)}
+                      >
+                        {COMMAND_WHITELIST.filter((a) => a !== "write_config" && a !== "platform_deploy").map((a) => (
+                          <option key={a} value={a}>{COMMAND_LABELS[a] ?? a}</option>
+                        ))}
+                      </select>
+                    </div>
+                    {COMMAND_ARG[action] && (
+                      <div>
+                        <Label className="text-xs">{COMMAND_ARG[action]!.key}</Label>
+                        <Input
+                          value={argValue}
+                          placeholder={COMMAND_ARG[action]!.placeholder}
+                          onChange={(e) => setArgValue(e.target.value)}
+                        />
+                      </div>
+                    )}
+                    <Button
+                      size="sm"
+                      onClick={async () => {
+                        const arg = COMMAND_ARG[action];
+                        await queueCmd({
+                          data: {
+                            serverId: detailId!,
+                            action,
+                            args: arg ? { [arg.key]: argValue } : {},
+                          },
+                        });
+                        setArgValue("");
+                        toast.success("تمت إضافة الأمر إلى قائمة التنفيذ");
+                        qc.invalidateQueries({ queryKey: ["server-ops", detailId] });
+                      }}
+                    >
+                      <Play className="w-3 h-3 ml-1" /> تنفيذ
+                    </Button>
+                  </div>
+
+                  <div className="space-y-2">
+                    {((ops as any)?.commands ?? []).map((c: any) => (
+                      <div key={c.id} className="rounded border p-2 text-xs space-y-1">
+                        <div className="flex items-center justify-between">
+                          <span className="font-medium">{COMMAND_LABELS[c.action] ?? c.action}</span>
+                          <Badge variant="outline" className={statusColor(c.status === "done" ? "online" : c.status === "failed" ? "offline" : "pending")}>
+                            {c.status}
+                          </Badge>
+                        </div>
+                        {c.output && (
+                          <pre className="bg-muted/50 p-2 rounded max-h-40 overflow-auto ltr text-left text-[10px] whitespace-pre-wrap">{c.output}</pre>
+                        )}
+                        <div className="text-muted-foreground">{new Date(c.created_at).toLocaleString("ar")}</div>
+                      </div>
+                    ))}
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="deploy" className="space-y-3 pt-3">
+                  <p className="text-xs text-muted-foreground">
+                    بعد ربط السيرفر يمكنك ترحيل نسخة من المنصة إليه وتشغيلها عبر PM2.
+                  </p>
+                  <Button
+                    size="sm"
+                    onClick={async () => {
+                      const r: any = await deployCmd({ data: { serverId: detailId!, origin: window.location.origin } });
+                      setAgent({ install: r.install, script: r.script, endpoint: "" });
+                      toast.success("تم توليد أمر الترحيل");
+                    }}
+                  >
+                    <Rocket className="w-3 h-3 ml-1" /> توليد أمر الترحيل
+                  </Button>
+                </TabsContent>
+              </Tabs>
             </div>
           )}
         </DialogContent>

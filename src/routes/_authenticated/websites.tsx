@@ -139,26 +139,25 @@ function WebsitesPage() {
   };
 
   const verifyWebsite = async (id: string, domain: string) => {
-    toast.loading("جاري فحص DNS...", { id: `verify-${id}` });
+    toast.loading("جاري التحقق من ملكية النطاق...", { id: `verify-${id}` });
     try {
-      const res = await verifyDns({ data: { domain } });
-      await supabase
-        .from("websites")
-        .update({
-          verified: res.verified,
-          status: res.verified ? "online" : "offline",
-          last_checked_at: new Date().toISOString(),
-        })
-        .eq("id", id);
-      toast.success(
-        res.verified ? `تم التحقق عبر ${res.method}` : "لم يتم العثور على سجل _tvcc",
-        { id: `verify-${id}` }
-      );
+      const res = await verifyIssueRegisterFn({ data: { websiteId: id } });
+      if (!res.verified) {
+        toast.error(`لم يتم التحقق من ملكية ${domain} — لم يُعثر على سجل _tvcc`, { id: `verify-${id}` });
+      } else {
+        toast.success(
+          `تم التحقق عبر ${res.method} — ${res.issuedNow ? "أُصدرت" : "سارية"} شهادة HN.RLS ${res.certificate?.serial}` +
+            (res.registration?.status === "registered" ? " وتم تسجيل المشروع" : " (تسجيل المشروع بانتظار المزامنة)"),
+          { id: `verify-${id}`, duration: 6000 }
+        );
+      }
       qc.invalidateQueries({ queryKey: ["websites"] });
-    } catch {
-      toast.error("تعذر فحص DNS", { id: `verify-${id}` });
+      qc.invalidateQueries({ queryKey: ["hn-certificates"] });
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "تعذر إتمام التحقق", { id: `verify-${id}` });
     }
   };
+
 
   const total = websites?.length || 0;
   const online = websites?.filter((w) => w.status === "online").length || 0;

@@ -110,3 +110,36 @@ export async function notifyCoreHub(
     return { ok: false, status: 0, error: (e as Error)?.message ?? "network error" };
   }
 }
+
+/** DNS-over-HTTPS lookup used for domain ownership verification. */
+async function doh(name: string, type: "CNAME" | "TXT") {
+  const url = `https://cloudflare-dns.com/dns-query?name=${encodeURIComponent(name)}&type=${type}`;
+  const res = await fetch(url, { headers: { accept: "application/dns-json" } });
+  if (!res.ok) return [] as Array<{ data: string }>;
+  const data = (await res.json()) as { Answer?: Array<{ data: string }> };
+  return data.Answer ?? [];
+}
+
+export function normalizeDomain(input: string): string {
+  return input.replace(/^https?:\/\//, "").replace(/\/.*$/, "").trim().toLowerCase();
+}
+
+/** Checks the `_tvcc` CNAME/TXT ownership record for a domain. */
+export async function checkDomainOwnership(rawDomain: string) {
+  const domain = normalizeDomain(rawDomain);
+  const target = `_tvcc.${domain}`;
+  const expectedCname = "network.tvcc.ma";
+  const expectedTxt = "tvcc-network=enabled";
+
+  const [cnameAns, txtAns] = await Promise.all([doh(target, "CNAME"), doh(target, "TXT")]);
+  const cnameOk = cnameAns.some((a) =>
+    a.data.toLowerCase().replace(/\.$/, "").includes(expectedCname),
+  );
+  const txtOk = txtAns.some((a) => a.data.toLowerCase().includes(expectedTxt));
+
+  return {
+    domain,
+    verified: cnameOk || txtOk,
+    method: cnameOk ? ("CNAME" as const) : txtOk ? ("TXT" as const) : null,
+  };
+}

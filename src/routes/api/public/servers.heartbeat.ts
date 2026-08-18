@@ -207,6 +207,11 @@ export const Route = createFileRoute("/api/public/servers/heartbeat")({
           collected_at: now,
         });
 
+        await evaluateAlerts(admin, serverId, server.owner_id, {
+          cpu, memUsed, memTotal, diskUsed, diskTotal, load: num(body.load_avg),
+        });
+        await autoIssueServerCerts(admin, serverId, server.owner_id);
+
         const sites = Array.isArray(body.sites) ? body.sites.slice(0, 200) : [];
         for (const s of sites as Array<Record<string, unknown>>) {
           if (typeof s?.name !== "string" || !s.name) continue;

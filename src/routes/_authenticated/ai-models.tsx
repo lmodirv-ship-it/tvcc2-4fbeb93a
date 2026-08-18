@@ -198,6 +198,11 @@ function AiModelsPage() {
                       <span className="text-xs">مفعّل</span>
                     </div>
                     <div className="flex gap-1">
+                      <Button size="sm" variant="secondary" disabled={testing === m.id} onClick={() => testModel(m)}>
+                        {testing === m.id
+                          ? <Loader2 className="w-3 h-3 animate-spin" />
+                          : <><Zap className="w-3 h-3 ml-1" /> اختبار</>}
+                      </Button>
                       <Button
                         size="sm"
                         variant="outline"
@@ -222,6 +227,17 @@ function AiModelsPage() {
                       </Button>
                     </div>
                   </div>
+
+                  {results[m.id] && (
+                    <div className={`rounded-md border p-2 text-xs space-y-1 ${results[m.id].ok ? "border-emerald-500/40 bg-emerald-500/10" : "border-destructive/40 bg-destructive/10"}`}>
+                      <div className="flex items-center justify-between font-medium">
+                        <span>{results[m.id].ok ? "نجح الاختبار" : "فشل الاختبار"}</span>
+                        {results[m.id].latency > 0 && <span>{results[m.id].latency}ms</span>}
+                      </div>
+                      <p className="text-muted-foreground whitespace-pre-wrap break-words line-clamp-4">{results[m.id].text}</p>
+                    </div>
+                  )}
+
                 </CardContent>
               </Card>
             );

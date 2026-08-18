@@ -512,3 +512,47 @@ export const deleteConversation = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+/* ---------------- quick inference test ---------------- */
+
+/** Runs a tiny prompt against a model. Local (127.0.0.1) models are tested from the browser instead. */
+export const testAiModel = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string; prompt?: string }) => input)
+  .handler(async ({ data, context }) => {
+    const sb = context.supabase as any;
+    const { data: model } = await sb.from("ai_models").select("*").eq("id", data.id).maybeSingle();
+    if (!model) throw new Error("النموذج غير موجود");
+    const { data: provider } = await sb.from("ai_providers").select("*").eq("id", model.provider_id).maybeSingle();
+    if (!provider) throw new Error("المزوّد غير موجود");
+
+    const prompt = data.prompt?.trim() || "قل: مرحباً من TVCC. بجملة واحدة فقط.";
+    const started = Date.now();
+    try {
+      const json = await callModel(
+        model,
+        provider,
+        [{ role: "user", content: prompt }],
+        false,
+      );
+      const latency = Date.now() - started;
+      const answer = json?.choices?.[0]?.message?.content ?? "";
+      await sb.from("ai_models").update({ last_latency_ms: latency, status: "ready" }).eq("id", model.id);
+      return { ok: true, latency, answer: String(answer).slice(0, 1000) };
+    } catch (e) {
+      await sb.from("ai_models").update({ status: "error" }).eq("id", model.id);
+      return { ok: false, latency: Date.now() - started, error: e instanceof Error ? e.message : "فشل الاختبار", answer: "" };
+    }
+  });
+
+/** Saves the outcome of a browser-side local-model test. */
+export const recordModelTest = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string; ok: boolean; latency: number }) => input)
+  .handler(async ({ data, context }) => {
+    await (context.supabase as any)
+      .from("ai_models")
+      .update({ last_latency_ms: data.latency, status: data.ok ? "ready" : "error" })
+      .eq("id", data.id);
+    return { ok: true };
+  });

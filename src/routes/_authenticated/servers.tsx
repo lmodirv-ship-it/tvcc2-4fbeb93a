@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import {
   Server, Plus, Loader2, Trash2, Cpu, MemoryStick, HardDrive, Terminal, Copy, RefreshCw, Brain,
-  Network, Settings2, Play, Rocket, Save,
+  Network, Settings2, Play, Rocket, Save, CheckSquare,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -23,6 +24,7 @@ import {
 } from "@/lib/servers.functions";
 import {
   getServerOps, queueServerCommand, saveServerConfig, getPlatformDeployCommand,
+  applyBulkConfig, queueBulkCommand,
 } from "@/lib/server-ops.functions";
 import { COMMAND_WHITELIST, COMMAND_LABELS, COMMAND_ARG } from "@/lib/server-commands";
 import { importServerModels } from "@/lib/ai-hub.functions";

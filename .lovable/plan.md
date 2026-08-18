@@ -39,6 +39,9 @@
 
 
 - **ترحيل قاعدة بيانات**: جدول `ai_model_tests` (`id`, `owner_id`, `model_id`, `provider_label`, `prompt`, `answer`, `latency_ms`, `prompt_tokens`, `completion_tokens`, `total_tokens`, `status`, `error_message`, `created_at`) مع `GRANT` لـ `authenticated`/`service_role`، تفعيل RLS، وسياسات مقيّدة بـ `owner_id = auth.uid()`.
+- **جداول جديدة**: `server_ports` (المنافذ المكتشفة)، `server_commands` (طابور الأوامر: النوع، المعاملات، الحالة، النتيجة)، `server_configs` (نسخ الإعدادات المقروءة)، `site_backups` (نوع النسخة، المسار، الحجم، الحالة)، و`operation_log` (المذكّرة المرجعية) — جميعها مع GRANTs وRLS مقيّدة بـ `owner_id`.
+- **الوكيل**: توسيع `src/lib/agent-script.ts` لإرسال المنافذ والإعدادات وحالة الخدمات، وسحب الأوامر المعلّقة من ردّ النبضة وتنفيذها من قائمة بيضاء ثم إرسال النتيجة إلى `/api/public/servers/heartbeat` بنفس توقيع HMAC الحالي.
+- **الأمان**: لا تنفيذ أوامر حرّة، لا تخزين مفاتيح SSH، وكل عملية تُكتب في `operation_log`.
 - **نشر المنصة على السيرفر**: دالة خادم `getPlatformDeployCommand` تُصدر سكربت تثبيت موقّعاً (على نمط `getAgentInstall` الحالي) يشغّل التطبيق عبر PM2 على السيرفر، ويُبلّغ الوكيل عن حالة الخدمة ضمن النبضة فتُحفظ في `servers.metadata`.
 - **`src/lib/ai-hub.functions.ts`**:
   - توسيع `testAiModel` ليستقبل `prompt` و`temperature` و`max_tokens` و`top_p`، وتمريرها إلى جسم الطلب (تُرسل فقط الحقول المحدَّدة)، وقراءة `usage` من رد المزوّد، وكتابة صف في `ai_model_tests`.

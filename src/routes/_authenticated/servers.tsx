@@ -69,6 +69,8 @@ function ServersPage() {
   const queueCmd = useServerFn(queueServerCommand);
   const saveConfig = useServerFn(saveServerConfig);
   const deployCmd = useServerFn(getPlatformDeployCommand);
+  const bulkConfig = useServerFn(applyBulkConfig);
+  const bulkCmd = useServerFn(queueBulkCommand);
 
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: "", hostname: "", description: "", provider: "", region: "" });
@@ -78,6 +80,9 @@ function ServersPage() {
   const [argValue, setArgValue] = useState("");
   const [configPath, setConfigPath] = useState<string | null>(null);
   const [configDraft, setConfigDraft] = useState("");
+  const [dryRun, setDryRun] = useState(false);
+  const [selectedServers, setSelectedServers] = useState<Set<string>>(new Set());
+  const [bulkAction, setBulkAction] = useState<string>("scan_ports");
 
   const { data: ops } = useQuery({
     queryKey: ["server-ops", detailId],

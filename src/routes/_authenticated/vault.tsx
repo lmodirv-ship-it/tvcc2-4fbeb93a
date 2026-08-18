@@ -162,9 +162,26 @@ function VaultPage() {
                     <TableCell><Badge variant="outline">{s.category}</Badge></TableCell>
                     <TableCell className="font-mono text-xs" dir="ltr">
                       <div className="flex items-center gap-2">
-                        {shown[s.id] ? <span className="truncate max-w-[220px]">{s.plaintext ?? "•••"}</span> : <span>••••••••••</span>}
-                        <button onClick={() => setShown({ ...shown, [s.id]: !shown[s.id] })}>
-                          {shown[s.id] ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
+                        {shown[s.id]?.open ? (
+                          <span className="truncate max-w-[220px]">{shown[s.id].value}</span>
+                        ) : (
+                          <span>{s.masked_value ?? "••••••••••"}</span>
+                        )}
+                        <button
+                          onClick={async () => {
+                            if (shown[s.id]?.open) {
+                              setShown({ ...shown, [s.id]: { open: false, value: "" } });
+                            } else {
+                              try {
+                                const r: any = await reveal({ data: { id: s.id } });
+                                setShown({ ...shown, [s.id]: { open: true, value: r.value } });
+                              } catch (e) {
+                                toast.error((e as Error).message);
+                              }
+                            }
+                          }}
+                        >
+                          {shown[s.id]?.open ? <EyeOff className="w-3.5 h-3.5" /> : <Eye className="w-3.5 h-3.5" />}
                         </button>
                       </div>
                     </TableCell>

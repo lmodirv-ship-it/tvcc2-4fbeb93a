@@ -57,6 +57,7 @@
     "video_studio": "Video Studio",
     "domains": "Domain Manager",
     "ssl": "SSL Monitor",
+    "certificates": "HN.RLS Certificates",
     "notifications": "Notifications",
     "environment": "Environment",
     "activity": "Activity Log",

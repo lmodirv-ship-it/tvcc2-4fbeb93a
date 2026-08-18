@@ -2,7 +2,7 @@ import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
 import {
   LayoutDashboard, Globe, Users, CreditCard, UserCog, Activity, Settings,
   Code2, LogOut, Wand2, FolderOpen, LayoutTemplate, Radio, ListChecks, Plug,
-  Smartphone, KeyRound, Server, ShieldCheck, Bell, FileCog, LifeBuoy, ClipboardCheck,
+  Smartphone, KeyRound, Server, ShieldCheck, BadgeCheck, Bell, FileCog, LifeBuoy, ClipboardCheck,
   FileBarChart, Wallet, Boxes, Brain, Film,
 } from "lucide-react";
 import {
@@ -32,6 +32,7 @@ const coreItems = [
 const opsItems = [
   { titleKey: "sidebar.domains", url: "/domains", icon: Server },
   { titleKey: "sidebar.ssl", url: "/ssl", icon: ShieldCheck },
+  { titleKey: "sidebar.certificates", url: "/certificates", icon: BadgeCheck },
   { titleKey: "sidebar.notifications", url: "/notifications", icon: Bell },
   { titleKey: "sidebar.environment", url: "/environment", icon: FileCog },
   { titleKey: "sidebar.activity", url: "/activity", icon: Activity },

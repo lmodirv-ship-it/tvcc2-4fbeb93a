@@ -1,0 +1,213 @@
+{
+  "version": 1,
+  "sdk_version": "0.26.2",
+  "path": "/mcp",
+  "auth": {
+    "type": "oauth",
+    "issuer": "https://hjiqsrlzgkmhghnwetam.supabase.co/auth/v1",
+    "accepted_audiences": [
+      "authenticated"
+    ]
+  },
+  "mcp": {
+    "server": {
+      "name": "tvcc-mcp",
+      "version": "0.1.0",
+      "title": "TVCC — Website Control Center"
+    },
+    "tools": [
+      {
+        "name": "list_websites",
+        "title": "List websites",
+        "description": "List the websites managed by the signed-in user, optionally filtered by a domain/name search term or active state.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "search": {
+              "description": "Filter by domain or name substring.",
+              "type": "string"
+            },
+            "only_active": {
+              "description": "Return only active websites.",
+              "type": "boolean"
+            },
+            "limit": {
+              "description": "Maximum rows to return (default 50, max 200).",
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_website",
+        "title": "Get website details",
+        "description": "Fetch the full record for one managed website, looked up by its exact domain.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "domain": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Exact domain, e.g. hn-db.fun"
+            }
+          },
+          "required": [
+            "domain"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "create_website",
+        "title": "Add a website",
+        "description": "Register a new website in the control panel for the signed-in user.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": false,
+          "idempotentHint": false,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "domain": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Domain to register, e.g. example.com"
+            },
+            "name": {
+              "description": "Display name. Defaults to the domain.",
+              "type": "string"
+            },
+            "description": {
+              "description": "Short description of the site.",
+              "type": "string"
+            },
+            "is_active": {
+              "description": "Whether the site is active (default true).",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "domain"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "update_website",
+        "title": "Update a website",
+        "description": "Update the display name, description or active state of an existing website, identified by its exact domain.",
+        "annotations": {
+          "readOnlyHint": false,
+          "destructiveHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "domain": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Exact domain of the website to update."
+            },
+            "name": {
+              "description": "New display name.",
+              "type": "string"
+            },
+            "description": {
+              "description": "New description.",
+              "type": "string"
+            },
+            "is_active": {
+              "description": "Activate or deactivate the website.",
+              "type": "boolean"
+            }
+          },
+          "required": [
+            "domain"
+          ]
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_site_groups",
+        "title": "List site groups",
+        "description": "List the user's website groups. Optionally include the member websites of each group.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "include_members": {
+              "description": "Include the websites belonging to each group.",
+              "type": "boolean"
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "list_expiring_domains",
+        "title": "List expiring domains",
+        "description": "List registered domains whose registration expires within a given number of days, soonest first.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "within_days": {
+              "description": "Look-ahead window in days (default 60).",
+              "type": "integer",
+              "minimum": -9007199254740991,
+              "maximum": 9007199254740991
+            }
+          }
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_dashboard_stats",
+        "title": "Get dashboard stats",
+        "description": "Summary counters for the signed-in user's control panel: websites, active websites, groups, domains and active subscriptions.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      }
+    ]
+  }
+}

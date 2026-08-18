@@ -7,6 +7,7 @@ TVCC_TOKEN="${token}"
 TVCC_ENDPOINT="${endpoint}"
 TVCC_AI_ENDPOINT="\${TVCC_AI_ENDPOINT:-http://127.0.0.1:11434}"
 TVCC_BACKUP_DIR="\${TVCC_BACKUP_DIR:-/var/backups/tvcc}"
+TVCC_AGENT_VERSION="2.1.0"
 mkdir -p "$TVCC_BACKUP_DIR"
 
 json_escape() { python3 -c 'import sys,json;print(json.dumps(sys.stdin.read()))'; }
@@ -22,9 +23,40 @@ post() { # $1 = body -> echoes response
     --data "$BODY" || echo '{}'
 }
 
-run_command() { # $1 = action, $2 = args json -> prints output
-  local ACTION="$1" ARGS="$2"
-  local GET; GET() { echo "$ARGS" | python3 -c "import sys,json;print(json.load(sys.stdin).get('$1','') )" 2>/dev/null || echo ""; }
+run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
+  local ACTION="$1" ARGS="$2" DRY="$3"
+  local GET; GET() { echo "$ARGS" | python3 -c "import sys,json;print(json.load(sys.stdin).get('\$1','') )" 2>/dev/null || echo ""; }
+  if [ "$DRY" = "true" ]; then
+    case "$ACTION" in
+      scan_ports)      echo "[dry-run] ss -tulpn || netstat -tulpn" ;;
+      read_configs)    echo "[dry-run] nginx -T | head -400" ;;
+      service_status)  echo "[dry-run] systemctl status $(GET name)" ;;
+      service_restart) echo "[dry-run] systemctl restart $(GET name)" ;;
+      service_logs)    echo "[dry-run] journalctl -u $(GET name) -n 200" ;;
+      nginx_test)      echo "[dry-run] nginx -t" ;;
+      nginx_reload)    echo "[dry-run] nginx -t && systemctl reload nginx" ;;
+      firewall_list)   echo "[dry-run] ufw status || iptables -L -n" ;;
+      firewall_allow)  echo "[dry-run] ufw allow $(GET port)" ;;
+      firewall_deny)   echo "[dry-run] ufw deny $(GET port)" ;;
+      disk_usage)      echo "[dry-run] df -h && du -sh /var/www/*" ;;
+      write_config)
+        local PATH_=$(GET path) CONTENT=$(GET content)
+        echo "[dry-run] would write to $PATH_"
+        if command -v diff >/dev/null && [ -f "$PATH_" ]; then
+          echo "--- diff preview ---"
+          printf '%s' "$CONTENT" | diff -u "$PATH_" - || true
+        fi
+        ;;
+      site_backup)     echo "[dry-run] tar czf /var/backups/tvcc/\${D}-\$(date).tar.gz /var/www/\$D" ;;
+      site_restore)    echo "[dry-run] tar xzf $(GET storage_path) -C /" ;;
+      db_dump)         echo "[dry-run] mysqldump --single-transaction DB | gzip > file.sql.gz" ;;
+      db_import)       echo "[dry-run] gunzip -c $(GET storage_path) | mysql $(GET database)" ;;
+      backup_delete)   echo "[dry-run] rm -f $(GET storage_path)" ;;
+      platform_deploy) echo "[dry-run] $(GET script)" ;;
+      *) echo "[dry-run] unsupported action: $ACTION"; return 127 ;;
+    esac
+    return 0
+  fi
   case "$ACTION" in
     scan_ports)      ss -tulpn 2>/dev/null || netstat -tulpn ;;
     read_configs)    nginx -T 2>/dev/null | head -400 ;;
@@ -42,9 +74,33 @@ run_command() { # $1 = action, $2 = args json -> prints output
     site_restore)    tar xzf "$(GET storage_path)" -C / && echo "restored $(GET storage_path)" ;;
     db_dump)         D="$(GET domain)"; F="$TVCC_BACKUP_DIR/\${D}-$(date +%Y%m%d%H%M%S).sql.gz"; mysqldump --single-transaction "\${D//./_}" 2>/dev/null | gzip > "$F" && echo "$F" ;;
     db_import)       gunzip -c "$(GET storage_path)" | mysql "$(GET database)" && echo "imported" ;;
+    backup_delete)   rm -f "$(GET storage_path)" && echo "deleted $(GET storage_path)" ;;
     platform_deploy) bash -lc "$(GET script)" ;;
     *) echo "unsupported action: $ACTION"; return 127 ;;
   esac
+}
+
+install_systemd() {
+  cat > /etc/systemd/system/tvcc-agent.service <<'EOF'
+[Unit]
+Description=TVCC Agent
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/tvcc-agent.sh
+Restart=always
+RestartSec=10
+User=root
+Environment="TVCC_BACKUP_DIR=/var/backups/tvcc"
+
+[Install]
+WantedBy=multi-user.target
+EOF
+  systemctl daemon-reload
+  systemctl enable tvcc-agent.service
+  systemctl start tvcc-agent.service
+  echo "systemd service installed and started"
 }
 
 while true; do
@@ -57,6 +113,7 @@ while true; do
   UPTIME=$(awk '{print int($1)}' /proc/uptime)
   PROCS=$(ps -e --no-headers | wc -l)
   OS=$(. /etc/os-release 2>/dev/null && echo "$PRETTY_NAME" || uname -s)
+  PUBLIC_IP=$( (curl -s --max-time 5 https://api.ipify.org || curl -s --max-time 5 https://ifconfig.me || echo "") | head -1 | tr -d '\\n')
 
   AI_RAW=$(curl -s --max-time 3 "$TVCC_AI_ENDPOINT/api/tags" || echo "")
   if [ -n "$AI_RAW" ]; then
@@ -75,7 +132,7 @@ for line in sys.stdin:
     m=re.search(r":(\\d+)$", local)
     if not m: continue
     addr=local[:m.start()].strip("[]")
-    pm=re.search(r"\\(\\(\\"([^\\"]+)\\"", line)
+    pm=re.search(r"\\(\\"([^\\"]*)\\"", line)
     out.append({"port":int(m.group(1)),"protocol":proto[:4],"address":addr or "*","process_name":pm.group(1) if pm else None})
 seen=set(); uniq=[]
 for o in out:
@@ -97,7 +154,7 @@ for kind,p in paths:
 print(json.dumps(out))' 2>/dev/null || echo "[]")
   fi
 
-  BODY="{\\"cpu_percent\\":\${CPU:-0},\\"mem_used_mb\\":\${MEM_USED:-0},\\"mem_total_mb\\":\${MEM_TOTAL:-0},\\"disk_used_gb\\":\${DISK_USED:-0},\\"disk_total_gb\\":\${DISK_TOTAL:-0},\\"load_avg\\":\${LOAD:-0},\\"uptime_seconds\\":\${UPTIME:-0},\\"process_count\\":\${PROCS:-0},\\"os\\":\\"\${OS}\\",\\"agent_version\\":\\"2.0.0\\",\\"ai_endpoint\\":\\"\${TVCC_AI_ENDPOINT}\\",\\"ai_models\\":\${AI_MODELS},\\"ports\\":\${PORTS},\\"configs\\":\${CONFIGS}}"
+  BODY="{\\"cpu_percent\\":\${CPU:-0},\\"mem_used_mb\\":\${MEM_USED:-0},\\"mem_total_mb\\":\${MEM_TOTAL:-0},\\"disk_used_gb\\":\${DISK_USED:-0},\\"disk_total_gb\\":\${DISK_TOTAL:-0},\\"load_avg\\":\${LOAD:-0},\\"uptime_seconds\\":\${UPTIME:-0},\\"process_count\\":\${PROCS:-0},\\"os\\":\\"\${OS}\\",\\"agent_version\\":\\"\${TVCC_AGENT_VERSION}\\",\\"public_ip\\":\\"\${PUBLIC_IP}\\",\\"ai_endpoint\\":\\"\${TVCC_AI_ENDPOINT}\\",\\"ai_models\\":\${AI_MODELS},\\"ports\\":\${PORTS},\\"configs\\":\${CONFIGS}}"
 
   RESP=$(post "$BODY")
 
@@ -107,11 +164,12 @@ print(json.dumps(out))' 2>/dev/null || echo "[]")
   if [ "\${COUNT:-0}" -gt 0 ]; then
     RESULTS="["
     for i in $(seq 0 $((COUNT-1))); do
-      ID=$(echo "$CMDS" | python3 -c "import sys,json;print(json.load(sys.stdin)[$i]['id'])")
-      ACTION=$(echo "$CMDS" | python3 -c "import sys,json;print(json.load(sys.stdin)[$i]['action'])")
-      ARGS=$(echo "$CMDS" | python3 -c "import sys,json;print(json.dumps(json.load(sys.stdin)[$i].get('args',{})))")
+      ID=$(echo "$CMDS" | python3 -c "import sys,json;print(json.load(sys.stdin)[$i]['id'])") || continue
+      ACTION=$(echo "$CMDS" | python3 -c "import sys,json;print(json.load(sys.stdin)[$i]['action'])") || continue
+      ARGS=$(echo "$CMDS" | python3 -c "import sys,json;print(json.dumps(json.load(sys.stdin)[$i].get('args',{})))") || continue
+      DRY=$(echo "$CMDS" | python3 -c "import sys,json;print('true' if json.load(sys.stdin)[$i].get('dry_run') else 'false')") || continue
       set +e
-      OUT=$(run_command "$ACTION" "$ARGS" 2>&1 | tail -c 20000)
+      OUT=$(run_command "$ACTION" "$ARGS" "$DRY" 2>&1 | tail -c 20000)
       CODE=$?
       set -e
       OUT_J=$(printf '%s' "$OUT" | json_escape)
@@ -119,7 +177,7 @@ print(json.dumps(out))' 2>/dev/null || echo "[]")
       RESULTS="$RESULTS{\\"id\\":\\"$ID\\",\\"exit_code\\":$CODE,\\"output\\":$OUT_J}"
     done
     RESULTS="$RESULTS]"
-    post "{\\"agent_version\\":\\"2.0.0\\",\\"command_results\\":$RESULTS}" >/dev/null
+    post "{\\"agent_version\\":\\"\${TVCC_AGENT_VERSION}\\",\\"command_results\\":$RESULTS}" >/dev/null
   fi
 
   sleep 60

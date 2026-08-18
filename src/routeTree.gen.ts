@@ -70,12 +70,14 @@ import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as ApiPublicVideoIngestRouteImport } from './routes/api/public/video.ingest'
 import { Route as ApiPublicServersHeartbeatRouteImport } from './routes/api/public/servers.heartbeat'
+import { Route as ApiPublicServersCheckAlertsRouteImport } from './routes/api/public/servers/check-alerts'
 import { Route as ApiPublicServersAgentRouteImport } from './routes/api/public/servers.agent'
 import { Route as ApiPublicPaymentsIngestRouteImport } from './routes/api/public/payments.ingest'
 import { Route as ApiPublicNotificationsIngestRouteImport } from './routes/api/public/notifications.ingest'
 import { Route as ApiPublicHooksHealthCheckRouteImport } from './routes/api/public/hooks/health-check'
 import { Route as ApiPublicHnRlsVerifyRouteImport } from './routes/api/public/hn-rls.verify'
 import { Route as ApiPublicCoreIngestRouteImport } from './routes/api/public/core.ingest'
+import { Route as ApiPublicBackupsRunDueRouteImport } from './routes/api/public/backups/run-due'
 
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
@@ -404,6 +406,12 @@ const ApiPublicServersHeartbeatRoute =
     path: '/api/public/servers/heartbeat',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicServersCheckAlertsRoute =
+  ApiPublicServersCheckAlertsRouteImport.update({
+    id: '/api/public/servers/check-alerts',
+    path: '/api/public/servers/check-alerts',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicServersAgentRoute = ApiPublicServersAgentRouteImport.update({
   id: '/api/public/servers/agent',
   path: '/api/public/servers/agent',
@@ -434,6 +442,11 @@ const ApiPublicHnRlsVerifyRoute = ApiPublicHnRlsVerifyRouteImport.update({
 const ApiPublicCoreIngestRoute = ApiPublicCoreIngestRouteImport.update({
   id: '/api/public/core/ingest',
   path: '/api/public/core/ingest',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicBackupsRunDueRoute = ApiPublicBackupsRunDueRouteImport.update({
+  id: '/api/public/backups/run-due',
+  path: '/api/public/backups/run-due',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -496,12 +509,14 @@ export interface FileRoutesByFullPath {
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/editor/': typeof AuthenticatedEditorIndexRoute
+  '/api/public/backups/run-due': typeof ApiPublicBackupsRunDueRoute
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hn-rls/verify': typeof ApiPublicHnRlsVerifyRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
   '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
   '/api/public/servers/agent': typeof ApiPublicServersAgentRoute
+  '/api/public/servers/check-alerts': typeof ApiPublicServersCheckAlertsRoute
   '/api/public/servers/heartbeat': typeof ApiPublicServersHeartbeatRoute
   '/api/public/video/ingest': typeof ApiPublicVideoIngestRoute
 }
@@ -563,12 +578,14 @@ export interface FileRoutesByTo {
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/editor': typeof AuthenticatedEditorIndexRoute
+  '/api/public/backups/run-due': typeof ApiPublicBackupsRunDueRoute
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hn-rls/verify': typeof ApiPublicHnRlsVerifyRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
   '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
   '/api/public/servers/agent': typeof ApiPublicServersAgentRoute
+  '/api/public/servers/check-alerts': typeof ApiPublicServersCheckAlertsRoute
   '/api/public/servers/heartbeat': typeof ApiPublicServersHeartbeatRoute
   '/api/public/video/ingest': typeof ApiPublicVideoIngestRoute
 }
@@ -633,12 +650,14 @@ export interface FileRoutesById {
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/_authenticated/editor/': typeof AuthenticatedEditorIndexRoute
+  '/api/public/backups/run-due': typeof ApiPublicBackupsRunDueRoute
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hn-rls/verify': typeof ApiPublicHnRlsVerifyRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
   '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
   '/api/public/servers/agent': typeof ApiPublicServersAgentRoute
+  '/api/public/servers/check-alerts': typeof ApiPublicServersCheckAlertsRoute
   '/api/public/servers/heartbeat': typeof ApiPublicServersHeartbeatRoute
   '/api/public/video/ingest': typeof ApiPublicVideoIngestRoute
 }
@@ -703,12 +722,14 @@ export interface FileRouteTypes {
     | '/settings/notifications'
     | '/api/public/site-config'
     | '/editor/'
+    | '/api/public/backups/run-due'
     | '/api/public/core/ingest'
     | '/api/public/hn-rls/verify'
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
     | '/api/public/payments/ingest'
     | '/api/public/servers/agent'
+    | '/api/public/servers/check-alerts'
     | '/api/public/servers/heartbeat'
     | '/api/public/video/ingest'
   fileRoutesByTo: FileRoutesByTo
@@ -770,12 +791,14 @@ export interface FileRouteTypes {
     | '/settings/notifications'
     | '/api/public/site-config'
     | '/editor'
+    | '/api/public/backups/run-due'
     | '/api/public/core/ingest'
     | '/api/public/hn-rls/verify'
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
     | '/api/public/payments/ingest'
     | '/api/public/servers/agent'
+    | '/api/public/servers/check-alerts'
     | '/api/public/servers/heartbeat'
     | '/api/public/video/ingest'
   id:
@@ -839,12 +862,14 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/notifications'
     | '/api/public/site-config'
     | '/_authenticated/editor/'
+    | '/api/public/backups/run-due'
     | '/api/public/core/ingest'
     | '/api/public/hn-rls/verify'
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
     | '/api/public/payments/ingest'
     | '/api/public/servers/agent'
+    | '/api/public/servers/check-alerts'
     | '/api/public/servers/heartbeat'
     | '/api/public/video/ingest'
   fileRoutesById: FileRoutesById
@@ -859,12 +884,14 @@ export interface RootRouteChildren {
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicSiteConfigRoute: typeof ApiPublicSiteConfigRoute
+  ApiPublicBackupsRunDueRoute: typeof ApiPublicBackupsRunDueRoute
   ApiPublicCoreIngestRoute: typeof ApiPublicCoreIngestRoute
   ApiPublicHnRlsVerifyRoute: typeof ApiPublicHnRlsVerifyRoute
   ApiPublicHooksHealthCheckRoute: typeof ApiPublicHooksHealthCheckRoute
   ApiPublicNotificationsIngestRoute: typeof ApiPublicNotificationsIngestRoute
   ApiPublicPaymentsIngestRoute: typeof ApiPublicPaymentsIngestRoute
   ApiPublicServersAgentRoute: typeof ApiPublicServersAgentRoute
+  ApiPublicServersCheckAlertsRoute: typeof ApiPublicServersCheckAlertsRoute
   ApiPublicServersHeartbeatRoute: typeof ApiPublicServersHeartbeatRoute
   ApiPublicVideoIngestRoute: typeof ApiPublicVideoIngestRoute
 }
@@ -1298,6 +1325,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicServersHeartbeatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/servers/check-alerts': {
+      id: '/api/public/servers/check-alerts'
+      path: '/api/public/servers/check-alerts'
+      fullPath: '/api/public/servers/check-alerts'
+      preLoaderRoute: typeof ApiPublicServersCheckAlertsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/servers/agent': {
       id: '/api/public/servers/agent'
       path: '/api/public/servers/agent'
@@ -1338,6 +1372,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/core/ingest'
       fullPath: '/api/public/core/ingest'
       preLoaderRoute: typeof ApiPublicCoreIngestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/backups/run-due': {
+      id: '/api/public/backups/run-due'
+      path: '/api/public/backups/run-due'
+      fullPath: '/api/public/backups/run-due'
+      preLoaderRoute: typeof ApiPublicBackupsRunDueRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -1485,12 +1526,14 @@ const rootRouteChildren: RootRouteChildren = {
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicSiteConfigRoute: ApiPublicSiteConfigRoute,
+  ApiPublicBackupsRunDueRoute: ApiPublicBackupsRunDueRoute,
   ApiPublicCoreIngestRoute: ApiPublicCoreIngestRoute,
   ApiPublicHnRlsVerifyRoute: ApiPublicHnRlsVerifyRoute,
   ApiPublicHooksHealthCheckRoute: ApiPublicHooksHealthCheckRoute,
   ApiPublicNotificationsIngestRoute: ApiPublicNotificationsIngestRoute,
   ApiPublicPaymentsIngestRoute: ApiPublicPaymentsIngestRoute,
   ApiPublicServersAgentRoute: ApiPublicServersAgentRoute,
+  ApiPublicServersCheckAlertsRoute: ApiPublicServersCheckAlertsRoute,
   ApiPublicServersHeartbeatRoute: ApiPublicServersHeartbeatRoute,
   ApiPublicVideoIngestRoute: ApiPublicVideoIngestRoute,
 }

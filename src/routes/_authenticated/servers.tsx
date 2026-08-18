@@ -7,6 +7,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
+import { Checkbox } from "@/components/ui/checkbox";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
@@ -15,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import {
   Server, Plus, Loader2, Trash2, Cpu, MemoryStick, HardDrive, Terminal, Copy, RefreshCw, Brain,
-  Network, Settings2, Play, Rocket, Save,
+  Network, Settings2, Play, Rocket, Save, CheckSquare,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
@@ -23,6 +24,7 @@ import {
 } from "@/lib/servers.functions";
 import {
   getServerOps, queueServerCommand, saveServerConfig, getPlatformDeployCommand,
+  applyBulkConfig, queueBulkCommand,
 } from "@/lib/server-ops.functions";
 import { COMMAND_WHITELIST, COMMAND_LABELS, COMMAND_ARG } from "@/lib/server-commands";
 import { importServerModels } from "@/lib/ai-hub.functions";
@@ -67,6 +69,8 @@ function ServersPage() {
   const queueCmd = useServerFn(queueServerCommand);
   const saveConfig = useServerFn(saveServerConfig);
   const deployCmd = useServerFn(getPlatformDeployCommand);
+  const bulkConfig = useServerFn(applyBulkConfig);
+  const bulkCmd = useServerFn(queueBulkCommand);
 
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: "", hostname: "", description: "", provider: "", region: "" });
@@ -76,6 +80,9 @@ function ServersPage() {
   const [argValue, setArgValue] = useState("");
   const [configPath, setConfigPath] = useState<string | null>(null);
   const [configDraft, setConfigDraft] = useState("");
+  const [dryRun, setDryRun] = useState(false);
+  const [selectedServers, setSelectedServers] = useState<Set<string>>(new Set());
+  const [bulkAction, setBulkAction] = useState<string>("scan_ports");
 
   const { data: ops } = useQuery({
     queryKey: ["server-ops", detailId],
@@ -170,6 +177,60 @@ function ServersPage() {
         </Card>
       )}
 
+      {list.length > 0 && (
+        <Card className="border-border/60">
+          <CardContent className="p-3 flex flex-wrap items-end gap-3">
+            <div className="flex items-center gap-2">
+              <Checkbox
+                id="selectAll"
+                checked={selectedServers.size === list.length && list.length > 0}
+                onCheckedChange={(checked) => {
+                  if (checked) setSelectedServers(new Set(list.map((s) => s.id)));
+                  else setSelectedServers(new Set());
+                }}
+              />
+              <Label htmlFor="selectAll" className="text-xs">تحديد الكل ({selectedServers.size})</Label>
+            </div>
+            <div className="min-w-[10rem]">
+              <Label className="text-xs">أمر جماعي</Label>
+              <select
+                className="w-full h-9 rounded-md border bg-background px-2 text-sm"
+                value={bulkAction}
+                onChange={(e) => setBulkAction(e.target.value)}
+              >
+                {COMMAND_WHITELIST.filter((a) => a !== "write_config" && a !== "platform_deploy" && a !== "db_dump" && a !== "site_backup").map((a) => (
+                  <option key={a} value={a}>{COMMAND_LABELS[a] ?? a}</option>
+                ))}
+              </select>
+            </div>
+            <Button
+              size="sm"
+              variant="outline"
+              disabled={selectedServers.size === 0}
+              onClick={async () => {
+                const ids = Array.from(selectedServers);
+                await bulkCmd({ data: { serverIds: ids, action: bulkAction, dryRun: true } });
+                toast.success(`تمت محاكاة ${bulkAction} على ${ids.length} سيرفر — تحقق من سجل الأوامر`);
+              }}
+            >
+              <Play className="w-3 h-3 ml-1" /> محاكاة (Dry Run)
+            </Button>
+            <Button
+              size="sm"
+              disabled={selectedServers.size === 0}
+              onClick={async () => {
+                const ids = Array.from(selectedServers);
+                await bulkCmd({ data: { serverIds: ids, action: bulkAction } });
+                toast.success(`تمت إضافة ${bulkAction} لـ ${ids.length} سيرفر`);
+                qc.invalidateQueries({ queryKey: ["servers"] });
+              }}
+            >
+              <CheckSquare className="w-3 h-3 ml-1" /> تنفيذ جماعي
+            </Button>
+          </CardContent>
+        </Card>
+      )}
+
       {isLoading ? (
         <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
       ) : list.length === 0 ? (
@@ -182,9 +243,21 @@ function ServersPage() {
               <Card key={s.id} className="hover:border-primary/40 transition">
                 <CardContent className="p-4 space-y-3">
                   <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <div className="font-semibold">{s.name}</div>
-                      <div className="text-xs text-muted-foreground ltr text-left">{s.hostname}</div>
+                    <div className="flex items-start gap-2">
+                      <Checkbox
+                        checked={selectedServers.has(s.id)}
+                        onCheckedChange={(checked) => {
+                          const next = new Set(selectedServers);
+                          if (checked) next.add(s.id);
+                          else next.delete(s.id);
+                          setSelectedServers(next);
+                        }}
+                        className="mt-1"
+                      />
+                      <div>
+                        <div className="font-semibold">{s.name}</div>
+                        <div className="text-xs text-muted-foreground ltr text-left">{s.hostname}</div>
+                      </div>
                     </div>
                     <Badge variant="outline" className={statusColor(s.status)}>{s.status}</Badge>
                   </div>
@@ -416,6 +489,14 @@ function ServersPage() {
                         />
                       </div>
                     )}
+                    <div className="flex items-center gap-2 pb-1">
+                      <Checkbox
+                        id="dryRun"
+                        checked={dryRun}
+                        onCheckedChange={(v) => setDryRun(Boolean(v))}
+                      />
+                      <Label htmlFor="dryRun" className="text-xs">محاكاة فقط (Dry Run)</Label>
+                    </div>
                     <Button
                       size="sm"
                       onClick={async () => {
@@ -425,14 +506,15 @@ function ServersPage() {
                             serverId: detailId!,
                             action,
                             args: arg ? { [arg.key]: argValue } : {},
+                            dryRun,
                           },
                         });
                         setArgValue("");
-                        toast.success("تمت إضافة الأمر إلى قائمة التنفيذ");
+                        toast.success(dryRun ? "تمت إضافة الأمر كمحاكاة" : "تمت إضافة الأمر إلى قائمة التنفيذ");
                         qc.invalidateQueries({ queryKey: ["server-ops", detailId] });
                       }}
                     >
-                      <Play className="w-3 h-3 ml-1" /> تنفيذ
+                      <Play className="w-3 h-3 ml-1" /> {dryRun ? "محاكاة" : "تنفيذ"}
                     </Button>
                   </div>
 

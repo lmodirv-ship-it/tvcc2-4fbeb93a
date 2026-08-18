@@ -27,6 +27,85 @@ function safeEqual(a: string, b: string) {
 const num = (v: unknown): number | null =>
   typeof v === "number" && Number.isFinite(v) ? v : null;
 
+async function evaluateAlerts(admin: any, serverId: string, ownerId: string, metrics: {
+  cpu: number | null;
+  memUsed: number | null;
+  memTotal: number | null;
+  diskUsed: number | null;
+  diskTotal: number | null;
+  load: number | null;
+}) {
+  const { data: rules } = await admin
+    .from("server_alert_rules")
+    .select("*")
+    .eq("server_id", serverId)
+    .eq("enabled", true);
+
+  if (!rules?.length) return;
+
+  const now = new Date().toISOString();
+  const values: Record<string, number> = {
+    cpu_percent: metrics.cpu ?? 0,
+    mem_percent: metrics.memTotal ? ((metrics.memUsed ?? 0) / metrics.memTotal) * 100 : 0,
+    disk_percent: metrics.diskTotal ? ((metrics.diskUsed ?? 0) / metrics.diskTotal) * 100 : 0,
+    load_avg: metrics.load ?? 0,
+  };
+
+  for (const rule of rules as any[]) {
+    const v = values[rule.metric] ?? 0;
+    const triggered = rule.comparison === "gt" ? v > rule.threshold : v < rule.threshold;
+    if (!triggered) continue;
+
+    // Throttle: only one alert per rule per window
+    const windowStart = new Date(Date.now() - (rule.cooldown_minutes ?? 5) * 60000).toISOString();
+    const { data: recent } = await admin
+      .from("server_alert_history")
+      .select("id")
+      .eq("rule_id", rule.id)
+      .gte("created_at", windowStart)
+      .limit(1);
+    if ((recent as any[])?.length) continue;
+
+    await admin.from("server_alert_history").insert({
+      owner_id: ownerId,
+      server_id: serverId,
+      rule_id: rule.id,
+      metric: rule.metric,
+      threshold: rule.threshold,
+      value: v,
+      severity: rule.severity,
+      message: rule.message || `${rule.metric} = ${v.toFixed(1)}`,
+      channels: rule.channels,
+      resolved: false,
+    });
+
+    // Simple webhook/email notification placeholder
+    if ((rule.channels as string[])?.includes("webhook") && rule.webhook_url) {
+      try {
+        await fetch(rule.webhook_url, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            server_id: serverId,
+            metric: rule.metric,
+            value: v,
+            threshold: rule.threshold,
+            message: rule.message,
+          }),
+        });
+      } catch {
+        // best-effort
+      }
+    }
+  }
+}
+
+async function autoIssueServerCerts(admin: any, serverId: string, ownerId: string) {
+  // Placeholder: auto-certificate issuance can be wired here once hn_certificate creation is exposed.
+  // For now, sites without certificates remain untouched to avoid coupling heartbeat to complex DNS checks.
+  void admin; void serverId; void ownerId;
+}
+
 export const Route = createFileRoute("/api/public/servers/heartbeat")({
   server: {
     handlers: {
@@ -79,12 +158,33 @@ export const Route = createFileRoute("/api/public/servers/heartbeat")({
           diskTotal ? ((diskUsed ?? 0) / diskTotal) * 100 : 0,
         );
 
+        const publicIp = typeof body.public_ip === "string" ? body.public_ip.slice(0, 64) : null;
+        const agentVersion = typeof body.agent_version === "string" ? body.agent_version.slice(0, 32) : null;
+
+        // Track IP changes
+        if (publicIp) {
+          const { data: prev } = await admin
+            .from("servers")
+            .select("public_ip")
+            .eq("id", serverId)
+            .maybeSingle();
+          if ((prev as any)?.public_ip !== publicIp) {
+            await admin.from("server_ip_history").insert({
+              owner_id: server.owner_id,
+              server_id: serverId,
+              public_ip: publicIp,
+              detected_at: now,
+            });
+          }
+        }
+
         await admin
           .from("servers")
           .update({
             status: worst >= 90 ? "warning" : "online",
             last_seen_at: now,
-            agent_version: typeof body.agent_version === "string" ? body.agent_version : null,
+            agent_version: agentVersion,
+            public_ip: publicIp,
             os: typeof body.os === "string" ? body.os : undefined,
             metadata: {
               ai_endpoint: typeof body.ai_endpoint === "string" ? body.ai_endpoint : null,
@@ -106,6 +206,11 @@ export const Route = createFileRoute("/api/public/servers/heartbeat")({
           process_count: num(body.process_count),
           collected_at: now,
         });
+
+        await evaluateAlerts(admin, serverId, server.owner_id, {
+          cpu, memUsed, memTotal, diskUsed, diskTotal, load: num(body.load_avg),
+        });
+        await autoIssueServerCerts(admin, serverId, server.owner_id);
 
         const sites = Array.isArray(body.sites) ? body.sites.slice(0, 200) : [];
         for (const s of sites as Array<Record<string, unknown>>) {
@@ -211,13 +316,20 @@ export const Route = createFileRoute("/api/public/servers/heartbeat")({
                 })
                 .eq("id", backupId);
             }
+
+            if (cmd.action === "backup_delete" && typeof backupId === "string") {
+              await admin
+                .from("site_backups")
+                .update({ status: code === 0 ? "deleted" : "failed", completed_at: now })
+                .eq("id", backupId);
+            }
           }
         }
 
         // Hand back pending whitelisted commands for this server
         const { data: pending } = await admin
           .from("server_commands")
-          .select("id, action, args")
+          .select("id, action, args, dry_run")
           .eq("server_id", serverId)
           .eq("status", "pending")
           .order("created_at", { ascending: true })

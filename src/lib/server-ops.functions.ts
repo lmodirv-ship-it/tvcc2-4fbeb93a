@@ -1,6 +1,38 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { COMMAND_WHITELIST } from "./server-commands";
+import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from "crypto";
+
+function vaultKey() {
+  const key = process.env["VAULT_MASTER_KEY"];
+  if (!key) throw new Error("VAULT_MASTER_KEY غير مُعرَّف على الخادم");
+  return scryptSync(key, "tvcc-vault-salt", 32);
+}
+
+function encryptSecret(plain: string): { ciphertext: string; iv: string } {
+  const iv = randomBytes(16);
+  const cipher = createCipheriv("aes-256-gcm", vaultKey(), iv);
+  const encrypted = Buffer.concat([cipher.update(plain, "utf8"), cipher.final()]);
+  const authTag = cipher.getAuthTag();
+  return {
+    ciphertext: Buffer.concat([authTag, encrypted]).toString("base64"),
+    iv: iv.toString("base64"),
+  };
+}
+
+function decryptSecret(ciphertext: string, iv: string): string {
+  const buf = Buffer.from(ciphertext, "base64");
+  const authTag = buf.slice(0, 16);
+  const encrypted = buf.slice(16);
+  const decipher = createDecipheriv("aes-256-gcm", vaultKey(), Buffer.from(iv, "base64"));
+  decipher.setAuthTag(authTag);
+  return Buffer.concat([decipher.update(encrypted), decipher.final()]).toString("utf8");
+}
+
+function mask(value: string): string {
+  if (value.length <= 8) return "•".repeat(value.length);
+  return value.slice(0, 3) + "•".repeat(value.length - 6) + value.slice(-3);
+}
 
 
 
@@ -68,7 +100,7 @@ export const getServerOps = createServerFn({ method: "POST" })
 export const queueServerCommand = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
-    (input: { serverId: string; action: string; args?: Record<string, unknown>; websiteId?: string | null }) => input,
+    (input: { serverId: string; action: string; args?: Record<string, unknown>; websiteId?: string | null; dryRun?: boolean }) => input,
   )
   .handler(async ({ data, context }) => {
     if (!(COMMAND_WHITELIST as readonly string[]).includes(data.action)) {
@@ -83,6 +115,7 @@ export const queueServerCommand = createServerFn({ method: "POST" })
         website_id: data.websiteId ?? null,
         action: data.action,
         args: data.args ?? {},
+        dry_run: data.dryRun ?? false,
         requested_by: context.userId,
         status: "pending",
       })
@@ -94,7 +127,7 @@ export const queueServerCommand = createServerFn({ method: "POST" })
       server_id: data.serverId,
       website_id: data.websiteId ?? null,
       operation: data.action,
-      title: `طلب تنفيذ: ${data.action}`,
+      title: `طلب تنفيذ: ${data.action}${data.dryRun ? " (محاكاة)" : ""}`,
       input: data.args ?? {},
       status: "pending",
     });
@@ -446,4 +479,319 @@ echo "TVCC platform running for $DOMAIN"`;
       install: `curl -fsSL '${origin}/api/public/platform/deploy.sh' | bash -s -- '${domain}'`,
       domain,
     };
+  });
+
+/* ---------------- backup schedules ---------------- */
+
+export const listBackupSchedules = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { serverId?: string | null } | undefined) => input ?? {})
+  .handler(async ({ data, context }) => {
+    const sb = context.supabase as any;
+    let q = sb.from("backup_schedules").select("*, websites(domain)").order("created_at", { ascending: false });
+    if (data?.serverId) q = q.eq("server_id", data.serverId);
+    const { data: rows, error } = await q;
+    if (error) throw new Error(error.message);
+    return rows ?? [];
+  });
+
+export const saveBackupSchedule = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (input: {
+      id?: string | null;
+      websiteId: string;
+      serverId: string;
+      cron: string;
+      backupType: string;
+      retentionCount: number;
+      enabled?: boolean;
+      label?: string;
+    }) => input,
+  )
+  .handler(async ({ data, context }) => {
+    const sb = context.supabase as any;
+    const payload = {
+      owner_id: context.userId,
+      website_id: data.websiteId,
+      server_id: data.serverId,
+      cron: data.cron,
+      backup_type: ["full", "files", "database"].includes(data.backupType) ? data.backupType : "full",
+      retention_count: Math.max(1, Math.min(data.retentionCount || 7, 90)),
+      enabled: data.enabled ?? true,
+      label: data.label ?? null,
+    };
+    if (data.id) {
+      const { error } = await sb.from("backup_schedules").update(payload).eq("id", data.id);
+      if (error) throw new Error(error.message);
+      return { ok: true, id: data.id };
+    }
+    const { data: row, error } = await sb.from("backup_schedules").insert(payload).select("id").maybeSingle();
+    if (error) throw new Error(error.message);
+    return { ok: true, id: row?.id };
+  });
+
+export const deleteBackupSchedule = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string }) => input)
+  .handler(async ({ data, context }) => {
+    const { error } = await (context.supabase as any).from("backup_schedules").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+/* ---------------- alert rules ---------------- */
+
+export const listAlertRules = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { serverId?: string | null } | undefined) => input ?? {})
+  .handler(async ({ data, context }) => {
+    const sb = context.supabase as any;
+    let q = sb.from("server_alert_rules").select("*").order("created_at", { ascending: false });
+    if (data?.serverId) q = q.eq("server_id", data.serverId);
+    const { data: rows, error } = await q;
+    if (error) throw new Error(error.message);
+    return rows ?? [];
+  });
+
+export const saveAlertRule = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (input: {
+      id?: string | null;
+      serverId: string;
+      name: string;
+      metric: string;
+      comparison: "gt" | "lt";
+      threshold: number;
+      severity: string;
+      cooldownMinutes?: number;
+      channels?: string[];
+      webhookUrl?: string | null;
+      enabled?: boolean;
+      message?: string;
+    }) => input,
+  )
+  .handler(async ({ data, context }) => {
+    const sb = context.supabase as any;
+    const payload = {
+      owner_id: context.userId,
+      server_id: data.serverId,
+      name: data.name,
+      metric: data.metric,
+      comparison: data.comparison,
+      threshold: data.threshold,
+      severity: data.severity,
+      cooldown_minutes: Math.max(1, data.cooldownMinutes ?? 5),
+      channels: data.channels ?? ["ui"],
+      webhook_url: data.webhookUrl ?? null,
+      enabled: data.enabled ?? true,
+      message: data.message ?? null,
+    };
+    if (data.id) {
+      const { error } = await sb.from("server_alert_rules").update(payload).eq("id", data.id);
+      if (error) throw new Error(error.message);
+      return { ok: true, id: data.id };
+    }
+    const { data: row, error } = await sb.from("server_alert_rules").insert(payload).select("id").maybeSingle();
+    if (error) throw new Error(error.message);
+    return { ok: true, id: row?.id };
+  });
+
+export const deleteAlertRule = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string }) => input)
+  .handler(async ({ data, context }) => {
+    const { error } = await (context.supabase as any).from("server_alert_rules").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+/* ---------------- bulk actions ---------------- */
+
+export const queueBulkCommand = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (input: {
+      serverIds: string[];
+      action: string;
+      args?: Record<string, unknown>;
+      dryRun?: boolean;
+    }) => input,
+  )
+  .handler(async ({ data, context }) => {
+    if (!(COMMAND_WHITELIST as readonly string[]).includes(data.action)) {
+      throw new Error("أمر غير مسموح به");
+    }
+    const sb = context.supabase as any;
+    const rows = (data.serverIds ?? []).map((serverId: string) => ({
+      owner_id: context.userId,
+      server_id: serverId,
+      action: data.action,
+      args: data.args ?? {},
+      dry_run: data.dryRun ?? false,
+      requested_by: context.userId,
+      status: "pending",
+    }));
+    if (!rows.length) throw new Error("اختر سيرفراً واحداً على الأقل");
+    const { data: inserted, error } = await sb.from("server_commands").insert(rows).select("id");
+    if (error) throw new Error(error.message);
+
+    await writeLog(sb, context.userId, {
+      operation: "bulk_command",
+      title: `أمر جماعي: ${data.action} على ${rows.length} سيرفر`,
+      input: { action: data.action, server_count: rows.length, dry_run: data.dryRun },
+      status: "pending",
+    });
+    return { ok: true, count: inserted?.length ?? rows.length };
+  });
+
+export const applyBulkConfig = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (input: {
+      serverIds: string[];
+      kind: string;
+      path: string;
+      content: string;
+      dryRun?: boolean;
+    }) => input,
+  )
+  .handler(async ({ data, context }) => {
+    const sb = context.supabase as any;
+    const rows = (data.serverIds ?? []).map((serverId: string) => ({
+      owner_id: context.userId,
+      server_id: serverId,
+      action: "write_config",
+      args: { kind: data.kind, path: data.path, content: data.content },
+      dry_run: data.dryRun ?? false,
+      requested_by: context.userId,
+      status: "pending",
+    }));
+    if (!rows.length) throw new Error("اختر سيرفراً واحداً على الأقل");
+    const { data: inserted, error } = await sb.from("server_commands").insert(rows).select("id");
+    if (error) throw new Error(error.message);
+
+    await writeLog(sb, context.userId, {
+      operation: "bulk_config",
+      title: `تطبيق إعداد جماعي: ${data.path} على ${rows.length} سيرفر`,
+      input: { kind: data.kind, path: data.path, dry_run: data.dryRun },
+      status: "pending",
+    });
+    return { ok: true, count: inserted?.length ?? rows.length };
+  });
+
+/* ---------------- secure secrets vault ---------------- */
+
+export const listVaultSecrets = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { serverId?: string | null; websiteId?: string | null } | undefined) => input ?? {})
+  .handler(async ({ data, context }) => {
+    const sb = context.supabase as any;
+    let q = sb
+      .from("vault_secrets")
+      .select("id, owner_id, server_id, website_id, name, kind, description, masked_value, expires_at, created_at, updated_at")
+      .order("created_at", { ascending: false });
+    if (data?.serverId) q = q.eq("server_id", data.serverId);
+    if (data?.websiteId) q = q.eq("website_id", data.websiteId);
+    const { data: rows, error } = await q;
+    if (error) throw new Error(error.message);
+    return rows ?? [];
+  });
+
+export const createVaultSecret = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator(
+    (input: {
+      name: string;
+      value: string;
+      category?: string;
+      description?: string;
+      kind?: string;
+      serverId?: string | null;
+      websiteId?: string | null;
+      expiresAt?: string | null;
+    }) => input,
+  )
+  .handler(async ({ data, context }) => {
+    const sb = context.supabase as any;
+    const { ciphertext, iv } = encryptSecret(data.value);
+    const { data: row, error } = await sb
+      .from("vault_secrets")
+      .insert({
+        owner_id: context.userId,
+        server_id: data.serverId ?? null,
+        website_id: data.websiteId ?? null,
+        name: data.name,
+        kind: data.category ?? data.kind ?? "generic",
+        description: data.description ?? null,
+        encrypted_value: ciphertext,
+        iv,
+        masked_value: mask(data.value),
+        expires_at: data.expiresAt ?? null,
+      })
+      .select("id")
+      .maybeSingle();
+    if (error) throw new Error(error.message);
+
+    await sb.from("vault_secret_versions").insert({
+      owner_id: context.userId,
+      secret_id: row?.id,
+      encrypted_value: ciphertext,
+      iv,
+      rotated_by: context.userId,
+    });
+
+    await writeLog(sb, context.userId, {
+      operation: "vault_create",
+      title: `إنشاء سر: ${data.name}`,
+      server_id: data.serverId ?? null,
+      website_id: data.websiteId ?? null,
+      status: "success",
+    });
+    return { ok: true, id: row?.id };
+  });
+
+export const revealVaultSecret = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string }) => input)
+  .handler(async ({ data, context }) => {
+    const sb = context.supabase as any;
+    const { data: row, error } = await sb.from("vault_secrets").select("*").eq("id", data.id).maybeSingle();
+    if (error || !row) throw new Error("السر غير موجود");
+    const plain = decryptSecret(row.encrypted_value, row.iv);
+    return { value: plain, name: row.name, kind: row.kind };
+  });
+
+export const rotateVaultSecret = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string; newValue: string }) => input)
+  .handler(async ({ data, context }) => {
+    const sb = context.supabase as any;
+    const { ciphertext, iv } = encryptSecret(data.newValue);
+    const { error } = await sb
+      .from("vault_secrets")
+      .update({ encrypted_value: ciphertext, iv, masked_value: mask(data.newValue), updated_at: new Date().toISOString() })
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+
+    await sb.from("vault_secret_versions").insert({
+      owner_id: context.userId,
+      secret_id: data.id,
+      encrypted_value: ciphertext,
+      iv,
+      rotated_by: context.userId,
+    });
+
+    await writeLog(sb, context.userId, { operation: "vault_rotate", title: "تدوير سر", status: "success" });
+    return { ok: true };
+  });
+
+export const deleteVaultSecret = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string }) => input)
+  .handler(async ({ data, context }) => {
+    const { error } = await (context.supabase as any).from("vault_secrets").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
   });

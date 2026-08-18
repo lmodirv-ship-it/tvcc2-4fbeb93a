@@ -63,11 +63,26 @@ function ServersPage() {
   const install = useServerFn(getAgentInstall);
   const detail = useServerFn(getServerDetail);
   const importModels = useServerFn(importServerModels);
+  const fetchOps = useServerFn(getServerOps);
+  const queueCmd = useServerFn(queueServerCommand);
+  const saveConfig = useServerFn(saveServerConfig);
+  const deployCmd = useServerFn(getPlatformDeployCommand);
 
   const [open, setOpen] = useState(false);
   const [form, setForm] = useState({ name: "", hostname: "", description: "", provider: "", region: "" });
   const [agent, setAgent] = useState<{ install: string; script: string; endpoint: string } | null>(null);
   const [detailId, setDetailId] = useState<string | null>(null);
+  const [action, setAction] = useState<string>("scan_ports");
+  const [argValue, setArgValue] = useState("");
+  const [configPath, setConfigPath] = useState<string | null>(null);
+  const [configDraft, setConfigDraft] = useState("");
+
+  const { data: ops } = useQuery({
+    queryKey: ["server-ops", detailId],
+    queryFn: () => fetchOps({ data: { serverId: detailId! } }),
+    enabled: !!detailId,
+    refetchInterval: 20000,
+  });
 
   const { data: servers, isLoading } = useQuery({
     queryKey: ["servers"],

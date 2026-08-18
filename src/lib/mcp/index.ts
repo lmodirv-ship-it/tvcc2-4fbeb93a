@@ -6,6 +6,7 @@ import updateWebsite from "./tools/update-website";
 import listSiteGroups from "./tools/list-site-groups";
 import listExpiringDomains from "./tools/list-expiring-domains";
 import getDashboardStats from "./tools/get-dashboard-stats";
+import getHnCertificate from "./tools/get-hn-certificate";
 
 // The OAuth issuer must be the direct Supabase host: the project ref is the only
 // Supabase value that survives publish unchanged, and Vite inlines it at build time.
@@ -32,5 +33,6 @@ export default defineMcp({
     listSiteGroups,
     listExpiringDomains,
     getDashboardStats,
+    getHnCertificate,
   ],
 });

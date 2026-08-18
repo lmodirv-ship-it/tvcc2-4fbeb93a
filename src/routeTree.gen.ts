@@ -64,6 +64,7 @@ import { Route as ApiPublicVideoIngestRouteImport } from './routes/api/public/vi
 import { Route as ApiPublicPaymentsIngestRouteImport } from './routes/api/public/payments.ingest'
 import { Route as ApiPublicNotificationsIngestRouteImport } from './routes/api/public/notifications.ingest'
 import { Route as ApiPublicHooksHealthCheckRouteImport } from './routes/api/public/hooks/health-check'
+import { Route as ApiPublicHnRlsVerifyRouteImport } from './routes/api/public/hn-rls.verify'
 import { Route as ApiPublicCoreIngestRouteImport } from './routes/api/public/core.ingest'
 
 const McpRoute = McpRouteImport.update({
@@ -363,6 +364,11 @@ const ApiPublicHooksHealthCheckRoute =
     path: '/api/public/hooks/health-check',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHnRlsVerifyRoute = ApiPublicHnRlsVerifyRouteImport.update({
+  id: '/api/public/hn-rls/verify',
+  path: '/api/public/hn-rls/verify',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCoreIngestRoute = ApiPublicCoreIngestRouteImport.update({
   id: '/api/public/core/ingest',
   path: '/api/public/core/ingest',
@@ -421,6 +427,7 @@ export interface FileRoutesByFullPath {
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/editor/': typeof AuthenticatedEditorIndexRoute
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
+  '/api/public/hn-rls/verify': typeof ApiPublicHnRlsVerifyRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
   '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
@@ -477,6 +484,7 @@ export interface FileRoutesByTo {
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/editor': typeof AuthenticatedEditorIndexRoute
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
+  '/api/public/hn-rls/verify': typeof ApiPublicHnRlsVerifyRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
   '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
@@ -536,6 +544,7 @@ export interface FileRoutesById {
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/_authenticated/editor/': typeof AuthenticatedEditorIndexRoute
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
+  '/api/public/hn-rls/verify': typeof ApiPublicHnRlsVerifyRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
   '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
@@ -595,6 +604,7 @@ export interface FileRouteTypes {
     | '/api/public/site-config'
     | '/editor/'
     | '/api/public/core/ingest'
+    | '/api/public/hn-rls/verify'
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
     | '/api/public/payments/ingest'
@@ -651,6 +661,7 @@ export interface FileRouteTypes {
     | '/api/public/site-config'
     | '/editor'
     | '/api/public/core/ingest'
+    | '/api/public/hn-rls/verify'
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
     | '/api/public/payments/ingest'
@@ -709,6 +720,7 @@ export interface FileRouteTypes {
     | '/api/public/site-config'
     | '/_authenticated/editor/'
     | '/api/public/core/ingest'
+    | '/api/public/hn-rls/verify'
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
     | '/api/public/payments/ingest'
@@ -726,6 +738,7 @@ export interface RootRouteChildren {
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicSiteConfigRoute: typeof ApiPublicSiteConfigRoute
   ApiPublicCoreIngestRoute: typeof ApiPublicCoreIngestRoute
+  ApiPublicHnRlsVerifyRoute: typeof ApiPublicHnRlsVerifyRoute
   ApiPublicHooksHealthCheckRoute: typeof ApiPublicHooksHealthCheckRoute
   ApiPublicNotificationsIngestRoute: typeof ApiPublicNotificationsIngestRoute
   ApiPublicPaymentsIngestRoute: typeof ApiPublicPaymentsIngestRoute
@@ -1119,6 +1132,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksHealthCheckRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hn-rls/verify': {
+      id: '/api/public/hn-rls/verify'
+      path: '/api/public/hn-rls/verify'
+      fullPath: '/api/public/hn-rls/verify'
+      preLoaderRoute: typeof ApiPublicHnRlsVerifyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/core/ingest': {
       id: '/api/public/core/ingest'
       path: '/api/public/core/ingest'
@@ -1256,6 +1276,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicSiteConfigRoute: ApiPublicSiteConfigRoute,
   ApiPublicCoreIngestRoute: ApiPublicCoreIngestRoute,
+  ApiPublicHnRlsVerifyRoute: ApiPublicHnRlsVerifyRoute,
   ApiPublicHooksHealthCheckRoute: ApiPublicHooksHealthCheckRoute,
   ApiPublicNotificationsIngestRoute: ApiPublicNotificationsIngestRoute,
   ApiPublicPaymentsIngestRoute: ApiPublicPaymentsIngestRoute,

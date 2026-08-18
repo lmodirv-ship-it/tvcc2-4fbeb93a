@@ -207,6 +207,31 @@
           "properties": {}
         },
         "outputSchema": null
+      },
+      {
+        "name": "get_hn_certificate",
+        "title": "Get HN.RLS certificate",
+        "description": "Read the HN.RLS certificate and project registration state for one managed domain: serial, status, validity window and fingerprint.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "domain": {
+              "type": "string",
+              "minLength": 1,
+              "description": "Exact domain of the website, e.g. hn-db.fun"
+            }
+          },
+          "required": [
+            "domain"
+          ]
+        },
+        "outputSchema": null
       }
     ]
   }

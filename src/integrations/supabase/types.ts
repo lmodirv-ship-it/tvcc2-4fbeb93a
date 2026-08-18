@@ -473,6 +473,71 @@ export type Database = {
         }
         Relationships: []
       }
+      hn_certificates: {
+        Row: {
+          created_at: string
+          domain: string
+          expires_at: string
+          fingerprint: string
+          id: string
+          issued_at: string
+          owner_id: string
+          payload: Json
+          revoked_at: string | null
+          revoked_reason: string | null
+          serial: string
+          signature: string
+          status: string
+          updated_at: string
+          verification_method: string
+          website_id: string
+        }
+        Insert: {
+          created_at?: string
+          domain: string
+          expires_at?: string
+          fingerprint: string
+          id?: string
+          issued_at?: string
+          owner_id: string
+          payload?: Json
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          serial: string
+          signature: string
+          status?: string
+          updated_at?: string
+          verification_method?: string
+          website_id: string
+        }
+        Update: {
+          created_at?: string
+          domain?: string
+          expires_at?: string
+          fingerprint?: string
+          id?: string
+          issued_at?: string
+          owner_id?: string
+          payload?: Json
+          revoked_at?: string | null
+          revoked_reason?: string | null
+          serial?: string
+          signature?: string
+          status?: string
+          updated_at?: string
+          verification_method?: string
+          website_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hn_certificates_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_channels: {
         Row: {
           channel_type: string
@@ -1508,12 +1573,15 @@ export type Database = {
           frontend_domain: string | null
           hn_cloud_storage_id: string | null
           hn_db_connection_id: string | null
+          hn_project_id: string | null
           id: string
           is_active: boolean
           last_checked_at: string | null
           name: string
           owner_id: string | null
           payments_provider_url: string | null
+          registered_at: string | null
+          registration_status: string
           site_id: string | null
           status: Database["public"]["Enums"]["site_status"]
           updated_at: string
@@ -1535,12 +1603,15 @@ export type Database = {
           frontend_domain?: string | null
           hn_cloud_storage_id?: string | null
           hn_db_connection_id?: string | null
+          hn_project_id?: string | null
           id?: string
           is_active?: boolean
           last_checked_at?: string | null
           name: string
           owner_id?: string | null
           payments_provider_url?: string | null
+          registered_at?: string | null
+          registration_status?: string
           site_id?: string | null
           status?: Database["public"]["Enums"]["site_status"]
           updated_at?: string
@@ -1562,12 +1633,15 @@ export type Database = {
           frontend_domain?: string | null
           hn_cloud_storage_id?: string | null
           hn_db_connection_id?: string | null
+          hn_project_id?: string | null
           id?: string
           is_active?: boolean
           last_checked_at?: string | null
           name?: string
           owner_id?: string | null
           payments_provider_url?: string | null
+          registered_at?: string | null
+          registration_status?: string
           site_id?: string | null
           status?: Database["public"]["Enums"]["site_status"]
           updated_at?: string

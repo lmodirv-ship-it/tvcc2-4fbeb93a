@@ -27,6 +27,7 @@ import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedRecoveryRouteImport } from './routes/_authenticated/recovery'
 import { Route as AuthenticatedPaymentsHubRouteImport } from './routes/_authenticated/payments-hub'
 import { Route as AuthenticatedPaymentProvidersRouteImport } from './routes/_authenticated/payment-providers'
+import { Route as AuthenticatedOperationsRouteImport } from './routes/_authenticated/operations'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedMonitoringRouteImport } from './routes/_authenticated/monitoring'
 import { Route as AuthenticatedJobsRouteImport } from './routes/_authenticated/jobs'
@@ -41,6 +42,7 @@ import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedCertificatesRouteImport } from './routes/_authenticated/certificates'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedApkManagerRouteImport } from './routes/_authenticated/apk-manager'
+import { Route as AuthenticatedAiTestsRouteImport } from './routes/_authenticated/ai-tests'
 import { Route as AuthenticatedAiModelsRouteImport } from './routes/_authenticated/ai-models'
 import { Route as AuthenticatedAiConnectRouteImport } from './routes/_authenticated/ai-connect'
 import { Route as AuthenticatedAiChatRouteImport } from './routes/_authenticated/ai-chat'
@@ -167,6 +169,11 @@ const AuthenticatedPaymentProvidersRoute =
     path: '/payment-providers',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedOperationsRoute = AuthenticatedOperationsRouteImport.update({
+  id: '/operations',
+  path: '/operations',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedNotificationsRoute =
   AuthenticatedNotificationsRouteImport.update({
     id: '/notifications',
@@ -239,6 +246,11 @@ const AuthenticatedAuditRoute = AuthenticatedAuditRouteImport.update({
 const AuthenticatedApkManagerRoute = AuthenticatedApkManagerRouteImport.update({
   id: '/apk-manager',
   path: '/apk-manager',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAiTestsRoute = AuthenticatedAiTestsRouteImport.update({
+  id: '/ai-tests',
+  path: '/ai-tests',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedAiModelsRoute = AuthenticatedAiModelsRouteImport.update({
@@ -429,6 +441,7 @@ export interface FileRoutesByFullPath {
   '/ai-chat': typeof AuthenticatedAiChatRoute
   '/ai-connect': typeof AuthenticatedAiConnectRoute
   '/ai-models': typeof AuthenticatedAiModelsRoute
+  '/ai-tests': typeof AuthenticatedAiTestsRoute
   '/apk-manager': typeof AuthenticatedApkManagerRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/certificates': typeof AuthenticatedCertificatesRoute
@@ -443,6 +456,7 @@ export interface FileRoutesByFullPath {
   '/jobs': typeof AuthenticatedJobsRoute
   '/monitoring': typeof AuthenticatedMonitoringRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
+  '/operations': typeof AuthenticatedOperationsRoute
   '/payment-providers': typeof AuthenticatedPaymentProvidersRoute
   '/payments-hub': typeof AuthenticatedPaymentsHubRoute
   '/recovery': typeof AuthenticatedRecoveryRoute
@@ -494,6 +508,7 @@ export interface FileRoutesByTo {
   '/ai-chat': typeof AuthenticatedAiChatRoute
   '/ai-connect': typeof AuthenticatedAiConnectRoute
   '/ai-models': typeof AuthenticatedAiModelsRoute
+  '/ai-tests': typeof AuthenticatedAiTestsRoute
   '/apk-manager': typeof AuthenticatedApkManagerRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/certificates': typeof AuthenticatedCertificatesRoute
@@ -507,6 +522,7 @@ export interface FileRoutesByTo {
   '/jobs': typeof AuthenticatedJobsRoute
   '/monitoring': typeof AuthenticatedMonitoringRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
+  '/operations': typeof AuthenticatedOperationsRoute
   '/payment-providers': typeof AuthenticatedPaymentProvidersRoute
   '/payments-hub': typeof AuthenticatedPaymentsHubRoute
   '/recovery': typeof AuthenticatedRecoveryRoute
@@ -560,6 +576,7 @@ export interface FileRoutesById {
   '/_authenticated/ai-chat': typeof AuthenticatedAiChatRoute
   '/_authenticated/ai-connect': typeof AuthenticatedAiConnectRoute
   '/_authenticated/ai-models': typeof AuthenticatedAiModelsRoute
+  '/_authenticated/ai-tests': typeof AuthenticatedAiTestsRoute
   '/_authenticated/apk-manager': typeof AuthenticatedApkManagerRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
   '/_authenticated/certificates': typeof AuthenticatedCertificatesRoute
@@ -574,6 +591,7 @@ export interface FileRoutesById {
   '/_authenticated/jobs': typeof AuthenticatedJobsRoute
   '/_authenticated/monitoring': typeof AuthenticatedMonitoringRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
+  '/_authenticated/operations': typeof AuthenticatedOperationsRoute
   '/_authenticated/payment-providers': typeof AuthenticatedPaymentProvidersRoute
   '/_authenticated/payments-hub': typeof AuthenticatedPaymentsHubRoute
   '/_authenticated/recovery': typeof AuthenticatedRecoveryRoute
@@ -627,6 +645,7 @@ export interface FileRouteTypes {
     | '/ai-chat'
     | '/ai-connect'
     | '/ai-models'
+    | '/ai-tests'
     | '/apk-manager'
     | '/audit'
     | '/certificates'
@@ -641,6 +660,7 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/monitoring'
     | '/notifications'
+    | '/operations'
     | '/payment-providers'
     | '/payments-hub'
     | '/recovery'
@@ -692,6 +712,7 @@ export interface FileRouteTypes {
     | '/ai-chat'
     | '/ai-connect'
     | '/ai-models'
+    | '/ai-tests'
     | '/apk-manager'
     | '/audit'
     | '/certificates'
@@ -705,6 +726,7 @@ export interface FileRouteTypes {
     | '/jobs'
     | '/monitoring'
     | '/notifications'
+    | '/operations'
     | '/payment-providers'
     | '/payments-hub'
     | '/recovery'
@@ -757,6 +779,7 @@ export interface FileRouteTypes {
     | '/_authenticated/ai-chat'
     | '/_authenticated/ai-connect'
     | '/_authenticated/ai-models'
+    | '/_authenticated/ai-tests'
     | '/_authenticated/apk-manager'
     | '/_authenticated/audit'
     | '/_authenticated/certificates'
@@ -771,6 +794,7 @@ export interface FileRouteTypes {
     | '/_authenticated/jobs'
     | '/_authenticated/monitoring'
     | '/_authenticated/notifications'
+    | '/_authenticated/operations'
     | '/_authenticated/payment-providers'
     | '/_authenticated/payments-hub'
     | '/_authenticated/recovery'
@@ -961,6 +985,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedPaymentProvidersRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/operations': {
+      id: '/_authenticated/operations'
+      path: '/operations'
+      fullPath: '/operations'
+      preLoaderRoute: typeof AuthenticatedOperationsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/notifications': {
       id: '/_authenticated/notifications'
       path: '/notifications'
@@ -1057,6 +1088,13 @@ declare module '@tanstack/react-router' {
       path: '/apk-manager'
       fullPath: '/apk-manager'
       preLoaderRoute: typeof AuthenticatedApkManagerRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/ai-tests': {
+      id: '/_authenticated/ai-tests'
+      path: '/ai-tests'
+      fullPath: '/ai-tests'
+      preLoaderRoute: typeof AuthenticatedAiTestsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/ai-models': {
@@ -1342,6 +1380,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAiChatRoute: typeof AuthenticatedAiChatRoute
   AuthenticatedAiConnectRoute: typeof AuthenticatedAiConnectRoute
   AuthenticatedAiModelsRoute: typeof AuthenticatedAiModelsRoute
+  AuthenticatedAiTestsRoute: typeof AuthenticatedAiTestsRoute
   AuthenticatedApkManagerRoute: typeof AuthenticatedApkManagerRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
   AuthenticatedCertificatesRoute: typeof AuthenticatedCertificatesRoute
@@ -1356,6 +1395,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedJobsRoute: typeof AuthenticatedJobsRoute
   AuthenticatedMonitoringRoute: typeof AuthenticatedMonitoringRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
+  AuthenticatedOperationsRoute: typeof AuthenticatedOperationsRoute
   AuthenticatedPaymentProvidersRoute: typeof AuthenticatedPaymentProvidersRoute
   AuthenticatedPaymentsHubRoute: typeof AuthenticatedPaymentsHubRoute
   AuthenticatedRecoveryRoute: typeof AuthenticatedRecoveryRoute
@@ -1377,6 +1417,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAiChatRoute: AuthenticatedAiChatRoute,
   AuthenticatedAiConnectRoute: AuthenticatedAiConnectRoute,
   AuthenticatedAiModelsRoute: AuthenticatedAiModelsRoute,
+  AuthenticatedAiTestsRoute: AuthenticatedAiTestsRoute,
   AuthenticatedApkManagerRoute: AuthenticatedApkManagerRoute,
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
   AuthenticatedCertificatesRoute: AuthenticatedCertificatesRoute,
@@ -1391,6 +1432,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedJobsRoute: AuthenticatedJobsRoute,
   AuthenticatedMonitoringRoute: AuthenticatedMonitoringRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
+  AuthenticatedOperationsRoute: AuthenticatedOperationsRoute,
   AuthenticatedPaymentProvidersRoute: AuthenticatedPaymentProvidersRoute,
   AuthenticatedPaymentsHubRoute: AuthenticatedPaymentsHubRoute,
   AuthenticatedRecoveryRoute: AuthenticatedRecoveryRoute,

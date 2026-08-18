@@ -325,6 +325,7 @@ async function callModel(
   provider: any,
   messages: ChatMsg[],
   withTools: boolean,
+  params?: { temperature?: number; max_tokens?: number; top_p?: number },
 ): Promise<any> {
   const isLovable = provider.vendor === "lovable" && provider.kind === "cloud";
   const base = isLovable ? GATEWAY : (model.endpoint_url ?? provider.base_url ?? "").replace(/\/+$/, "");
@@ -341,6 +342,9 @@ async function callModel(
   }
 
   const body: Record<string, unknown> = { model: model.model_id, messages };
+  if (params?.temperature != null) body.temperature = params.temperature;
+  if (params?.max_tokens != null) body.max_tokens = params.max_tokens;
+  if (params?.top_p != null) body.top_p = params.top_p;
   if (withTools) {
     body.tools = AI_TOOLS.map((t) => ({
       type: "function",
@@ -513,12 +517,16 @@ export const deleteConversation = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-/* ---------------- quick inference test ---------------- */
+/* ---------------- inference test + history ---------------- */
 
-/** Runs a tiny prompt against a model. Local (127.0.0.1) models are tested from the browser instead. */
+export type TestParams = { temperature?: number; max_tokens?: number; top_p?: number };
+
+const DEFAULT_PROMPT = "قل: مرحباً من TVCC. بجملة واحدة فقط.";
+
+/** Runs a prompt against a model. Local (127.0.0.1) models are tested from the browser instead. */
 export const testAiModel = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { id: string; prompt?: string }) => input)
+  .inputValidator((input: { id: string; prompt?: string; params?: TestParams }) => input)
   .handler(async ({ data, context }) => {
     const sb = context.supabase as any;
     const { data: model } = await sb.from("ai_models").select("*").eq("id", data.id).maybeSingle();
@@ -526,33 +534,132 @@ export const testAiModel = createServerFn({ method: "POST" })
     const { data: provider } = await sb.from("ai_providers").select("*").eq("id", model.provider_id).maybeSingle();
     if (!provider) throw new Error("المزوّد غير موجود");
 
-    const prompt = data.prompt?.trim() || "قل: مرحباً من TVCC. بجملة واحدة فقط.";
+    const prompt = data.prompt?.trim() || DEFAULT_PROMPT;
+    const params = data.params ?? {};
     const started = Date.now();
     try {
-      const json = await callModel(
-        model,
-        provider,
-        [{ role: "user", content: prompt }],
-        false,
-      );
+      const json = await callModel(model, provider, [{ role: "user", content: prompt }], false, params);
       const latency = Date.now() - started;
-      const answer = json?.choices?.[0]?.message?.content ?? "";
+      const answer = String(json?.choices?.[0]?.message?.content ?? "");
+      const usage = json?.usage ?? {};
       await sb.from("ai_models").update({ last_latency_ms: latency, status: "ready" }).eq("id", model.id);
-      return { ok: true, latency, answer: String(answer).slice(0, 1000) };
+      await sb.from("ai_model_tests").insert({
+        owner_id: context.userId,
+        model_id: model.id,
+        model_label: model.name ?? model.model_id,
+        provider_label: provider.name ?? provider.vendor,
+        prompt,
+        answer: answer.slice(0, 4000),
+        latency_ms: latency,
+        prompt_tokens: usage.prompt_tokens ?? null,
+        completion_tokens: usage.completion_tokens ?? null,
+        total_tokens: usage.total_tokens ?? null,
+        settings: params,
+        status: "success",
+      });
+      return {
+        ok: true,
+        latency,
+        answer: answer.slice(0, 4000),
+        usage: {
+          prompt_tokens: usage.prompt_tokens ?? null,
+          completion_tokens: usage.completion_tokens ?? null,
+          total_tokens: usage.total_tokens ?? null,
+        },
+      };
     } catch (e) {
+      const latency = Date.now() - started;
+      const message = e instanceof Error ? e.message : "فشل الاختبار";
       await sb.from("ai_models").update({ status: "error" }).eq("id", model.id);
-      return { ok: false, latency: Date.now() - started, error: e instanceof Error ? e.message : "فشل الاختبار", answer: "" };
+      await sb.from("ai_model_tests").insert({
+        owner_id: context.userId,
+        model_id: model.id,
+        model_label: model.name ?? model.model_id,
+        provider_label: provider.name ?? provider.vendor,
+        prompt,
+        latency_ms: latency,
+        settings: params,
+        status: "error",
+        error_message: message.slice(0, 1000),
+      });
+      return { ok: false, latency, error: message, answer: "", usage: null };
     }
   });
 
 /** Saves the outcome of a browser-side local-model test. */
 export const recordModelTest = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { id: string; ok: boolean; latency: number }) => input)
+  .inputValidator(
+    (input: {
+      id: string;
+      ok: boolean;
+      latency: number;
+      prompt?: string;
+      answer?: string;
+      error?: string;
+      params?: TestParams;
+      usage?: { prompt_tokens?: number | null; completion_tokens?: number | null; total_tokens?: number | null } | null;
+    }) => input,
+  )
   .handler(async ({ data, context }) => {
-    await (context.supabase as any)
+    const sb = context.supabase as any;
+    const { data: model } = await sb.from("ai_models").select("*").eq("id", data.id).maybeSingle();
+    await sb
       .from("ai_models")
       .update({ last_latency_ms: data.latency, status: data.ok ? "ready" : "error" })
       .eq("id", data.id);
+    await sb.from("ai_model_tests").insert({
+      owner_id: context.userId,
+      model_id: data.id,
+      model_label: model?.name ?? model?.model_id ?? "local",
+      provider_label: "local",
+      prompt: data.prompt ?? DEFAULT_PROMPT,
+      answer: (data.answer ?? "").slice(0, 4000),
+      latency_ms: data.latency,
+      prompt_tokens: data.usage?.prompt_tokens ?? null,
+      completion_tokens: data.usage?.completion_tokens ?? null,
+      total_tokens: data.usage?.total_tokens ?? null,
+      settings: data.params ?? {},
+      status: data.ok ? "success" : "error",
+      error_message: data.error?.slice(0, 1000) ?? null,
+    });
+    return { ok: true };
+  });
+
+/** Persists per-model test settings (prompt + sampling params) inside the model metadata. */
+export const saveModelTestSettings = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string; prompt: string; params: TestParams }) => input)
+  .handler(async ({ data, context }) => {
+    const sb = context.supabase as any;
+    const { data: model } = await sb.from("ai_models").select("metadata").eq("id", data.id).maybeSingle();
+    const metadata = { ...(model?.metadata ?? {}), test: { prompt: data.prompt, ...data.params } };
+    const { error } = await sb.from("ai_models").update({ metadata }).eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+export const listModelTests = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { modelId?: string | null; limit?: number } | undefined) => input ?? {})
+  .handler(async ({ data, context }) => {
+    const sb = context.supabase as any;
+    let q = sb
+      .from("ai_model_tests")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(Math.min(data?.limit ?? 200, 500));
+    if (data?.modelId) q = q.eq("model_id", data.modelId);
+    const { data: rows, error } = await q;
+    if (error) throw new Error(error.message);
+    return rows ?? [];
+  });
+
+export const deleteModelTest = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string }) => input)
+  .handler(async ({ data, context }) => {
+    const { error } = await (context.supabase as any).from("ai_model_tests").delete().eq("id", data.id);
+    if (error) throw new Error(error.message);
     return { ok: true };
   });

@@ -5,16 +5,22 @@ import { useMemo, useState } from "react";
 import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Switch } from "@/components/ui/switch";
+import { Slider } from "@/components/ui/slider";
+import { Textarea } from "@/components/ui/textarea";
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Brain, Loader2, Trash2, Star, Search, Cloud, Laptop, Server, MessageSquare, Zap } from "lucide-react";
+import {
+  Brain, Loader2, Trash2, Star, Search, Cloud, Laptop, Server, MessageSquare, Zap, History, Save,
+} from "lucide-react";
 import { toast } from "sonner";
 import {
   listAiProviders, setModelActive, setDefaultModel, deleteAiModel,
-  listRouting, setRouting, testAiModel, recordModelTest,
+  listRouting, setRouting, testAiModel, recordModelTest, saveModelTestSettings,
 } from "@/lib/ai-hub.functions";
 
 export const Route = createFileRoute("/_authenticated/ai-models")({
@@ -22,9 +28,9 @@ export const Route = createFileRoute("/_authenticated/ai-models")({
   head: () => ({
     meta: [
       { title: "تفعيل نماذج الذكاء الاصطناعي — TVCC" },
-      { name: "description", content: "فعّل النماذج السحابية والمحلية ونماذج السيرفرات وحدّد النموذج الافتراضي لكل مهمة في TVCC." },
+      { name: "description", content: "فعّل النماذج السحابية والمحلية ونماذج السيرفرات، اختبرها بمدخل مخصص، وحدّد النموذج الافتراضي لكل مهمة." },
       { property: "og:title", content: "تفعيل نماذج الذكاء الاصطناعي — TVCC" },
-      { property: "og:description", content: "فعّل النماذج وحدّد الافتراضي لكل مهمة إدارة وتطوير المواقع." },
+      { property: "og:description", content: "اختبر النماذج بمدخل وإعدادات مخصصة وحدّد الافتراضي لكل مهمة." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary" },
     ],
@@ -38,7 +44,15 @@ const TASKS = [
   { key: "code", label: "الكود والتطوير" },
 ];
 
+const DEFAULT_PROMPT = "قل: مرحباً من TVCC. بجملة واحدة فقط.";
 const kindIcon = (k: string) => (k === "local" ? Laptop : k === "server" ? Server : Cloud);
+
+type TestResult = {
+  ok: boolean;
+  latency: number;
+  text: string;
+  tokens?: number | null;
+};
 
 function AiModelsPage() {
   const qc = useQueryClient();
@@ -50,20 +64,42 @@ function AiModelsPage() {
   const saveRouting = useServerFn(setRouting);
   const runTest = useServerFn(testAiModel);
   const saveTest = useServerFn(recordModelTest);
+  const saveSettings = useServerFn(saveModelTestSettings);
 
   const [q, setQ] = useState("");
   const [testing, setTesting] = useState<string | null>(null);
-  const [results, setResults] = useState<Record<string, { ok: boolean; latency: number; text: string }>>({});
+  const [results, setResults] = useState<Record<string, TestResult>>({});
 
-  const TEST_PROMPT = "قل: مرحباً من TVCC. بجملة واحدة فقط.";
+  const [testModelRow, setTestModelRow] = useState<any | null>(null);
+  const [prompt, setPrompt] = useState(DEFAULT_PROMPT);
+  const [temperature, setTemperature] = useState(0.7);
+  const [maxTokens, setMaxTokens] = useState(256);
+  const [topP, setTopP] = useState(1);
+
+  const { data, isLoading } = useQuery({ queryKey: ["ai-hub"], queryFn: () => fetchAll() });
+  const { data: routing } = useQuery({ queryKey: ["ai-routing"], queryFn: () => fetchRouting() });
+
+  const providers = ((data as any)?.providers ?? []) as any[];
+  const models = ((data as any)?.models ?? []) as any[];
+  const providerName = (id: string) => providers.find((p) => p.id === id)?.name ?? "—";
+
+  const openTest = (m: any) => {
+    const saved = m.metadata?.test ?? {};
+    setPrompt(saved.prompt ?? DEFAULT_PROMPT);
+    setTemperature(saved.temperature ?? 0.7);
+    setMaxTokens(saved.max_tokens ?? 256);
+    setTopP(saved.top_p ?? 1);
+    setTestModelRow(m);
+  };
 
   const isLocal = (m: any, p: any) => {
     const url = String(m.endpoint_url ?? p?.base_url ?? "");
     return m.kind === "local" || /localhost|127\.0\.0\.1/.test(url);
   };
 
-  const testModel = async (m: any) => {
+  const runModelTest = async (m: any) => {
     const provider = providers.find((p) => p.id === m.provider_id);
+    const params = { temperature, max_tokens: maxTokens, top_p: topP };
     setTesting(m.id);
     try {
       if (isLocal(m, provider)) {
@@ -74,38 +110,40 @@ function AiModelsPage() {
         const res = await fetch(`${base}/v1/chat/completions`, {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ model: m.model_id, messages: [{ role: "user", content: TEST_PROMPT }] }),
+          body: JSON.stringify({
+            model: m.model_id,
+            messages: [{ role: "user", content: prompt }],
+            ...params,
+          }),
         });
         if (!res.ok) throw new Error(`(${res.status}) ${(await res.text()).slice(0, 200)}`);
         const json: any = await res.json();
         const latency = Date.now() - started;
-        const text = json?.choices?.[0]?.message?.content ?? "";
-        setResults((r) => ({ ...r, [m.id]: { ok: true, latency, text: String(text).slice(0, 500) } }));
-        await saveTest({ data: { id: m.id, ok: true, latency } });
+        const text = String(json?.choices?.[0]?.message?.content ?? "");
+        const usage = json?.usage ?? null;
+        setResults((r) => ({ ...r, [m.id]: { ok: true, latency, text: text.slice(0, 2000), tokens: usage?.total_tokens ?? null } }));
+        await saveTest({ data: { id: m.id, ok: true, latency, prompt, answer: text, params, usage } });
         toast.success(`نجح الاختبار في ${latency}ms`);
       } else {
-        const r: any = await runTest({ data: { id: m.id, prompt: TEST_PROMPT } });
-        setResults((rs) => ({ ...rs, [m.id]: { ok: r.ok, latency: r.latency, text: r.ok ? r.answer : r.error } }));
-        r.ok ? toast.success(`نجح الاختبار في ${r.latency}ms`) : toast.error(r.error);
+        const r: any = await runTest({ data: { id: m.id, prompt, params } });
+        setResults((rs) => ({
+          ...rs,
+          [m.id]: { ok: r.ok, latency: r.latency, text: r.ok ? r.answer : r.error, tokens: r.usage?.total_tokens ?? null },
+        }));
+        if (r.ok) toast.success(`نجح الاختبار في ${r.latency}ms`);
+        else toast.error(r.error);
       }
       qc.invalidateQueries({ queryKey: ["ai-hub"] });
+      qc.invalidateQueries({ queryKey: ["ai-tests"] });
     } catch (e) {
       const msg = (e as Error).message;
       setResults((r) => ({ ...r, [m.id]: { ok: false, latency: 0, text: msg } }));
-      await saveTest({ data: { id: m.id, ok: false, latency: 0 } }).catch(() => {});
+      await saveTest({ data: { id: m.id, ok: false, latency: 0, prompt, error: msg, params } }).catch(() => {});
       toast.error(msg);
     } finally {
       setTesting(null);
     }
   };
-
-
-  const { data, isLoading } = useQuery({ queryKey: ["ai-hub"], queryFn: () => fetchAll() });
-  const { data: routing } = useQuery({ queryKey: ["ai-routing"], queryFn: () => fetchRouting() });
-
-  const providers = ((data as any)?.providers ?? []) as any[];
-  const models = ((data as any)?.models ?? []) as any[];
-  const providerName = (id: string) => providers.find((p) => p.id === id)?.name ?? "—";
 
   const filtered = useMemo(
     () => models.filter((m) => !q || `${m.name} ${m.model_id}`.toLowerCase().includes(q.toLowerCase())),
@@ -120,9 +158,10 @@ function AiModelsPage() {
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
           <h1 className="text-2xl font-bold flex items-center gap-2"><Brain className="w-6 h-6 text-primary" /> نماذج الذكاء الاصطناعي</h1>
-          <p className="text-sm text-muted-foreground mt-1">فعّل النماذج، اختر الافتراضي، ووزّع المهام على النماذج المناسبة.</p>
+          <p className="text-sm text-muted-foreground mt-1">فعّل النماذج، اختبرها بمدخل وإعدادات مخصصة، ووزّع المهام عليها.</p>
         </div>
-        <div className="flex gap-2">
+        <div className="flex gap-2 flex-wrap">
+          <Button variant="outline" asChild><Link to="/ai-tests"><History className="w-4 h-4 ml-1" /> سجل الاختبارات</Link></Button>
           <Button variant="outline" asChild><Link to="/ai-connect">ربط مزوّد جديد</Link></Button>
           <Button asChild><Link to="/ai-chat"><MessageSquare className="w-4 h-4 ml-1" /> التواصل مع النماذج</Link></Button>
         </div>
@@ -171,6 +210,7 @@ function AiModelsPage() {
         <div className="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           {filtered.map((m) => {
             const Icon = kindIcon(m.kind);
+            const res = results[m.id];
             return (
               <Card key={m.id} className={m.is_default ? "border-primary/60" : ""}>
                 <CardContent className="p-4 space-y-3">
@@ -198,7 +238,7 @@ function AiModelsPage() {
                       <span className="text-xs">مفعّل</span>
                     </div>
                     <div className="flex gap-1">
-                      <Button size="sm" variant="secondary" disabled={testing === m.id} onClick={() => testModel(m)}>
+                      <Button size="sm" variant="secondary" disabled={testing === m.id} onClick={() => openTest(m)}>
                         {testing === m.id
                           ? <Loader2 className="w-3 h-3 animate-spin" />
                           : <><Zap className="w-3 h-3 ml-1" /> اختبار</>}
@@ -228,22 +268,95 @@ function AiModelsPage() {
                     </div>
                   </div>
 
-                  {results[m.id] && (
-                    <div className={`rounded-md border p-2 text-xs space-y-1 ${results[m.id].ok ? "border-emerald-500/40 bg-emerald-500/10" : "border-destructive/40 bg-destructive/10"}`}>
+                  {res && (
+                    <div className={`rounded-md border p-2 text-xs space-y-1 ${res.ok ? "border-emerald-500/40 bg-emerald-500/10" : "border-destructive/40 bg-destructive/10"}`}>
                       <div className="flex items-center justify-between font-medium">
-                        <span>{results[m.id].ok ? "نجح الاختبار" : "فشل الاختبار"}</span>
-                        {results[m.id].latency > 0 && <span>{results[m.id].latency}ms</span>}
+                        <span>{res.ok ? "نجح الاختبار" : "فشل الاختبار"}</span>
+                        <span>{res.latency > 0 ? `${res.latency}ms` : ""}{res.tokens ? ` · ${res.tokens} توكن` : ""}</span>
                       </div>
-                      <p className="text-muted-foreground whitespace-pre-wrap break-words line-clamp-4">{results[m.id].text}</p>
+                      <p className="text-muted-foreground whitespace-pre-wrap break-words line-clamp-4">{res.text}</p>
                     </div>
                   )}
-
                 </CardContent>
               </Card>
             );
           })}
         </div>
       )}
+
+      <Dialog open={!!testModelRow} onOpenChange={(v) => !v && setTestModelRow(null)}>
+        <DialogContent className="max-w-xl max-h-[85vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Zap className="w-5 h-5 text-primary" /> اختبار: {testModelRow?.name}
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label>المدخل (Prompt)</Label>
+              <Textarea rows={4} value={prompt} onChange={(e) => setPrompt(e.target.value)} />
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <div className="flex justify-between text-xs mb-1"><span>Temperature</span><span>{temperature.toFixed(2)}</span></div>
+                <Slider value={[temperature]} min={0} max={2} step={0.05} onValueChange={(v) => setTemperature(v[0] ?? 0)} />
+              </div>
+              <div>
+                <div className="flex justify-between text-xs mb-1"><span>Top P</span><span>{topP.toFixed(2)}</span></div>
+                <Slider value={[topP]} min={0} max={1} step={0.05} onValueChange={(v) => setTopP(v[0] ?? 1)} />
+              </div>
+              <div>
+                <Label className="text-xs">Max tokens</Label>
+                <Input
+                  type="number"
+                  min={1}
+                  max={8192}
+                  value={maxTokens}
+                  onChange={(e) => setMaxTokens(Math.max(1, Number(e.target.value) || 1))}
+                />
+              </div>
+            </div>
+
+            {testModelRow && results[testModelRow.id] && (
+              <div className={`rounded-md border p-3 text-xs space-y-1 ${results[testModelRow.id]!.ok ? "border-emerald-500/40 bg-emerald-500/10" : "border-destructive/40 bg-destructive/10"}`}>
+                <div className="flex justify-between font-medium">
+                  <span>{results[testModelRow.id]!.ok ? "نجح الاختبار" : "فشل الاختبار"}</span>
+                  <span>
+                    {results[testModelRow.id]!.latency}ms
+                    {results[testModelRow.id]!.tokens ? ` · ${results[testModelRow.id]!.tokens} توكن` : ""}
+                  </span>
+                </div>
+                <p className="whitespace-pre-wrap break-words">{results[testModelRow.id]!.text}</p>
+              </div>
+            )}
+
+            <div className="flex gap-2 flex-wrap">
+              <Button
+                className="flex-1"
+                disabled={testing === testModelRow?.id}
+                onClick={() => testModelRow && runModelTest(testModelRow)}
+              >
+                {testing === testModelRow?.id ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Zap className="w-4 h-4 ml-1" /> تشغيل الاختبار</>}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={async () => {
+                  if (!testModelRow) return;
+                  await saveSettings({
+                    data: { id: testModelRow.id, prompt, params: { temperature, max_tokens: maxTokens, top_p: topP } },
+                  });
+                  qc.invalidateQueries({ queryKey: ["ai-hub"] });
+                  toast.success("تم حفظ إعدادات هذا النموذج");
+                }}
+              >
+                <Save className="w-4 h-4 ml-1" /> حفظ الإعدادات
+              </Button>
+              <Button variant="ghost" asChild><Link to="/ai-tests">السجل</Link></Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }

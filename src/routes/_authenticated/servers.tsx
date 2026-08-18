@@ -9,16 +9,21 @@ import { Label } from "@/components/ui/label";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
 import { Progress } from "@/components/ui/progress";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Server, Plus, Loader2, Trash2, Cpu, MemoryStick, HardDrive, Terminal, Copy, RefreshCw, Brain,
+  Network, Settings2, Play, Rocket, Save,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
   listServers, createServer, deleteServer, getAgentInstall, getServerDetail,
 } from "@/lib/servers.functions";
+import {
+  getServerOps, queueServerCommand, saveServerConfig, getPlatformDeployCommand, COMMAND_WHITELIST,
+} from "@/lib/server-ops.functions";
 import { importServerModels } from "@/lib/ai-hub.functions";
 
 export const Route = createFileRoute("/_authenticated/servers")({

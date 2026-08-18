@@ -232,6 +232,47 @@
           ]
         },
         "outputSchema": null
+      },
+      {
+        "name": "list_servers",
+        "title": "List servers",
+        "description": "List the user's VPS servers with status, OS and last heartbeat time.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
+      },
+      {
+        "name": "get_server_status",
+        "title": "Get server status",
+        "description": "Get one server's latest resource metrics (CPU, memory, disk, load, uptime), the services its agent discovered, and the websites hosted on it.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {
+            "server_id": {
+              "description": "Server UUID.",
+              "type": "string"
+            },
+            "hostname": {
+              "description": "Server hostname or IP, used when server_id is unknown.",
+              "type": "string"
+            }
+          }
+        },
+        "outputSchema": null
       }
     ]
   }

@@ -85,6 +85,12 @@ function BackupsPage() {
     refetchInterval: 30000,
   });
 
+  const { data: schedules, isLoading: schedLoading } = useQuery({
+    queryKey: ["backup-schedules"],
+    queryFn: () => fetchSchedules({ data: {} }),
+    refetchInterval: 60000,
+  });
+
   const rows = (data ?? []) as any[];
 
   const downloadExport = async () => {

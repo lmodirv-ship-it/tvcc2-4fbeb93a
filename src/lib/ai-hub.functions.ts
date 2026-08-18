@@ -663,3 +663,131 @@ export const deleteModelTest = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+/* ---------------- browser-side (local / LAN) model support ---------------- */
+
+/** Tool schemas the browser needs so it can pass them to a local model. */
+export const listAiToolSchemas = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async () =>
+    AI_TOOLS.map((t) => ({
+      type: "function",
+      function: { name: t.name, description: t.description, parameters: t.parameters },
+    })),
+  );
+
+/** Executes one AI tool with the caller's RLS-scoped client (used by browser-run models). */
+export const runAiTool = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { name: string; args?: Record<string, unknown>; allowWrites?: boolean }) => input)
+  .handler(async ({ data, context }) => {
+    const result = await runTool(
+      context.supabase as any,
+      context.userId,
+      data.name,
+      (data.args ?? {}) as Record<string, any>,
+      !!data.allowWrites,
+    );
+    return { result };
+  });
+
+/** Persists a full chat turn produced in the browser (local/LAN models). */
+export const saveChatTurn = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: {
+    conversationId?: string | null;
+    modelId: string;
+    modelLabel?: string | null;
+    question: string;
+    answer: string;
+    tools?: Array<{ name: string; args: string }>;
+  }) => input)
+  .handler(async ({ data, context }) => {
+    const sb = context.supabase as any;
+    let conversationId = data.conversationId ?? null;
+    if (!conversationId) {
+      const { data: conv, error } = await sb
+        .from("ai_conversations")
+        .insert({
+          owner_id: context.userId,
+          title: data.question.slice(0, 60),
+          model_id: data.modelId,
+          website_ids: [],
+        })
+        .select("id")
+        .maybeSingle();
+      if (error) throw new Error(error.message);
+      conversationId = conv?.id ?? null;
+    }
+    await sb.from("ai_messages").insert([
+      { owner_id: context.userId, conversation_id: conversationId, role: "user", content: data.question },
+      {
+        owner_id: context.userId,
+        conversation_id: conversationId,
+        role: "assistant",
+        content: data.answer,
+        model_label: data.modelLabel ?? null,
+        tool_calls: data.tools ?? [],
+      },
+    ]);
+    await sb.from("ai_conversations").update({ updated_at: new Date().toISOString() }).eq("id", conversationId);
+    return { conversationId };
+  });
+
+/** One-click: register the built-in Lovable AI cloud provider with its models. */
+export const enableLovableProvider = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const sb = context.supabase as any;
+    const { data: existing } = await sb
+      .from("ai_providers")
+      .select("id")
+      .eq("owner_id", context.userId)
+      .eq("vendor", "lovable")
+      .maybeSingle();
+
+    let providerId = existing?.id as string | undefined;
+    if (!providerId) {
+      const { data: created, error } = await sb
+        .from("ai_providers")
+        .insert({
+          owner_id: context.userId,
+          name: "Lovable AI (سحابي)",
+          kind: "cloud",
+          vendor: "lovable",
+          base_url: GATEWAY,
+          is_active: true,
+          status: "online",
+        })
+        .select("id")
+        .maybeSingle();
+      if (error) throw new Error(error.message);
+      providerId = created?.id;
+    }
+    if (!providerId) throw new Error("تعذّر إنشاء المزوّد");
+
+    const models = await providerModels("cloud", "lovable", null, null);
+    const { data: present } = await sb
+      .from("ai_models")
+      .select("model_id")
+      .eq("provider_id", providerId);
+    const have = new Set((present ?? []).map((m: any) => m.model_id));
+    const rows = models
+      .filter((m: any) => !have.has(m.model_id))
+      .map((m: any, i: number) => ({
+        owner_id: context.userId,
+        provider_id: providerId,
+        name: m.name,
+        model_id: m.model_id,
+        kind: "cloud",
+        capabilities: ["chat", "tools"],
+        is_active: true,
+        is_default: i === 0 && have.size === 0,
+        status: "ready",
+      }));
+    if (rows.length) {
+      const { error } = await sb.from("ai_models").insert(rows);
+      if (error) throw new Error(error.message);
+    }
+    return { providerId, added: rows.length, total: models.length };
+  });

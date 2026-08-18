@@ -14,7 +14,7 @@ export default defineTool({
     is_active: z.boolean().optional().describe("Activate or deactivate the website."),
   },
   annotations: { readOnlyHint: false, destructiveHint: true, idempotentHint: true, openWorldHint: false },
-  needsApproval: true,
+  
   handler: async ({ domain, name, description, is_active }, ctx) => {
     if (!ctx.isAuthenticated()) return unauthenticated();
     const patch: Record<string, unknown> = {};

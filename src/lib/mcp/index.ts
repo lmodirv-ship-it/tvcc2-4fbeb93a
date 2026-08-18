@@ -7,6 +7,8 @@ import listSiteGroups from "./tools/list-site-groups";
 import listExpiringDomains from "./tools/list-expiring-domains";
 import getDashboardStats from "./tools/get-dashboard-stats";
 import getHnCertificate from "./tools/get-hn-certificate";
+import listServers from "./tools/list-servers";
+import getServerStatus from "./tools/get-server-status";
 
 // The OAuth issuer must be the direct Supabase host: the project ref is the only
 // Supabase value that survives publish unchanged, and Vite inlines it at build time.
@@ -20,6 +22,7 @@ export default defineMcp({
     "Tools for the TVCC website control center. Use `list_websites` and `get_website` to inspect managed sites, " +
     "`create_website` / `update_website` to manage them, `list_site_groups` for grouping, " +
     "`list_expiring_domains` to catch domain renewals, and `get_dashboard_stats` for an overview. " +
+    "`list_servers` and `get_server_status` expose VPS health and hosted sites. " +
     "All tools act as the signed-in user and only return data that user owns.",
   auth: auth.oauth.issuer({
     issuer: `https://${projectRef}.supabase.co/auth/v1`,
@@ -34,5 +37,7 @@ export default defineMcp({
     listExpiringDomains,
     getDashboardStats,
     getHnCertificate,
+    listServers,
+    getServerStatus,
   ],
 });

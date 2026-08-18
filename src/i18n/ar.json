@@ -71,7 +71,12 @@
     "payment_providers": "مزودو الدفع",
     "audit": "فحص النظام",
     "settings": "الإعدادات",
-    "payments_hub": "بوابة الدفع الموحدة"
+    "payments_hub": "بوابة الدفع الموحدة",
+    "servers": "السيرفرات",
+    "ai": "الذكاء الاصطناعي",
+    "ai_models": "النماذج",
+    "ai_connect": "ربط النماذج",
+    "ai_chat": "محادثة النماذج"
   },
   "dashboard": {
     "title": "لوحة التحكم",

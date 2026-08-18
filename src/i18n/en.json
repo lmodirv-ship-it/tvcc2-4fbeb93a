@@ -71,7 +71,12 @@
     "payment_providers": "Payment Providers",
     "audit": "System Audit",
     "settings": "Settings",
-    "payments_hub": "Unified Payments Hub"
+    "payments_hub": "Unified Payments Hub",
+    "servers": "Servers",
+    "ai": "AI",
+    "ai_models": "Models",
+    "ai_connect": "Connect models",
+    "ai_chat": "Model chat"
   },
   "dashboard": {
     "title": "Dashboard",

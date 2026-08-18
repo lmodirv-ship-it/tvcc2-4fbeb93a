@@ -1,0 +1,16 @@
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.servers TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.server_metrics TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.server_sites TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.ai_providers TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.ai_models TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.ai_conversations TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.ai_messages TO authenticated;
+GRANT SELECT, INSERT, UPDATE, DELETE ON public.ai_routing TO authenticated;
+GRANT ALL ON public.servers TO service_role;
+GRANT ALL ON public.server_metrics TO service_role;
+GRANT ALL ON public.server_sites TO service_role;
+GRANT ALL ON public.ai_providers TO service_role;
+GRANT ALL ON public.ai_models TO service_role;
+GRANT ALL ON public.ai_conversations TO service_role;
+GRANT ALL ON public.ai_messages TO service_role;
+GRANT ALL ON public.ai_routing TO service_role;

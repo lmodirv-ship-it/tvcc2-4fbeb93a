@@ -22,6 +22,7 @@ import { Route as AuthenticatedSubscriptionsRouteImport } from './routes/_authen
 import { Route as AuthenticatedSslRouteImport } from './routes/_authenticated/ssl'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedServicesRouteImport } from './routes/_authenticated/services'
+import { Route as AuthenticatedServersRouteImport } from './routes/_authenticated/servers'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedRecoveryRouteImport } from './routes/_authenticated/recovery'
 import { Route as AuthenticatedPaymentsHubRouteImport } from './routes/_authenticated/payments-hub'
@@ -40,6 +41,9 @@ import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedCertificatesRouteImport } from './routes/_authenticated/certificates'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedApkManagerRouteImport } from './routes/_authenticated/apk-manager'
+import { Route as AuthenticatedAiModelsRouteImport } from './routes/_authenticated/ai-models'
+import { Route as AuthenticatedAiConnectRouteImport } from './routes/_authenticated/ai-connect'
+import { Route as AuthenticatedAiChatRouteImport } from './routes/_authenticated/ai-chat'
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
@@ -62,6 +66,8 @@ import { Route as AuthenticatedEditorAiRouteImport } from './routes/_authenticat
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as ApiPublicVideoIngestRouteImport } from './routes/api/public/video.ingest'
+import { Route as ApiPublicServersHeartbeatRouteImport } from './routes/api/public/servers.heartbeat'
+import { Route as ApiPublicServersAgentRouteImport } from './routes/api/public/servers.agent'
 import { Route as ApiPublicPaymentsIngestRouteImport } from './routes/api/public/payments.ingest'
 import { Route as ApiPublicNotificationsIngestRouteImport } from './routes/api/public/notifications.ingest'
 import { Route as ApiPublicHooksHealthCheckRouteImport } from './routes/api/public/hooks/health-check'
@@ -132,6 +138,11 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
 const AuthenticatedServicesRoute = AuthenticatedServicesRouteImport.update({
   id: '/services',
   path: '/services',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedServersRoute = AuthenticatedServersRouteImport.update({
+  id: '/servers',
+  path: '/servers',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
@@ -228,6 +239,21 @@ const AuthenticatedAuditRoute = AuthenticatedAuditRouteImport.update({
 const AuthenticatedApkManagerRoute = AuthenticatedApkManagerRouteImport.update({
   id: '/apk-manager',
   path: '/apk-manager',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAiModelsRoute = AuthenticatedAiModelsRouteImport.update({
+  id: '/ai-models',
+  path: '/ai-models',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAiConnectRoute = AuthenticatedAiConnectRouteImport.update({
+  id: '/ai-connect',
+  path: '/ai-connect',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAiChatRoute = AuthenticatedAiChatRouteImport.update({
+  id: '/ai-chat',
+  path: '/ai-chat',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedActivityRoute = AuthenticatedActivityRouteImport.update({
@@ -354,6 +380,17 @@ const ApiPublicVideoIngestRoute = ApiPublicVideoIngestRouteImport.update({
   path: '/api/public/video/ingest',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicServersHeartbeatRoute =
+  ApiPublicServersHeartbeatRouteImport.update({
+    id: '/api/public/servers/heartbeat',
+    path: '/api/public/servers/heartbeat',
+    getParentRoute: () => rootRouteImport,
+  } as any)
+const ApiPublicServersAgentRoute = ApiPublicServersAgentRouteImport.update({
+  id: '/api/public/servers/agent',
+  path: '/api/public/servers/agent',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicPaymentsIngestRoute = ApiPublicPaymentsIngestRouteImport.update({
   id: '/api/public/payments/ingest',
   path: '/api/public/payments/ingest',
@@ -389,6 +426,9 @@ export interface FileRoutesByFullPath {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/activity': typeof AuthenticatedActivityRoute
+  '/ai-chat': typeof AuthenticatedAiChatRoute
+  '/ai-connect': typeof AuthenticatedAiConnectRoute
+  '/ai-models': typeof AuthenticatedAiModelsRoute
   '/apk-manager': typeof AuthenticatedApkManagerRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/certificates': typeof AuthenticatedCertificatesRoute
@@ -407,6 +447,7 @@ export interface FileRoutesByFullPath {
   '/payments-hub': typeof AuthenticatedPaymentsHubRoute
   '/recovery': typeof AuthenticatedRecoveryRoute
   '/reports': typeof AuthenticatedReportsRoute
+  '/servers': typeof AuthenticatedServersRoute
   '/services': typeof AuthenticatedServicesRoute
   '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/ssl': typeof AuthenticatedSslRoute
@@ -439,6 +480,8 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
   '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
+  '/api/public/servers/agent': typeof ApiPublicServersAgentRoute
+  '/api/public/servers/heartbeat': typeof ApiPublicServersHeartbeatRoute
   '/api/public/video/ingest': typeof ApiPublicVideoIngestRoute
 }
 export interface FileRoutesByTo {
@@ -448,6 +491,9 @@ export interface FileRoutesByTo {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/activity': typeof AuthenticatedActivityRoute
+  '/ai-chat': typeof AuthenticatedAiChatRoute
+  '/ai-connect': typeof AuthenticatedAiConnectRoute
+  '/ai-models': typeof AuthenticatedAiModelsRoute
   '/apk-manager': typeof AuthenticatedApkManagerRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/certificates': typeof AuthenticatedCertificatesRoute
@@ -465,6 +511,7 @@ export interface FileRoutesByTo {
   '/payments-hub': typeof AuthenticatedPaymentsHubRoute
   '/recovery': typeof AuthenticatedRecoveryRoute
   '/reports': typeof AuthenticatedReportsRoute
+  '/servers': typeof AuthenticatedServersRoute
   '/services': typeof AuthenticatedServicesRoute
   '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/ssl': typeof AuthenticatedSslRoute
@@ -497,6 +544,8 @@ export interface FileRoutesByTo {
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
   '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
+  '/api/public/servers/agent': typeof ApiPublicServersAgentRoute
+  '/api/public/servers/heartbeat': typeof ApiPublicServersHeartbeatRoute
   '/api/public/video/ingest': typeof ApiPublicVideoIngestRoute
 }
 export interface FileRoutesById {
@@ -508,6 +557,9 @@ export interface FileRoutesById {
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/activity': typeof AuthenticatedActivityRoute
+  '/_authenticated/ai-chat': typeof AuthenticatedAiChatRoute
+  '/_authenticated/ai-connect': typeof AuthenticatedAiConnectRoute
+  '/_authenticated/ai-models': typeof AuthenticatedAiModelsRoute
   '/_authenticated/apk-manager': typeof AuthenticatedApkManagerRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
   '/_authenticated/certificates': typeof AuthenticatedCertificatesRoute
@@ -526,6 +578,7 @@ export interface FileRoutesById {
   '/_authenticated/payments-hub': typeof AuthenticatedPaymentsHubRoute
   '/_authenticated/recovery': typeof AuthenticatedRecoveryRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
+  '/_authenticated/servers': typeof AuthenticatedServersRoute
   '/_authenticated/services': typeof AuthenticatedServicesRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/_authenticated/ssl': typeof AuthenticatedSslRoute
@@ -558,6 +611,8 @@ export interface FileRoutesById {
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
   '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
+  '/api/public/servers/agent': typeof ApiPublicServersAgentRoute
+  '/api/public/servers/heartbeat': typeof ApiPublicServersHeartbeatRoute
   '/api/public/video/ingest': typeof ApiPublicVideoIngestRoute
 }
 export interface FileRouteTypes {
@@ -569,6 +624,9 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/activity'
+    | '/ai-chat'
+    | '/ai-connect'
+    | '/ai-models'
     | '/apk-manager'
     | '/audit'
     | '/certificates'
@@ -587,6 +645,7 @@ export interface FileRouteTypes {
     | '/payments-hub'
     | '/recovery'
     | '/reports'
+    | '/servers'
     | '/services'
     | '/settings'
     | '/ssl'
@@ -619,6 +678,8 @@ export interface FileRouteTypes {
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
     | '/api/public/payments/ingest'
+    | '/api/public/servers/agent'
+    | '/api/public/servers/heartbeat'
     | '/api/public/video/ingest'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -628,6 +689,9 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/activity'
+    | '/ai-chat'
+    | '/ai-connect'
+    | '/ai-models'
     | '/apk-manager'
     | '/audit'
     | '/certificates'
@@ -645,6 +709,7 @@ export interface FileRouteTypes {
     | '/payments-hub'
     | '/recovery'
     | '/reports'
+    | '/servers'
     | '/services'
     | '/settings'
     | '/ssl'
@@ -677,6 +742,8 @@ export interface FileRouteTypes {
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
     | '/api/public/payments/ingest'
+    | '/api/public/servers/agent'
+    | '/api/public/servers/heartbeat'
     | '/api/public/video/ingest'
   id:
     | '__root__'
@@ -687,6 +754,9 @@ export interface FileRouteTypes {
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/_authenticated/activity'
+    | '/_authenticated/ai-chat'
+    | '/_authenticated/ai-connect'
+    | '/_authenticated/ai-models'
     | '/_authenticated/apk-manager'
     | '/_authenticated/audit'
     | '/_authenticated/certificates'
@@ -705,6 +775,7 @@ export interface FileRouteTypes {
     | '/_authenticated/payments-hub'
     | '/_authenticated/recovery'
     | '/_authenticated/reports'
+    | '/_authenticated/servers'
     | '/_authenticated/services'
     | '/_authenticated/settings'
     | '/_authenticated/ssl'
@@ -737,6 +808,8 @@ export interface FileRouteTypes {
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
     | '/api/public/payments/ingest'
+    | '/api/public/servers/agent'
+    | '/api/public/servers/heartbeat'
     | '/api/public/video/ingest'
   fileRoutesById: FileRoutesById
 }
@@ -755,6 +828,8 @@ export interface RootRouteChildren {
   ApiPublicHooksHealthCheckRoute: typeof ApiPublicHooksHealthCheckRoute
   ApiPublicNotificationsIngestRoute: typeof ApiPublicNotificationsIngestRoute
   ApiPublicPaymentsIngestRoute: typeof ApiPublicPaymentsIngestRoute
+  ApiPublicServersAgentRoute: typeof ApiPublicServersAgentRoute
+  ApiPublicServersHeartbeatRoute: typeof ApiPublicServersHeartbeatRoute
   ApiPublicVideoIngestRoute: typeof ApiPublicVideoIngestRoute
 }
 
@@ -849,6 +924,13 @@ declare module '@tanstack/react-router' {
       path: '/services'
       fullPath: '/services'
       preLoaderRoute: typeof AuthenticatedServicesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/servers': {
+      id: '/_authenticated/servers'
+      path: '/servers'
+      fullPath: '/servers'
+      preLoaderRoute: typeof AuthenticatedServersRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/reports': {
@@ -975,6 +1057,27 @@ declare module '@tanstack/react-router' {
       path: '/apk-manager'
       fullPath: '/apk-manager'
       preLoaderRoute: typeof AuthenticatedApkManagerRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/ai-models': {
+      id: '/_authenticated/ai-models'
+      path: '/ai-models'
+      fullPath: '/ai-models'
+      preLoaderRoute: typeof AuthenticatedAiModelsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/ai-connect': {
+      id: '/_authenticated/ai-connect'
+      path: '/ai-connect'
+      fullPath: '/ai-connect'
+      preLoaderRoute: typeof AuthenticatedAiConnectRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/ai-chat': {
+      id: '/_authenticated/ai-chat'
+      path: '/ai-chat'
+      fullPath: '/ai-chat'
+      preLoaderRoute: typeof AuthenticatedAiChatRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/activity': {
@@ -1131,6 +1234,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicVideoIngestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/servers/heartbeat': {
+      id: '/api/public/servers/heartbeat'
+      path: '/api/public/servers/heartbeat'
+      fullPath: '/api/public/servers/heartbeat'
+      preLoaderRoute: typeof ApiPublicServersHeartbeatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/servers/agent': {
+      id: '/api/public/servers/agent'
+      path: '/api/public/servers/agent'
+      fullPath: '/api/public/servers/agent'
+      preLoaderRoute: typeof ApiPublicServersAgentRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/payments/ingest': {
       id: '/api/public/payments/ingest'
       path: '/api/public/payments/ingest'
@@ -1222,6 +1339,9 @@ const AuthenticatedSettingsRouteWithChildren =
 
 interface AuthenticatedRouteChildren {
   AuthenticatedActivityRoute: typeof AuthenticatedActivityRoute
+  AuthenticatedAiChatRoute: typeof AuthenticatedAiChatRoute
+  AuthenticatedAiConnectRoute: typeof AuthenticatedAiConnectRoute
+  AuthenticatedAiModelsRoute: typeof AuthenticatedAiModelsRoute
   AuthenticatedApkManagerRoute: typeof AuthenticatedApkManagerRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
   AuthenticatedCertificatesRoute: typeof AuthenticatedCertificatesRoute
@@ -1240,6 +1360,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPaymentsHubRoute: typeof AuthenticatedPaymentsHubRoute
   AuthenticatedRecoveryRoute: typeof AuthenticatedRecoveryRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
+  AuthenticatedServersRoute: typeof AuthenticatedServersRoute
   AuthenticatedServicesRoute: typeof AuthenticatedServicesRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRouteWithChildren
   AuthenticatedSslRoute: typeof AuthenticatedSslRoute
@@ -1253,6 +1374,9 @@ interface AuthenticatedRouteChildren {
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedActivityRoute: AuthenticatedActivityRoute,
+  AuthenticatedAiChatRoute: AuthenticatedAiChatRoute,
+  AuthenticatedAiConnectRoute: AuthenticatedAiConnectRoute,
+  AuthenticatedAiModelsRoute: AuthenticatedAiModelsRoute,
   AuthenticatedApkManagerRoute: AuthenticatedApkManagerRoute,
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
   AuthenticatedCertificatesRoute: AuthenticatedCertificatesRoute,
@@ -1271,6 +1395,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPaymentsHubRoute: AuthenticatedPaymentsHubRoute,
   AuthenticatedRecoveryRoute: AuthenticatedRecoveryRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
+  AuthenticatedServersRoute: AuthenticatedServersRoute,
   AuthenticatedServicesRoute: AuthenticatedServicesRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRouteWithChildren,
   AuthenticatedSslRoute: AuthenticatedSslRoute,
@@ -1302,6 +1427,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksHealthCheckRoute: ApiPublicHooksHealthCheckRoute,
   ApiPublicNotificationsIngestRoute: ApiPublicNotificationsIngestRoute,
   ApiPublicPaymentsIngestRoute: ApiPublicPaymentsIngestRoute,
+  ApiPublicServersAgentRoute: ApiPublicServersAgentRoute,
+  ApiPublicServersHeartbeatRoute: ApiPublicServersHeartbeatRoute,
   ApiPublicVideoIngestRoute: ApiPublicVideoIngestRoute,
 }
 export const routeTree = rootRouteImport

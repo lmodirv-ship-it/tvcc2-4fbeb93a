@@ -44,6 +44,266 @@ export type Database = {
         }
         Relationships: []
       }
+      ai_conversations: {
+        Row: {
+          created_at: string
+          id: string
+          model_id: string | null
+          owner_id: string
+          title: string
+          updated_at: string
+          website_ids: string[]
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          model_id?: string | null
+          owner_id: string
+          title?: string
+          updated_at?: string
+          website_ids?: string[]
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          model_id?: string | null
+          owner_id?: string
+          title?: string
+          updated_at?: string
+          website_ids?: string[]
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_conversations_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "ai_models"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_messages: {
+        Row: {
+          content: string
+          conversation_id: string
+          created_at: string
+          id: string
+          model_label: string | null
+          owner_id: string
+          role: string
+          tool_calls: Json | null
+        }
+        Insert: {
+          content?: string
+          conversation_id: string
+          created_at?: string
+          id?: string
+          model_label?: string | null
+          owner_id: string
+          role: string
+          tool_calls?: Json | null
+        }
+        Update: {
+          content?: string
+          conversation_id?: string
+          created_at?: string
+          id?: string
+          model_label?: string | null
+          owner_id?: string
+          role?: string
+          tool_calls?: Json | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_messages_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "ai_conversations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_models: {
+        Row: {
+          capabilities: string[]
+          context_window: number | null
+          created_at: string
+          endpoint_url: string | null
+          id: string
+          is_active: boolean
+          is_default: boolean
+          kind: string
+          last_latency_ms: number | null
+          metadata: Json
+          model_id: string
+          name: string
+          owner_id: string
+          priority: number
+          provider_id: string | null
+          server_id: string | null
+          size_mb: number | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          capabilities?: string[]
+          context_window?: number | null
+          created_at?: string
+          endpoint_url?: string | null
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          kind?: string
+          last_latency_ms?: number | null
+          metadata?: Json
+          model_id: string
+          name: string
+          owner_id: string
+          priority?: number
+          provider_id?: string | null
+          server_id?: string | null
+          size_mb?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          capabilities?: string[]
+          context_window?: number | null
+          created_at?: string
+          endpoint_url?: string | null
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          kind?: string
+          last_latency_ms?: number | null
+          metadata?: Json
+          model_id?: string
+          name?: string
+          owner_id?: string
+          priority?: number
+          provider_id?: string | null
+          server_id?: string | null
+          size_mb?: number | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_models_provider_id_fkey"
+            columns: ["provider_id"]
+            isOneToOne: false
+            referencedRelation: "ai_providers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_models_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_providers: {
+        Row: {
+          api_key_encrypted: string | null
+          base_url: string | null
+          created_at: string
+          id: string
+          is_active: boolean
+          kind: string
+          last_checked_at: string | null
+          last_latency_ms: number | null
+          metadata: Json
+          name: string
+          owner_id: string
+          server_id: string | null
+          status: string
+          updated_at: string
+          vendor: string
+        }
+        Insert: {
+          api_key_encrypted?: string | null
+          base_url?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          kind?: string
+          last_checked_at?: string | null
+          last_latency_ms?: number | null
+          metadata?: Json
+          name: string
+          owner_id: string
+          server_id?: string | null
+          status?: string
+          updated_at?: string
+          vendor?: string
+        }
+        Update: {
+          api_key_encrypted?: string | null
+          base_url?: string | null
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          kind?: string
+          last_checked_at?: string | null
+          last_latency_ms?: number | null
+          metadata?: Json
+          name?: string
+          owner_id?: string
+          server_id?: string | null
+          status?: string
+          updated_at?: string
+          vendor?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_providers_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      ai_routing: {
+        Row: {
+          created_at: string
+          fallback_model_ids: string[]
+          id: string
+          owner_id: string
+          primary_model_id: string | null
+          task: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          fallback_model_ids?: string[]
+          id?: string
+          owner_id: string
+          primary_model_id?: string | null
+          task: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          fallback_model_ids?: string[]
+          id?: string
+          owner_id?: string
+          primary_model_id?: string | null
+          task?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_routing_primary_model_id_fkey"
+            columns: ["primary_model_id"]
+            isOneToOne: false
+            referencedRelation: "ai_models"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       brand_settings: {
         Row: {
           created_at: string
@@ -802,6 +1062,179 @@ export type Database = {
           status?: string
           storage_path?: string | null
           website_id?: string
+        }
+        Relationships: []
+      }
+      server_metrics: {
+        Row: {
+          collected_at: string
+          cpu_percent: number | null
+          disk_total_gb: number | null
+          disk_used_gb: number | null
+          id: string
+          load_avg: number | null
+          mem_total_mb: number | null
+          mem_used_mb: number | null
+          owner_id: string
+          process_count: number | null
+          server_id: string
+          uptime_seconds: number | null
+        }
+        Insert: {
+          collected_at?: string
+          cpu_percent?: number | null
+          disk_total_gb?: number | null
+          disk_used_gb?: number | null
+          id?: string
+          load_avg?: number | null
+          mem_total_mb?: number | null
+          mem_used_mb?: number | null
+          owner_id: string
+          process_count?: number | null
+          server_id: string
+          uptime_seconds?: number | null
+        }
+        Update: {
+          collected_at?: string
+          cpu_percent?: number | null
+          disk_total_gb?: number | null
+          disk_used_gb?: number | null
+          id?: string
+          load_avg?: number | null
+          mem_total_mb?: number | null
+          mem_used_mb?: number | null
+          owner_id?: string
+          process_count?: number | null
+          server_id?: string
+          uptime_seconds?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "server_metrics_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      server_sites: {
+        Row: {
+          created_at: string
+          domain: string | null
+          id: string
+          last_seen_at: string
+          name: string
+          owner_id: string
+          port: number | null
+          server_id: string
+          service_kind: string | null
+          status: string
+          website_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          domain?: string | null
+          id?: string
+          last_seen_at?: string
+          name: string
+          owner_id: string
+          port?: number | null
+          server_id: string
+          service_kind?: string | null
+          status?: string
+          website_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          domain?: string | null
+          id?: string
+          last_seen_at?: string
+          name?: string
+          owner_id?: string
+          port?: number | null
+          server_id?: string
+          service_kind?: string | null
+          status?: string
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "server_sites_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "server_sites_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      servers: {
+        Row: {
+          agent_token_hash: string | null
+          agent_version: string | null
+          created_at: string
+          description: string | null
+          disk_gb: number | null
+          hostname: string
+          id: string
+          last_seen_at: string | null
+          metadata: Json
+          name: string
+          os: string | null
+          owner_id: string
+          provider: string | null
+          ram_mb: number | null
+          region: string | null
+          status: string
+          updated_at: string
+          vcpu: number | null
+        }
+        Insert: {
+          agent_token_hash?: string | null
+          agent_version?: string | null
+          created_at?: string
+          description?: string | null
+          disk_gb?: number | null
+          hostname: string
+          id?: string
+          last_seen_at?: string | null
+          metadata?: Json
+          name: string
+          os?: string | null
+          owner_id: string
+          provider?: string | null
+          ram_mb?: number | null
+          region?: string | null
+          status?: string
+          updated_at?: string
+          vcpu?: number | null
+        }
+        Update: {
+          agent_token_hash?: string | null
+          agent_version?: string | null
+          created_at?: string
+          description?: string | null
+          disk_gb?: number | null
+          hostname?: string
+          id?: string
+          last_seen_at?: string | null
+          metadata?: Json
+          name?: string
+          os?: string | null
+          owner_id?: string
+          provider?: string | null
+          ram_mb?: number | null
+          region?: string | null
+          status?: string
+          updated_at?: string
+          vcpu?: number | null
         }
         Relationships: []
       }
@@ -1582,6 +2015,7 @@ export type Database = {
           payments_provider_url: string | null
           registered_at: string | null
           registration_status: string
+          server_id: string | null
           site_id: string | null
           status: Database["public"]["Enums"]["site_status"]
           updated_at: string
@@ -1612,6 +2046,7 @@ export type Database = {
           payments_provider_url?: string | null
           registered_at?: string | null
           registration_status?: string
+          server_id?: string | null
           site_id?: string | null
           status?: Database["public"]["Enums"]["site_status"]
           updated_at?: string
@@ -1642,13 +2077,22 @@ export type Database = {
           payments_provider_url?: string | null
           registered_at?: string | null
           registration_status?: string
+          server_id?: string | null
           site_id?: string | null
           status?: Database["public"]["Enums"]["site_status"]
           updated_at?: string
           verified?: boolean
           verify_code?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "websites_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {

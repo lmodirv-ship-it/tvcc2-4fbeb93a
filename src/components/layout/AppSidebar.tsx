@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Globe, Users, CreditCard, UserCog, Activity, Settings,
   Code2, LogOut, Wand2, FolderOpen, LayoutTemplate, Radio, ListChecks, Plug,
   Smartphone, KeyRound, Server, ShieldCheck, BadgeCheck, Bell, FileCog, LifeBuoy, ClipboardCheck,
-  FileBarChart, Wallet, Boxes, Brain, Film,
+  FileBarChart, Wallet, Boxes, Brain, Film, HardDrive, MessageSquare,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -29,7 +29,14 @@ const coreItems = [
   { titleKey: "sidebar.video_studio", url: "/video-studio", icon: Film },
 ];
 
+const aiItems = [
+  { titleKey: "sidebar.ai_models", url: "/ai-models", icon: Brain },
+  { titleKey: "sidebar.ai_connect", url: "/ai-connect", icon: Plug },
+  { titleKey: "sidebar.ai_chat", url: "/ai-chat", icon: MessageSquare },
+];
+
 const opsItems = [
+  { titleKey: "sidebar.servers", url: "/servers", icon: HardDrive },
   { titleKey: "sidebar.domains", url: "/domains", icon: Server },
   { titleKey: "sidebar.ssl", url: "/ssl", icon: ShieldCheck },
   { titleKey: "sidebar.certificates", url: "/certificates", icon: BadgeCheck },
@@ -91,6 +98,7 @@ export function AppSidebar() {
       <SidebarContent className="px-2 py-3">
         {[
           { label: t("sidebar.core"), items: coreItems },
+          { label: t("sidebar.ai"), items: aiItems },
           { label: t("sidebar.operations"), items: opsItems },
           { label: t("sidebar.admin"), items: adminItems },
 

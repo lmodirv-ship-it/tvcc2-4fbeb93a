@@ -48,8 +48,57 @@ function AiModelsPage() {
   const makeDefault = useServerFn(setDefaultModel);
   const removeModel = useServerFn(deleteAiModel);
   const saveRouting = useServerFn(setRouting);
+  const runTest = useServerFn(testAiModel);
+  const saveTest = useServerFn(recordModelTest);
 
   const [q, setQ] = useState("");
+  const [testing, setTesting] = useState<string | null>(null);
+  const [results, setResults] = useState<Record<string, { ok: boolean; latency: number; text: string }>>({});
+
+  const TEST_PROMPT = "قل: مرحباً من TVCC. بجملة واحدة فقط.";
+
+  const isLocal = (m: any, p: any) => {
+    const url = String(m.endpoint_url ?? p?.base_url ?? "");
+    return m.kind === "local" || /localhost|127\.0\.0\.1/.test(url);
+  };
+
+  const testModel = async (m: any) => {
+    const provider = providers.find((p) => p.id === m.provider_id);
+    setTesting(m.id);
+    try {
+      if (isLocal(m, provider)) {
+        // Local models live on the user's machine — the browser talks to them directly.
+        const base = String(m.endpoint_url ?? provider?.base_url ?? "").replace(/\/+$/, "");
+        if (!base) throw new Error("لا يوجد عنوان للنموذج المحلي");
+        const started = Date.now();
+        const res = await fetch(`${base}/v1/chat/completions`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ model: m.model_id, messages: [{ role: "user", content: TEST_PROMPT }] }),
+        });
+        if (!res.ok) throw new Error(`(${res.status}) ${(await res.text()).slice(0, 200)}`);
+        const json: any = await res.json();
+        const latency = Date.now() - started;
+        const text = json?.choices?.[0]?.message?.content ?? "";
+        setResults((r) => ({ ...r, [m.id]: { ok: true, latency, text: String(text).slice(0, 500) } }));
+        await saveTest({ data: { id: m.id, ok: true, latency } });
+        toast.success(`نجح الاختبار في ${latency}ms`);
+      } else {
+        const r: any = await runTest({ data: { id: m.id, prompt: TEST_PROMPT } });
+        setResults((rs) => ({ ...rs, [m.id]: { ok: r.ok, latency: r.latency, text: r.ok ? r.answer : r.error } }));
+        r.ok ? toast.success(`نجح الاختبار في ${r.latency}ms`) : toast.error(r.error);
+      }
+      qc.invalidateQueries({ queryKey: ["ai-hub"] });
+    } catch (e) {
+      const msg = (e as Error).message;
+      setResults((r) => ({ ...r, [m.id]: { ok: false, latency: 0, text: msg } }));
+      await saveTest({ data: { id: m.id, ok: false, latency: 0 } }).catch(() => {});
+      toast.error(msg);
+    } finally {
+      setTesting(null);
+    }
+  };
+
 
   const { data, isLoading } = useQuery({ queryKey: ["ai-hub"], queryFn: () => fetchAll() });
   const { data: routing } = useQuery({ queryKey: ["ai-routing"], queryFn: () => fetchRouting() });

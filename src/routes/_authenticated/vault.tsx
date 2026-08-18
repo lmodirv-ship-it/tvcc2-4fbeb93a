@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/table";
 import { KeyRound, Plus, Eye, EyeOff, Trash2, Loader2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
-import { listVaultSecrets, createVaultSecret, rotateVaultSecret, deleteVaultSecret } from "@/lib/server-ops.functions";
+import { listVaultSecrets, createVaultSecret, rotateVaultSecret, deleteVaultSecret, revealVaultSecret } from "@/lib/server-ops.functions";
 
 export const Route = createFileRoute("/_authenticated/vault")({
   component: VaultPage,

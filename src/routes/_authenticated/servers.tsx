@@ -489,6 +489,14 @@ function ServersPage() {
                         />
                       </div>
                     )}
+                    <div className="flex items-center gap-2 pb-1">
+                      <Checkbox
+                        id="dryRun"
+                        checked={dryRun}
+                        onCheckedChange={(v) => setDryRun(Boolean(v))}
+                      />
+                      <Label htmlFor="dryRun" className="text-xs">محاكاة فقط (Dry Run)</Label>
+                    </div>
                     <Button
                       size="sm"
                       onClick={async () => {
@@ -498,14 +506,15 @@ function ServersPage() {
                             serverId: detailId!,
                             action,
                             args: arg ? { [arg.key]: argValue } : {},
+                            dryRun,
                           },
                         });
                         setArgValue("");
-                        toast.success("تمت إضافة الأمر إلى قائمة التنفيذ");
+                        toast.success(dryRun ? "تمت إضافة الأمر كمحاكاة" : "تمت إضافة الأمر إلى قائمة التنفيذ");
                         qc.invalidateQueries({ queryKey: ["server-ops", detailId] });
                       }}
                     >
-                      <Play className="w-3 h-3 ml-1" /> تنفيذ
+                      <Play className="w-3 h-3 ml-1" /> {dryRun ? "محاكاة" : "تنفيذ"}
                     </Button>
                   </div>
 

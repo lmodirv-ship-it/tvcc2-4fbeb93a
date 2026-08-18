@@ -329,7 +329,7 @@ export const Route = createFileRoute("/api/public/servers/heartbeat")({
         // Hand back pending whitelisted commands for this server
         const { data: pending } = await admin
           .from("server_commands")
-          .select("id, action, args")
+          .select("id, action, args, dry_run")
           .eq("server_id", serverId)
           .eq("status", "pending")
           .order("created_at", { ascending: true })

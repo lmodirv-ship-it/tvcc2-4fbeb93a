@@ -100,7 +100,7 @@ export const getServerOps = createServerFn({ method: "POST" })
 export const queueServerCommand = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator(
-    (input: { serverId: string; action: string; args?: Record<string, unknown>; websiteId?: string | null }) => input,
+    (input: { serverId: string; action: string; args?: Record<string, unknown>; websiteId?: string | null; dryRun?: boolean }) => input,
   )
   .handler(async ({ data, context }) => {
     if (!(COMMAND_WHITELIST as readonly string[]).includes(data.action)) {
@@ -115,6 +115,7 @@ export const queueServerCommand = createServerFn({ method: "POST" })
         website_id: data.websiteId ?? null,
         action: data.action,
         args: data.args ?? {},
+        dry_run: data.dryRun ?? false,
         requested_by: context.userId,
         status: "pending",
       })
@@ -126,7 +127,7 @@ export const queueServerCommand = createServerFn({ method: "POST" })
       server_id: data.serverId,
       website_id: data.websiteId ?? null,
       operation: data.action,
-      title: `طلب تنفيذ: ${data.action}`,
+      title: `طلب تنفيذ: ${data.action}${data.dryRun ? " (محاكاة)" : ""}`,
       input: data.args ?? {},
       status: "pending",
     });

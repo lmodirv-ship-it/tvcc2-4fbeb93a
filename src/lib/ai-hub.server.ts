@@ -1,0 +1,84 @@
+/** Server-only helpers for the AI hub. Kept out of *.functions.ts so the
+ * server-function splitter cannot strip them. */
+import { AI_TOOLS } from "./ai-tools.server";
+
+export const GATEWAY = "https://ai.gateway.lovable.dev/v1";
+export const DEFAULT_PROMPT = "قل: مرحباً من TVCC. بجملة واحدة فقط.";
+
+export type ChatMsg = { role: "system" | "user" | "assistant" | "tool"; content: string; [k: string]: unknown };
+export type TestParams = { temperature?: number; max_tokens?: number; top_p?: number };
+
+export async function providerModels(kind: string, vendor: string, baseUrl: string | null, apiKey: string | null) {
+  if (kind === "cloud" && vendor === "lovable") {
+    return [
+      { model_id: "google/gemini-3.7-flash", name: "Gemini 3.7 Flash (افتراضي)" },
+      { model_id: "google/gemini-3.1-pro-preview", name: "Gemini 3.1 Pro" },
+      { model_id: "google/gemini-3.1-flash-lite", name: "Gemini 3.1 Flash Lite" },
+      { model_id: "openai/gpt-5.6-terra", name: "GPT-5.6 Terra" },
+      { model_id: "openai/gpt-5.6-luna", name: "GPT-5.6 Luna" },
+      { model_id: "openai/gpt-5.5", name: "GPT-5.5" },
+    ];
+  }
+  if (!baseUrl) throw new Error("العنوان (base URL) مطلوب لهذا المزوّد");
+  const base = baseUrl.replace(/\/+$/, "");
+  const headers: Record<string, string> = {};
+  if (apiKey) headers["authorization"] = `Bearer ${apiKey}`;
+
+  // Ollama native
+  if (vendor === "ollama") {
+    const res = await fetch(`${base}/api/tags`, { headers });
+    if (!res.ok) throw new Error(`Ollama ${res.status}`);
+    const json = (await res.json()) as any;
+    return (json.models ?? []).map((m: any) => ({
+      model_id: m.name,
+      name: m.name,
+      size_mb: m.size ? Math.round(m.size / 1048576) : null,
+    }));
+  }
+  const res = await fetch(`${base}/v1/models`, { headers });
+  if (!res.ok) throw new Error(`${res.status} ${await res.text()}`);
+  const json = (await res.json()) as any;
+  return (json.data ?? []).map((m: any) => ({ model_id: m.id, name: m.id }));
+}
+
+export async function callModel(
+  model: any,
+  provider: any,
+  messages: ChatMsg[],
+  withTools: boolean,
+  params?: { temperature?: number; max_tokens?: number; top_p?: number },
+): Promise<any> {
+  const isLovable = provider.vendor === "lovable" && provider.kind === "cloud";
+  const base = isLovable ? GATEWAY : (model.endpoint_url ?? provider.base_url ?? "").replace(/\/+$/, "");
+  if (!base) throw new Error("لا يوجد عنوان للمزوّد");
+
+  const url = isLovable ? `${base}/chat/completions` : `${base}/v1/chat/completions`;
+  const headers: Record<string, string> = { "content-type": "application/json" };
+  if (isLovable) {
+    const key = process.env["LOVABLE_API_KEY"];
+    if (!key) throw new Error("مفتاح Lovable AI غير مُهيّأ");
+    headers["Lovable-API-Key"] = key;
+  } else if (provider.api_key_encrypted) {
+    headers["authorization"] = `Bearer ${provider.api_key_encrypted}`;
+  }
+
+  const body: Record<string, unknown> = { model: model.model_id, messages };
+  if (params?.temperature != null) body.temperature = params.temperature;
+  if (params?.max_tokens != null) body.max_tokens = params.max_tokens;
+  if (params?.top_p != null) body.top_p = params.top_p;
+  if (withTools) {
+    body.tools = AI_TOOLS.map((t) => ({
+      type: "function",
+      function: { name: t.name, description: t.description, parameters: t.parameters },
+    }));
+  }
+
+  const res = await fetch(url, { method: "POST", headers, body: JSON.stringify(body) });
+  if (!res.ok) {
+    const text = await res.text();
+    if (res.status === 429) throw new Error("تم تجاوز حد الطلبات، حاول بعد قليل.");
+    if (res.status === 402) throw new Error("رصيد الذكاء الاصطناعي غير كافٍ. أضف رصيداً من إعدادات Lovable.");
+    throw new Error(`(${res.status}) ${text.slice(0, 400)}`);
+  }
+  return res.json();
+}

@@ -10,11 +10,11 @@ import { Switch } from "@/components/ui/switch";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Brain, Loader2, Trash2, Star, Search, Cloud, Laptop, Server, MessageSquare } from "lucide-react";
+import { Brain, Loader2, Trash2, Star, Search, Cloud, Laptop, Server, MessageSquare, Zap } from "lucide-react";
 import { toast } from "sonner";
 import {
   listAiProviders, setModelActive, setDefaultModel, deleteAiModel,
-  listRouting, setRouting,
+  listRouting, setRouting, testAiModel, recordModelTest,
 } from "@/lib/ai-hub.functions";
 
 export const Route = createFileRoute("/_authenticated/ai-models")({
@@ -48,8 +48,57 @@ function AiModelsPage() {
   const makeDefault = useServerFn(setDefaultModel);
   const removeModel = useServerFn(deleteAiModel);
   const saveRouting = useServerFn(setRouting);
+  const runTest = useServerFn(testAiModel);
+  const saveTest = useServerFn(recordModelTest);
 
   const [q, setQ] = useState("");
+  const [testing, setTesting] = useState<string | null>(null);
+  const [results, setResults] = useState<Record<string, { ok: boolean; latency: number; text: string }>>({});
+
+  const TEST_PROMPT = "قل: مرحباً من TVCC. بجملة واحدة فقط.";
+
+  const isLocal = (m: any, p: any) => {
+    const url = String(m.endpoint_url ?? p?.base_url ?? "");
+    return m.kind === "local" || /localhost|127\.0\.0\.1/.test(url);
+  };
+
+  const testModel = async (m: any) => {
+    const provider = providers.find((p) => p.id === m.provider_id);
+    setTesting(m.id);
+    try {
+      if (isLocal(m, provider)) {
+        // Local models live on the user's machine — the browser talks to them directly.
+        const base = String(m.endpoint_url ?? provider?.base_url ?? "").replace(/\/+$/, "");
+        if (!base) throw new Error("لا يوجد عنوان للنموذج المحلي");
+        const started = Date.now();
+        const res = await fetch(`${base}/v1/chat/completions`, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({ model: m.model_id, messages: [{ role: "user", content: TEST_PROMPT }] }),
+        });
+        if (!res.ok) throw new Error(`(${res.status}) ${(await res.text()).slice(0, 200)}`);
+        const json: any = await res.json();
+        const latency = Date.now() - started;
+        const text = json?.choices?.[0]?.message?.content ?? "";
+        setResults((r) => ({ ...r, [m.id]: { ok: true, latency, text: String(text).slice(0, 500) } }));
+        await saveTest({ data: { id: m.id, ok: true, latency } });
+        toast.success(`نجح الاختبار في ${latency}ms`);
+      } else {
+        const r: any = await runTest({ data: { id: m.id, prompt: TEST_PROMPT } });
+        setResults((rs) => ({ ...rs, [m.id]: { ok: r.ok, latency: r.latency, text: r.ok ? r.answer : r.error } }));
+        r.ok ? toast.success(`نجح الاختبار في ${r.latency}ms`) : toast.error(r.error);
+      }
+      qc.invalidateQueries({ queryKey: ["ai-hub"] });
+    } catch (e) {
+      const msg = (e as Error).message;
+      setResults((r) => ({ ...r, [m.id]: { ok: false, latency: 0, text: msg } }));
+      await saveTest({ data: { id: m.id, ok: false, latency: 0 } }).catch(() => {});
+      toast.error(msg);
+    } finally {
+      setTesting(null);
+    }
+  };
+
 
   const { data, isLoading } = useQuery({ queryKey: ["ai-hub"], queryFn: () => fetchAll() });
   const { data: routing } = useQuery({ queryKey: ["ai-routing"], queryFn: () => fetchRouting() });
@@ -149,6 +198,11 @@ function AiModelsPage() {
                       <span className="text-xs">مفعّل</span>
                     </div>
                     <div className="flex gap-1">
+                      <Button size="sm" variant="secondary" disabled={testing === m.id} onClick={() => testModel(m)}>
+                        {testing === m.id
+                          ? <Loader2 className="w-3 h-3 animate-spin" />
+                          : <><Zap className="w-3 h-3 ml-1" /> اختبار</>}
+                      </Button>
                       <Button
                         size="sm"
                         variant="outline"
@@ -173,6 +227,17 @@ function AiModelsPage() {
                       </Button>
                     </div>
                   </div>
+
+                  {results[m.id] && (
+                    <div className={`rounded-md border p-2 text-xs space-y-1 ${results[m.id].ok ? "border-emerald-500/40 bg-emerald-500/10" : "border-destructive/40 bg-destructive/10"}`}>
+                      <div className="flex items-center justify-between font-medium">
+                        <span>{results[m.id].ok ? "نجح الاختبار" : "فشل الاختبار"}</span>
+                        {results[m.id].latency > 0 && <span>{results[m.id].latency}ms</span>}
+                      </div>
+                      <p className="text-muted-foreground whitespace-pre-wrap break-words line-clamp-4">{results[m.id].text}</p>
+                    </div>
+                  )}
+
                 </CardContent>
               </Card>
             );

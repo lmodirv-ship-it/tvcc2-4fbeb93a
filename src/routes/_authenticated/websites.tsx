@@ -29,7 +29,7 @@ import {
   ChevronDown, Filter, Link2, MoreHorizontal, Activity, ChevronLeft, ChevronRight,
   ChevronsLeft, ChevronsRight, CheckCircle, AlertCircle, Database as DbIcon,
 } from "lucide-react";
-import { verifyDns } from "@/lib/dns.functions";
+import { verifyIssueRegister } from "@/lib/hn-rls.functions";
 import { runHealthCheckAll } from "@/lib/health-check.functions";
 import { importSupabaseProjects } from "@/lib/supabase-import.functions";
 import { useServerFn } from "@tanstack/react-start";

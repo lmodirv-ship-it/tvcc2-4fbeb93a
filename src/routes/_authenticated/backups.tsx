@@ -197,70 +197,197 @@ function BackupsPage() {
         </CardContent>
       </Card>
 
-      {isLoading ? (
-        <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
-      ) : rows.length === 0 ? (
-        <Card><CardContent className="p-10 text-center text-muted-foreground">لا توجد نسخ احتياطية بعد.</CardContent></Card>
-      ) : (
-        <Card>
-          <CardContent className="p-0 overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>الوقت</TableHead>
-                  <TableHead>الموقع</TableHead>
-                  <TableHead>النوع</TableHead>
-                  <TableHead>الحالة</TableHead>
-                  <TableHead>الحجم</TableHead>
-                  <TableHead>المسار</TableHead>
-                  <TableHead />
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {rows.map((b) => (
-                  <TableRow key={b.id}>
-                    <TableCell className="text-xs whitespace-nowrap">{new Date(b.created_at).toLocaleString("ar")}</TableCell>
-                    <TableCell className="text-xs">{b.websites?.domain ?? "—"}</TableCell>
-                    <TableCell className="text-xs">{b.backup_type}</TableCell>
-                    <TableCell><Badge variant="outline" className={statusStyle(b.status)}>{b.status}</Badge></TableCell>
-                    <TableCell className="text-xs">{b.size_mb ? `${b.size_mb}MB` : "—"}</TableCell>
-                    <TableCell className="text-[11px] ltr text-left max-w-[18rem] truncate">{b.storage_path ?? "—"}</TableCell>
-                    <TableCell className="flex gap-1">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        disabled={b.status !== "completed"}
-                        onClick={async () => {
-                          try {
-                            await restore({ data: { id: b.id } });
-                            toast.success("تم إرسال طلب الاستعادة للوكيل");
-                            qc.invalidateQueries({ queryKey: ["backups"] });
-                          } catch (e) {
-                            toast.error((e as Error).message);
-                          }
-                        }}
-                      >
-                        <RotateCcw className="w-3 h-3 ml-1" /> استعادة
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="ghost"
-                        className="text-destructive"
-                        onClick={async () => {
-                          await remove({ data: { id: b.id } });
-                          qc.invalidateQueries({ queryKey: ["backups"] });
-                        }}
-                      >
-                        <Trash2 className="w-3 h-3" />
-                      </Button>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </CardContent>
-        </Card>
-      )}
+      <Tabs defaultValue="backups">
+        <TabsList className="flex-wrap h-auto">
+          <TabsTrigger value="backups"><Archive className="w-3 h-3 ml-1" /> النسخ الاحتياطية</TabsTrigger>
+          <TabsTrigger value="schedules"><Clock className="w-3 h-3 ml-1" /> الجدولة التلقائية</TabsTrigger>
+        </TabsList>
+
+        <TabsContent value="backups" className="pt-4">
+          {isLoading ? (
+            <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+          ) : rows.length === 0 ? (
+            <Card><CardContent className="p-10 text-center text-muted-foreground">لا توجد نسخ احتياطية بعد.</CardContent></Card>
+          ) : (
+            <Card>
+              <CardContent className="p-0 overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>الوقت</TableHead>
+                      <TableHead>الموقع</TableHead>
+                      <TableHead>النوع</TableHead>
+                      <TableHead>الحالة</TableHead>
+                      <TableHead>الحجم</TableHead>
+                      <TableHead>المسار</TableHead>
+                      <TableHead />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {rows.map((b) => (
+                      <TableRow key={b.id}>
+                        <TableCell className="text-xs whitespace-nowrap">{new Date(b.created_at).toLocaleString("ar")}</TableCell>
+                        <TableCell className="text-xs">{b.websites?.domain ?? "—"}</TableCell>
+                        <TableCell className="text-xs">{b.backup_type}</TableCell>
+                        <TableCell><Badge variant="outline" className={statusStyle(b.status)}>{b.status}</Badge></TableCell>
+                        <TableCell className="text-xs">{b.size_mb ? `${b.size_mb}MB` : "—"}</TableCell>
+                        <TableCell className="text-[11px] ltr text-left max-w-[18rem] truncate">{b.storage_path ?? "—"}</TableCell>
+                        <TableCell className="flex gap-1">
+                          <Button
+                            size="sm"
+                            variant="outline"
+                            disabled={b.status !== "completed"}
+                            onClick={async () => {
+                              try {
+                                await restore({ data: { id: b.id } });
+                                toast.success("تم إرسال طلب الاستعادة للوكيل");
+                                qc.invalidateQueries({ queryKey: ["backups"] });
+                              } catch (e) {
+                                toast.error((e as Error).message);
+                              }
+                            }}
+                          >
+                            <RotateCcw className="w-3 h-3 ml-1" /> استعادة
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-destructive"
+                            onClick={async () => {
+                              await remove({ data: { id: b.id } });
+                              qc.invalidateQueries({ queryKey: ["backups"] });
+                            }}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="schedules" className="pt-4 space-y-4">
+          <Card>
+            <CardContent className="p-4 grid gap-3 md:grid-cols-7 items-end">
+              <div className="md:col-span-2">
+                <Label>الموقع</Label>
+                <Select value={siteId} onValueChange={setSiteId}>
+                  <SelectTrigger><SelectValue placeholder="اختر موقعاً" /></SelectTrigger>
+                  <SelectContent>
+                    {((sites ?? []) as any[]).map((s) => (
+                      <SelectItem key={s.id} value={s.id}>{s.domain}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>التكرار (Cron)</Label>
+                <Input value={schedCron} onChange={(e) => setSchedCron(e.target.value)} placeholder="0 2 * * *" />
+              </div>
+              <div>
+                <Label>نوع النسخة</Label>
+                <Select value={schedType} onValueChange={setSchedType}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="full">كاملة</SelectItem>
+                    <SelectItem value="files">ملفات</SelectItem>
+                    <SelectItem value="database">قاعدة</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>الاحتفاظ (نسخ)</Label>
+                <Input type="number" min={1} max={100} value={schedRetention} onChange={(e) => setSchedRetention(Number(e.target.value))} />
+              </div>
+              <div>
+                <Label>مسمّى</Label>
+                <Input value={schedLabel} onChange={(e) => setSchedLabel(e.target.value)} placeholder="يومي ٢ ص" />
+              </div>
+              <div className="flex items-center gap-2 pb-2">
+                <Switch id="schedOn" checked={schedEnabled} onCheckedChange={setSchedEnabled} />
+                <Label htmlFor="schedOn" className="text-xs">مفعّل</Label>
+              </div>
+              <Button
+                disabled={!siteId}
+                onClick={async () => {
+                  const site = (sites as any[]).find((s) => s.id === siteId);
+                  if (!site?.server_id) return toast.error("الموقع غير مرتبط بسيرفر");
+                  try {
+                    await saveSchedule({
+                      data: {
+                        websiteId: siteId,
+                        serverId: site.server_id,
+                        cron: schedCron,
+                        backupType: schedType,
+                        retentionCount: schedRetention,
+                        enabled: schedEnabled,
+                        label: schedLabel,
+                      },
+                    });
+                    qc.invalidateQueries({ queryKey: ["backup-schedules"] });
+                    toast.success("تم حفظ الجدولة");
+                  } catch (e) {
+                    toast.error((e as Error).message);
+                  }
+                }}
+              >
+                <Plus className="w-4 h-4 ml-1" /> حفظ جدولة
+              </Button>
+            </CardContent>
+          </Card>
+
+          {schedLoading ? (
+            <div className="flex justify-center py-10"><Loader2 className="w-5 h-5 animate-spin" /></div>
+          ) : (schedules ?? []).length === 0 ? (
+            <Card><CardContent className="p-8 text-center text-muted-foreground">لا توجد جداول نسخ احتياطي تلقائية.</CardContent></Card>
+          ) : (
+            <Card>
+              <CardContent className="p-0 overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>الموقع</TableHead>
+                      <TableHead>التكرار</TableHead>
+                      <TableHead>النوع</TableHead>
+                      <TableHead>الاحتفاظ</TableHead>
+                      <TableHead>الحالة</TableHead>
+                      <TableHead />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {(schedules as any[]).map((s) => (
+                      <TableRow key={s.id}>
+                        <TableCell className="text-xs">{s.websites?.domain ?? "—"}</TableCell>
+                        <TableCell className="text-xs ltr text-left">{s.cron}</TableCell>
+                        <TableCell className="text-xs">{s.backup_type}</TableCell>
+                        <TableCell className="text-xs">{s.retention_count}</TableCell>
+                        <TableCell><Badge variant="outline" className={s.enabled ? statusStyle("completed") : statusStyle("pending")}>{s.enabled ? "مفعّل" : "معطّل"}</Badge></TableCell>
+                        <TableCell>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-destructive"
+                            onClick={async () => {
+                              await deleteSchedule({ data: { id: s.id } });
+                              qc.invalidateQueries({ queryKey: ["backup-schedules"] });
+                            }}
+                          >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

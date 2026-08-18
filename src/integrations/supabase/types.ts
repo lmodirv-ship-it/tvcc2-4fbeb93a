@@ -366,6 +366,69 @@ export type Database = {
           },
         ]
       }
+      backup_schedules: {
+        Row: {
+          backup_type: string
+          created_at: string
+          id: string
+          is_active: boolean
+          last_run_at: string | null
+          next_run_at: string | null
+          notify_on_failure: boolean
+          owner_id: string
+          retention_count: number
+          schedule: string
+          server_id: string | null
+          updated_at: string
+          website_id: string | null
+        }
+        Insert: {
+          backup_type?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_run_at?: string | null
+          next_run_at?: string | null
+          notify_on_failure?: boolean
+          owner_id: string
+          retention_count?: number
+          schedule?: string
+          server_id?: string | null
+          updated_at?: string
+          website_id?: string | null
+        }
+        Update: {
+          backup_type?: string
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_run_at?: string | null
+          next_run_at?: string | null
+          notify_on_failure?: boolean
+          owner_id?: string
+          retention_count?: number
+          schedule?: string
+          server_id?: string | null
+          updated_at?: string
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "backup_schedules_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "backup_schedules_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       brand_settings: {
         Row: {
           created_at: string
@@ -1190,6 +1253,123 @@ export type Database = {
         }
         Relationships: []
       }
+      server_alert_history: {
+        Row: {
+          alert_type: string
+          created_at: string
+          details: Json
+          id: string
+          message: string | null
+          notified_at: string | null
+          owner_id: string
+          resolved_at: string | null
+          rule_id: string | null
+          server_id: string | null
+          severity: string
+          website_id: string | null
+        }
+        Insert: {
+          alert_type: string
+          created_at?: string
+          details?: Json
+          id?: string
+          message?: string | null
+          notified_at?: string | null
+          owner_id: string
+          resolved_at?: string | null
+          rule_id?: string | null
+          server_id?: string | null
+          severity?: string
+          website_id?: string | null
+        }
+        Update: {
+          alert_type?: string
+          created_at?: string
+          details?: Json
+          id?: string
+          message?: string | null
+          notified_at?: string | null
+          owner_id?: string
+          resolved_at?: string | null
+          rule_id?: string | null
+          server_id?: string | null
+          severity?: string
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "server_alert_history_rule_id_fkey"
+            columns: ["rule_id"]
+            isOneToOne: false
+            referencedRelation: "server_alert_rules"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "server_alert_history_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "server_alert_history_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      server_alert_rules: {
+        Row: {
+          alert_type: string
+          channels: string[]
+          cooldown_minutes: number
+          created_at: string
+          duration_minutes: number
+          id: string
+          is_active: boolean
+          owner_id: string
+          server_id: string | null
+          threshold: number | null
+          updated_at: string
+        }
+        Insert: {
+          alert_type: string
+          channels?: string[]
+          cooldown_minutes?: number
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          is_active?: boolean
+          owner_id: string
+          server_id?: string | null
+          threshold?: number | null
+          updated_at?: string
+        }
+        Update: {
+          alert_type?: string
+          channels?: string[]
+          cooldown_minutes?: number
+          created_at?: string
+          duration_minutes?: number
+          id?: string
+          is_active?: boolean
+          owner_id?: string
+          server_id?: string | null
+          threshold?: number | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "server_alert_rules_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       server_commands: {
         Row: {
           action: string
@@ -1197,11 +1377,13 @@ export type Database = {
           completed_at: string | null
           created_at: string
           dispatched_at: string | null
+          dry_run: boolean
           error_message: string | null
           exit_code: number | null
           id: string
           output: string | null
           owner_id: string
+          preview: Json
           requested_by: string | null
           server_id: string
           status: string
@@ -1213,11 +1395,13 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           dispatched_at?: string | null
+          dry_run?: boolean
           error_message?: string | null
           exit_code?: number | null
           id?: string
           output?: string | null
           owner_id: string
+          preview?: Json
           requested_by?: string | null
           server_id: string
           status?: string
@@ -1229,11 +1413,13 @@ export type Database = {
           completed_at?: string | null
           created_at?: string
           dispatched_at?: string | null
+          dry_run?: boolean
           error_message?: string | null
           exit_code?: number | null
           id?: string
           output?: string | null
           owner_id?: string
+          preview?: Json
           requested_by?: string | null
           server_id?: string
           status?: string
@@ -1293,6 +1479,41 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "server_configs_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      server_ip_history: {
+        Row: {
+          created_at: string
+          id: string
+          new_ip: string
+          old_ip: string | null
+          owner_id: string
+          server_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          new_ip: string
+          old_ip?: string | null
+          owner_id: string
+          server_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          new_ip?: string
+          old_ip?: string | null
+          owner_id?: string
+          server_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "server_ip_history_server_id_fkey"
             columns: ["server_id"]
             isOneToOne: false
             referencedRelation: "servers"
@@ -1464,6 +1685,7 @@ export type Database = {
         Row: {
           agent_token_hash: string | null
           agent_version: string | null
+          auto_cert_policy: string
           created_at: string
           description: string | null
           disk_gb: number | null
@@ -1475,6 +1697,7 @@ export type Database = {
           os: string | null
           owner_id: string
           provider: string | null
+          public_ip: string | null
           ram_mb: number | null
           region: string | null
           status: string
@@ -1484,6 +1707,7 @@ export type Database = {
         Insert: {
           agent_token_hash?: string | null
           agent_version?: string | null
+          auto_cert_policy?: string
           created_at?: string
           description?: string | null
           disk_gb?: number | null
@@ -1495,6 +1719,7 @@ export type Database = {
           os?: string | null
           owner_id: string
           provider?: string | null
+          public_ip?: string | null
           ram_mb?: number | null
           region?: string | null
           status?: string
@@ -1504,6 +1729,7 @@ export type Database = {
         Update: {
           agent_token_hash?: string | null
           agent_version?: string | null
+          auto_cert_policy?: string
           created_at?: string
           description?: string | null
           disk_gb?: number | null
@@ -1515,6 +1741,7 @@ export type Database = {
           os?: string | null
           owner_id?: string
           provider?: string | null
+          public_ip?: string | null
           ram_mb?: number | null
           region?: string | null
           status?: string
@@ -2059,15 +2286,53 @@ export type Database = {
         }
         Relationships: []
       }
+      vault_secret_versions: {
+        Row: {
+          created_at: string
+          id: string
+          owner_id: string
+          rotated_by: string | null
+          secret_id: string
+          value_encrypted: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          owner_id: string
+          rotated_by?: string | null
+          secret_id: string
+          value_encrypted: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          owner_id?: string
+          rotated_by?: string | null
+          secret_id?: string
+          value_encrypted?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "vault_secret_versions_secret_id_fkey"
+            columns: ["secret_id"]
+            isOneToOne: false
+            referencedRelation: "vault_secrets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       vault_secrets: {
         Row: {
           category: string
           created_at: string
           description: string | null
+          expires_at: string | null
           id: string
           last_rotated_at: string | null
           name: string
           owner_id: string
+          rotation_period_days: number | null
+          server_id: string | null
           updated_at: string
           value_encrypted: string
           website_id: string | null
@@ -2076,10 +2341,13 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string | null
+          expires_at?: string | null
           id?: string
           last_rotated_at?: string | null
           name: string
           owner_id: string
+          rotation_period_days?: number | null
+          server_id?: string | null
           updated_at?: string
           value_encrypted: string
           website_id?: string | null
@@ -2088,15 +2356,26 @@ export type Database = {
           category?: string
           created_at?: string
           description?: string | null
+          expires_at?: string | null
           id?: string
           last_rotated_at?: string | null
           name?: string
           owner_id?: string
+          rotation_period_days?: number | null
+          server_id?: string | null
           updated_at?: string
           value_encrypted?: string
           website_id?: string | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "vault_secrets_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       video_requests: {
         Row: {

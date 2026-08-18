@@ -22,8 +22,9 @@ import {
   listServers, createServer, deleteServer, getAgentInstall, getServerDetail,
 } from "@/lib/servers.functions";
 import {
-  getServerOps, queueServerCommand, saveServerConfig, getPlatformDeployCommand, COMMAND_WHITELIST,
+  getServerOps, queueServerCommand, saveServerConfig, getPlatformDeployCommand,
 } from "@/lib/server-ops.functions";
+import { COMMAND_WHITELIST, COMMAND_LABELS, COMMAND_ARG } from "@/lib/server-commands";
 import { importServerModels } from "@/lib/ai-hub.functions";
 
 export const Route = createFileRoute("/_authenticated/servers")({

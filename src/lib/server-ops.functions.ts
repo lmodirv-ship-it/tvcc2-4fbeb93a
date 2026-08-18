@@ -1,28 +1,8 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { COMMAND_WHITELIST } from "./server-commands";
 
-/** Whitelisted actions the agent is allowed to run. Anything else is rejected. */
-export const COMMAND_WHITELIST = [
-  "scan_ports",
-  "read_configs",
-  "service_status",
-  "service_restart",
-  "service_logs",
-  "nginx_test",
-  "nginx_reload",
-  "firewall_list",
-  "firewall_allow",
-  "firewall_deny",
-  "disk_usage",
-  "write_config",
-  "site_backup",
-  "site_restore",
-  "db_dump",
-  "db_import",
-  "platform_deploy",
-] as const;
 
-export type CommandAction = (typeof COMMAND_WHITELIST)[number];
 
 async function writeLog(
   sb: any,

@@ -10,11 +10,11 @@ import { Switch } from "@/components/ui/switch";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Brain, Loader2, Trash2, Star, Search, Cloud, Laptop, Server, MessageSquare } from "lucide-react";
+import { Brain, Loader2, Trash2, Star, Search, Cloud, Laptop, Server, MessageSquare, Zap } from "lucide-react";
 import { toast } from "sonner";
 import {
   listAiProviders, setModelActive, setDefaultModel, deleteAiModel,
-  listRouting, setRouting,
+  listRouting, setRouting, testAiModel, recordModelTest,
 } from "@/lib/ai-hub.functions";
 
 export const Route = createFileRoute("/_authenticated/ai-models")({

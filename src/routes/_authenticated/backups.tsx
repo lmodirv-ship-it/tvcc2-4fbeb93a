@@ -52,11 +52,20 @@ function BackupsPage() {
   const restore = useServerFn(restoreBackup);
   const doExport = useServerFn(exportSiteData);
   const doImport = useServerFn(importSiteData);
+  const fetchSchedules = useServerFn(listBackupSchedules);
+  const saveSchedule = useServerFn(saveBackupSchedule);
+  const deleteSchedule = useServerFn(deleteBackupSchedule);
 
   const [siteId, setSiteId] = useState("");
   const [type, setType] = useState("full");
   const [busy, setBusy] = useState(false);
   const fileRef = useRef<HTMLInputElement>(null);
+
+  const [schedEnabled, setSchedEnabled] = useState(true);
+  const [schedCron, setSchedCron] = useState("0 2 * * *");
+  const [schedType, setSchedType] = useState("full");
+  const [schedRetention, setSchedRetention] = useState(7);
+  const [schedLabel, setSchedLabel] = useState("");
 
   const { data: sites } = useQuery({
     queryKey: ["backup-sites"],

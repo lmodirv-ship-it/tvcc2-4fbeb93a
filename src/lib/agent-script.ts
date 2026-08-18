@@ -51,7 +51,7 @@ run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
       site_restore)    echo "[dry-run] tar xzf $(GET storage_path) -C /" ;;
       db_dump)         echo "[dry-run] mysqldump --single-transaction DB | gzip > file.sql.gz" ;;
       db_import)       echo "[dry-run] gunzip -c $(GET storage_path) | mysql $(GET database)" ;;
-      backup_delete)     echo "[dry-run] rm -f $(GET storage_path)" ;;
+      backup_delete)   echo "[dry-run] rm -f $(GET storage_path)" ;;
       platform_deploy) echo "[dry-run] $(GET script)" ;;
       *) echo "[dry-run] unsupported action: $ACTION"; return 127 ;;
     esac
@@ -164,10 +164,10 @@ print(json.dumps(out))' 2>/dev/null || echo "[]")
   if [ "\\${COUNT:-0}" -gt 0 ]; then
     RESULTS="["
     for i in $(seq 0 $((COUNT-1))); do
-      ID=$(echo "$CMDS" | python3 -c "import sys,json;print(json.load(sys.stdin)[$i]['id'])")
-      ACTION=$(echo "$CMDS" | python3 -c "import sys,json;print(json.load(sys.stdin)[$i]['action'])")
-      ARGS=$(echo "$CMDS" | python3 -c "import sys,json;print(json.dumps(json.load(sys.stdin)[$i].get('args',{})))")
-      DRY=$(echo "$CMDS" | python3 -c "import sys,json;print('true' if json.load(sys.stdin)[$i].get('dry_run') else 'false')")
+      ID=$(echo "$CMDS" | python3 -c "import sys,json;print(json.load(sys.stdin)[$i]['id'])") || continue
+      ACTION=$(echo "$CMDS" | python3 -c "import sys,json;print(json.load(sys.stdin)[$i]['action'])") || continue
+      ARGS=$(echo "$CMDS" | python3 -c "import sys,json;print(json.dumps(json.load(sys.stdin)[$i].get('args',{})))") || continue
+      DRY=$(echo "$CMDS" | python3 -c "import sys,json;print('true' if json.load(sys.stdin)[$i].get('dry_run') else 'false')") || continue
       set +e
       OUT=$(run_command "$ACTION" "$ARGS" "$DRY" 2>&1 | tail -c 20000)
       CODE=$?

@@ -37,6 +37,7 @@ import { Route as AuthenticatedDomainsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCoreHubRouteImport } from './routes/_authenticated/core-hub'
 import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
+import { Route as AuthenticatedCertificatesRouteImport } from './routes/_authenticated/certificates'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedApkManagerRouteImport } from './routes/_authenticated/apk-manager'
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
@@ -213,6 +214,12 @@ const AuthenticatedClientsRoute = AuthenticatedClientsRouteImport.update({
   path: '/clients',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedCertificatesRoute =
+  AuthenticatedCertificatesRouteImport.update({
+    id: '/certificates',
+    path: '/certificates',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedAuditRoute = AuthenticatedAuditRouteImport.update({
   id: '/audit',
   path: '/audit',
@@ -384,6 +391,7 @@ export interface FileRoutesByFullPath {
   '/activity': typeof AuthenticatedActivityRoute
   '/apk-manager': typeof AuthenticatedApkManagerRoute
   '/audit': typeof AuthenticatedAuditRoute
+  '/certificates': typeof AuthenticatedCertificatesRoute
   '/clients': typeof AuthenticatedClientsRoute
   '/core-hub': typeof AuthenticatedCoreHubRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -442,6 +450,7 @@ export interface FileRoutesByTo {
   '/activity': typeof AuthenticatedActivityRoute
   '/apk-manager': typeof AuthenticatedApkManagerRoute
   '/audit': typeof AuthenticatedAuditRoute
+  '/certificates': typeof AuthenticatedCertificatesRoute
   '/clients': typeof AuthenticatedClientsRoute
   '/core-hub': typeof AuthenticatedCoreHubRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
@@ -501,6 +510,7 @@ export interface FileRoutesById {
   '/_authenticated/activity': typeof AuthenticatedActivityRoute
   '/_authenticated/apk-manager': typeof AuthenticatedApkManagerRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
+  '/_authenticated/certificates': typeof AuthenticatedCertificatesRoute
   '/_authenticated/clients': typeof AuthenticatedClientsRoute
   '/_authenticated/core-hub': typeof AuthenticatedCoreHubRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
@@ -561,6 +571,7 @@ export interface FileRouteTypes {
     | '/activity'
     | '/apk-manager'
     | '/audit'
+    | '/certificates'
     | '/clients'
     | '/core-hub'
     | '/dashboard'
@@ -619,6 +630,7 @@ export interface FileRouteTypes {
     | '/activity'
     | '/apk-manager'
     | '/audit'
+    | '/certificates'
     | '/clients'
     | '/core-hub'
     | '/dashboard'
@@ -677,6 +689,7 @@ export interface FileRouteTypes {
     | '/_authenticated/activity'
     | '/_authenticated/apk-manager'
     | '/_authenticated/audit'
+    | '/_authenticated/certificates'
     | '/_authenticated/clients'
     | '/_authenticated/core-hub'
     | '/_authenticated/dashboard'
@@ -943,6 +956,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedClientsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/certificates': {
+      id: '/_authenticated/certificates'
+      path: '/certificates'
+      fullPath: '/certificates'
+      preLoaderRoute: typeof AuthenticatedCertificatesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/audit': {
       id: '/_authenticated/audit'
       path: '/audit'
@@ -1204,6 +1224,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedActivityRoute: typeof AuthenticatedActivityRoute
   AuthenticatedApkManagerRoute: typeof AuthenticatedApkManagerRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
+  AuthenticatedCertificatesRoute: typeof AuthenticatedCertificatesRoute
   AuthenticatedClientsRoute: typeof AuthenticatedClientsRoute
   AuthenticatedCoreHubRoute: typeof AuthenticatedCoreHubRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
@@ -1234,6 +1255,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedActivityRoute: AuthenticatedActivityRoute,
   AuthenticatedApkManagerRoute: AuthenticatedApkManagerRoute,
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
+  AuthenticatedCertificatesRoute: AuthenticatedCertificatesRoute,
   AuthenticatedClientsRoute: AuthenticatedClientsRoute,
   AuthenticatedCoreHubRoute: AuthenticatedCoreHubRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,

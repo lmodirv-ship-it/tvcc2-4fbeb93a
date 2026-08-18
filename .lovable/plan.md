@@ -1,100 +1,52 @@
-## خطة إصلاح TVCC (بناءً على تقرير الفحص)
+# إصدار شهادة HN.RLS وتسجيل المشروع بعد التحقق من النطاق
 
-سأعالج المشاكل المرصودة في TVCC حسب الأولوية، لرفع الجاهزية من 58% إلى ما يقارب 90%.
+اليوم، زر "تحقق" في صفحة المواقع يفحص سجل `_tvcc` عبر DNS ويضبط `verified = true` فقط — ولا يترتب على ذلك أي إجراء آخر. هذه الخطة تضيف ما يلي بعد نجاح التحقق: **إصدار شهادة HN.RLS** ثم **تسجيل المشروع في شبكة HN**.
 
----
+## سير العمل الجديد
 
-### المرحلة 1 — إصلاحات حرجة (Blockers)
-
-**1. حل تعارض حزم npm (Nitro × Lovable config)**
-- تثبيت `@lovable.dev/vite-tanstack-config` على نسخة محددة (`2.1.1` بدون `^`) متوافقة مع `nitro 3.0.260429-beta` الحالي.
-- إعادة توليد `package-lock.json` نظيف ومتسق مع `bun.lock`.
-- اعتماد Bun كمدير حزم رسمي (موجود `bun.lock`) وحذف التعارض.
-
-**2. إصلاح جدول `ssl_certificates` المفقود**
-- إنشاء migration ينشئ الجدول `public.ssl_certificates` مع:
-  - الحقول: domain, issuer, valid_from, valid_to, status, auto_renew, website_id
-  - GRANT للـ authenticated/service_role
-  - RLS scoped to `owner_id = auth.uid()`
-- تحديث `src/integrations/supabase/types.ts` بعد التطبيق.
-- إزالة أي `as any` من صفحة `/ssl`.
-
-**3. تأمين `.env`**
-- إضافة `.env` و `.env.local` و `.env.*.local` إلى `.gitignore`.
-- التحقق ألا يحتوي `.env` على قيم حقيقية مسربة.
-
-**4. إضافة سكربت إنتاج موحد**
-في `package.json`:
-```json
-"start": "node .output/server/index.mjs",
-"typecheck": "tsc --noEmit"
+```text
+تحقق DNS ناجح  ->  إصدار شهادة HN.RLS  ->  تسجيل المشروع  ->  الموقع "موثّق ومُسجّل"
+   (_tvcc)          رقم تسلسلي + توقيع        site_id + إبلاغ Core Hub
 ```
 
-**5. تنظيف الحزمة المصدرية**
-- حذف `.tanstack/`, `.wrangler/`, `tsconfig.tsbuildinfo` من الأرشيف وإضافتها إلى `.gitignore`.
+الخطوات الثلاث تُنفَّذ في عملية واحدة على الخادم: إن فشل التحقق لا تُصدر شهادة، وإن لم توجد شهادة سارية لا يُسجَّل المشروع.
 
----
+## 1. شهادة HN.RLS
 
-### المرحلة 2 — إصلاحات بنيوية
+شهادة رقمية موقّعة تُثبت أن هذا النطاق يملكه صاحب الحساب وأنه معتمد داخل شبكة HN.
 
-**6. توحيد اسم المشروع**
-- تغيير `name` في `package.json` من `tanstack_start_ts` إلى `tvcc`.
+محتوى الشهادة:
+- رقم تسلسلي بصيغة `HN-RLS-2026-XXXXXX`
+- النطاق، اسم المشروع، معرّف المالك
+- تاريخ الإصدار وتاريخ الانتهاء (سنة واحدة)
+- طريقة التحقق المستخدمة (CNAME أو TXT)
+- بصمة SHA-256 + توقيع HMAC-SHA256 صادر من الخادم
 
-**7. ضبط `tsconfig.json`**
-- إضافة `"node"` إلى `types`: `["vite/client", "node"]` للسماح بـ `process.env`, `Buffer`, `crypto`.
+الحالات: `active` / `expired` / `revoked`. يمكن سحب الشهادة أو إعادة إصدارها، وتُلغى تلقائياً إذا فقد النطاق التحقق.
 
-**8. ضبط Nitro preset للـ VPS**
-- التأكد من أن `vite.config.ts` يستخدم `node-server` preset لا Cloudflare، لتشغيل صحيح على VPS بـ Node 20 + PM2.
+## 2. تسجيل المشروع
 
-**9. تأمين endpoint الإشعارات**
-- التحقق من أن `/api/public/notifications/ingest` يستخدم `timingSafeEqual` ويرفض الطلبات بدون توقيع.
-- توثيق صيغة HMAC الموحدة (`sha256=<hex>`).
+بعد صدور الشهادة:
+- توليد معرّف مشروع ثابت `site_id` (إن لم يكن موجوداً)
+- ضبط حالة التسجيل إلى "مُسجّل" مع تاريخ التسجيل
+- إبلاغ Core Hub بالمشروع الجديد (يستخدم نفس آلية الاتصال الحالية، وإن كان Core Hub غير متاح يبقى التسجيل محلياً مع حالة "بانتظار المزامنة")
+- تسجيل الحدث في سجل النشاط
 
----
+## 3. الواجهات
 
-### المرحلة 3 — استبدال المحاكاة
+**صفحة المواقع:** بعد نجاح التحقق تُصدر الشهادة ويُسجَّل المشروع تلقائياً مع إشعار يوضّح رقم الشهادة. شارة جديدة "موثّق HN.RLS" بجانب كل موقع مُسجّل.
 
-**10. صفحة `/monitoring`**
-- استبدال `Math.random()` بـ health checks حقيقية تُكتب في جدول `site_health_checks`.
+**صفحة جديدة "شهادات HN.RLS":** قائمة بكل الشهادات مع الرقم التسلسلي والنطاق وتاريخ الانتهاء والحالة، مع أزرار: عرض التفاصيل، تنزيل الشهادة كملف، سحب، إعادة إصدار. تنبيه للشهادات التي تنتهي خلال 30 يوماً.
 
-**11. التكاملات غير المستخدمة**
-- إزالة المتغيرات غير المستخدمة من `.env.example` (LOVABLE_WORKSPACE_*, HN_*_API_TOKEN إن لم تُستخدم) أو وضعها تحت قسم `# Future integrations` بوضوح.
+**نقطة تحقق عامة:** رابط عام يسمح لأي جهة بالتأكد من صلاحية شهادة نطاق معيّن، ليستخدمه الموقع نفسه في عرض ختم "موثّق".
 
-**12. مراجعة auth guard**
-- التأكد أن `_authenticated` يستخدم layout server-gated وليس فقط client-side redirect.
+## التفاصيل التقنية
 
----
-
-### المرحلة 4 — تسليم نهائي
-
-**13. ملف PM2 ecosystem**
-- إنشاء `ecosystem.config.cjs` جاهز للنشر:
-```js
-module.exports = { apps: [{ name: 'tvcc', script: '.output/server/index.mjs', env: { NODE_ENV: 'production', PORT: 3000 }}]}
-```
-
-**14. تحديث التوثيق**
-- `INSTALLATION.md`: توضيح Bun كمدير حزم رسمي.
-- `DEPLOYMENT.md`: تأكيد مسار `.output/server/index.mjs` وأمر PM2 مع ecosystem.
-- `FINAL_REPORT.md`: تحديث قائمة الإصلاحات المنجزة وحالة الجاهزية الجديدة.
-
-**15. إعادة توليد `tvcc.zip` نظيف**
-- مع استبعاد `node_modules`, `.output`, `.env`, `.tanstack`, `.wrangler`, `tsconfig.tsbuildinfo`, `.git`.
-
----
-
-### تقنياً — ترتيب التنفيذ
-
-1. migration لـ `ssl_certificates` (يجب الموافقة عليها أولاً، فبعدها يتحدث types.ts).
-2. إصلاحات الحزم + `.gitignore` + `package.json` + `tsconfig.json` بشكل متوازٍ.
-3. إصلاحات الكود (monitoring, ssl page, auth guard, ingest endpoint).
-4. ملفات النشر (ecosystem, توثيق).
-5. ZIP نهائي.
-
-### النتيجة المتوقعة
-- جاهزية TVCC ترتفع من 58% إلى ~88-92%.
-- `bun install && bun run build && bun run start` يعمل بدون أخطاء.
-- لا جداول مفقودة، لا محاكاة في monitoring، لا أسرار مكشوفة.
-- ZIP جاهز للرفع على VPS مع PM2 + Nginx + SSL.
-
-بعد TVCC ننتقل إلى HN-Cloud ثم HN-DB بنفس المنهجية.
+- جدول جديد `hn_certificates` (owner_id, website_id, domain, serial, verification_method, issued_at, expires_at, status, fingerprint, signature, payload jsonb, revoked_at) مع GRANT للأدوار المناسبة، تفعيل RLS، وسياسات مقصورة على `auth.uid() = owner_id`؛ وسياسة قراءة عامة **غير** مضافة — التحقق العام يتم عبر نقطة API فقط.
+- أعمدة إضافية على `websites`: `registration_status`، `registered_at`، `hn_project_id`.
+- سرّ خادم جديد `HN_RLS_SIGNING_KEY` لتوقيع الشهادات (يُولَّد تلقائياً، ولا يُعرض في المتصفح أبداً).
+- ملف `src/lib/hn-rls.functions.ts` بدوال خادم محمية بـ `requireSupabaseAuth`: `issueCertificate`، `revokeCertificate`، `reissueCertificate`، `registerProject`، ودالة موحّدة `verifyIssueRegister` يستدعيها زر التحقق.
+- إعادة استخدام `verifyDns` الحالية داخل الدالة الموحّدة بدل تكرار منطق DNS.
+- نقطة عامة `src/routes/api/public/hn-rls.verify.ts` (GET بـ `domain` أو `serial`) تُعيد الحالة وتاريخ الانتهاء والبصمة فقط — دون بيانات المالك ودون التوقيع الخام.
+- إضافة أداة MCP `get_hn_certificate` لقراءة حالة شهادة موقع من المساعدات الذكية.
+- صفحة `src/routes/_authenticated/certificates.tsx` + عنصر في القائمة الجانبية.

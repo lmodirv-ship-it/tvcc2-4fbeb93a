@@ -33,6 +33,16 @@ export function AppHeader() {
         </div>
       </div>
 
+      <Link
+        to="/dashboard"
+        aria-label="العودة للصفحة الرئيسية"
+        title="العودة للصفحة الرئيسية"
+        className="flex items-center gap-2 h-9 px-3 rounded-lg bg-secondary/60 hover:bg-secondary text-sm font-medium transition"
+      >
+        <Home className="w-4 h-4 text-primary" />
+        <span className="hidden sm:inline">الرئيسية</span>
+      </Link>
+
       <LanguageSwitcher />
 
       <Link to="/settings" aria-label={t("header.settings") as string} className="relative w-9 h-9 rounded-lg bg-secondary/60 hover:bg-secondary flex items-center justify-center">

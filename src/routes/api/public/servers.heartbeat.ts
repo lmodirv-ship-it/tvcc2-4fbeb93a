@@ -27,6 +27,102 @@ function safeEqual(a: string, b: string) {
 const num = (v: unknown): number | null =>
   typeof v === "number" && Number.isFinite(v) ? v : null;
 
+async function evaluateAlerts(admin: any, serverId: string, ownerId: string, metrics: {
+  cpu: number | null;
+  memUsed: number | null;
+  memTotal: number | null;
+  diskUsed: number | null;
+  diskTotal: number | null;
+  load: number | null;
+}) {
+  const { data: rules } = await admin
+    .from("server_alert_rules")
+    .select("*")
+    .eq("server_id", serverId)
+    .eq("enabled", true);
+
+  if (!rules?.length) return;
+
+  const now = new Date().toISOString();
+  const values: Record<string, number> = {
+    cpu_percent: metrics.cpu ?? 0,
+    mem_percent: metrics.memTotal ? ((metrics.memUsed ?? 0) / metrics.memTotal) * 100 : 0,
+    disk_percent: metrics.diskTotal ? ((metrics.diskUsed ?? 0) / metrics.diskTotal) * 100 : 0,
+    load_avg: metrics.load ?? 0,
+  };
+
+  for (const rule of rules as any[]) {
+    const v = values[rule.metric] ?? 0;
+    const triggered = rule.comparison === "gt" ? v > rule.threshold : v < rule.threshold;
+    if (!triggered) continue;
+
+    // Throttle: only one alert per rule per window
+    const windowStart = new Date(Date.now() - (rule.cooldown_minutes ?? 5) * 60000).toISOString();
+    const { data: recent } = await admin
+      .from("server_alert_history")
+      .select("id")
+      .eq("rule_id", rule.id)
+      .gte("created_at", windowStart)
+      .limit(1);
+    if ((recent as any[])?.length) continue;
+
+    await admin.from("server_alert_history").insert({
+      owner_id: ownerId,
+      server_id: serverId,
+      rule_id: rule.id,
+      metric: rule.metric,
+      threshold: rule.threshold,
+      value: v,
+      severity: rule.severity,
+      message: rule.message || `${rule.metric} = ${v.toFixed(1)}`,
+      channels: rule.channels,
+      resolved: false,
+    });
+
+    // Simple webhook/email notification placeholder
+    if ((rule.channels as string[])?.includes("webhook") && rule.webhook_url) {
+      try {
+        await fetch(rule.webhook_url, {
+          method: "POST",
+          headers: { "content-type": "application/json" },
+          body: JSON.stringify({
+            server_id: serverId,
+            metric: rule.metric,
+            value: v,
+            threshold: rule.threshold,
+            message: rule.message,
+          }),
+        });
+      } catch {
+        // best-effort
+      }
+    }
+  }
+}
+
+async function autoIssueServerCerts(admin: any, serverId: string, ownerId: string) {
+  // Issue HN.RLS certificates for sites on this server that don't have one yet.
+  const { data: sites } = await admin
+    .from("websites")
+    .select("id, domain")
+    .eq("server_id", serverId)
+    .is("hn_certificate_id", null);
+  if (!sites?.length) return;
+
+  const { issueCertificate } = await import("@/lib/hn-rls.server");
+  for (const site of sites as any[]) {
+    try {
+      await issueCertificate({
+        websiteId: site.id,
+        ownerId,
+        reason: "auto-issue on server heartbeat",
+      });
+    } catch {
+      // best-effort; don't block heartbeat
+    }
+  }
+}
+
 export const Route = createFileRoute("/api/public/servers/heartbeat")({
   server: {
     handlers: {

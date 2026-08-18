@@ -7,6 +7,7 @@ TVCC_TOKEN="${token}"
 TVCC_ENDPOINT="${endpoint}"
 TVCC_AI_ENDPOINT="\${TVCC_AI_ENDPOINT:-http://127.0.0.1:11434}"
 TVCC_BACKUP_DIR="\${TVCC_BACKUP_DIR:-/var/backups/tvcc}"
+TVCC_AGENT_VERSION="2.1.0"
 mkdir -p "$TVCC_BACKUP_DIR"
 
 json_escape() { python3 -c 'import sys,json;print(json.dumps(sys.stdin.read()))'; }
@@ -22,9 +23,40 @@ post() { # $1 = body -> echoes response
     --data "$BODY" || echo '{}'
 }
 
-run_command() { # $1 = action, $2 = args json -> prints output
-  local ACTION="$1" ARGS="$2"
-  local GET; GET() { echo "$ARGS" | python3 -c "import sys,json;print(json.load(sys.stdin).get('$1','') )" 2>/dev/null || echo ""; }
+run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
+  local ACTION="$1" ARGS="$2" DRY="$3"
+  local GET; GET() { echo "$ARGS" | python3 -c "import sys,json;print(json.load(sys.stdin).get('\$1','') )" 2>/dev/null || echo ""; }
+  if [ "$DRY" = "true" ]; then
+    case "$ACTION" in
+      scan_ports)      echo "[dry-run] ss -tulpn || netstat -tulpn" ;;
+      read_configs)    echo "[dry-run] nginx -T | head -400" ;;
+      service_status)  echo "[dry-run] systemctl status $(GET name)" ;;
+      service_restart) echo "[dry-run] systemctl restart $(GET name)" ;;
+      service_logs)    echo "[dry-run] journalctl -u $(GET name) -n 200" ;;
+      nginx_test)      echo "[dry-run] nginx -t" ;;
+      nginx_reload)    echo "[dry-run] nginx -t && systemctl reload nginx" ;;
+      firewall_list)   echo "[dry-run] ufw status || iptables -L -n" ;;
+      firewall_allow)  echo "[dry-run] ufw allow $(GET port)" ;;
+      firewall_deny)   echo "[dry-run] ufw deny $(GET port)" ;;
+      disk_usage)      echo "[dry-run] df -h && du -sh /var/www/*" ;;
+      write_config)
+        local PATH_=$(GET path) CONTENT=$(GET content)
+        echo "[dry-run] would write to $PATH_"
+        if command -v diff >/dev/null && [ -f "$PATH_" ]; then
+          echo "--- diff preview ---"
+          printf '%s' "$CONTENT" | diff -u "$PATH_" - || true
+        fi
+        ;;
+      site_backup)     echo "[dry-run] tar czf /var/backups/tvcc/\${D}-\$(date).tar.gz /var/www/\$D" ;;
+      site_restore)    echo "[dry-run] tar xzf $(GET storage_path) -C /" ;;
+      db_dump)         echo "[dry-run] mysqldump --single-transaction DB | gzip > file.sql.gz" ;;
+      db_import)       echo "[dry-run] gunzip -c $(GET storage_path) | mysql $(GET database)" ;;
+      backup_delete)     echo "[dry-run] rm -f $(GET storage_path)" ;;
+      platform_deploy) echo "[dry-run] $(GET script)" ;;
+      *) echo "[dry-run] unsupported action: $ACTION"; return 127 ;;
+    esac
+    return 0
+  fi
   case "$ACTION" in
     scan_ports)      ss -tulpn 2>/dev/null || netstat -tulpn ;;
     read_configs)    nginx -T 2>/dev/null | head -400 ;;
@@ -42,10 +74,35 @@ run_command() { # $1 = action, $2 = args json -> prints output
     site_restore)    tar xzf "$(GET storage_path)" -C / && echo "restored $(GET storage_path)" ;;
     db_dump)         D="$(GET domain)"; F="$TVCC_BACKUP_DIR/\${D}-$(date +%Y%m%d%H%M%S).sql.gz"; mysqldump --single-transaction "\${D//./_}" 2>/dev/null | gzip > "$F" && echo "$F" ;;
     db_import)       gunzip -c "$(GET storage_path)" | mysql "$(GET database)" && echo "imported" ;;
+    backup_delete)   rm -f "$(GET storage_path)" && echo "deleted $(GET storage_path)" ;;
     platform_deploy) bash -lc "$(GET script)" ;;
     *) echo "unsupported action: $ACTION"; return 127 ;;
   esac
 }
+
+install_systemd() {
+  cat > /etc/systemd/system/tvcc-agent.service <<'EOF'
+[Unit]
+Description=TVCC Agent
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/usr/local/bin/tvcc-agent.sh
+Restart=always
+RestartSec=10
+User=root
+Environment="TVCC_BACKUP_DIR=/var/backups/tvcc"
+
+[Install]
+WantedBy=multi-user.target
+EOF
+  systemctl daemon-reload
+  systemctl enable tvcc-agent.service
+  systemctl start tvcc-agent.service
+  echo "systemd service installed and started"
+}
+
 
 while true; do
   CPU=$(top -bn1 | awk '/Cpu\\(s\\)/{print 100 - $8}' | head -1)

@@ -1,6 +1,38 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { COMMAND_WHITELIST } from "./server-commands";
+import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from "crypto";
+
+function vaultKey() {
+  const key = process.env["VAULT_MASTER_KEY"];
+  if (!key) throw new Error("VAULT_MASTER_KEY غير مُعرَّف على الخادم");
+  return scryptSync(key, "tvcc-vault-salt", 32);
+}
+
+function encryptSecret(plain: string): { ciphertext: string; iv: string } {
+  const iv = randomBytes(16);
+  const cipher = createCipheriv("aes-256-gcm", vaultKey(), iv);
+  const encrypted = Buffer.concat([cipher.update(plain, "utf8"), cipher.final()]);
+  const authTag = cipher.getAuthTag();
+  return {
+    ciphertext: Buffer.concat([authTag, encrypted]).toString("base64"),
+    iv: iv.toString("base64"),
+  };
+}
+
+function decryptSecret(ciphertext: string, iv: string): string {
+  const buf = Buffer.from(ciphertext, "base64");
+  const authTag = buf.slice(0, 16);
+  const encrypted = buf.slice(16);
+  const decipher = createDecipheriv("aes-256-gcm", vaultKey(), Buffer.from(iv, "base64"));
+  decipher.setAuthTag(authTag);
+  return Buffer.concat([decipher.update(encrypted), decipher.final()]).toString("utf8");
+}
+
+function mask(value: string): string {
+  if (value.length <= 8) return "•".repeat(value.length);
+  return value.slice(0, 3) + "•".repeat(value.length - 6) + value.slice(-3);
+}
 
 
 

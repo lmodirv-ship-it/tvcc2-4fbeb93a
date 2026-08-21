@@ -43,6 +43,8 @@ export function AppHeader() {
         <span className="hidden sm:inline">الرئيسية</span>
       </Link>
 
+      <ThemeSwitcher />
+
       <LanguageSwitcher />
 
       <Link to="/settings" aria-label={t("header.settings") as string} className="relative w-9 h-9 rounded-lg bg-secondary/60 hover:bg-secondary flex items-center justify-center">

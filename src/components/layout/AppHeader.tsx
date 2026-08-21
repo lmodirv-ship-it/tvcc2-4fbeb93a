@@ -7,6 +7,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { NotificationBell } from "./NotificationBell";
+import { ThemeSwitcher } from "./ThemeSwitcher";
 
 export function AppHeader() {
   const [email, setEmail] = useState<string>("");
@@ -42,6 +43,8 @@ export function AppHeader() {
         <Home className="w-4 h-4" />
         <span className="hidden sm:inline">الرئيسية</span>
       </Link>
+
+      <ThemeSwitcher />
 
       <LanguageSwitcher />
 

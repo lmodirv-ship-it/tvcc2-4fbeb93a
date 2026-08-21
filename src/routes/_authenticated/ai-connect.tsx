@@ -17,7 +17,7 @@ import { Cloud, Laptop, Server, Plus, Loader2, Trash2, Zap, Download, Link2 } fr
 import { toast } from "sonner";
 import {
   listAiProviders, upsertAiProvider, deleteAiProvider, testAiProvider,
-  importProviderModels, importServerModels,
+  importProviderModels, importServerModels, enableGeminiProvider,
 } from "@/lib/ai-hub.functions";
 
 export const Route = createFileRoute("/_authenticated/ai-connect")({

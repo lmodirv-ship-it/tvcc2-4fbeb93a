@@ -124,6 +124,16 @@ while true; do
   PROCS=$(ps -e --no-headers | wc -l)
   OS=$(. /etc/os-release 2>/dev/null && echo "$PRETTY_NAME" || uname -s)
   PUBLIC_IP=$( (curl -s --max-time 5 https://api.ipify.org || curl -s --max-time 5 https://ifconfig.me || echo "") | head -1 | tr -d '\\n')
+  PRIVATE_IP=$(hostname -I 2>/dev/null | awk '{print $1}' | tr -d '\\n')
+
+  # Detect a TVCC platform copy running on this server (pm2 process, service or /opt/tvcc)
+  TVCC_NODE=false
+  TVCC_VERSION=""
+  if pm2 jlist 2>/dev/null | grep -qi '"name":"tvcc' || systemctl is-active --quiet tvcc 2>/dev/null || [ -d /opt/tvcc ]; then
+    TVCC_NODE=true
+    TVCC_VERSION=$(cat /opt/tvcc/package.json 2>/dev/null | python3 -c 'import sys,json;print(json.load(sys.stdin).get("version",""))' 2>/dev/null || echo "")
+  fi
+
 
   AI_RAW=$(curl -s --max-time 3 "$TVCC_AI_ENDPOINT/api/tags" || echo "")
   if [ -n "$AI_RAW" ]; then

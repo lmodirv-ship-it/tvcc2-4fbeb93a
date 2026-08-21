@@ -69,15 +69,22 @@ export async function callModel(
   params?: { temperature?: number; max_tokens?: number; top_p?: number },
 ): Promise<any> {
   const isLovable = provider.vendor === "lovable" && provider.kind === "cloud";
-  const base = isLovable ? GATEWAY : (model.endpoint_url ?? provider.base_url ?? "").replace(/\/+$/, "");
+  const isGemini = provider.vendor === "gemini";
+  const base = isLovable
+    ? GATEWAY
+    : isGemini
+      ? GEMINI_BASE
+      : (model.endpoint_url ?? provider.base_url ?? "").replace(/\/+$/, "");
   if (!base) throw new Error("لا يوجد عنوان للمزوّد");
 
-  const url = isLovable ? `${base}/chat/completions` : `${base}/v1/chat/completions`;
+  const url = isLovable || isGemini ? `${base}/chat/completions` : `${base}/v1/chat/completions`;
   const headers: Record<string, string> = { "content-type": "application/json" };
   if (isLovable) {
     const key = process.env["LOVABLE_API_KEY"];
     if (!key) throw new Error("مفتاح Lovable AI غير مُهيّأ");
     headers["Lovable-API-Key"] = key;
+  } else if (isGemini) {
+    headers["authorization"] = `Bearer ${provider.api_key_encrypted || geminiKey()}`;
   } else if (provider.api_key_encrypted) {
     headers["authorization"] = `Bearer ${provider.api_key_encrypted}`;
   }

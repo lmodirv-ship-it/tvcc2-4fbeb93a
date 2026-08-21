@@ -38,6 +38,7 @@ const aiItems = [
 
 const opsItems = [
   { titleKey: "sidebar.servers", url: "/servers", icon: HardDrive },
+  { titleKey: "sidebar.network", url: "/network", icon: Network },
   { titleKey: "sidebar.backups", url: "/backups", icon: Archive },
   { titleKey: "sidebar.operations", url: "/operations", icon: NotebookPen },
   { titleKey: "sidebar.domains", url: "/domains", icon: Server },

@@ -596,12 +596,13 @@ export const deleteModelTest = createServerFn({ method: "POST" })
 /** Tool schemas the browser needs so it can pass them to a local model. */
 export const listAiToolSchemas = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
-  .handler(async () =>
-    AI_TOOLS.map((t) => ({
+  .handler(async () => {
+    const tools = AI_TOOLS.map((t) => ({
       type: "function",
       function: { name: t.name, description: t.description, parameters: t.parameters },
-    })),
-  );
+    }));
+    return { tools: JSON.stringify(tools) };
+  });
 
 /** Executes one AI tool with the caller's RLS-scoped client (used by browser-run models). */
 export const runAiTool = createServerFn({ method: "POST" })
@@ -615,8 +616,9 @@ export const runAiTool = createServerFn({ method: "POST" })
       (data.args ?? {}) as Record<string, any>,
       !!data.allowWrites,
     );
-    return { result };
+    return { result: JSON.stringify(result ?? null) };
   });
+
 
 /** Persists a full chat turn produced in the browser (local/LAN models). */
 export const saveChatTurn = createServerFn({ method: "POST" })

@@ -1521,6 +1521,69 @@ export type Database = {
           },
         ]
       }
+      server_links: {
+        Row: {
+          channel: string
+          created_at: string
+          id: string
+          last_checked_at: string | null
+          latency_ms: number | null
+          link_type: string
+          notes: string | null
+          owner_id: string
+          source_server_id: string
+          status: string
+          target_port: number
+          target_server_id: string
+          updated_at: string
+        }
+        Insert: {
+          channel?: string
+          created_at?: string
+          id?: string
+          last_checked_at?: string | null
+          latency_ms?: number | null
+          link_type?: string
+          notes?: string | null
+          owner_id: string
+          source_server_id: string
+          status?: string
+          target_port?: number
+          target_server_id: string
+          updated_at?: string
+        }
+        Update: {
+          channel?: string
+          created_at?: string
+          id?: string
+          last_checked_at?: string | null
+          latency_ms?: number | null
+          link_type?: string
+          notes?: string | null
+          owner_id?: string
+          source_server_id?: string
+          status?: string
+          target_port?: number
+          target_server_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "server_links_source_server_id_fkey"
+            columns: ["source_server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "server_links_target_server_id_fkey"
+            columns: ["target_server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       server_metrics: {
         Row: {
           collected_at: string
@@ -1691,16 +1754,21 @@ export type Database = {
           disk_gb: number | null
           hostname: string
           id: string
+          is_tvcc_node: boolean
           last_seen_at: string | null
           metadata: Json
           name: string
+          network_kind: string
           os: string | null
           owner_id: string
+          private_ip: string | null
           provider: string | null
           public_ip: string | null
           ram_mb: number | null
           region: string | null
           status: string
+          tvcc_url: string | null
+          tvcc_version: string | null
           updated_at: string
           vcpu: number | null
         }
@@ -1713,16 +1781,21 @@ export type Database = {
           disk_gb?: number | null
           hostname: string
           id?: string
+          is_tvcc_node?: boolean
           last_seen_at?: string | null
           metadata?: Json
           name: string
+          network_kind?: string
           os?: string | null
           owner_id: string
+          private_ip?: string | null
           provider?: string | null
           public_ip?: string | null
           ram_mb?: number | null
           region?: string | null
           status?: string
+          tvcc_url?: string | null
+          tvcc_version?: string | null
           updated_at?: string
           vcpu?: number | null
         }
@@ -1735,16 +1808,21 @@ export type Database = {
           disk_gb?: number | null
           hostname?: string
           id?: string
+          is_tvcc_node?: boolean
           last_seen_at?: string | null
           metadata?: Json
           name?: string
+          network_kind?: string
           os?: string | null
           owner_id?: string
+          private_ip?: string | null
           provider?: string | null
           public_ip?: string | null
           ram_mb?: number | null
           region?: string | null
           status?: string
+          tvcc_url?: string | null
+          tvcc_version?: string | null
           updated_at?: string
           vcpu?: number | null
         }
@@ -1868,6 +1946,111 @@ export type Database = {
           },
         ]
       }
+      site_cluster_members: {
+        Row: {
+          cluster_id: string
+          created_at: string
+          domain: string | null
+          id: string
+          last_seen_at: string
+          name: string
+          owner_id: string
+          role: string
+          server_id: string
+          status: string
+        }
+        Insert: {
+          cluster_id: string
+          created_at?: string
+          domain?: string | null
+          id?: string
+          last_seen_at?: string
+          name: string
+          owner_id: string
+          role?: string
+          server_id: string
+          status?: string
+        }
+        Update: {
+          cluster_id?: string
+          created_at?: string
+          domain?: string | null
+          id?: string
+          last_seen_at?: string
+          name?: string
+          owner_id?: string
+          role?: string
+          server_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_cluster_members_cluster_id_fkey"
+            columns: ["cluster_id"]
+            isOneToOne: false
+            referencedRelation: "site_clusters"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_cluster_members_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_clusters: {
+        Row: {
+          created_at: string
+          id: string
+          key: string
+          name: string
+          owner_id: string
+          primary_server_id: string | null
+          status: string
+          updated_at: string
+          website_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key: string
+          name: string
+          owner_id: string
+          primary_server_id?: string | null
+          status?: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key?: string
+          name?: string
+          owner_id?: string
+          primary_server_id?: string | null
+          status?: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_clusters_primary_server_id_fkey"
+            columns: ["primary_server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_clusters_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_groups: {
         Row: {
           color: string
@@ -1936,6 +2119,60 @@ export type Database = {
           website_id?: string
         }
         Relationships: []
+      }
+      site_provisioning: {
+        Row: {
+          command_id: string | null
+          created_at: string
+          detail: string | null
+          id: string
+          owner_id: string
+          server_id: string | null
+          status: string
+          step: string
+          updated_at: string
+          website_id: string
+        }
+        Insert: {
+          command_id?: string | null
+          created_at?: string
+          detail?: string | null
+          id?: string
+          owner_id: string
+          server_id?: string | null
+          status?: string
+          step: string
+          updated_at?: string
+          website_id: string
+        }
+        Update: {
+          command_id?: string | null
+          created_at?: string
+          detail?: string | null
+          id?: string
+          owner_id?: string
+          server_id?: string | null
+          status?: string
+          step?: string
+          updated_at?: string
+          website_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_provisioning_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_provisioning_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       site_services: {
         Row: {
@@ -2157,11 +2394,15 @@ export type Database = {
       }
       storages: {
         Row: {
+          auto_provisioned: boolean
+          bucket: string | null
           created_at: string
           id: string
           name: string
           owner_id: string
+          path: string | null
           region: string | null
+          server_id: string | null
           size_gb: number | null
           status: string
           storage_type: string
@@ -2170,11 +2411,15 @@ export type Database = {
           website_id: string | null
         }
         Insert: {
+          auto_provisioned?: boolean
+          bucket?: string | null
           created_at?: string
           id?: string
           name: string
           owner_id: string
+          path?: string | null
           region?: string | null
+          server_id?: string | null
           size_gb?: number | null
           status?: string
           storage_type?: string
@@ -2183,11 +2428,15 @@ export type Database = {
           website_id?: string | null
         }
         Update: {
+          auto_provisioned?: boolean
+          bucket?: string | null
           created_at?: string
           id?: string
           name?: string
           owner_id?: string
+          path?: string | null
           region?: string | null
+          server_id?: string | null
           size_gb?: number | null
           status?: string
           storage_type?: string
@@ -2196,6 +2445,13 @@ export type Database = {
           website_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "storages_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "storages_website_id_fkey"
             columns: ["website_id"]

@@ -8,7 +8,27 @@ export const DEFAULT_PROMPT = "قل: مرحباً من TVCC. بجملة واحد
 export type ChatMsg = { role: "system" | "user" | "assistant" | "tool"; content: string; [k: string]: unknown };
 export type TestParams = { temperature?: number; max_tokens?: number; top_p?: number };
 
+export const GEMINI_BASE = "https://generativelanguage.googleapis.com/v1beta/openai";
+
+/** Google AI Studio key stored in project secrets (apikeygemini). */
+export function geminiKey(): string {
+  const key = process.env["apikeygemini"] ?? process.env["APIKEYGEMINI"] ?? "";
+  if (!key) throw new Error("مفتاح Gemini غير مُهيّأ في الأسرار (apikeygemini)");
+  return key;
+}
+
 export async function providerModels(kind: string, vendor: string, baseUrl: string | null, apiKey: string | null) {
+  if (vendor === "gemini") {
+    const res = await fetch(`${GEMINI_BASE}/models`, {
+      headers: { authorization: `Bearer ${apiKey || geminiKey()}` },
+    });
+    if (!res.ok) throw new Error(`Gemini ${res.status} ${(await res.text()).slice(0, 200)}`);
+    const json = (await res.json()) as any;
+    return (json.data ?? [])
+      .map((m: any) => String(m.id).replace(/^models\//, ""))
+      .filter((id: string) => id.startsWith("gemini"))
+      .map((id: string) => ({ model_id: id, name: id }));
+  }
   if (kind === "cloud" && vendor === "lovable") {
     return [
       { model_id: "google/gemini-3.7-flash", name: "Gemini 3.7 Flash (افتراضي)" },

@@ -178,6 +178,10 @@ export const Route = createFileRoute("/api/public/servers/heartbeat")({
           }
         }
 
+        const privateIp = typeof body.private_ip === "string" ? body.private_ip.slice(0, 64) : null;
+        const isTvccNode = body.is_tvcc_node === true;
+        const tvccVersion = typeof body.tvcc_version === "string" ? body.tvcc_version.slice(0, 32) : null;
+
         await admin
           .from("servers")
           .update({
@@ -185,6 +189,9 @@ export const Route = createFileRoute("/api/public/servers/heartbeat")({
             last_seen_at: now,
             agent_version: agentVersion,
             public_ip: publicIp,
+            private_ip: privateIp,
+            is_tvcc_node: isTvccNode,
+            tvcc_version: tvccVersion,
             os: typeof body.os === "string" ? body.os : undefined,
             metadata: {
               ai_endpoint: typeof body.ai_endpoint === "string" ? body.ai_endpoint : null,
@@ -192,6 +199,7 @@ export const Route = createFileRoute("/api/public/servers/heartbeat")({
             },
           })
           .eq("id", serverId);
+
 
         await admin.from("server_metrics").insert({
           owner_id: server.owner_id,

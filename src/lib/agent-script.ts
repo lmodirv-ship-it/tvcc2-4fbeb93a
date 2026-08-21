@@ -53,6 +53,11 @@ run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
       db_import)       echo "[dry-run] gunzip -c $(GET storage_path) | mysql $(GET database)" ;;
       backup_delete)   echo "[dry-run] rm -f $(GET storage_path)" ;;
       platform_deploy) echo "[dry-run] $(GET script)" ;;
+      link_check)      echo "[dry-run] nc -z -w5 $(GET host) $(GET port)" ;;
+      sync_site)       echo "[dry-run] rsync -az --delete /var/www/$(GET domain)/ $(GET target_host):/var/www/$(GET domain)/" ;;
+      storage_usage)   echo "[dry-run] du -sm /var/www/*" ;;
+      site_dir)        echo "[dry-run] mkdir -p /var/www/$(GET domain) && chown -R www-data:www-data /var/www/$(GET domain)" ;;
+      issue_ssl)       echo "[dry-run] certbot --nginx -d $(GET domain) --non-interactive --agree-tos -m admin@$(GET domain)" ;;
       *) echo "[dry-run] unsupported action: $ACTION"; return 127 ;;
     esac
     return 0

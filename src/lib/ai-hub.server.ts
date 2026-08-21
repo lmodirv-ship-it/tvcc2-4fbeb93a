@@ -87,11 +87,14 @@ export async function callModel(
 ): Promise<any> {
   const isLovable = provider.vendor === "lovable" && provider.kind === "cloud";
   const isGemini = provider.vendor === "gemini";
+  const isOllamaCloud = provider.vendor === "ollama_cloud";
   const base = isLovable
     ? GATEWAY
     : isGemini
       ? GEMINI_BASE
-      : (model.endpoint_url ?? provider.base_url ?? "").replace(/\/+$/, "");
+      : isOllamaCloud
+        ? OLLAMA_CLOUD_BASE
+        : (model.endpoint_url ?? provider.base_url ?? "").replace(/\/+$/, "");
   if (!base) throw new Error("لا يوجد عنوان للمزوّد");
 
   const url = isLovable || isGemini ? `${base}/chat/completions` : `${base}/v1/chat/completions`;

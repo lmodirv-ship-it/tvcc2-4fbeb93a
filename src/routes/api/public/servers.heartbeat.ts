@@ -382,7 +382,58 @@ export const Route = createFileRoute("/api/public/servers/heartbeat")({
               actor: "agent",
             });
 
-            const backupId = (cmd.args as Record<string, unknown> | null)?.["backup_id"];
+            const cmdArgs = (cmd.args ?? {}) as Record<string, unknown>;
+
+            // Server-to-server link probe
+            if (cmd.action === "link_check" && typeof cmdArgs["link_id"] === "string") {
+              const latency = output?.match(/latency_ms=(\d+)/);
+              await admin
+                .from("server_links")
+                .update({
+                  status: code === 0 ? "online" : "offline",
+                  latency_ms: latency ? Number(latency[1]) : null,
+                  last_checked_at: now,
+                  notes: output?.slice(0, 300) ?? null,
+                })
+                .eq("id", cmdArgs["link_id"]);
+            }
+
+            // Provisioning step tracking
+            if (["site_dir", "write_config", "nginx_reload", "issue_ssl", "sync_site"].includes(cmd.action) && cmd.website_id) {
+              const stepMap: Record<string, string> = {
+                site_dir: "site_dir",
+                write_config: "nginx",
+                nginx_reload: "nginx",
+                issue_ssl: "ssl",
+              };
+              const step = stepMap[cmd.action];
+              if (step) {
+                await admin
+                  .from("site_provisioning")
+                  .update({
+                    status: code === 0 ? "done" : "failed",
+                    detail: output?.slice(0, 500) ?? null,
+                  })
+                  .eq("website_id", cmd.website_id)
+                  .eq("step", step);
+              }
+            }
+
+            // Measured per-site storage usage
+            if (cmd.action === "storage_usage" && output) {
+              for (const line of output.split("\n").slice(0, 200)) {
+                const m = line.trim().match(/^(\/var\/www\/\S+)\s+(\d+)MB$/);
+                if (!m) continue;
+                await admin
+                  .from("storages")
+                  .update({ used_gb: Number(m[2]) / 1024, status: "active" })
+                  .eq("server_id", serverId)
+                  .eq("path", m[1]);
+              }
+            }
+
+            const backupId = cmdArgs["backup_id"];
+
             if (typeof backupId === "string" && (cmd.action === "site_backup" || cmd.action === "db_dump")) {
               const pathMatch = output?.match(/(\/\S+\.(?:tar\.gz|sql\.gz))/);
               const sizeMatch = output?.match(/\((\d+)\s*MB\)/);

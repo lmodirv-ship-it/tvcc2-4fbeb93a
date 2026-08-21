@@ -7,7 +7,7 @@ TVCC_TOKEN="${token}"
 TVCC_ENDPOINT="${endpoint}"
 TVCC_AI_ENDPOINT="\${TVCC_AI_ENDPOINT:-http://127.0.0.1:11434}"
 TVCC_BACKUP_DIR="\${TVCC_BACKUP_DIR:-/var/backups/tvcc}"
-TVCC_AGENT_VERSION="2.1.0"
+TVCC_AGENT_VERSION="2.2.0"
 mkdir -p "$TVCC_BACKUP_DIR"
 
 json_escape() { python3 -c 'import sys,json;print(json.dumps(sys.stdin.read()))'; }
@@ -53,6 +53,11 @@ run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
       db_import)       echo "[dry-run] gunzip -c $(GET storage_path) | mysql $(GET database)" ;;
       backup_delete)   echo "[dry-run] rm -f $(GET storage_path)" ;;
       platform_deploy) echo "[dry-run] $(GET script)" ;;
+      link_check)      echo "[dry-run] nc -z -w5 $(GET host) $(GET port)" ;;
+      sync_site)       echo "[dry-run] rsync -az --delete /var/www/$(GET domain)/ $(GET target_host):/var/www/$(GET domain)/" ;;
+      storage_usage)   echo "[dry-run] du -sm /var/www/*" ;;
+      site_dir)        echo "[dry-run] mkdir -p /var/www/$(GET domain) && chown -R www-data:www-data /var/www/$(GET domain)" ;;
+      issue_ssl)       echo "[dry-run] certbot --nginx -d $(GET domain) --non-interactive --agree-tos -m admin@$(GET domain)" ;;
       *) echo "[dry-run] unsupported action: $ACTION"; return 127 ;;
     esac
     return 0
@@ -76,6 +81,11 @@ run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
     db_import)       gunzip -c "$(GET storage_path)" | mysql "$(GET database)" && echo "imported" ;;
     backup_delete)   rm -f "$(GET storage_path)" && echo "deleted $(GET storage_path)" ;;
     platform_deploy) bash -lc "$(GET script)" ;;
+    link_check)      H="$(GET host)"; P="$(GET port)"; S=$(date +%s%3N); if nc -z -w5 "$H" "\${P:-22}" 2>/dev/null; then E=$(date +%s%3N); echo "reachable $H:\${P:-22} latency_ms=$((E-S))"; else echo "unreachable $H:\${P:-22}"; exit 1; fi ;;
+    sync_site)       D="$(GET domain)"; T="$(GET target_host)"; rsync -az --delete -e "ssh -o StrictHostKeyChecking=no" "/var/www/$D/" "$T:/var/www/$D/" 2>&1 && echo "synced $D -> $T" ;;
+    storage_usage)   du -sm /var/www/* 2>/dev/null | awk '{print $2" "$1"MB"}' | head -200 ;;
+    site_dir)        D="$(GET domain)"; mkdir -p "/var/www/$D" && chown -R www-data:www-data "/var/www/$D" 2>/dev/null; echo "ready /var/www/$D ($(du -sm "/var/www/$D" | cut -f1) MB)" ;;
+    issue_ssl)       D="$(GET domain)"; certbot --nginx -d "$D" --non-interactive --agree-tos --register-unsafely-without-email 2>&1 | tail -20 ;;
     *) echo "unsupported action: $ACTION"; return 127 ;;
   esac
 }
@@ -114,6 +124,16 @@ while true; do
   PROCS=$(ps -e --no-headers | wc -l)
   OS=$(. /etc/os-release 2>/dev/null && echo "$PRETTY_NAME" || uname -s)
   PUBLIC_IP=$( (curl -s --max-time 5 https://api.ipify.org || curl -s --max-time 5 https://ifconfig.me || echo "") | head -1 | tr -d '\\n')
+  PRIVATE_IP=$(hostname -I 2>/dev/null | awk '{print $1}' | tr -d '\\n')
+
+  # Detect a TVCC platform copy running on this server (pm2 process, service or /opt/tvcc)
+  TVCC_NODE=false
+  TVCC_VERSION=""
+  if pm2 jlist 2>/dev/null | grep -qi '"name":"tvcc' || systemctl is-active --quiet tvcc 2>/dev/null || [ -d /opt/tvcc ]; then
+    TVCC_NODE=true
+    TVCC_VERSION=$(cat /opt/tvcc/package.json 2>/dev/null | python3 -c 'import sys,json;print(json.load(sys.stdin).get("version",""))' 2>/dev/null || echo "")
+  fi
+
 
   AI_RAW=$(curl -s --max-time 3 "$TVCC_AI_ENDPOINT/api/tags" || echo "")
   if [ -n "$AI_RAW" ]; then
@@ -154,7 +174,7 @@ for kind,p in paths:
 print(json.dumps(out))' 2>/dev/null || echo "[]")
   fi
 
-  BODY="{\\"cpu_percent\\":\${CPU:-0},\\"mem_used_mb\\":\${MEM_USED:-0},\\"mem_total_mb\\":\${MEM_TOTAL:-0},\\"disk_used_gb\\":\${DISK_USED:-0},\\"disk_total_gb\\":\${DISK_TOTAL:-0},\\"load_avg\\":\${LOAD:-0},\\"uptime_seconds\\":\${UPTIME:-0},\\"process_count\\":\${PROCS:-0},\\"os\\":\\"\${OS}\\",\\"agent_version\\":\\"\${TVCC_AGENT_VERSION}\\",\\"public_ip\\":\\"\${PUBLIC_IP}\\",\\"ai_endpoint\\":\\"\${TVCC_AI_ENDPOINT}\\",\\"ai_models\\":\${AI_MODELS},\\"ports\\":\${PORTS},\\"configs\\":\${CONFIGS}}"
+  BODY="{\\"cpu_percent\\":\${CPU:-0},\\"mem_used_mb\\":\${MEM_USED:-0},\\"mem_total_mb\\":\${MEM_TOTAL:-0},\\"disk_used_gb\\":\${DISK_USED:-0},\\"disk_total_gb\\":\${DISK_TOTAL:-0},\\"load_avg\\":\${LOAD:-0},\\"uptime_seconds\\":\${UPTIME:-0},\\"process_count\\":\${PROCS:-0},\\"os\\":\\"\${OS}\\",\\"agent_version\\":\\"\${TVCC_AGENT_VERSION}\\",\\"public_ip\\":\\"\${PUBLIC_IP}\\",\\"private_ip\\":\\"\${PRIVATE_IP}\\",\\"is_tvcc_node\\":\${TVCC_NODE},\\"tvcc_version\\":\\"\${TVCC_VERSION}\\",\\"ai_endpoint\\":\\"\${TVCC_AI_ENDPOINT}\\",\\"ai_models\\":\${AI_MODELS},\\"ports\\":\${PORTS},\\"configs\\":\${CONFIGS}}"
 
   RESP=$(post "$BODY")
 

@@ -106,6 +106,74 @@ async function autoIssueServerCerts(admin: any, serverId: string, ownerId: strin
   void admin; void serverId; void ownerId;
 }
 
+/**
+ * Group the same site running on several servers into one cluster, so a change
+ * on the primary node can be pushed to every replica automatically.
+ */
+async function autoClusterSites(
+  admin: any,
+  serverId: string,
+  ownerId: string,
+  sites: Array<Record<string, unknown>>,
+  now: string,
+) {
+  const norm = (v: string) =>
+    v.toLowerCase().replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/.*$/, "").trim();
+
+  for (const s of sites) {
+    const name = typeof s?.name === "string" ? s.name : "";
+    const domain = typeof s?.domain === "string" ? s.domain : "";
+    const key = norm(domain || name);
+    if (!key || key.length < 3) continue;
+
+    let { data: cluster } = await admin
+      .from("site_clusters")
+      .select("id, primary_server_id")
+      .eq("owner_id", ownerId)
+      .eq("key", key)
+      .maybeSingle();
+
+    if (!cluster) {
+      const { data: website } = await admin
+        .from("websites")
+        .select("id")
+        .eq("owner_id", ownerId)
+        .ilike("domain", `%${key}%`)
+        .maybeSingle();
+      const { data: created } = await admin
+        .from("site_clusters")
+        .insert({
+          owner_id: ownerId,
+          key,
+          name: domain || name,
+          website_id: website?.id ?? null,
+          primary_server_id: serverId,
+          status: "active",
+        })
+        .select("id, primary_server_id")
+        .maybeSingle();
+      cluster = created;
+    }
+    if (!cluster) continue;
+
+    await admin.from("site_cluster_members").upsert(
+      {
+        owner_id: ownerId,
+        cluster_id: cluster.id,
+        server_id: serverId,
+        name: name.slice(0, 120) || key,
+        domain: domain ? domain.slice(0, 200) : key,
+        role: cluster.primary_server_id === serverId ? "primary" : "replica",
+        status: typeof s.status === "string" ? s.status.slice(0, 32) : "unknown",
+        last_seen_at: now,
+      },
+      { onConflict: "cluster_id,server_id,name" },
+    );
+  }
+}
+
+
+
 export const Route = createFileRoute("/api/public/servers/heartbeat")({
   server: {
     handlers: {
@@ -178,6 +246,10 @@ export const Route = createFileRoute("/api/public/servers/heartbeat")({
           }
         }
 
+        const privateIp = typeof body.private_ip === "string" ? body.private_ip.slice(0, 64) : null;
+        const isTvccNode = body.is_tvcc_node === true;
+        const tvccVersion = typeof body.tvcc_version === "string" ? body.tvcc_version.slice(0, 32) : null;
+
         await admin
           .from("servers")
           .update({
@@ -185,6 +257,9 @@ export const Route = createFileRoute("/api/public/servers/heartbeat")({
             last_seen_at: now,
             agent_version: agentVersion,
             public_ip: publicIp,
+            private_ip: privateIp,
+            is_tvcc_node: isTvccNode,
+            tvcc_version: tvccVersion,
             os: typeof body.os === "string" ? body.os : undefined,
             metadata: {
               ai_endpoint: typeof body.ai_endpoint === "string" ? body.ai_endpoint : null,
@@ -192,6 +267,7 @@ export const Route = createFileRoute("/api/public/servers/heartbeat")({
             },
           })
           .eq("id", serverId);
+
 
         await admin.from("server_metrics").insert({
           owner_id: server.owner_id,
@@ -229,6 +305,11 @@ export const Route = createFileRoute("/api/public/servers/heartbeat")({
             { onConflict: "server_id,name" },
           );
         }
+
+        // Group identical sites hosted on several servers into one cluster
+        await autoClusterSites(admin, serverId, server.owner_id, sites as Array<Record<string, unknown>>, now);
+
+
 
         // Open ports discovered by the agent
         const ports = Array.isArray(body.ports) ? body.ports.slice(0, 300) : [];
@@ -301,7 +382,58 @@ export const Route = createFileRoute("/api/public/servers/heartbeat")({
               actor: "agent",
             });
 
-            const backupId = (cmd.args as Record<string, unknown> | null)?.["backup_id"];
+            const cmdArgs = (cmd.args ?? {}) as Record<string, unknown>;
+
+            // Server-to-server link probe
+            if (cmd.action === "link_check" && typeof cmdArgs["link_id"] === "string") {
+              const latency = output?.match(/latency_ms=(\d+)/);
+              await admin
+                .from("server_links")
+                .update({
+                  status: code === 0 ? "online" : "offline",
+                  latency_ms: latency ? Number(latency[1]) : null,
+                  last_checked_at: now,
+                  notes: output?.slice(0, 300) ?? null,
+                })
+                .eq("id", cmdArgs["link_id"]);
+            }
+
+            // Provisioning step tracking
+            if (["site_dir", "write_config", "nginx_reload", "issue_ssl", "sync_site"].includes(cmd.action) && cmd.website_id) {
+              const stepMap: Record<string, string> = {
+                site_dir: "site_dir",
+                write_config: "nginx",
+                nginx_reload: "nginx",
+                issue_ssl: "ssl",
+              };
+              const step = stepMap[cmd.action];
+              if (step) {
+                await admin
+                  .from("site_provisioning")
+                  .update({
+                    status: code === 0 ? "done" : "failed",
+                    detail: output?.slice(0, 500) ?? null,
+                  })
+                  .eq("website_id", cmd.website_id)
+                  .eq("step", step);
+              }
+            }
+
+            // Measured per-site storage usage
+            if (cmd.action === "storage_usage" && output) {
+              for (const line of output.split("\n").slice(0, 200)) {
+                const m = line.trim().match(/^(\/var\/www\/\S+)\s+(\d+)MB$/);
+                if (!m) continue;
+                await admin
+                  .from("storages")
+                  .update({ used_gb: Number(m[2]) / 1024, status: "active" })
+                  .eq("server_id", serverId)
+                  .eq("path", m[1]);
+              }
+            }
+
+            const backupId = cmdArgs["backup_id"];
+
             if (typeof backupId === "string" && (cmd.action === "site_backup" || cmd.action === "db_dump")) {
               const pathMatch = output?.match(/(\/\S+\.(?:tar\.gz|sql\.gz))/);
               const sizeMatch = output?.match(/\((\d+)\s*MB\)/);

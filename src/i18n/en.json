@@ -78,7 +78,8 @@
     "ai_connect": "Connect models",
     "ai_chat": "Model chat",
     "ai_tests": "Test History",
-    "backups": "Backups"
+    "backups": "Backups",
+    "network": "Server Mesh"
   },
   "dashboard": {
     "title": "Dashboard",

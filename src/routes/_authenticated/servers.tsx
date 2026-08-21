@@ -16,8 +16,10 @@ import {
 } from "@/components/ui/dialog";
 import {
   Server, Plus, Loader2, Trash2, Cpu, MemoryStick, HardDrive, Terminal, Copy, RefreshCw, Brain,
-  Network, Settings2, Play, Rocket, Save, CheckSquare,
+  Network, Settings2, Play, Rocket, Save, CheckSquare, Plug,
 } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { listConnectables, publishPortAsService, createProxyForPort } from "@/lib/mesh.functions";
 import { toast } from "sonner";
 import {
   listServers, createServer, deleteServer, getAgentInstall, getServerDetail,
@@ -83,6 +85,18 @@ function ServersPage() {
   const [dryRun, setDryRun] = useState(false);
   const [selectedServers, setSelectedServers] = useState<Set<string>>(new Set());
   const [bulkAction, setBulkAction] = useState<string>("scan_ports");
+  const [publishPort, setPublishPort] = useState<number | null>(null);
+  const [publishSite, setPublishSite] = useState("");
+  const [publishBusy, setPublishBusy] = useState(false);
+
+  const fetchConnectables = useServerFn(listConnectables);
+  const publishPortFn = useServerFn(publishPortAsService);
+  const proxyFn = useServerFn(createProxyForPort);
+  const { data: connectables } = useQuery({
+    queryKey: ["connectables"],
+    queryFn: () => fetchConnectables({}),
+  });
+  const myWebsites = ((connectables as any)?.websites ?? []) as any[];
 
   const { data: ops } = useQuery({
     queryKey: ["server-ops", detailId],
@@ -416,10 +430,48 @@ function ServersPage() {
                           <Badge variant="outline" className={p.is_public ? "bg-warning/20 text-warning border-warning/40" : ""}>
                             {p.is_public ? "عام" : "محلي"}
                           </Badge>
+                          <Button size="sm" variant="ghost" onClick={() => { setPublishPort(p.port); setPublishSite(""); }}>
+                            <Plug className="w-3 h-3 ml-1" /> ربط بموقع
+                          </Button>
                         </div>
                       ))}
                     </div>
                   )}
+                  {publishPort !== null ? (
+                    <div className="rounded border border-primary/40 p-3 space-y-2">
+                      <p className="text-xs">ربط المنفذ {publishPort} بأحد مواقعك (يُنشأ خدمة + بروكسي Nginx على نطاق الموقع)</p>
+                      <Select value={publishSite} onValueChange={setPublishSite}>
+                        <SelectTrigger className="h-8 text-xs"><SelectValue placeholder="اختر الموقع" /></SelectTrigger>
+                        <SelectContent>
+                          {myWebsites.map((w: any) => (
+                            <SelectItem key={w.id} value={w.id}>{w.domain}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <div className="flex gap-2">
+                        <Button size="sm" disabled={!publishSite || publishBusy}
+                          onClick={async () => {
+                            setPublishBusy(true);
+                            try {
+                              const site = myWebsites.find((w: any) => w.id === publishSite);
+                              await publishPortFn({ data: { serverId: detailId!, port: publishPort!, websiteId: publishSite, isPublic: true } });
+                              if (site?.domain) {
+                                await proxyFn({ data: { serverId: detailId!, port: publishPort!, domain: site.domain, websiteId: publishSite, dryRun: dryRun } });
+                              }
+                              toast.success("تم ربط المنفذ بالموقع وجدولة إعداد البروكسي");
+                              setPublishPort(null);
+                            } catch (e) {
+                              toast.error((e as Error).message);
+                            } finally {
+                              setPublishBusy(false);
+                            }
+                          }}>
+                          {publishBusy ? <Loader2 className="w-3 h-3 animate-spin" /> : "تأكيد الربط"}
+                        </Button>
+                        <Button size="sm" variant="ghost" onClick={() => setPublishPort(null)}>إلغاء</Button>
+                      </div>
+                    </div>
+                  ) : null}
                 </TabsContent>
 
                 <TabsContent value="configs" className="space-y-2 pt-3">

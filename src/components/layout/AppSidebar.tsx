@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Globe, Users, CreditCard, UserCog, Activity, Settings,
   Code2, LogOut, Wand2, FolderOpen, LayoutTemplate, Radio, ListChecks, Plug,
   Smartphone, KeyRound, Server, ShieldCheck, BadgeCheck, Bell, FileCog, LifeBuoy, ClipboardCheck,
-  FileBarChart, Wallet, Boxes, Brain, Film, HardDrive, MessageSquare, History, NotebookPen, Archive,
+  FileBarChart, Wallet, Boxes, Brain, Film, HardDrive, MessageSquare, History, NotebookPen, Archive, Network,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -38,6 +38,7 @@ const aiItems = [
 
 const opsItems = [
   { titleKey: "sidebar.servers", url: "/servers", icon: HardDrive },
+  { titleKey: "sidebar.network", url: "/network", icon: Network },
   { titleKey: "sidebar.backups", url: "/backups", icon: Archive },
   { titleKey: "sidebar.operations", url: "/operations", icon: NotebookPen },
   { titleKey: "sidebar.domains", url: "/domains", icon: Server },

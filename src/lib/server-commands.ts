@@ -17,6 +17,11 @@ export const COMMAND_WHITELIST = [
   "db_dump",
   "db_import",
   "platform_deploy",
+  "link_check",
+  "sync_site",
+  "storage_usage",
+  "site_dir",
+  "issue_ssl",
 ] as const;
 
 export type CommandAction = (typeof COMMAND_WHITELIST)[number];
@@ -39,6 +44,11 @@ export const COMMAND_LABELS: Record<string, string> = {
   db_dump: "تصدير قاعدة بيانات",
   db_import: "استيراد قاعدة بيانات",
   platform_deploy: "ترحيل المنصة",
+  link_check: "فحص الاتصال بسيرفر آخر",
+  sync_site: "مزامنة موقع بين سيرفرين",
+  storage_usage: "قياس تخزين المواقع",
+  site_dir: "إنشاء مجلد موقع",
+  issue_ssl: "إصدار شهادة SSL",
 };
 
 /** Actions that take a free-text argument, with the arg key + placeholder. */
@@ -50,4 +60,6 @@ export const COMMAND_ARG: Record<string, { key: string; placeholder: string }> =
   firewall_deny: { key: "port", placeholder: "23/tcp" },
   site_backup: { key: "domain", placeholder: "example.com" },
   db_dump: { key: "domain", placeholder: "example.com" },
+  site_dir: { key: "domain", placeholder: "example.com" },
+  issue_ssl: { key: "domain", placeholder: "example.com" },
 };

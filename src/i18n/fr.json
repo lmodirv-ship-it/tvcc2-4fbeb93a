@@ -78,7 +78,8 @@
     "ai_connect": "Connexion modèles",
     "ai_chat": "Chat modèles",
     "ai_tests": "Historique des tests",
-    "backups": "Sauvegardes"
+    "backups": "Sauvegardes",
+    "network": "Réseau serveurs"
   },
   "dashboard": {
     "title": "Tableau de bord",

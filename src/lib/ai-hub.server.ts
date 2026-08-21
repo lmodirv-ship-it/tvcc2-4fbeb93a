@@ -105,6 +105,8 @@ export async function callModel(
     headers["Lovable-API-Key"] = key;
   } else if (isGemini) {
     headers["authorization"] = `Bearer ${provider.api_key_encrypted || geminiKey()}`;
+  } else if (isOllamaCloud) {
+    headers["authorization"] = `Bearer ${provider.api_key_encrypted || ollamaCloudKey()}`;
   } else if (provider.api_key_encrypted) {
     headers["authorization"] = `Bearer ${provider.api_key_encrypted}`;
   }

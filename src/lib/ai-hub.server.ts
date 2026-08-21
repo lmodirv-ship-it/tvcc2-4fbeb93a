@@ -17,7 +17,24 @@ export function geminiKey(): string {
   return key;
 }
 
+export const OLLAMA_CLOUD_BASE = "https://ollama.com";
+
+/** Ollama Cloud key stored in project secrets (ollamatvv). */
+export function ollamaCloudKey(): string {
+  const key = process.env["ollamatvv"] ?? process.env["OLLAMATVV"] ?? "";
+  if (!key) throw new Error("مفتاح Ollama Cloud غير مُهيّأ في الأسرار (ollamatvv)");
+  return key;
+}
+
 export async function providerModels(kind: string, vendor: string, baseUrl: string | null, apiKey: string | null) {
+  if (vendor === "ollama_cloud") {
+    const res = await fetch(`${OLLAMA_CLOUD_BASE}/v1/models`, {
+      headers: { authorization: `Bearer ${apiKey || ollamaCloudKey()}` },
+    });
+    if (!res.ok) throw new Error(`Ollama Cloud ${res.status} ${(await res.text()).slice(0, 200)}`);
+    const json = (await res.json()) as any;
+    return (json.data ?? []).map((m: any) => ({ model_id: m.id, name: m.id }));
+  }
   if (vendor === "gemini") {
     const res = await fetch(`${GEMINI_BASE}/models`, {
       headers: { authorization: `Bearer ${apiKey || geminiKey()}` },
@@ -70,11 +87,14 @@ export async function callModel(
 ): Promise<any> {
   const isLovable = provider.vendor === "lovable" && provider.kind === "cloud";
   const isGemini = provider.vendor === "gemini";
+  const isOllamaCloud = provider.vendor === "ollama_cloud";
   const base = isLovable
     ? GATEWAY
     : isGemini
       ? GEMINI_BASE
-      : (model.endpoint_url ?? provider.base_url ?? "").replace(/\/+$/, "");
+      : isOllamaCloud
+        ? OLLAMA_CLOUD_BASE
+        : (model.endpoint_url ?? provider.base_url ?? "").replace(/\/+$/, "");
   if (!base) throw new Error("لا يوجد عنوان للمزوّد");
 
   const url = isLovable || isGemini ? `${base}/chat/completions` : `${base}/v1/chat/completions`;
@@ -85,6 +105,8 @@ export async function callModel(
     headers["Lovable-API-Key"] = key;
   } else if (isGemini) {
     headers["authorization"] = `Bearer ${provider.api_key_encrypted || geminiKey()}`;
+  } else if (isOllamaCloud) {
+    headers["authorization"] = `Bearer ${provider.api_key_encrypted || ollamaCloudKey()}`;
   } else if (provider.api_key_encrypted) {
     headers["authorization"] = `Bearer ${provider.api_key_encrypted}`;
   }

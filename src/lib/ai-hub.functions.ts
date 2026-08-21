@@ -777,3 +777,60 @@ export const enableGeminiProvider = createServerFn({ method: "POST" })
     }
     return { providerId, added: rows.length, total: models.length };
   });
+
+/** يفعّل مزوّد Ollama Cloud باستخدام المفتاح المحفوظ في الأسرار (ollamatvv). */
+export const enableOllamaCloudProvider = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const sb = context.supabase as any;
+    const { OLLAMA_CLOUD_BASE } = await import("./ai-hub.server");
+
+    const { data: existing } = await sb
+      .from("ai_providers")
+      .select("id")
+      .eq("owner_id", context.userId)
+      .eq("vendor", "ollama_cloud")
+      .maybeSingle();
+
+    let providerId = existing?.id as string | undefined;
+    if (!providerId) {
+      const { data: created, error } = await sb
+        .from("ai_providers")
+        .insert({
+          owner_id: context.userId,
+          name: "Ollama Cloud",
+          kind: "cloud",
+          vendor: "ollama_cloud",
+          base_url: OLLAMA_CLOUD_BASE,
+          is_active: true,
+          status: "online",
+        })
+        .select("id")
+        .maybeSingle();
+      if (error) throw new Error(error.message);
+      providerId = created?.id;
+    }
+    if (!providerId) throw new Error("تعذّر إنشاء المزوّد");
+
+    const models = await providerModels("cloud", "ollama_cloud", OLLAMA_CLOUD_BASE, null);
+    const { data: present } = await sb.from("ai_models").select("model_id").eq("provider_id", providerId);
+    const have = new Set((present ?? []).map((m: any) => m.model_id));
+    const rows = models
+      .filter((m: any) => !have.has(m.model_id))
+      .map((m: any, i: number) => ({
+        owner_id: context.userId,
+        provider_id: providerId,
+        name: m.name,
+        model_id: m.model_id,
+        kind: "cloud",
+        capabilities: ["chat", "tools"],
+        is_active: true,
+        is_default: i === 0 && have.size === 0,
+        status: "ready",
+      }));
+    if (rows.length) {
+      const { error } = await sb.from("ai_models").insert(rows);
+      if (error) throw new Error(error.message);
+    }
+    return { providerId, added: rows.length, total: models.length };
+  });

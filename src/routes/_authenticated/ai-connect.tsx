@@ -44,6 +44,7 @@ const VENDORS = [
   { value: "lovable", label: "Lovable AI (بدون مفتاح)", kind: "cloud" },
   { value: "openai", label: "OpenAI", kind: "cloud" },
   { value: "anthropic", label: "Anthropic", kind: "cloud" },
+  { value: "gemini", label: "Google Gemini (مفتاح محفوظ)", kind: "cloud" },
   { value: "google", label: "Google AI", kind: "cloud" },
   { value: "openrouter", label: "OpenRouter", kind: "cloud" },
   { value: "ollama", label: "Ollama", kind: "local" },

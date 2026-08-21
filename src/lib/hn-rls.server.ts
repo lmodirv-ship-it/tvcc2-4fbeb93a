@@ -143,3 +143,26 @@ export async function checkDomainOwnership(rawDomain: string) {
     method: cnameOk ? ("CNAME" as const) : txtOk ? ("TXT" as const) : null,
   };
 }
+
+/**
+ * Checks a per-site verification code published as a TXT record on
+ * `_tvcc.<domain>` (value `tvcc-verify=<code>`). Also accepts the code placed
+ * on the apex TXT record for registrars that do not allow underscore hosts.
+ */
+export async function checkDomainCode(rawDomain: string, code: string) {
+  const domain = normalizeDomain(rawDomain);
+  const expected = `tvcc-verify=${code.trim().toLowerCase()}`;
+  const [subTxt, apexTxt] = await Promise.all([
+    doh(`_tvcc.${domain}`, "TXT"),
+    doh(domain, "TXT"),
+  ]);
+  const hit = (ans: Array<{ data: string }>) =>
+    ans.some((a) => a.data.toLowerCase().replace(/"/g, "").includes(expected));
+  const onSub = hit(subTxt);
+  const onApex = hit(apexTxt);
+  return {
+    domain,
+    verified: onSub || onApex,
+    method: onSub ? ("TXT:_tvcc" as const) : onApex ? ("TXT:apex" as const) : null,
+  };
+}

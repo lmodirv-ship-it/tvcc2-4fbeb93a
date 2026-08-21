@@ -17,7 +17,7 @@ import { Cloud, Laptop, Server, Plus, Loader2, Trash2, Zap, Download, Link2 } fr
 import { toast } from "sonner";
 import {
   listAiProviders, upsertAiProvider, deleteAiProvider, testAiProvider,
-  importProviderModels, importServerModels,
+  importProviderModels, importServerModels, enableGeminiProvider,
 } from "@/lib/ai-hub.functions";
 
 export const Route = createFileRoute("/_authenticated/ai-connect")({
@@ -44,6 +44,7 @@ const VENDORS = [
   { value: "lovable", label: "Lovable AI (بدون مفتاح)", kind: "cloud" },
   { value: "openai", label: "OpenAI", kind: "cloud" },
   { value: "anthropic", label: "Anthropic", kind: "cloud" },
+  { value: "gemini", label: "Google Gemini (مفتاح محفوظ)", kind: "cloud" },
   { value: "google", label: "Google AI", kind: "cloud" },
   { value: "openrouter", label: "OpenRouter", kind: "cloud" },
   { value: "ollama", label: "Ollama", kind: "local" },
@@ -59,6 +60,20 @@ function AiConnectPage() {
   const test = useServerFn(testAiProvider);
   const importModels = useServerFn(importProviderModels);
   const importFromServer = useServerFn(importServerModels);
+  const enableGemini = useServerFn(enableGeminiProvider);
+
+  const activateGemini = async () => {
+    setBusy("gemini");
+    try {
+      const r: any = await enableGemini({});
+      toast.success(`تم تفعيل Gemini — ${r.added} نموذج جديد من أصل ${r.total}`);
+      qc.invalidateQueries({ queryKey: ["ai-hub"] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  };
 
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);
@@ -137,6 +152,9 @@ function AiConnectPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={activateGemini} disabled={busy === "gemini"}>
+            {busy === "gemini" ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Zap className="w-4 h-4 ml-1" /> تفعيل Gemini</>}
+          </Button>
           <Button variant="outline" onClick={detectLocal} disabled={busy === "local"}>
             {busy === "local" ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Laptop className="w-4 h-4 ml-1" /> اكتشاف نماذج حاسوبي</>}
           </Button>

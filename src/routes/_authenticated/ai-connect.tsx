@@ -60,6 +60,20 @@ function AiConnectPage() {
   const test = useServerFn(testAiProvider);
   const importModels = useServerFn(importProviderModels);
   const importFromServer = useServerFn(importServerModels);
+  const enableGemini = useServerFn(enableGeminiProvider);
+
+  const activateGemini = async () => {
+    setBusy("gemini");
+    try {
+      const r: any = await enableGemini({});
+      toast.success(`تم تفعيل Gemini — ${r.added} نموذج جديد من أصل ${r.total}`);
+      qc.invalidateQueries({ queryKey: ["ai-hub"] });
+    } catch (e) {
+      toast.error((e as Error).message);
+    } finally {
+      setBusy(null);
+    }
+  };
 
   const [open, setOpen] = useState(false);
   const [busy, setBusy] = useState<string | null>(null);

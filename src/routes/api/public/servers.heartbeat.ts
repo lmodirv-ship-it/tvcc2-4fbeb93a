@@ -306,6 +306,11 @@ export const Route = createFileRoute("/api/public/servers/heartbeat")({
           );
         }
 
+        // Group identical sites hosted on several servers into one cluster
+        await autoClusterSites(admin, serverId, server.owner_id, sites as Array<Record<string, unknown>>, now);
+
+
+
         // Open ports discovered by the agent
         const ports = Array.isArray(body.ports) ? body.ports.slice(0, 300) : [];
         for (const p of ports as Array<Record<string, unknown>>) {

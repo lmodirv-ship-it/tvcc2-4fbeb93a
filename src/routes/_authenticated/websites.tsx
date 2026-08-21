@@ -28,8 +28,10 @@ import {
   Plus, Trash2, RefreshCw, Loader2, Globe, CheckCircle2, WifiOff, XCircle,
   ChevronDown, Filter, Link2, MoreHorizontal, Activity, ChevronLeft, ChevronRight,
   ChevronsLeft, ChevronsRight, CheckCircle, AlertCircle, Database as DbIcon,
+  KeyRound, ShieldCheck, Copy,
 } from "lucide-react";
 import { verifyIssueRegister } from "@/lib/hn-rls.functions";
+import { verifyDomainCode } from "@/lib/dns.functions";
 import { runHealthCheckAll } from "@/lib/health-check.functions";
 import { importSupabaseProjects } from "@/lib/supabase-import.functions";
 import { useServerFn } from "@tanstack/react-start";
@@ -573,37 +575,134 @@ function Donut({ online, offline, paused, total }: { online: number; offline: nu
   );
 }
 
+function makeCode() {
+  const rnd = Math.random().toString(36).slice(2, 10) + Date.now().toString(36).slice(-4);
+  return `tvcc-${rnd}`.toLowerCase();
+}
+
 function AddWebsiteDialog({ onDone }: { onDone: () => void }) {
+  const verifyCodeFn = useServerFn(verifyDomainCode);
+  const [step, setStep] = useState<1 | 2>(1);
   const [name, setName] = useState("");
   const [domain, setDomain] = useState("");
   const [description, setDescription] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [code, setCode] = useState("");
+  const [checking, setChecking] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [failed, setFailed] = useState(false);
 
-  const submit = async (e: React.FormEvent) => {
+  const clean = domain.replace(/^https?:\/\//, "").replace(/\/.*$/, "").trim().toLowerCase();
+  const txtValue = `tvcc-verify=${code}`;
+
+  const generate = (e: React.FormEvent) => {
     e.preventDefault();
-    setLoading(true);
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return;
-    const { error } = await supabase.from("websites").insert({ owner_id: user.id, name, domain, description });
-    setLoading(false);
-    if (error) return toast.error(error.message);
-    toast.success("تم إضافة الموقع");
-    onDone();
+    if (!clean.includes(".")) return toast.error("أدخل نطاقاً صحيحاً مثل example.com");
+    setCode(makeCode());
+    setStep(2);
+    setFailed(false);
+  };
+
+  const copy = (v: string) => {
+    navigator.clipboard?.writeText(v);
+    toast.success("تم النسخ");
+  };
+
+  const confirm = async () => {
+    setChecking(true);
+    setFailed(false);
+    try {
+      const res = await verifyCodeFn({ data: { domain: clean, code } });
+      if (!res.verified) {
+        setFailed(true);
+        toast.error("لم يُعثر على سجل التحقق بعد — قد يستغرق انتشار DNS بضع دقائق");
+        return;
+      }
+      setSaving(true);
+      const { data: { user } } = await supabase.auth.getUser();
+      if (!user) return toast.error("الجلسة منتهية");
+      const { error } = await supabase.from("websites").insert({
+        owner_id: user.id,
+        name: name || clean,
+        domain: clean,
+        description: description || null,
+        verify_code: code,
+        verified: true,
+        status: "online",
+        last_checked_at: new Date().toISOString(),
+      });
+      if (error) return toast.error(error.message);
+      toast.success(`تم التحقق عبر ${res.method} وأُضيف ${clean} إلى مواقعي`);
+      onDone();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "تعذر التحقق");
+    } finally {
+      setChecking(false);
+      setSaving(false);
+    }
   };
 
   return (
-    <DialogContent>
-      <DialogHeader><DialogTitle>إضافة موقع جديد</DialogTitle></DialogHeader>
-      <form onSubmit={submit} className="space-y-4">
-        <div className="space-y-2"><Label>اسم الموقع</Label><Input required value={name} onChange={(e) => setName(e.target.value)} /></div>
-        <div className="space-y-2"><Label>الدومين</Label><Input required placeholder="example.com" value={domain} onChange={(e) => setDomain(e.target.value)} /></div>
-        <div className="space-y-2"><Label>الوصف (اختياري)</Label><Textarea value={description} onChange={(e) => setDescription(e.target.value)} /></div>
-        <DialogFooter>
-          <Button type="submit" disabled={loading}>
-            {loading && <Loader2 className="w-4 h-4 animate-spin ml-2" />}حفظ
-          </Button>
-        </DialogFooter>
-      </form>
+    <DialogContent className="max-w-lg" dir="rtl">
+      <DialogHeader>
+        <DialogTitle className="text-right">
+          {step === 1 ? "إضافة موقع جديد" : "تحقق من ملكية النطاق"}
+        </DialogTitle>
+      </DialogHeader>
+
+      {step === 1 ? (
+        <form onSubmit={generate} className="space-y-4">
+          <div className="space-y-2"><Label>اسم الموقع</Label><Input required value={name} onChange={(e) => setName(e.target.value)} /></div>
+          <div className="space-y-2"><Label>الدومين</Label><Input required placeholder="example.com" value={domain} onChange={(e) => setDomain(e.target.value)} /></div>
+          <div className="space-y-2"><Label>الوصف (اختياري)</Label><Textarea value={description} onChange={(e) => setDescription(e.target.value)} /></div>
+          <DialogFooter>
+            <Button type="submit" className="bg-primary">
+              <KeyRound className="w-4 h-4 ml-2" /> توليد كود التحقق
+            </Button>
+          </DialogFooter>
+        </form>
+      ) : (
+        <div className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            أضف سجل TXT التالي في إعدادات DNS لنطاق <span className="text-foreground font-medium">{clean}</span>، ثم عُد واضغط «تأكيد».
+          </p>
+
+          <div className="rounded-xl border border-primary/30 bg-secondary/30 p-4 space-y-3 relative overflow-hidden">
+            <div className="sweep-line" />
+            <Field label="النوع" value="TXT" onCopy={copy} />
+            <Field label="الاسم / Host" value={`_tvcc.${clean}`} onCopy={copy} />
+            <Field label="القيمة / Value" value={txtValue} onCopy={copy} />
+            <p className="text-[11px] text-muted-foreground">
+              إن لم يقبل مزوّدك الأسماء التي تبدأ بشرطة سفلية، ضع نفس القيمة على السجل الجذر (@).
+            </p>
+          </div>
+
+          {failed && (
+            <div className="flex items-center gap-2 text-sm text-destructive">
+              <AlertCircle className="w-4 h-4" /> لم يستجب السجل بعد. انتظر قليلاً ثم أعد المحاولة.
+            </div>
+          )}
+
+          <DialogFooter className="gap-2">
+            <Button variant="outline" onClick={() => setStep(1)} disabled={checking || saving}>رجوع</Button>
+            <Button onClick={confirm} disabled={checking || saving} className="bg-primary">
+              {checking || saving ? <Loader2 className="w-4 h-4 animate-spin ml-2" /> : <ShieldCheck className="w-4 h-4 ml-2" />}
+              تأكيد
+            </Button>
+          </DialogFooter>
+        </div>
+      )}
     </DialogContent>
+  );
+}
+
+function Field({ label, value, onCopy }: { label: string; value: string; onCopy: (v: string) => void }) {
+  return (
+    <div className="flex items-center justify-between gap-3">
+      <span className="text-xs text-muted-foreground w-24 shrink-0">{label}</span>
+      <code className="flex-1 text-xs bg-background/60 rounded px-2 py-1.5 overflow-x-auto whitespace-nowrap">{value}</code>
+      <Button type="button" size="icon" variant="ghost" className="w-8 h-8" onClick={() => onCopy(value)}>
+        <Copy className="w-3.5 h-3.5" />
+      </Button>
+    </div>
   );
 }

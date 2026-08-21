@@ -37,9 +37,9 @@ export function AppHeader() {
         to="/dashboard"
         aria-label="العودة للصفحة الرئيسية"
         title="العودة للصفحة الرئيسية"
-        className="flex items-center gap-2 h-9 px-3 rounded-lg bg-secondary/60 hover:bg-secondary text-sm font-medium transition"
+        className="flex items-center gap-2 h-9 px-3 rounded-lg bg-success text-success-foreground hover:bg-success/90 text-sm font-medium transition shadow-sm"
       >
-        <Home className="w-4 h-4 text-primary" />
+        <Home className="w-4 h-4" />
         <span className="hidden sm:inline">الرئيسية</span>
       </Link>
 

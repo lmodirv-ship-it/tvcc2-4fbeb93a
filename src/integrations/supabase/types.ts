@@ -2730,6 +2730,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      is_permanent_owner_email: { Args: { _email: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "editor" | "viewer" | "system_owner"

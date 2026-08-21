@@ -152,6 +152,9 @@ function AiConnectPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" onClick={activateGemini} disabled={busy === "gemini"}>
+            {busy === "gemini" ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Zap className="w-4 h-4 ml-1" /> تفعيل Gemini</>}
+          </Button>
           <Button variant="outline" onClick={detectLocal} disabled={busy === "local"}>
             {busy === "local" ? <Loader2 className="w-4 h-4 animate-spin" /> : <><Laptop className="w-4 h-4 ml-1" /> اكتشاف نماذج حاسوبي</>}
           </Button>

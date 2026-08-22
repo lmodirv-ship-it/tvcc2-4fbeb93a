@@ -344,16 +344,37 @@ export const aiChat = createServerFn({ method: "POST" })
         .in("id", data.websiteIds);
       contextNote = `\nالمواقع قيد النقاش: ${JSON.stringify(sites ?? [])}`;
     }
+    if (data.serverId) {
+      const { data: srv } = await sb
+        .from("servers")
+        .select("id, name, hostname, os, status")
+        .eq("id", data.serverId)
+        .maybeSingle();
+      contextNote += `\nسيرفر ورشة العمل: ${JSON.stringify(srv ?? {})} (استخدم أدوات fs_* عليه دون الحاجة لتمرير server_id)`;
+    }
+    if (data.filePaths?.length) {
+      contextNote += `\nالملفات المستهدفة: ${data.filePaths.join("، ")} — اقرأها بأداة fs_read قبل أي تعديل.`;
+    }
+    if (data.taskIds?.length) {
+      const { data: tasks } = await sb
+        .from("ai_tasks")
+        .select("id, title, instructions, status, file_paths")
+        .in("id", data.taskIds);
+      contextNote += `\nالمهام المطلوب إنجازها: ${JSON.stringify(tasks ?? [])} — حدّث حالة كل مهمة بأداة update_task عند الانتهاء.`;
+    }
 
     const messages: ChatMsg[] = [
       {
         role: "system",
         content:
           "أنت مساعد TVCC لإدارة وتطوير المواقع والسيرفرات. أجب بالعربية بإيجاز ودقة. " +
-          "استخدم الأدوات المتاحة لقراءة البيانات الحقيقية قبل الإجابة. " +
+          "استخدم الأدوات المتاحة لقراءة البيانات والملفات الحقيقية قبل الإجابة. " +
+          "عند تعديل ملف: اقرأه أولاً (fs_read)، ثم اكتب المحتوى الكامل الجديد (fs_write)، ثم نفّذ البناء أو إعادة التشغيل عند الحاجة (run_server_command). " +
+          "نظّم العمل الطويل في مهام عبر create_task/update_task. " +
           "لا تنفّذ أي تعديل أو حذف دون طلب صريح من المستخدم." +
           contextNote,
       },
+
       ...((history ?? []) as ChatMsg[]).map((m) => ({ role: m.role as ChatMsg["role"], content: m.content })),
       { role: "user", content: data.message },
     ];

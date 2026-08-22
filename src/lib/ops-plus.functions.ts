@@ -42,7 +42,7 @@ export const getFailoverHub = createServerFn({ method: "GET" })
     const [policies, events, servers, websites] = await Promise.all([
       sb.from("failover_policies").select("*").order("created_at", { ascending: false }),
       sb.from("failover_events").select("*").order("created_at", { ascending: false }).limit(50),
-      sb.from("servers").select("id, name, hostname, status, ip_address"),
+      sb.from("servers").select("id, name, hostname, status, public_ip, private_ip"),
       sb.from("websites").select("id, name, domain, server_id").order("domain"),
     ]);
     return {
@@ -119,10 +119,10 @@ export const runFailoverCheck = createServerFn({ method: "POST" })
     const domain = p.health_url ? new URL(p.health_url).hostname : null;
 
     if (shouldSwitch && p.backup_server_id) {
-      const { data: target } = await sb.from("servers").select("ip_address, hostname").eq("id", p.backup_server_id).maybeSingle();
+      const { data: target } = await sb.from("servers").select("public_ip, private_ip, hostname").eq("id", p.backup_server_id).maybeSingle();
       commandId = await queue(sb, context.userId, p.primary_server_id ?? p.backup_server_id, "failover_switch", {
         domain,
-        target: target?.ip_address ?? target?.hostname ?? "",
+        target: target?.public_ip ?? target?.private_ip ?? target?.hostname ?? "",
       }, { websiteId: p.website_id });
       state = "backup";
       await sb.from("failover_events").insert({
@@ -131,10 +131,10 @@ export const runFailoverCheck = createServerFn({ method: "POST" })
         reason: detail, details: { commandId },
       });
     } else if (shouldBack && p.primary_server_id) {
-      const { data: target } = await sb.from("servers").select("ip_address, hostname").eq("id", p.primary_server_id).maybeSingle();
+      const { data: target } = await sb.from("servers").select("public_ip, private_ip, hostname").eq("id", p.primary_server_id).maybeSingle();
       commandId = await queue(sb, context.userId, p.primary_server_id, "failover_switch", {
         domain,
-        target: target?.ip_address ?? target?.hostname ?? "",
+        target: target?.public_ip ?? target?.private_ip ?? target?.hostname ?? "",
       }, { websiteId: p.website_id });
       state = "primary";
       await sb.from("failover_events").insert({
@@ -160,11 +160,14 @@ export const createAgentInstaller = createServerFn({ method: "POST" })
   .inputValidator((input: { serverId: string; label?: string; osTarget?: string; baseUrl: string }) => input)
   .handler(async ({ data, context }) => {
     const sb = context.supabase as any;
-    const { data: server } = await sb.from("servers").select("id, name, agent_token").eq("id", data.serverId).maybeSingle();
+    const { data: server } = await sb.from("servers").select("id, name").eq("id", data.serverId).maybeSingle();
     if (!server) throw new Error("السيرفر غير موجود");
-    const token = server.agent_token ?? "";
+    const secret = process.env["SERVERS_INGEST_SECRET"];
+    if (!secret) throw new Error("إعداد الوكيل غير مكتمل على الخادم");
+    const { deriveAgentToken } = await import("./agent-token");
+    const token = deriveAgentToken(secret, server.id);
     const base = data.baseUrl.replace(/\/$/, "");
-    const cmd = `curl -fsSL "${base}/api/public/agent-script?server=${server.id}" -o /tmp/tvcc-agent.sh && sudo TVCC_SERVER_ID="${server.id}" TVCC_TOKEN="${token}" TVCC_BASE="${base}" bash /tmp/tvcc-agent.sh install`;
+    const cmd = `curl -fsSL "${base}/api/public/servers/agent?id=${server.id}&token=${token}" | sudo bash`;
     const { data: saved, error } = await sb.from("agent_installers").insert({
       owner_id: context.userId,
       server_id: server.id,

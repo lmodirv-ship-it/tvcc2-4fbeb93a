@@ -41,6 +41,7 @@ import { Route as AuthenticatedGroupsRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedFailoverRouteImport } from './routes/_authenticated/failover'
 import { Route as AuthenticatedEnvironmentRouteImport } from './routes/_authenticated/environment'
 import { Route as AuthenticatedEditorRouteImport } from './routes/_authenticated/editor'
+import { Route as AuthenticatedDownloadsRouteImport } from './routes/_authenticated/downloads'
 import { Route as AuthenticatedDomainsRouteImport } from './routes/_authenticated/domains'
 import { Route as AuthenticatedDeployRouteImport } from './routes/_authenticated/deploy'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
@@ -252,6 +253,11 @@ const AuthenticatedEnvironmentRoute =
 const AuthenticatedEditorRoute = AuthenticatedEditorRouteImport.update({
   id: '/editor',
   path: '/editor',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedDownloadsRoute = AuthenticatedDownloadsRouteImport.update({
+  id: '/downloads',
+  path: '/downloads',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedDomainsRoute = AuthenticatedDomainsRouteImport.update({
@@ -527,6 +533,7 @@ export interface FileRoutesByFullPath {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/deploy': typeof AuthenticatedDeployRoute
   '/domains': typeof AuthenticatedDomainsRoute
+  '/downloads': typeof AuthenticatedDownloadsRoute
   '/editor': typeof AuthenticatedEditorRouteWithChildren
   '/environment': typeof AuthenticatedEnvironmentRoute
   '/failover': typeof AuthenticatedFailoverRoute
@@ -606,6 +613,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/deploy': typeof AuthenticatedDeployRoute
   '/domains': typeof AuthenticatedDomainsRoute
+  '/downloads': typeof AuthenticatedDownloadsRoute
   '/environment': typeof AuthenticatedEnvironmentRoute
   '/failover': typeof AuthenticatedFailoverRoute
   '/groups': typeof AuthenticatedGroupsRoute
@@ -686,6 +694,7 @@ export interface FileRoutesById {
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/deploy': typeof AuthenticatedDeployRoute
   '/_authenticated/domains': typeof AuthenticatedDomainsRoute
+  '/_authenticated/downloads': typeof AuthenticatedDownloadsRoute
   '/_authenticated/editor': typeof AuthenticatedEditorRouteWithChildren
   '/_authenticated/environment': typeof AuthenticatedEnvironmentRoute
   '/_authenticated/failover': typeof AuthenticatedFailoverRoute
@@ -767,6 +776,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/deploy'
     | '/domains'
+    | '/downloads'
     | '/editor'
     | '/environment'
     | '/failover'
@@ -846,6 +856,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/deploy'
     | '/domains'
+    | '/downloads'
     | '/environment'
     | '/failover'
     | '/groups'
@@ -925,6 +936,7 @@ export interface FileRouteTypes {
     | '/_authenticated/dashboard'
     | '/_authenticated/deploy'
     | '/_authenticated/domains'
+    | '/_authenticated/downloads'
     | '/_authenticated/editor'
     | '/_authenticated/environment'
     | '/_authenticated/failover'
@@ -1231,6 +1243,13 @@ declare module '@tanstack/react-router' {
       path: '/editor'
       fullPath: '/editor'
       preLoaderRoute: typeof AuthenticatedEditorRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/downloads': {
+      id: '/_authenticated/downloads'
+      path: '/downloads'
+      fullPath: '/downloads'
+      preLoaderRoute: typeof AuthenticatedDownloadsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/domains': {
@@ -1626,6 +1645,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDeployRoute: typeof AuthenticatedDeployRoute
   AuthenticatedDomainsRoute: typeof AuthenticatedDomainsRoute
+  AuthenticatedDownloadsRoute: typeof AuthenticatedDownloadsRoute
   AuthenticatedEditorRoute: typeof AuthenticatedEditorRouteWithChildren
   AuthenticatedEnvironmentRoute: typeof AuthenticatedEnvironmentRoute
   AuthenticatedFailoverRoute: typeof AuthenticatedFailoverRoute
@@ -1671,6 +1691,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDeployRoute: AuthenticatedDeployRoute,
   AuthenticatedDomainsRoute: AuthenticatedDomainsRoute,
+  AuthenticatedDownloadsRoute: AuthenticatedDownloadsRoute,
   AuthenticatedEditorRoute: AuthenticatedEditorRouteWithChildren,
   AuthenticatedEnvironmentRoute: AuthenticatedEnvironmentRoute,
   AuthenticatedFailoverRoute: AuthenticatedFailoverRoute,

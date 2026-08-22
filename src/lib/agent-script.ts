@@ -7,7 +7,7 @@ TVCC_TOKEN="${token}"
 TVCC_ENDPOINT="${endpoint}"
 TVCC_AI_ENDPOINT="\${TVCC_AI_ENDPOINT:-http://127.0.0.1:11434}"
 TVCC_BACKUP_DIR="\${TVCC_BACKUP_DIR:-/var/backups/tvcc}"
-TVCC_AGENT_VERSION="2.2.0"
+TVCC_AGENT_VERSION="2.3.0"
 mkdir -p "$TVCC_BACKUP_DIR"
 
 json_escape() { python3 -c 'import sys,json;print(json.dumps(sys.stdin.read()))'; }
@@ -112,7 +112,7 @@ RestartSec=5
 WantedBy=multi-user.target
 EOF2
       systemctl daemon-reload && systemctl enable --now "\${N}.service" && systemctl is-active "\${N}.service" && echo "bridge \${LP} -> \${TH}:\${TP} active" ;;
-    ai_models_list)  P="$(GET port)"; curl -s -m 8 "http://127.0.0.1/\${P}" >/dev/null 2>&1; curl -s -m 8 "http://127.0.0.1:\${P}/api/tags" || curl -s -m 8 "http://127.0.0.1:\${P}/v1/models" || echo "no response on \${P}" ;;
+    ai_models_list)  P="$(GET port)"; curl -s -m 8 "http://127.0.0.1:\${P}/api/tags" || curl -s -m 8 "http://127.0.0.1:\${P}/v1/models" || echo "no response on \${P}" ;;
     ollama_start)    systemctl start ollama 2>/dev/null || (OLLAMA_HOST=0.0.0.0:$(GET port) nohup ollama serve >/var/log/ollama.log 2>&1 & echo started) ;;
     ollama_stop)     systemctl stop ollama 2>/dev/null || pkill -f "ollama serve" || true; echo "stopped" ;;
     ollama_pull)     ollama pull "$(GET model)" 2>&1 | tail -5 ;;

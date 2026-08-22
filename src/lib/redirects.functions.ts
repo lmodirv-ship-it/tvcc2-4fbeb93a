@@ -125,7 +125,7 @@ export const saveRedirect = createServerFn({ method: "POST" })
       .maybeSingle();
     if (error) throw new Error(error.message);
 
-    await logOp(sb, context.userId, "redirect_create", { source: src.value, target: dst.value, mode });
+    await logOp(sb, context.userId, "redirect_create", `توجيه ${src.value} → ${dst.value}`, { source: src.value, target: dst.value, mode }, data.serverId);
     return { ok: true, dryRun: false, mode, preview, commands, id: row?.id as string | null };
   });
 

@@ -240,7 +240,10 @@ function DomainsPage() {
           </h1>
           <p className="text-muted-foreground mt-1">إدارة جميع الدومينات وتواريخ انتهاء التسجيل</p>
         </div>
-        <Button onClick={() => setOpen(!open)} className="bg-primary"><Plus className="w-4 h-4 ml-1" /> إضافة دومين</Button>
+        <div className="flex flex-wrap items-center gap-2">
+          <RedirectPanel />
+          <Button onClick={() => setOpen(!open)} className="bg-primary"><Plus className="w-4 h-4 ml-1" /> إضافة دومين</Button>
+        </div>
       </div>
 
       {open && (

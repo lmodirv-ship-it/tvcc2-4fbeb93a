@@ -204,7 +204,40 @@ export const AI_TOOLS: ToolDef[] = [
       required: ["id"],
     },
   },
+  {
+    name: "log_task_step",
+    description:
+      "تسجيل خطوة تنفيذ داخل مهمة لعرضها في مركز المهام (المرحلة، العنوان، التفاصيل، الأداة المستخدمة). استعملها بعد كل خطوة مهمة.",
+    parameters: {
+      type: "object",
+      properties: {
+        task_id: { type: "string" },
+        title: { type: "string" },
+        detail: { type: "string" },
+        stage: { type: "string", enum: ["planning", "reading", "editing", "building", "verifying", "done"] },
+        tool_name: { type: "string" },
+        status: { type: "string", enum: ["done", "failed", "running"] },
+      },
+      required: ["task_id", "title"],
+    },
+  },
+  {
+    name: "set_task_progress",
+    description: "تحديث مرحلة المهمة ونسبة تقدّمها (0-100) لعرضها مباشرة في مركز المهام.",
+    parameters: {
+      type: "object",
+      properties: {
+        task_id: { type: "string" },
+        stage: { type: "string", enum: ["planning", "reading", "editing", "building", "verifying", "done"] },
+        progress: { type: "number" },
+        status: { type: "string", enum: ["pending", "running", "done", "failed"] },
+        result: { type: "string" },
+      },
+      required: ["task_id"],
+    },
+  },
 ];
+
 
 const FS_ACTIONS = new Set(["fs_list", "fs_tree", "fs_read", "fs_search", "fs_write", "fs_mkdir", "fs_move", "fs_delete"]);
 
@@ -265,8 +298,13 @@ export async function runTool(
   const def = AI_TOOLS.find((t) => t.name === name);
   if (!def) return { error: `أداة غير معروفة: ${name}` };
   if (def.mutating && !allowWrites) {
-    return { error: "هذه العملية تُعدّل البيانات وتحتاج تأكيد المستخدم. فعّل «السماح بالتعديل» أولاً." };
+    return {
+      error:
+        "هذه العملية تُعدّل البيانات ولا تُنفَّذ إلا بأمر تعديل صريح من المستخدم " +
+        "(ابدأ الرسالة بـ /تعديل أو اكتب «عدّل …» / «نفّذ التعديل …»). اشرح التغيير المقترح واطلب الأمر.",
+    };
   }
+
 
   if (FS_ACTIONS.has(name) || name === "run_server_command") {
     const serverId = args.server_id || opts?.serverId;
@@ -381,11 +419,51 @@ export async function runTool(
       return error ? { error: error.message } : { task: data };
     }
     case "update_task": {
-      const patch: Record<string, unknown> = {};
-      for (const k of ["status", "result", "instructions"]) if (args[k] !== undefined) patch[k] = args[k];
+      const patch: Record<string, unknown> = { last_step_at: new Date().toISOString() };
+      for (const k of ["status", "result", "instructions", "stage", "progress"]) {
+        if (args[k] !== undefined) patch[k] = args[k];
+      }
+      if (args.status === "done") { patch.completed_at = new Date().toISOString(); patch.progress = 100; patch.stage = "done"; }
       const { error } = await sb.from("ai_tasks").update(patch).eq("id", args.id);
       return error ? { error: error.message } : { ok: true, updated: patch };
     }
+    case "log_task_step": {
+      const { count } = await sb
+        .from("ai_task_steps")
+        .select("*", { count: "exact", head: true })
+        .eq("task_id", args.task_id);
+      const { error } = await sb.from("ai_task_steps").insert({
+        owner_id: userId,
+        task_id: args.task_id,
+        step_no: (count ?? 0) + 1,
+        stage: args.stage ?? "working",
+        title: String(args.title ?? "خطوة"),
+        detail: args.detail ? String(args.detail).slice(0, 4000) : null,
+        tool_name: args.tool_name ?? null,
+        status: args.status ?? "done",
+      });
+      if (!error) {
+        await sb.from("ai_tasks").update({
+          stage: args.stage ?? "working",
+          last_step_at: new Date().toISOString(),
+        }).eq("id", args.task_id);
+      }
+      return error ? { error: error.message } : { ok: true, step_no: (count ?? 0) + 1 };
+    }
+    case "set_task_progress": {
+      const patch: Record<string, unknown> = { last_step_at: new Date().toISOString() };
+      if (args.stage !== undefined) patch.stage = args.stage;
+      if (args.progress !== undefined) patch.progress = Math.max(0, Math.min(100, Number(args.progress) || 0));
+      if (args.status !== undefined) patch.status = args.status;
+      if (args.result !== undefined) patch.result = args.result;
+      if (args.status === "done" || patch.progress === 100) {
+        patch.completed_at = new Date().toISOString();
+        patch.stage = "done";
+      }
+      const { error } = await sb.from("ai_tasks").update(patch).eq("id", args.task_id);
+      return error ? { error: error.message } : { ok: true, updated: patch };
+    }
+
     default:
 
       return { error: "غير مدعوم" };

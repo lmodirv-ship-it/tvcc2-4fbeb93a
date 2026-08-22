@@ -99,6 +99,8 @@ export const saveAiTask = createServerFn({ method: "POST" })
     status?: string;
     priority?: number;
     result?: string | null;
+    modelId?: string | null;
+    stage?: string;
   }) => input)
   .handler(async ({ data, context }) => {
     const sb = context.supabase as any;
@@ -109,6 +111,8 @@ export const saveAiTask = createServerFn({ method: "POST" })
       server_id: data.serverId ?? null,
       website_id: data.websiteId ?? null,
       status: data.status ?? "pending",
+      ...(data.modelId !== undefined ? { model_id: data.modelId } : {}),
+      ...(data.stage !== undefined ? { stage: data.stage } : {}),
       priority: data.priority ?? 2,
       result: data.result ?? null,
     };
@@ -138,4 +142,45 @@ export const deleteAiTask = createServerFn({ method: "POST" })
     const { error } = await (context.supabase as any).from("ai_tasks").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
     return { ok: true };
+  });
+
+/* ---------------- مركز المهام: المراحل والتشغيل بالنماذج ---------------- */
+
+export const listTaskSteps = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { taskId: string }) => input)
+  .handler(async ({ data, context }) => {
+    const { data: steps } = await (context.supabase as any)
+      .from("ai_task_steps")
+      .select("*")
+      .eq("task_id", data.taskId)
+      .order("step_no", { ascending: true });
+    return steps ?? [];
+  });
+
+/** Assign a model to a task and (optionally) approve edits with an explicit edit command. */
+export const assignTaskModel = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string; modelId: string | null; editCommand?: string }) => input)
+  .handler(async ({ data, context }) => {
+    const { hasEditCommand } = await import("./ai-write-command");
+    const patch: Record<string, unknown> = { model_id: data.modelId };
+    if (data.editCommand !== undefined) patch.allow_edit = hasEditCommand(data.editCommand);
+    const { error } = await (context.supabase as any).from("ai_tasks").update(patch).eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true, allow_edit: patch.allow_edit === true };
+  });
+
+/** Runs the task with its assigned model, recording each stage. */
+export const runAiTask = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { id: string; modelId?: string | null; editCommand?: string }) => input)
+  .handler(async ({ data, context }) => {
+    const sb = context.supabase as any;
+    if (data.editCommand !== undefined) {
+      const { hasEditCommand } = await import("./ai-write-command");
+      await sb.from("ai_tasks").update({ allow_edit: hasEditCommand(data.editCommand) }).eq("id", data.id);
+    }
+    const { runTaskWithModel } = await import("./ai-task-runner.server");
+    return runTaskWithModel(sb, context.userId, data.id, data.modelId ?? null);
   });

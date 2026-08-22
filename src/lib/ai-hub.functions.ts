@@ -364,6 +364,8 @@ export const aiChat = createServerFn({ method: "POST" })
       contextNote += `\nالمهام المطلوب إنجازها: ${JSON.stringify(tasks ?? [])} — حدّث حالة كل مهمة بأداة update_task عند الانتهاء.`;
     }
 
+    const writeAllowed = hasEditCommand(data.message) || !!data.allowWrites;
+
     const messages: ChatMsg[] = [
       {
         role: "system",
@@ -390,7 +392,6 @@ export const aiChat = createServerFn({ method: "POST" })
       content: data.message,
     });
 
-    const writeAllowed = hasEditCommand(data.message) || !!data.allowWrites;
     const toolLog: Array<{ name: string; args: string }> = [];
     let answer = "";
     const started = Date.now();

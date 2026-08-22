@@ -30,6 +30,7 @@ import {
 } from "@/lib/server-ops.functions";
 import { COMMAND_WHITELIST, COMMAND_LABELS, COMMAND_ARG } from "@/lib/server-commands";
 import { importServerModels } from "@/lib/ai-hub.functions";
+import { PortsHub } from "@/components/servers/PortsHub";
 
 export const Route = createFileRoute("/_authenticated/servers")({
   component: ServersPage,

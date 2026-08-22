@@ -220,10 +220,17 @@ function ConnectPage() {
                     <Badge variant="outline">{s.service_type}</Badge>
                     <span className="font-medium">{s.name}</span>
                     <span className="text-xs text-muted-foreground">{s.endpoint_url ?? "—"}</span>
+                    <Badge variant={s.status === "error" ? "destructive" : "outline"}>{s.status}</Badge>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() => mDelSvc.mutate({ serviceId: s.id })}>
-                    <Trash2 className="w-4 h-4 text-destructive" />
-                  </Button>
+                  <div className="flex gap-1">
+                    <Button variant="outline" size="sm" disabled={mTest.isPending}
+                      onClick={() => mTest.mutate({ kind: "service", id: s.id })}>
+                      <Activity className="w-4 h-4 ml-1" /> اختبار
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => mDelSvc.mutate({ serviceId: s.id })}>
+                      <Trash2 className="w-4 h-4 text-destructive" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </CardContent>

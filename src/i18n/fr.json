@@ -81,6 +81,7 @@
     "ai_tests": "Historique des tests",
     "backups": "Sauvegardes",
     "topology": "Carte des relations",
+    "logs": "Centre des journaux",
     "network": "Réseau serveurs"
   },
   "dashboard": {

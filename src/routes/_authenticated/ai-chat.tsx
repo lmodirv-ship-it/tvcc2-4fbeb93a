@@ -42,6 +42,8 @@ function AiChatPage() {
   const convs = useServerFn(listConversations);
   const convMessages = useServerFn(getConversation);
   const removeConv = useServerFn(deleteConversation);
+  const toolSchemas = useServerFn(listAiToolSchemas);
+  const execTool = useServerFn(runAiTool);
 
   const [modelId, setModelId] = useState("");
   const [allowWrites, setAllowWrites] = useState(false);
@@ -49,7 +51,11 @@ function AiChatPage() {
   const [input, setInput] = useState("");
   const [pending, setPending] = useState(false);
   const [localMsgs, setLocalMsgs] = useState<Msg[]>([]);
+  const [serverId, setServerId] = useState("");
+  const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
+  const [activeTasks, setActiveTasks] = useState<string[]>([]);
   const bottom = useRef<HTMLDivElement>(null);
+
 
   const { data } = useQuery({ queryKey: ["ai-hub"], queryFn: () => fetchAll() });
   const models = (((data as any)?.models ?? []) as any[]).filter((m) => m.is_active !== false);

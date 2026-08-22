@@ -353,8 +353,54 @@ function ConnectPage() {
                     <Link2 className="w-4 h-4 text-primary" />
                     <span className="text-muted-foreground">{l.host ?? "—"}:{l.port ?? "—"}/{l.db_name ?? "—"}</span>
                     <Badge variant="outline">{l.connection_kind}</Badge>
+                    <Badge variant="outline">{l.status}</Badge>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={() => mUnlinkDb.mutate({ linkId: l.id })}>فك الربط</Button>
+                  <div className="flex gap-1">
+                    <Button variant="outline" size="sm" disabled={mTest.isPending}
+                      onClick={() => mTest.mutate({ kind: "database", id: l.id })}>
+                      <Activity className="w-4 h-4 ml-1" /> اختبار
+                    </Button>
+                    <Button variant="outline" size="sm" disabled={mTest.isPending}
+                      onClick={() => mTest.mutate({ kind: "env", id: l.website_id })}>
+                      فحص المتغيرات
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => mUnlinkDb.mutate({ linkId: l.id })}>فك الربط</Button>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="bulk" className="mt-4">
+          <BulkLinkPanel websites={websites} services={services} servers={servers} databases={databases} />
+        </TabsContent>
+
+        <TabsContent value="secrets" className="mt-4">
+          <SecretsPanel websites={websites} servers={servers} />
+        </TabsContent>
+
+        <TabsContent value="events" className="mt-4">
+          <Card className="ring-1 ring-border bg-card/60">
+            <CardHeader><CardTitle className="text-base flex items-center gap-2"><Activity className="w-4 h-4" /> سجل الاختبارات والأخطاء</CardTitle></CardHeader>
+            <CardContent className="space-y-1 text-sm">
+              {events.length === 0 && <p className="text-muted-foreground">لا توجد أحداث بعد.</p>}
+              {events.map((e: any) => (
+                <div key={e.id} className="flex items-start justify-between gap-3 border-b border-border/30 py-2">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <Badge variant={e.status === "failed" ? "destructive" : "outline"}>{e.status}</Badge>
+                      <span className="font-medium">{e.title}</span>
+                      {e.website_id && <span className="text-xs text-muted-foreground">{siteName(e.website_id)}</span>}
+                    </div>
+                    <p className="text-xs text-muted-foreground break-words">
+                      {e.result?.message ?? e.result?.error ?? (e.result?.steps ?? []).join(" · ") ?? ""}
+                      {e.result?.latency_ms ? ` · ${e.result.latency_ms}ms` : ""}
+                    </p>
+                  </div>
+                  <span className="text-[11px] text-muted-foreground whitespace-nowrap">
+                    {new Date(e.created_at).toLocaleString("ar")}
+                  </span>
                 </div>
               ))}
             </CardContent>

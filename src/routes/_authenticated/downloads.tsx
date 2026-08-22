@@ -68,8 +68,8 @@ function DownloadsPage() {
     if (!serverId) return toast.error("اختر سيرفراً أولاً");
     setLoading(true);
     try {
-      const res: any = await fetchInstall({ data: { serverId } });
-      setInstall({ command: res.install ?? res.command, scriptUrl: res.scriptUrl ?? "", script: res.script });
+      const res: any = await fetchInstall({ data: { serverId, origin: window.location.origin } });
+      setInstall({ command: res.install, scriptUrl: "", script: res.script });
       toast.success("تم توليد أمر التثبيت");
     } catch (e: any) {
       toast.error(e?.message ?? "تعذّر توليد الأمر");
@@ -144,17 +144,10 @@ function DownloadsPage() {
                     </Button>
                     <Button
                       variant="outline"
-                      onClick={() =>
-                        saveFile("tvcc-agent-install.sh", `#!/usr/bin/env bash\nset -e\n${install.command}\n`, "text/x-shellscript")
-                      }
+                      onClick={() => saveFile("tvcc-agent.sh", install.script ?? install.command, "text/x-shellscript")}
                     >
-                      <Download className="me-2 h-4 w-4" /> تنزيل ملف التثبيت
+                      <Download className="me-2 h-4 w-4" /> تنزيل سكربت الوكيل
                     </Button>
-                    {install.scriptUrl && (
-                      <Button variant="ghost" asChild>
-                        <a href={install.scriptUrl} target="_blank" rel="noreferrer">فتح السكربت الكامل</a>
-                      </Button>
-                    )}
                   </div>
                   <p className="text-xs text-muted-foreground">
                     التوكن داخل الأمر سرّي وخاص بهذا السيرفر — لا تشاركه.

@@ -9,6 +9,7 @@ import getDashboardStats from "./tools/get-dashboard-stats";
 import getHnCertificate from "./tools/get-hn-certificate";
 import listServers from "./tools/list-servers";
 import getServerStatus from "./tools/get-server-status";
+import listServiceLinks from "./tools/list-service-links";
 
 // The OAuth issuer must be the direct Supabase host: the project ref is the only
 // Supabase value that survives publish unchanged, and Vite inlines it at build time.
@@ -39,5 +40,6 @@ export default defineMcp({
     getHnCertificate,
     listServers,
     getServerStatus,
+    listServiceLinks,
   ],
 });

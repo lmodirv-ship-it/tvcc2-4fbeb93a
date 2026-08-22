@@ -2664,7 +2664,7 @@ export type Database = {
           created_at: string
           id: string
           notes: string | null
-          owner_id: string | null
+          owner_id: string
           provider_website_id: string
           service_id: string
           status: string
@@ -2675,7 +2675,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
-          owner_id?: string | null
+          owner_id: string
           provider_website_id: string
           service_id: string
           status?: string
@@ -2686,7 +2686,7 @@ export type Database = {
           created_at?: string
           id?: string
           notes?: string | null
-          owner_id?: string | null
+          owner_id?: string
           provider_website_id?: string
           service_id?: string
           status?: string
@@ -3192,7 +3192,7 @@ export type Database = {
           is_public: boolean
           metadata: Json | null
           name: string
-          owner_id: string | null
+          owner_id: string
           service_type: string
           status: string
           updated_at: string
@@ -3206,7 +3206,7 @@ export type Database = {
           is_public?: boolean
           metadata?: Json | null
           name: string
-          owner_id?: string | null
+          owner_id: string
           service_type: string
           status?: string
           updated_at?: string
@@ -3220,7 +3220,7 @@ export type Database = {
           is_public?: boolean
           metadata?: Json | null
           name?: string
-          owner_id?: string | null
+          owner_id?: string
           service_type?: string
           status?: string
           updated_at?: string

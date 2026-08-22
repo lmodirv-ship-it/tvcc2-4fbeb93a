@@ -268,6 +268,17 @@ function AiChatPage() {
           </Button>
         </div>
       </div>
+
+      <div className="hidden lg:block min-h-0">
+        <WorkspacePanel
+          serverId={serverId}
+          setServerId={setServerId}
+          selected={selectedFiles}
+          setSelected={setSelectedFiles}
+          activeTasks={activeTasks}
+          setActiveTasks={setActiveTasks}
+        />
+      </div>
     </div>
   );
 }

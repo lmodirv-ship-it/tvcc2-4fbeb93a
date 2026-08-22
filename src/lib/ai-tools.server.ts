@@ -298,8 +298,13 @@ export async function runTool(
   const def = AI_TOOLS.find((t) => t.name === name);
   if (!def) return { error: `أداة غير معروفة: ${name}` };
   if (def.mutating && !allowWrites) {
-    return { error: "هذه العملية تُعدّل البيانات وتحتاج تأكيد المستخدم. فعّل «السماح بالتعديل» أولاً." };
+    return {
+      error:
+        "هذه العملية تُعدّل البيانات ولا تُنفَّذ إلا بأمر تعديل صريح من المستخدم " +
+        "(ابدأ الرسالة بـ /تعديل أو اكتب «عدّل …» / «نفّذ التعديل …»). اشرح التغيير المقترح واطلب الأمر.",
+    };
   }
+
 
   if (FS_ACTIONS.has(name) || name === "run_server_command") {
     const serverId = args.server_id || opts?.serverId;

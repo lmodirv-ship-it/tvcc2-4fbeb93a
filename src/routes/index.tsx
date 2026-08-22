@@ -6,8 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Globe, Shield, Bell, Zap, Database, HardDrive,
-  Activity, Layers, ArrowLeft, CheckCircle2, Sparkles, Users,
+  Activity, Layers, ArrowLeft, CheckCircle2, Sparkles, Users, BookOpen,
 } from "lucide-react";
+import { PublicNav } from "@/components/site/PublicNav";
+import { LiveBackdrop, Tilt3D } from "@/components/visual/LiveScene";
 import tvccLogo from "@/assets/tvcc-logo.asset.json";
 
 export const Route = createFileRoute("/")({
@@ -54,34 +56,9 @@ function LandingPage() {
   ];
 
   return (
-    <div className="min-h-screen" dir="rtl">
-      {/* NAV */}
-      <header className="sticky top-0 z-40 border-b border-border/40 bg-background/70 backdrop-blur-xl">
-        <div className="container mx-auto px-6 h-16 flex items-center justify-between">
-          <Link to="/" className="flex items-center gap-3">
-            <img src={logo} alt={name} className="w-10 h-10 rounded-xl object-cover" style={{ boxShadow: "var(--shadow-elegant)" }} />
-            <div className="leading-tight">
-              <div className="font-bold text-lg">{name}</div>
-              <div className="text-[10px] text-muted-foreground tracking-widest">{tagline}</div>
-            </div>
-          </Link>
-          <nav className="hidden md:flex items-center gap-8 text-sm text-muted-foreground">
-            <a href="#features" className="hover:text-foreground transition">المزايا</a>
-            <a href="#stats" className="hover:text-foreground transition">الإحصاءات</a>
-            <a href="#integrations" className="hover:text-foreground transition">التكاملات</a>
-          </nav>
-          <div className="flex items-center gap-2">
-            {signedIn ? (
-              <Button asChild><Link to="/dashboard">لوحة التحكم<ArrowLeft className="w-4 h-4 mr-2" /></Link></Button>
-            ) : (
-              <>
-                <Button variant="ghost" onClick={() => navigate({ to: "/auth" })}>دخول</Button>
-                <Button onClick={() => navigate({ to: "/auth" })}>ابدأ الآن<ArrowLeft className="w-4 h-4 mr-2" /></Button>
-              </>
-            )}
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen relative" dir="rtl">
+      <LiveBackdrop className="opacity-70" />
+      <PublicNav logo={logo} name={name} tagline={tagline} />
 
       {/* HERO */}
       <section className="relative overflow-hidden">
@@ -104,11 +81,19 @@ function LandingPage() {
             منصة شخصية متكاملة لإدارة كل مشاريعك ومواقعك — المراقبة، الدومينات، SSL، التنبيهات، والتكامل مع HN-DB و HN-Cloud من لوحة واحدة.
           </p>
           <div className="mt-10 flex items-center justify-center gap-3 flex-wrap">
-            <Button size="lg" className="text-base px-8" onClick={() => navigate({ to: signedIn ? "/dashboard" : "/auth" })}>
+            <Button
+              size="lg"
+              className="text-base px-8 rounded-xl shadow-lg hover:-translate-y-0.5 transition"
+              style={{ background: "var(--gradient-primary)" }}
+              onClick={() => navigate({ to: signedIn ? "/dashboard" : "/auth" })}
+            >
               {signedIn ? "افتح لوحة التحكم" : "ابدأ مجاناً"}
               <ArrowLeft className="w-5 h-5 mr-2" />
             </Button>
-            <Button size="lg" variant="outline" className="text-base px-8" asChild>
+            <Button size="lg" variant="outline" className="text-base px-8 rounded-xl hover:-translate-y-0.5 transition gap-2" asChild>
+              <Link to="/blog"><BookOpen className="w-5 h-5" /> المدونة</Link>
+            </Button>
+            <Button size="lg" variant="ghost" className="text-base px-8 rounded-xl hover:-translate-y-0.5 transition" asChild>
               <a href="#features">استكشف المزايا</a>
             </Button>
           </div>
@@ -119,6 +104,7 @@ function LandingPage() {
           </div>
         </div>
       </section>
+
 
       {/* STATS */}
       <section id="stats" className="container mx-auto px-6 py-12">
@@ -142,7 +128,8 @@ function LandingPage() {
         </div>
         <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
           {features.map((f) => (
-            <Card key={f.title} className="bg-card/60 ring-1 ring-border hover:ring-primary/40 transition">
+            <Tilt3D key={f.title}>
+            <Card className="h-full bg-card/60 ring-1 ring-border hover:ring-primary/40 transition">
               <CardContent className="p-6">
                 <div className="w-12 h-12 rounded-xl bg-primary/15 flex items-center justify-center mb-4">
                   <f.icon className="w-6 h-6 text-primary" />
@@ -151,6 +138,7 @@ function LandingPage() {
                 <p className="text-sm text-muted-foreground">{f.desc}</p>
               </CardContent>
             </Card>
+            </Tilt3D>
           ))}
         </div>
       </section>
@@ -198,6 +186,7 @@ function LandingPage() {
           </div>
           <div className="flex gap-6">
             <Link to="/auth" className="hover:text-foreground">دخول</Link>
+            <Link to="/blog" className="hover:text-foreground">المدونة</Link>
             <a href="#features" className="hover:text-foreground">المزايا</a>
           </div>
         </div>

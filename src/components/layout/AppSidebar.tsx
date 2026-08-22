@@ -27,6 +27,7 @@ const coreItems = [
   { titleKey: "sidebar.services", url: "/services", icon: Boxes },
   { titleKey: "sidebar.core_hub", url: "/core-hub", icon: Brain },
   { titleKey: "sidebar.video_studio", url: "/video-studio", icon: Film },
+  { titleKey: "sidebar.blog", url: "/blog-manager", icon: NotebookPen },
 ];
 
 const aiItems = [

@@ -136,6 +136,9 @@ function ConnectPage() {
         <TabsList>
           <TabsTrigger value="services">الخدمات والربط</TabsTrigger>
           <TabsTrigger value="databases">قواعد البيانات</TabsTrigger>
+          <TabsTrigger value="bulk">ربط جماعي</TabsTrigger>
+          <TabsTrigger value="secrets">الأسرار</TabsTrigger>
+          <TabsTrigger value="events">السجل</TabsTrigger>
         </TabsList>
 
         <TabsContent value="services" className="space-y-4 mt-4">

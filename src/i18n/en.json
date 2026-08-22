@@ -80,6 +80,7 @@
     "ai_chat": "Model chat",
     "ai_tests": "Test History",
     "backups": "Backups",
+    "topology": "Topology Map",
     "network": "Server Mesh"
   },
   "dashboard": {

@@ -820,6 +820,59 @@ export type Database = {
         }
         Relationships: []
       }
+      domain_redirects: {
+        Row: {
+          created_at: string
+          id: string
+          last_checked_at: string | null
+          mode: string
+          owner_id: string
+          server_id: string | null
+          source: string
+          source_kind: string
+          status: string
+          target: string
+          target_kind: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_checked_at?: string | null
+          mode: string
+          owner_id: string
+          server_id?: string | null
+          source: string
+          source_kind: string
+          status?: string
+          target: string
+          target_kind: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_checked_at?: string | null
+          mode?: string
+          owner_id?: string
+          server_id?: string | null
+          source?: string
+          source_kind?: string
+          status?: string
+          target?: string
+          target_kind?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "domain_redirects_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       domains: {
         Row: {
           auto_renew: boolean

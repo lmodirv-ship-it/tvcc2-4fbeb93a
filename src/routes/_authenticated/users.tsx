@@ -240,7 +240,7 @@ function TeamTab() {
                       </Button>
                     </TableCell>
                     <TableCell>
-                      {isSystemOwner && (
+                      {isAdmin && (
                         <Button size="sm" variant="ghost" onClick={() => removeInvite(i.id)}>
                           <Trash2 className="w-3 h-3" />
                         </Button>

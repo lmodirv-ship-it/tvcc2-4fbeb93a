@@ -607,7 +607,13 @@ export const listAiToolSchemas = createServerFn({ method: "GET" })
 /** Executes one AI tool with the caller's RLS-scoped client (used by browser-run models). */
 export const runAiTool = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { name: string; args?: Record<string, unknown>; allowWrites?: boolean }) => input)
+  .inputValidator((input: {
+    name: string;
+    args?: Record<string, unknown>;
+    allowWrites?: boolean;
+    serverId?: string | null;
+    websiteId?: string | null;
+  }) => input)
   .handler(async ({ data, context }) => {
     const result = await runTool(
       context.supabase as any,
@@ -615,9 +621,11 @@ export const runAiTool = createServerFn({ method: "POST" })
       data.name,
       (data.args ?? {}) as Record<string, any>,
       !!data.allowWrites,
+      { serverId: data.serverId ?? null, websiteId: data.websiteId ?? null },
     );
     return { result: JSON.stringify(result ?? null) };
   });
+
 
 
 /** Persists a full chat turn produced in the browser (local/LAN models). */

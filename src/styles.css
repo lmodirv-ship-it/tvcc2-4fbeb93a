@@ -42,8 +42,6 @@
   --color-sidebar-border: var(--sidebar-border);
   --color-sidebar-ring: var(--sidebar-ring);
   --font-sans: "Cairo", "Tajawal", system-ui, sans-serif;
-  --shadow-elegant: var(--shadow-elegant);
-  --shadow-card: var(--shadow-card);
   --shadow-neon-primary: var(--neon-glow-primary);
   --shadow-neon-accent: var(--neon-glow-accent);
 }

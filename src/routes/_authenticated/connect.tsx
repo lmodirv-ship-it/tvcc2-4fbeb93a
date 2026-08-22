@@ -11,12 +11,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Link2, Database, Boxes, Trash2, Plug, Cloud, Server } from "lucide-react";
+import { Link2, Database, Boxes, Trash2, Plug, Cloud, Server, Activity } from "lucide-react";
 import { toast } from "sonner";
 import {
   getConnectHub, registerService, deleteService, linkDatabase, unlinkDatabase,
+  testConnection, listConnectionEvents,
 } from "@/lib/connect.functions";
 import { connectService, disconnectService } from "@/lib/mesh.functions";
+import { BulkLinkPanel } from "@/components/mesh/BulkLinkPanel";
+import { SecretsPanel } from "@/components/mesh/SecretsPanel";
 
 export const Route = createFileRoute("/_authenticated/connect")({
   component: ConnectPage,
@@ -63,6 +66,24 @@ function ConnectPage() {
   const mDisconn = mut(disconnFn, "تم فك الربط");
   const mLinkDb = mut(linkDbFn, "تم ربط قاعدة البيانات");
   const mUnlinkDb = mut(unlinkDbFn, "تم فك ربط القاعدة");
+
+  const testFn = useServerFn(testConnection);
+  const eventsFn = useServerFn(listConnectionEvents);
+  const { data: events = [] } = useQuery({
+    queryKey: ["connect-events"],
+    queryFn: () => eventsFn(),
+    refetchInterval: 15000,
+  });
+  const mTest = useMutation({
+    mutationFn: (vars: { kind: "service" | "database" | "env"; id: string }) => testFn({ data: vars }),
+    onSuccess: (res: any) => {
+      const fn = res.status === "error" ? toast.error : res.status === "active" ? toast.success : toast.info;
+      fn(res.message || res.status);
+      refresh();
+      qc.invalidateQueries({ queryKey: ["connect-events"] });
+    },
+    onError: (e: any) => toast.error(e?.message ?? "فشل الاختبار"),
+  });
 
   const websites = data?.websites ?? [];
   const services = data?.services ?? [];
@@ -115,6 +136,9 @@ function ConnectPage() {
         <TabsList>
           <TabsTrigger value="services">الخدمات والربط</TabsTrigger>
           <TabsTrigger value="databases">قواعد البيانات</TabsTrigger>
+          <TabsTrigger value="bulk">ربط جماعي</TabsTrigger>
+          <TabsTrigger value="secrets">الأسرار</TabsTrigger>
+          <TabsTrigger value="events">السجل</TabsTrigger>
         </TabsList>
 
         <TabsContent value="services" className="space-y-4 mt-4">
@@ -196,10 +220,17 @@ function ConnectPage() {
                     <Badge variant="outline">{s.service_type}</Badge>
                     <span className="font-medium">{s.name}</span>
                     <span className="text-xs text-muted-foreground">{s.endpoint_url ?? "—"}</span>
+                    <Badge variant={s.status === "error" ? "destructive" : "outline"}>{s.status}</Badge>
                   </div>
-                  <Button variant="ghost" size="icon" onClick={() => mDelSvc.mutate({ serviceId: s.id })}>
-                    <Trash2 className="w-4 h-4 text-destructive" />
-                  </Button>
+                  <div className="flex gap-1">
+                    <Button variant="outline" size="sm" disabled={mTest.isPending}
+                      onClick={() => mTest.mutate({ kind: "service", id: s.id })}>
+                      <Activity className="w-4 h-4 ml-1" /> اختبار
+                    </Button>
+                    <Button variant="ghost" size="icon" onClick={() => mDelSvc.mutate({ serviceId: s.id })}>
+                      <Trash2 className="w-4 h-4 text-destructive" />
+                    </Button>
+                  </div>
                 </div>
               ))}
             </CardContent>
@@ -332,8 +363,54 @@ function ConnectPage() {
                     <Link2 className="w-4 h-4 text-primary" />
                     <span className="text-muted-foreground">{l.host ?? "—"}:{l.port ?? "—"}/{l.db_name ?? "—"}</span>
                     <Badge variant="outline">{l.connection_kind}</Badge>
+                    <Badge variant="outline">{l.status}</Badge>
                   </div>
-                  <Button variant="ghost" size="sm" onClick={() => mUnlinkDb.mutate({ linkId: l.id })}>فك الربط</Button>
+                  <div className="flex gap-1">
+                    <Button variant="outline" size="sm" disabled={mTest.isPending}
+                      onClick={() => mTest.mutate({ kind: "database", id: l.id })}>
+                      <Activity className="w-4 h-4 ml-1" /> اختبار
+                    </Button>
+                    <Button variant="outline" size="sm" disabled={mTest.isPending}
+                      onClick={() => mTest.mutate({ kind: "env", id: l.website_id })}>
+                      فحص المتغيرات
+                    </Button>
+                    <Button variant="ghost" size="sm" onClick={() => mUnlinkDb.mutate({ linkId: l.id })}>فك الربط</Button>
+                  </div>
+                </div>
+              ))}
+            </CardContent>
+          </Card>
+        </TabsContent>
+
+        <TabsContent value="bulk" className="mt-4">
+          <BulkLinkPanel websites={websites} services={services} servers={servers} databases={databases} />
+        </TabsContent>
+
+        <TabsContent value="secrets" className="mt-4">
+          <SecretsPanel websites={websites} servers={servers} />
+        </TabsContent>
+
+        <TabsContent value="events" className="mt-4">
+          <Card className="ring-1 ring-border bg-card/60">
+            <CardHeader><CardTitle className="text-base flex items-center gap-2"><Activity className="w-4 h-4" /> سجل الاختبارات والأخطاء</CardTitle></CardHeader>
+            <CardContent className="space-y-1 text-sm">
+              {events.length === 0 && <p className="text-muted-foreground">لا توجد أحداث بعد.</p>}
+              {events.map((e: any) => (
+                <div key={e.id} className="flex items-start justify-between gap-3 border-b border-border/30 py-2">
+                  <div className="min-w-0">
+                    <div className="flex items-center gap-2">
+                      <Badge variant={e.status === "failed" ? "destructive" : "outline"}>{e.status}</Badge>
+                      <span className="font-medium">{e.title}</span>
+                      {e.website_id && <span className="text-xs text-muted-foreground">{siteName(e.website_id)}</span>}
+                    </div>
+                    <p className="text-xs text-muted-foreground break-words">
+                      {e.result?.message ?? e.result?.error ?? (e.result?.steps ?? []).join(" · ") ?? ""}
+                      {e.result?.latency_ms ? ` · ${e.result.latency_ms}ms` : ""}
+                    </p>
+                  </div>
+                  <span className="text-[11px] text-muted-foreground whitespace-nowrap">
+                    {new Date(e.created_at).toLocaleString("ar")}
+                  </span>
                 </div>
               ))}
             </CardContent>

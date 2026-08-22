@@ -153,7 +153,7 @@ export const applyTemplate = createServerFn({ method: "POST" })
       if (jobId) {
         await supabase
           .from("deployment_job_targets")
-          .update({ status: err ? "failed" : "done", error: err })
+          .update({ status: err ? "failed" : "done", error_message: err, processed_at: new Date().toISOString() })
           .eq("job_id", jobId)
           .eq("website_id", wid);
       }
@@ -165,14 +165,14 @@ export const applyTemplate = createServerFn({ method: "POST" })
         .update({
           status: failed && !applied ? "failed" : "completed",
           success_count: applied,
-          failed_count: failed,
-          finished_at: new Date().toISOString(),
+          error_count: failed,
+          completed_at: new Date().toISOString(),
         })
         .eq("id", jobId);
     }
 
     await supabase.from("activity_log").insert({
-      user_id: userId,
+      owner_id: userId,
       action: "apply_template",
       entity_type: "site_template",
       entity_id: tpl.id,

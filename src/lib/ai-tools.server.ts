@@ -204,7 +204,40 @@ export const AI_TOOLS: ToolDef[] = [
       required: ["id"],
     },
   },
+  {
+    name: "log_task_step",
+    description:
+      "تسجيل خطوة تنفيذ داخل مهمة لعرضها في مركز المهام (المرحلة، العنوان، التفاصيل، الأداة المستخدمة). استعملها بعد كل خطوة مهمة.",
+    parameters: {
+      type: "object",
+      properties: {
+        task_id: { type: "string" },
+        title: { type: "string" },
+        detail: { type: "string" },
+        stage: { type: "string", enum: ["planning", "reading", "editing", "building", "verifying", "done"] },
+        tool_name: { type: "string" },
+        status: { type: "string", enum: ["done", "failed", "running"] },
+      },
+      required: ["task_id", "title"],
+    },
+  },
+  {
+    name: "set_task_progress",
+    description: "تحديث مرحلة المهمة ونسبة تقدّمها (0-100) لعرضها مباشرة في مركز المهام.",
+    parameters: {
+      type: "object",
+      properties: {
+        task_id: { type: "string" },
+        stage: { type: "string", enum: ["planning", "reading", "editing", "building", "verifying", "done"] },
+        progress: { type: "number" },
+        status: { type: "string", enum: ["pending", "running", "done", "failed"] },
+        result: { type: "string" },
+      },
+      required: ["task_id"],
+    },
+  },
 ];
+
 
 const FS_ACTIONS = new Set(["fs_list", "fs_tree", "fs_read", "fs_search", "fs_write", "fs_mkdir", "fs_move", "fs_delete"]);
 

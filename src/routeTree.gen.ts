@@ -49,6 +49,7 @@ import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedCertificatesRouteImport } from './routes/_authenticated/certificates'
 import { Route as AuthenticatedBlogManagerRouteImport } from './routes/_authenticated/blog-manager'
 import { Route as AuthenticatedBackupsRouteImport } from './routes/_authenticated/backups'
+import { Route as AuthenticatedAutomationRouteImport } from './routes/_authenticated/automation'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedApkManagerRouteImport } from './routes/_authenticated/apk-manager'
 import { Route as AuthenticatedAiTestsRouteImport } from './routes/_authenticated/ai-tests'
@@ -295,6 +296,11 @@ const AuthenticatedBackupsRoute = AuthenticatedBackupsRouteImport.update({
   path: '/backups',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedAutomationRoute = AuthenticatedAutomationRouteImport.update({
+  id: '/automation',
+  path: '/automation',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedAuditRoute = AuthenticatedAuditRouteImport.update({
   id: '/audit',
   path: '/audit',
@@ -512,6 +518,7 @@ export interface FileRoutesByFullPath {
   '/ai-tests': typeof AuthenticatedAiTestsRoute
   '/apk-manager': typeof AuthenticatedApkManagerRoute
   '/audit': typeof AuthenticatedAuditRoute
+  '/automation': typeof AuthenticatedAutomationRoute
   '/backups': typeof AuthenticatedBackupsRoute
   '/blog-manager': typeof AuthenticatedBlogManagerRoute
   '/certificates': typeof AuthenticatedCertificatesRoute
@@ -590,6 +597,7 @@ export interface FileRoutesByTo {
   '/ai-tests': typeof AuthenticatedAiTestsRoute
   '/apk-manager': typeof AuthenticatedApkManagerRoute
   '/audit': typeof AuthenticatedAuditRoute
+  '/automation': typeof AuthenticatedAutomationRoute
   '/backups': typeof AuthenticatedBackupsRoute
   '/blog-manager': typeof AuthenticatedBlogManagerRoute
   '/certificates': typeof AuthenticatedCertificatesRoute
@@ -669,6 +677,7 @@ export interface FileRoutesById {
   '/_authenticated/ai-tests': typeof AuthenticatedAiTestsRoute
   '/_authenticated/apk-manager': typeof AuthenticatedApkManagerRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
+  '/_authenticated/automation': typeof AuthenticatedAutomationRoute
   '/_authenticated/backups': typeof AuthenticatedBackupsRoute
   '/_authenticated/blog-manager': typeof AuthenticatedBlogManagerRoute
   '/_authenticated/certificates': typeof AuthenticatedCertificatesRoute
@@ -749,6 +758,7 @@ export interface FileRouteTypes {
     | '/ai-tests'
     | '/apk-manager'
     | '/audit'
+    | '/automation'
     | '/backups'
     | '/blog-manager'
     | '/certificates'
@@ -827,6 +837,7 @@ export interface FileRouteTypes {
     | '/ai-tests'
     | '/apk-manager'
     | '/audit'
+    | '/automation'
     | '/backups'
     | '/blog-manager'
     | '/certificates'
@@ -905,6 +916,7 @@ export interface FileRouteTypes {
     | '/_authenticated/ai-tests'
     | '/_authenticated/apk-manager'
     | '/_authenticated/audit'
+    | '/_authenticated/automation'
     | '/_authenticated/backups'
     | '/_authenticated/blog-manager'
     | '/_authenticated/certificates'
@@ -1277,6 +1289,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedBackupsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/automation': {
+      id: '/_authenticated/automation'
+      path: '/automation'
+      fullPath: '/automation'
+      preLoaderRoute: typeof AuthenticatedAutomationRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/audit': {
       id: '/_authenticated/audit'
       path: '/audit'
@@ -1598,6 +1617,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAiTestsRoute: typeof AuthenticatedAiTestsRoute
   AuthenticatedApkManagerRoute: typeof AuthenticatedApkManagerRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
+  AuthenticatedAutomationRoute: typeof AuthenticatedAutomationRoute
   AuthenticatedBackupsRoute: typeof AuthenticatedBackupsRoute
   AuthenticatedBlogManagerRoute: typeof AuthenticatedBlogManagerRoute
   AuthenticatedCertificatesRoute: typeof AuthenticatedCertificatesRoute
@@ -1642,6 +1662,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAiTestsRoute: AuthenticatedAiTestsRoute,
   AuthenticatedApkManagerRoute: AuthenticatedApkManagerRoute,
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
+  AuthenticatedAutomationRoute: AuthenticatedAutomationRoute,
   AuthenticatedBackupsRoute: AuthenticatedBackupsRoute,
   AuthenticatedBlogManagerRoute: AuthenticatedBlogManagerRoute,
   AuthenticatedCertificatesRoute: AuthenticatedCertificatesRoute,

@@ -207,8 +207,17 @@ run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
       build_run)       echo "[dry-run] cd $(GET path)/$(GET name) && $(GET build)" ;;
       serve_start)     echo "[dry-run] systemctl restart $(GET service) && ufw allow $(GET port)/tcp" ;;
       serve_stop)      echo "[dry-run] systemctl disable --now $(GET service)" ;;
+      fs_list)         echo "[dry-run] ls -la $(GET path)" ;;
+      fs_tree)         echo "[dry-run] find $(GET path) -maxdepth $(GET depth)" ;;
+      fs_read)         echo "[dry-run] head -n $(GET limit) $(GET path)" ;;
+      fs_search)       echo "[dry-run] grep -rn $(GET query) $(GET path)" ;;
+      fs_mkdir)        echo "[dry-run] mkdir -p $(GET path)" ;;
+      fs_write)        echo "[dry-run] backup + write $(GET path)" ;;
+      fs_delete)       echo "[dry-run] rm -rf $(GET path)" ;;
+      fs_move)         echo "[dry-run] mv $(GET path) $(GET target)" ;;
 
       *) echo "[dry-run] unsupported action: $ACTION"; return 127 ;;
+
     esac
     return 0
   fi

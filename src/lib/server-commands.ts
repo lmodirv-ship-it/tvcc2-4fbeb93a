@@ -42,7 +42,12 @@ export const COMMAND_WHITELIST = [
   "watch_stop",
   "git_deploy",
   "failover_switch",
+  "deploy_upload",
+  "build_run",
+  "serve_start",
+  "serve_stop",
 ] as const;
+
 
 export type CommandAction = (typeof COMMAND_WHITELIST)[number];
 

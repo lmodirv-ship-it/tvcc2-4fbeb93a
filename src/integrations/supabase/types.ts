@@ -426,50 +426,118 @@ export type Database = {
           },
         ]
       }
+      ai_task_steps: {
+        Row: {
+          created_at: string
+          detail: string | null
+          duration_ms: number | null
+          id: string
+          owner_id: string
+          stage: string
+          status: string
+          step_no: number
+          task_id: string
+          title: string
+          tool_name: string | null
+        }
+        Insert: {
+          created_at?: string
+          detail?: string | null
+          duration_ms?: number | null
+          id?: string
+          owner_id: string
+          stage?: string
+          status?: string
+          step_no?: number
+          task_id: string
+          title: string
+          tool_name?: string | null
+        }
+        Update: {
+          created_at?: string
+          detail?: string | null
+          duration_ms?: number | null
+          id?: string
+          owner_id?: string
+          stage?: string
+          status?: string
+          step_no?: number
+          task_id?: string
+          title?: string
+          tool_name?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_task_steps_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "ai_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_tasks: {
         Row: {
+          allow_edit: boolean
+          completed_at: string | null
           conversation_id: string | null
           created_at: string
           file_paths: string[]
           id: string
           instructions: string
+          last_step_at: string | null
           model_id: string | null
           owner_id: string
           priority: number
+          progress: number
           result: string | null
           server_id: string | null
+          stage: string
+          started_at: string | null
           status: string
           title: string
           updated_at: string
           website_id: string | null
         }
         Insert: {
+          allow_edit?: boolean
+          completed_at?: string | null
           conversation_id?: string | null
           created_at?: string
           file_paths?: string[]
           id?: string
           instructions?: string
+          last_step_at?: string | null
           model_id?: string | null
           owner_id?: string
           priority?: number
+          progress?: number
           result?: string | null
           server_id?: string | null
+          stage?: string
+          started_at?: string | null
           status?: string
           title: string
           updated_at?: string
           website_id?: string | null
         }
         Update: {
+          allow_edit?: boolean
+          completed_at?: string | null
           conversation_id?: string | null
           created_at?: string
           file_paths?: string[]
           id?: string
           instructions?: string
+          last_step_at?: string | null
           model_id?: string | null
           owner_id?: string
           priority?: number
+          progress?: number
           result?: string | null
           server_id?: string | null
+          stage?: string
+          started_at?: string | null
           status?: string
           title?: string
           updated_at?: string

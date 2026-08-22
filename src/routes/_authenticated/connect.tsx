@@ -11,12 +11,15 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { Link2, Database, Boxes, Trash2, Plug, Cloud, Server } from "lucide-react";
+import { Link2, Database, Boxes, Trash2, Plug, Cloud, Server, Activity } from "lucide-react";
 import { toast } from "sonner";
 import {
   getConnectHub, registerService, deleteService, linkDatabase, unlinkDatabase,
+  testConnection, listConnectionEvents,
 } from "@/lib/connect.functions";
 import { connectService, disconnectService } from "@/lib/mesh.functions";
+import { BulkLinkPanel } from "@/components/mesh/BulkLinkPanel";
+import { SecretsPanel } from "@/components/mesh/SecretsPanel";
 
 export const Route = createFileRoute("/_authenticated/connect")({
   component: ConnectPage,

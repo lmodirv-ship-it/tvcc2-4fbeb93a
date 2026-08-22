@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2, Loader2, ShieldCheck, Lock, UserPlus, Copy } from "lucide-react";
+import { Plus, Trash2, Loader2, ShieldCheck, Lock, UserPlus, Copy, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { useRoles, PERMANENT_OWNER_EMAIL } from "@/hooks/use-roles";
 
@@ -242,7 +242,61 @@ function TeamTab() {
           </p>
         </CardContent>
       </Card>
+
+      <PermissionsMatrix />
     </div>
+  );
+}
+
+/* ---------------- Permissions matrix ---------------- */
+
+const PERMISSIONS: { label: string; owner: boolean; admin: boolean; editor: boolean; viewer: boolean }[] = [
+  { label: "عرض المواقع والسيرفرات والخدمات", owner: true, admin: true, editor: true, viewer: true },
+  { label: "إضافة وتعديل المواقع والنطاقات", owner: true, admin: true, editor: true, viewer: false },
+  { label: "إدارة السيرفرات والمنافذ والجسور", owner: true, admin: true, editor: true, viewer: false },
+  { label: "تشغيل أوامر الوكيل والنسخ الاحتياطي", owner: true, admin: true, editor: true, viewer: false },
+  { label: "إدارة نماذج الذكاء والمزوّدين", owner: true, admin: true, editor: true, viewer: false },
+  { label: "حذف المواقع (188 موقعاً)", owner: true, admin: false, editor: false, viewer: false },
+  { label: "حذف السيرفرات", owner: true, admin: false, editor: false, viewer: false },
+  { label: "قراءة قيم الخزنة بصريح النص", owner: true, admin: false, editor: false, viewer: false },
+  { label: "منح الأدوار ودعوة الأعضاء", owner: true, admin: false, editor: false, viewer: false },
+];
+
+function Mark({ on }: { on: boolean }) {
+  return on
+    ? <Check className="w-4 h-4 text-success inline" aria-label="مسموح" />
+    : <X className="w-4 h-4 text-muted-foreground inline" aria-label="ممنوع" />;
+}
+
+function PermissionsMatrix() {
+  return (
+    <Card>
+      <CardContent className="p-4">
+        <div className="font-semibold mb-3">مصفوفة الصلاحيات</div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>الصلاحية</TableHead>
+              <TableHead className="text-center">مالك المنصة</TableHead>
+              <TableHead className="text-center">مدير</TableHead>
+              <TableHead className="text-center">محرر</TableHead>
+              <TableHead className="text-center">مشاهد</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {PERMISSIONS.map((p) => (
+              <TableRow key={p.label}>
+                <TableCell className="text-sm">{p.label}</TableCell>
+                <TableCell className="text-center"><Mark on={p.owner} /></TableCell>
+                <TableCell className="text-center"><Mark on={p.admin} /></TableCell>
+                <TableCell className="text-center"><Mark on={p.editor} /></TableCell>
+                <TableCell className="text-center"><Mark on={p.viewer} /></TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
   );
 }
 
@@ -297,7 +351,7 @@ function InviteDialog({ onDone }: { onDone: () => void }) {
 
 function SiteUsersTab() {
   const qc = useQueryClient();
-  const { isSystemOwner } = useRoles();
+  const { isSystemOwner, isEditor } = useRoles();
   const [open, setOpen] = useState(false);
 
   const { data, isLoading } = useQuery({
@@ -313,10 +367,12 @@ function SiteUsersTab() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-muted-foreground text-sm">حساب واحد يصل لعدة مواقع</p>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild><Button><Plus className="w-4 h-4 ml-1" /> مستخدم جديد</Button></DialogTrigger>
-          <AddDialog onDone={() => { setOpen(false); qc.invalidateQueries({ queryKey: ["site_users"] }); }} />
-        </Dialog>
+        {isEditor && (
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild><Button><Plus className="w-4 h-4 ml-1" /> مستخدم جديد</Button></DialogTrigger>
+            <AddDialog onDone={() => { setOpen(false); qc.invalidateQueries({ queryKey: ["site_users"] }); }} />
+          </Dialog>
+        )}
       </div>
 
       <Card>

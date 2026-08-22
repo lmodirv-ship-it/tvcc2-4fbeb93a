@@ -22,6 +22,14 @@ export const COMMAND_WHITELIST = [
   "storage_usage",
   "site_dir",
   "issue_ssl",
+  "port_check",
+  "port_forward",
+  "ai_models_list",
+  "ollama_start",
+  "ollama_stop",
+  "ollama_pull",
+  "ollama_rm",
+  "ollama_ps",
 ] as const;
 
 export type CommandAction = (typeof COMMAND_WHITELIST)[number];
@@ -49,6 +57,14 @@ export const COMMAND_LABELS: Record<string, string> = {
   storage_usage: "قياس تخزين المواقع",
   site_dir: "إنشاء مجلد موقع",
   issue_ssl: "إصدار شهادة SSL",
+  port_check: "فحص منفذ",
+  port_forward: "جسر منفذ ← منفذ",
+  ai_models_list: "قائمة نماذج الذكاء على منفذ",
+  ollama_start: "تشغيل Ollama",
+  ollama_stop: "إيقاف Ollama",
+  ollama_pull: "تنزيل نموذج",
+  ollama_rm: "حذف نموذج",
+  ollama_ps: "النماذج قيد التشغيل",
 };
 
 /** Actions that take a free-text argument, with the arg key + placeholder. */

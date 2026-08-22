@@ -19,6 +19,7 @@ import {
   listAiProviders, upsertAiProvider, deleteAiProvider, testAiProvider,
   importProviderModels, importServerModels, enableGeminiProvider, enableOllamaCloudProvider,
 } from "@/lib/ai-hub.functions";
+import { ServerModelsPanel } from "@/components/ai/ServerModelsPanel";
 
 export const Route = createFileRoute("/_authenticated/ai-connect")({
   component: AiConnectPage,
@@ -254,6 +255,8 @@ function AiConnectPage() {
           </CardContent>
         </Card>
       )}
+
+      {servers.length > 0 && <ServerModelsPanel servers={servers} />}
 
       {isLoading ? (
         <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>

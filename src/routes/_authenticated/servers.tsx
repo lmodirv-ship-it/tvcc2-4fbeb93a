@@ -30,6 +30,7 @@ import {
 } from "@/lib/server-ops.functions";
 import { COMMAND_WHITELIST, COMMAND_LABELS, COMMAND_ARG } from "@/lib/server-commands";
 import { importServerModels } from "@/lib/ai-hub.functions";
+import { PortsHub } from "@/components/servers/PortsHub";
 
 export const Route = createFileRoute("/_authenticated/servers")({
   component: ServersPage,
@@ -399,6 +400,7 @@ function ServersPage() {
               <Tabs defaultValue="ports">
                 <TabsList className="flex-wrap h-auto">
                   <TabsTrigger value="ports"><Network className="w-3 h-3 ml-1" /> المنافذ</TabsTrigger>
+                  <TabsTrigger value="hub"><Plug className="w-3 h-3 ml-1" /> مركز المنافذ</TabsTrigger>
                   <TabsTrigger value="configs"><Settings2 className="w-3 h-3 ml-1" /> الإعدادات</TabsTrigger>
                   <TabsTrigger value="tools"><Play className="w-3 h-3 ml-1" /> الأدوات</TabsTrigger>
                   <TabsTrigger value="deploy"><Rocket className="w-3 h-3 ml-1" /> ترحيل المنصة</TabsTrigger>
@@ -471,6 +473,12 @@ function ServersPage() {
                         <Button size="sm" variant="ghost" onClick={() => setPublishPort(null)}>إلغاء</Button>
                       </div>
                     </div>
+                  ) : null}
+                </TabsContent>
+
+                <TabsContent value="hub" className="pt-1">
+                  {detailId ? (
+                    <PortsHub serverId={detailId} servers={(servers as any[]) ?? []} websites={myWebsites} dryRun={dryRun} />
                   ) : null}
                 </TabsContent>
 

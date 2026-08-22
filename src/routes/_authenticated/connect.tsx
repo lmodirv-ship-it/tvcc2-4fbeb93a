@@ -67,6 +67,24 @@ function ConnectPage() {
   const mLinkDb = mut(linkDbFn, "تم ربط قاعدة البيانات");
   const mUnlinkDb = mut(unlinkDbFn, "تم فك ربط القاعدة");
 
+  const testFn = useServerFn(testConnection);
+  const eventsFn = useServerFn(listConnectionEvents);
+  const { data: events = [] } = useQuery({
+    queryKey: ["connect-events"],
+    queryFn: () => eventsFn(),
+    refetchInterval: 15000,
+  });
+  const mTest = useMutation({
+    mutationFn: (vars: { kind: "service" | "database" | "env"; id: string }) => testFn({ data: vars }),
+    onSuccess: (res: any) => {
+      const fn = res.status === "error" ? toast.error : res.status === "active" ? toast.success : toast.info;
+      fn(res.message || res.status);
+      refresh();
+      qc.invalidateQueries({ queryKey: ["connect-events"] });
+    },
+    onError: (e: any) => toast.error(e?.message ?? "فشل الاختبار"),
+  });
+
   const websites = data?.websites ?? [];
   const services = data?.services ?? [];
   const servers = data?.servers ?? [];

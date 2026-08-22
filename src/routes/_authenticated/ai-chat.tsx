@@ -14,7 +14,10 @@ import { MessageSquare, Send, Loader2, Plus, Trash2, Wrench, Laptop } from "luci
 import { toast } from "sonner";
 import {
   listAiProviders, aiChat, listConversations, getConversation, deleteConversation,
+  listAiToolSchemas, runAiTool,
 } from "@/lib/ai-hub.functions";
+import { WorkspacePanel } from "@/components/ai/WorkspacePanel";
+
 
 export const Route = createFileRoute("/_authenticated/ai-chat")({
   component: AiChatPage,

@@ -210,7 +210,7 @@ function AiChatPage() {
             </SelectContent>
           </Select>
           <div className="flex items-center gap-2 text-xs">
-            <Switch checked={allowWrites} onCheckedChange={setAllowWrites} disabled={isLocal} />
+            <Switch checked={allowWrites} onCheckedChange={setAllowWrites} />
             <span>السماح بالتعديل</span>
           </div>
         </div>
@@ -222,9 +222,10 @@ function AiChatPage() {
         )}
         {isLocal && (
           <div className="mb-3 text-xs text-muted-foreground flex items-center gap-1">
-            <Laptop className="w-3 h-3" /> نموذج محلي: يعمل من متصفحك مباشرة وبدون أدوات إدارة المواقع.
+            <Laptop className="w-3 h-3" /> نموذج محلي: يعمل من متصفحك مع نفس أدوات إدارة المواقع والملفات.
           </div>
         )}
+
 
         <Card className="flex-1 min-h-0 overflow-y-auto">
           <CardContent className="p-4 space-y-3">

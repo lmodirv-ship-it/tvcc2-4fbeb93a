@@ -53,7 +53,12 @@ export type CommandAction = (typeof COMMAND_WHITELIST)[number];
 
 export const COMMAND_LABELS: Record<string, string> = {
   git_deploy: "نشر من Git",
+  deploy_upload: "رفع ملفات وبناء وتشغيل موقع",
+  build_run: "تنفيذ أمر البناء",
+  serve_start: "تشغيل خدمة الموقع",
+  serve_stop: "إيقاف خدمة الموقع",
   failover_switch: "تحويل تلقائي إلى سيرفر احتياطي",
+
   scan_ports: "فحص المنافذ المفتوحة",
   read_configs: "قراءة ملفات الإعداد",
   service_status: "حالة خدمة",

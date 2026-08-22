@@ -180,7 +180,7 @@ function TeamTab() {
                       <TableCell>
                         {locked ? (
                           <span className="text-xs text-muted-foreground flex items-center gap-1"><Lock className="w-3 h-3" /> محمي</span>
-                        ) : isSystemOwner ? (
+                        ) : isAdmin ? (
                           <Select value={current} onValueChange={(v) => setRole(m.id, m.email || "", v)}>
                             <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
                             <SelectContent>

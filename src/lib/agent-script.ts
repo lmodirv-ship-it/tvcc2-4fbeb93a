@@ -128,6 +128,69 @@ EOF2
     ollama_pull)     ollama pull "$(GET model)" 2>&1 | tail -5 ;;
     ollama_rm)       ollama rm "$(GET model)" 2>&1 | tail -5 ;;
     ollama_ps)       ollama ps 2>&1 | head -30 ;;
+    site_start)      systemctl start "$(GET name)" 2>&1 && systemctl is-active "$(GET name)" ;;
+    site_stop)       systemctl stop "$(GET name)" 2>&1; echo "stopped $(GET name)" ;;
+    site_restart)    systemctl restart "$(GET name)" 2>&1 && systemctl is-active "$(GET name)" ;;
+    site_logs)       journalctl -u "$(GET name)" -n 200 --no-pager 2>&1 ;;
+    unit_write)
+      echo "$ARGS" | python3 -c 'import sys,json;d=json.load(sys.stdin);open(d["path"],"w").write(d.get("content",""))'
+      systemctl daemon-reload && systemctl enable "$(GET name).service" >/dev/null 2>&1
+      echo "unit $(GET name) written and enabled" ;;
+    db_create)
+      E="$(GET engine)"; D="$(GET database)"
+      if [ "$E" = "mysql" ]; then
+        mysql -e "CREATE DATABASE IF NOT EXISTS \\\`$D\\\`;" 2>&1 && echo "mysql database $D ready"
+      else
+        su - postgres -c "psql -tc \\"SELECT 1 FROM pg_database WHERE datname='$D'\\" | grep -q 1 || createdb '$D'" 2>&1 && echo "postgres database $D ready"
+      fi ;;
+    db_user_grant)
+      E="$(GET engine)"; D="$(GET database)"; U="$(GET user)"; P="$(GET password)"
+      if [ "$E" = "mysql" ]; then
+        mysql -e "CREATE USER IF NOT EXISTS '$U'@'%' IDENTIFIED BY '$P'; GRANT ALL ON \\\`$D\\\`.* TO '$U'@'%'; FLUSH PRIVILEGES;" 2>&1 && echo "mysql user $U granted on $D"
+      else
+        su - postgres -c "psql -c \\"DO \\\\\\$\\\\\\$ BEGIN IF NOT EXISTS (SELECT FROM pg_roles WHERE rolname='$U') THEN CREATE ROLE \\\\\\"$U\\\\\\" LOGIN PASSWORD '$P'; END IF; END \\\\\\$\\\\\\$;\\" && psql -c \\"GRANT ALL PRIVILEGES ON DATABASE \\\\\\"$D\\\\\\" TO \\\\\\"$U\\\\\\";\\"" 2>&1 && echo "postgres user $U granted on $D"
+      fi ;;
+    db_ping)
+      E="$(GET engine)"; H="$(GET host)"; P="$(GET port)"; D="$(GET database)"; U="$(GET user)"; PW="$(GET password)"
+      S=$(date +%s%3N)
+      if [ "$E" = "mysql" ]; then
+        MYSQL_PWD="$PW" mysql -h "\${H:-127.0.0.1}" -P "\${P:-3306}" -u "$U" -e "SELECT 1" "$D" >/dev/null 2>&1
+      else
+        PGPASSWORD="$PW" psql -h "\${H:-127.0.0.1}" -p "\${P:-5432}" -U "$U" -d "$D" -c "SELECT 1" >/dev/null 2>&1
+      fi
+      R=$?; E2=$(date +%s%3N)
+      if [ "$R" -eq 0 ]; then echo "db ok latency_ms=$((E2-S))"; else echo "db unreachable \${H}:\${P}/\${D}"; exit 1; fi ;;
+    watch_start)
+      D="$(GET domain)"
+      command -v inotifywait >/dev/null || (apt-get update -y >/dev/null 2>&1 && apt-get install -y inotify-tools >/dev/null 2>&1)
+      cat > "/usr/local/bin/tvcc-watch-$D.sh" <<EOF3
+#!/usr/bin/env bash
+while inotifywait -r -q -e modify,create,delete,move "/var/www/$D" >/dev/null 2>&1; do
+  echo "\\$(date -Is) changed /var/www/$D" >> "/var/log/tvcc-watch-$D.log"
+  if [ -f "/var/www/$D/.tvcc/peers" ]; then
+    while read -r PEER; do
+      [ -n "\\$PEER" ] && rsync -az --delete -e "ssh -o StrictHostKeyChecking=no" "/var/www/$D/" "\\$PEER:/var/www/$D/" >/dev/null 2>&1
+    done < "/var/www/$D/.tvcc/peers"
+  fi
+  sleep 2
+done
+EOF3
+      chmod +x "/usr/local/bin/tvcc-watch-$D.sh"
+      cat > "/etc/systemd/system/tvcc-watch-$D.service" <<EOF4
+[Unit]
+Description=TVCC live sync watcher for $D
+After=network.target
+
+[Service]
+ExecStart=/usr/local/bin/tvcc-watch-$D.sh
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF4
+      systemctl daemon-reload && systemctl enable --now "tvcc-watch-$D.service" && echo "live sync watching /var/www/$D" ;;
+    watch_stop)      D="$(GET domain)"; systemctl disable --now "tvcc-watch-$D.service" 2>/dev/null; echo "watcher stopped for $D" ;;
     *) echo "unsupported action: $ACTION"; return 127 ;;
   esac
 }

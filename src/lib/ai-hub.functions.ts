@@ -390,7 +390,7 @@ export const aiChat = createServerFn({ method: "POST" })
     let answer = "";
     const started = Date.now();
 
-    for (let step = 0; step < 6; step++) {
+    for (let step = 0; step < 12; step++) {
       const json = await callModel(model, provider, messages, true);
       const choice = json?.choices?.[0];
       const msg = choice?.message;

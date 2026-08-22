@@ -414,11 +414,51 @@ export async function runTool(
       return error ? { error: error.message } : { task: data };
     }
     case "update_task": {
-      const patch: Record<string, unknown> = {};
-      for (const k of ["status", "result", "instructions"]) if (args[k] !== undefined) patch[k] = args[k];
+      const patch: Record<string, unknown> = { last_step_at: new Date().toISOString() };
+      for (const k of ["status", "result", "instructions", "stage", "progress"]) {
+        if (args[k] !== undefined) patch[k] = args[k];
+      }
+      if (args.status === "done") { patch.completed_at = new Date().toISOString(); patch.progress = 100; patch.stage = "done"; }
       const { error } = await sb.from("ai_tasks").update(patch).eq("id", args.id);
       return error ? { error: error.message } : { ok: true, updated: patch };
     }
+    case "log_task_step": {
+      const { count } = await sb
+        .from("ai_task_steps")
+        .select("*", { count: "exact", head: true })
+        .eq("task_id", args.task_id);
+      const { error } = await sb.from("ai_task_steps").insert({
+        owner_id: userId,
+        task_id: args.task_id,
+        step_no: (count ?? 0) + 1,
+        stage: args.stage ?? "working",
+        title: String(args.title ?? "خطوة"),
+        detail: args.detail ? String(args.detail).slice(0, 4000) : null,
+        tool_name: args.tool_name ?? null,
+        status: args.status ?? "done",
+      });
+      if (!error) {
+        await sb.from("ai_tasks").update({
+          stage: args.stage ?? "working",
+          last_step_at: new Date().toISOString(),
+        }).eq("id", args.task_id);
+      }
+      return error ? { error: error.message } : { ok: true, step_no: (count ?? 0) + 1 };
+    }
+    case "set_task_progress": {
+      const patch: Record<string, unknown> = { last_step_at: new Date().toISOString() };
+      if (args.stage !== undefined) patch.stage = args.stage;
+      if (args.progress !== undefined) patch.progress = Math.max(0, Math.min(100, Number(args.progress) || 0));
+      if (args.status !== undefined) patch.status = args.status;
+      if (args.result !== undefined) patch.result = args.result;
+      if (args.status === "done" || patch.progress === 100) {
+        patch.completed_at = new Date().toISOString();
+        patch.stage = "done";
+      }
+      const { error } = await sb.from("ai_tasks").update(patch).eq("id", args.task_id);
+      return error ? { error: error.message } : { ok: true, updated: patch };
+    }
+
     default:
 
       return { error: "غير مدعوم" };

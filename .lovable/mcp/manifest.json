@@ -273,6 +273,22 @@
           }
         },
         "outputSchema": null
+      },
+      {
+        "name": "list_service_links",
+        "title": "List service links",
+        "description": "List how the user's sites are wired together: site runtimes on servers, database links, port bridges and storage sync state.",
+        "annotations": {
+          "readOnlyHint": true,
+          "idempotentHint": true,
+          "openWorldHint": false
+        },
+        "inputSchema": {
+          "$schema": "http://json-schema.org/draft-07/schema#",
+          "type": "object",
+          "properties": {}
+        },
+        "outputSchema": null
       }
     ]
   }

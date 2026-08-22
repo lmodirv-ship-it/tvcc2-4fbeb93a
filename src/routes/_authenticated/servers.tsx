@@ -31,6 +31,7 @@ import {
 import { COMMAND_WHITELIST, COMMAND_LABELS, COMMAND_ARG } from "@/lib/server-commands";
 import { importServerModels } from "@/lib/ai-hub.functions";
 import { PortsHub } from "@/components/servers/PortsHub";
+import { RuntimeHub } from "@/components/servers/RuntimeHub";
 
 export const Route = createFileRoute("/_authenticated/servers")({
   component: ServersPage,
@@ -397,14 +398,22 @@ function ServersPage() {
                 )}
               </div>
 
-              <Tabs defaultValue="ports">
+              <Tabs defaultValue="runtime">
                 <TabsList className="flex-wrap h-auto">
+                  <TabsTrigger value="runtime"><Play className="w-3 h-3 ml-1" /> التشغيل والقواعد والتخزين</TabsTrigger>
                   <TabsTrigger value="ports"><Network className="w-3 h-3 ml-1" /> المنافذ</TabsTrigger>
                   <TabsTrigger value="hub"><Plug className="w-3 h-3 ml-1" /> مركز المنافذ</TabsTrigger>
                   <TabsTrigger value="configs"><Settings2 className="w-3 h-3 ml-1" /> الإعدادات</TabsTrigger>
                   <TabsTrigger value="tools"><Play className="w-3 h-3 ml-1" /> الأدوات</TabsTrigger>
                   <TabsTrigger value="deploy"><Rocket className="w-3 h-3 ml-1" /> ترحيل المنصة</TabsTrigger>
                 </TabsList>
+
+                <TabsContent value="runtime" className="pt-1">
+                  {detailId ? (
+                    <RuntimeHub serverId={detailId} websites={myWebsites} dryRun={dryRun} />
+                  ) : null}
+                </TabsContent>
+
 
                 <TabsContent value="ports" className="space-y-2 pt-3">
                   <div className="flex items-center justify-between">

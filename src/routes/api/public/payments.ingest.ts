@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { verifyIngestSignature } from "@/lib/ingest-auth.server";
 
 // Receives real-time payment/subscription events from https://hnpay-ai.lovable.app
 // and fans them out to all sites in the HN group.
@@ -9,7 +10,7 @@ import { createFileRoute } from "@tanstack/react-router";
 const CORS = {
   "access-control-allow-origin": "*",
   "access-control-allow-methods": "POST, OPTIONS",
-  "access-control-allow-headers": "content-type, x-hnpay-signature, x-hnpay-key",
+  "access-control-allow-headers": "content-type, x-hnpay-signature, x-hnpay-key, x-tvcc-signature",
 };
 
 async function fanout(domain: string, payload: unknown) {

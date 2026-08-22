@@ -81,6 +81,7 @@
     "ai_tests": "Test History",
     "backups": "Backups",
     "topology": "Topology Map",
+    "logs": "Logs Center",
     "network": "Server Mesh"
   },
   "dashboard": {

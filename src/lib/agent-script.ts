@@ -66,6 +66,16 @@ run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
       ollama_pull)     echo "[dry-run] ollama pull $(GET model)" ;;
       ollama_rm)       echo "[dry-run] ollama rm $(GET model)" ;;
       ollama_ps)       echo "[dry-run] ollama ps" ;;
+      site_start)      echo "[dry-run] systemctl start $(GET name)" ;;
+      site_stop)       echo "[dry-run] systemctl stop $(GET name)" ;;
+      site_restart)    echo "[dry-run] systemctl restart $(GET name)" ;;
+      site_logs)       echo "[dry-run] journalctl -u $(GET name) -n 200" ;;
+      unit_write)      echo "[dry-run] write $(GET path) + systemctl daemon-reload + enable $(GET name)" ;;
+      db_create)       echo "[dry-run] create database $(GET database) ($(GET engine))" ;;
+      db_user_grant)   echo "[dry-run] create user $(GET user) and grant on $(GET database)" ;;
+      db_ping)         echo "[dry-run] connect $(GET engine) $(GET host):$(GET port)/$(GET database)" ;;
+      watch_start)     echo "[dry-run] inotifywait watcher on /var/www/$(GET domain)" ;;
+      watch_stop)      echo "[dry-run] systemctl stop tvcc-watch-$(GET domain)" ;;
       *) echo "[dry-run] unsupported action: $ACTION"; return 127 ;;
     esac
     return 0

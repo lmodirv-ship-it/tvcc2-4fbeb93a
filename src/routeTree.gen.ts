@@ -46,6 +46,7 @@ import { Route as AuthenticatedDomainsRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedDeployRouteImport } from './routes/_authenticated/deploy'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCoreHubRouteImport } from './routes/_authenticated/core-hub'
+import { Route as AuthenticatedConnectRouteImport } from './routes/_authenticated/connect'
 import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
 import { Route as AuthenticatedCertificatesRouteImport } from './routes/_authenticated/certificates'
 import { Route as AuthenticatedBlogManagerRouteImport } from './routes/_authenticated/blog-manager'
@@ -278,6 +279,11 @@ const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
 const AuthenticatedCoreHubRoute = AuthenticatedCoreHubRouteImport.update({
   id: '/core-hub',
   path: '/core-hub',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedConnectRoute = AuthenticatedConnectRouteImport.update({
+  id: '/connect',
+  path: '/connect',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedClientsRoute = AuthenticatedClientsRouteImport.update({
@@ -529,6 +535,7 @@ export interface FileRoutesByFullPath {
   '/blog-manager': typeof AuthenticatedBlogManagerRoute
   '/certificates': typeof AuthenticatedCertificatesRoute
   '/clients': typeof AuthenticatedClientsRoute
+  '/connect': typeof AuthenticatedConnectRoute
   '/core-hub': typeof AuthenticatedCoreHubRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/deploy': typeof AuthenticatedDeployRoute
@@ -609,6 +616,7 @@ export interface FileRoutesByTo {
   '/blog-manager': typeof AuthenticatedBlogManagerRoute
   '/certificates': typeof AuthenticatedCertificatesRoute
   '/clients': typeof AuthenticatedClientsRoute
+  '/connect': typeof AuthenticatedConnectRoute
   '/core-hub': typeof AuthenticatedCoreHubRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/deploy': typeof AuthenticatedDeployRoute
@@ -690,6 +698,7 @@ export interface FileRoutesById {
   '/_authenticated/blog-manager': typeof AuthenticatedBlogManagerRoute
   '/_authenticated/certificates': typeof AuthenticatedCertificatesRoute
   '/_authenticated/clients': typeof AuthenticatedClientsRoute
+  '/_authenticated/connect': typeof AuthenticatedConnectRoute
   '/_authenticated/core-hub': typeof AuthenticatedCoreHubRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/deploy': typeof AuthenticatedDeployRoute
@@ -772,6 +781,7 @@ export interface FileRouteTypes {
     | '/blog-manager'
     | '/certificates'
     | '/clients'
+    | '/connect'
     | '/core-hub'
     | '/dashboard'
     | '/deploy'
@@ -852,6 +862,7 @@ export interface FileRouteTypes {
     | '/blog-manager'
     | '/certificates'
     | '/clients'
+    | '/connect'
     | '/core-hub'
     | '/dashboard'
     | '/deploy'
@@ -932,6 +943,7 @@ export interface FileRouteTypes {
     | '/_authenticated/blog-manager'
     | '/_authenticated/certificates'
     | '/_authenticated/clients'
+    | '/_authenticated/connect'
     | '/_authenticated/core-hub'
     | '/_authenticated/dashboard'
     | '/_authenticated/deploy'
@@ -1278,6 +1290,13 @@ declare module '@tanstack/react-router' {
       path: '/core-hub'
       fullPath: '/core-hub'
       preLoaderRoute: typeof AuthenticatedCoreHubRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/connect': {
+      id: '/_authenticated/connect'
+      path: '/connect'
+      fullPath: '/connect'
+      preLoaderRoute: typeof AuthenticatedConnectRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/clients': {
@@ -1641,6 +1660,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedBlogManagerRoute: typeof AuthenticatedBlogManagerRoute
   AuthenticatedCertificatesRoute: typeof AuthenticatedCertificatesRoute
   AuthenticatedClientsRoute: typeof AuthenticatedClientsRoute
+  AuthenticatedConnectRoute: typeof AuthenticatedConnectRoute
   AuthenticatedCoreHubRoute: typeof AuthenticatedCoreHubRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDeployRoute: typeof AuthenticatedDeployRoute
@@ -1687,6 +1707,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedBlogManagerRoute: AuthenticatedBlogManagerRoute,
   AuthenticatedCertificatesRoute: AuthenticatedCertificatesRoute,
   AuthenticatedClientsRoute: AuthenticatedClientsRoute,
+  AuthenticatedConnectRoute: AuthenticatedConnectRoute,
   AuthenticatedCoreHubRoute: AuthenticatedCoreHubRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDeployRoute: AuthenticatedDeployRoute,

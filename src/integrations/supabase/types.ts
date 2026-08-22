@@ -200,9 +200,11 @@ export type Database = {
           model_id: string
           name: string
           owner_id: string
+          port: number | null
           priority: number
           provider_id: string | null
           server_id: string | null
+          server_port_id: string | null
           size_mb: number | null
           status: string
           updated_at: string
@@ -221,9 +223,11 @@ export type Database = {
           model_id: string
           name: string
           owner_id: string
+          port?: number | null
           priority?: number
           provider_id?: string | null
           server_id?: string | null
+          server_port_id?: string | null
           size_mb?: number | null
           status?: string
           updated_at?: string
@@ -242,9 +246,11 @@ export type Database = {
           model_id?: string
           name?: string
           owner_id?: string
+          port?: number | null
           priority?: number
           provider_id?: string | null
           server_id?: string | null
+          server_port_id?: string | null
           size_mb?: number | null
           status?: string
           updated_at?: string
@@ -262,6 +268,13 @@ export type Database = {
             columns: ["server_id"]
             isOneToOne: false
             referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_models_server_port_id_fkey"
+            columns: ["server_port_id"]
+            isOneToOne: false
+            referencedRelation: "server_ports"
             referencedColumns: ["id"]
           },
         ]
@@ -1190,6 +1203,75 @@ export type Database = {
         }
         Relationships: []
       }
+      port_links: {
+        Row: {
+          bridge_kind: string
+          created_at: string
+          id: string
+          last_checked_at: string | null
+          last_result: string | null
+          latency_ms: number | null
+          name: string | null
+          owner_id: string
+          source_port: number
+          source_server_id: string
+          status: string
+          target_host: string | null
+          target_port: number
+          target_server_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          bridge_kind?: string
+          created_at?: string
+          id?: string
+          last_checked_at?: string | null
+          last_result?: string | null
+          latency_ms?: number | null
+          name?: string | null
+          owner_id?: string
+          source_port: number
+          source_server_id: string
+          status?: string
+          target_host?: string | null
+          target_port: number
+          target_server_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          bridge_kind?: string
+          created_at?: string
+          id?: string
+          last_checked_at?: string | null
+          last_result?: string | null
+          latency_ms?: number | null
+          name?: string | null
+          owner_id?: string
+          source_port?: number
+          source_server_id?: string
+          status?: string
+          target_host?: string | null
+          target_port?: number
+          target_server_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "port_links_source_server_id_fkey"
+            columns: ["source_server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "port_links_target_server_id_fkey"
+            columns: ["target_server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
@@ -1644,12 +1726,16 @@ export type Database = {
           id: string
           is_public: boolean
           last_seen_at: string
+          managed: boolean
+          note: string | null
           owner_id: string
           port: number
           process_name: string | null
           protocol: string
           server_id: string
           service: string | null
+          service_kind: string | null
+          state: string
         }
         Insert: {
           address?: string | null
@@ -1657,12 +1743,16 @@ export type Database = {
           id?: string
           is_public?: boolean
           last_seen_at?: string
+          managed?: boolean
+          note?: string | null
           owner_id: string
           port: number
           process_name?: string | null
           protocol?: string
           server_id: string
           service?: string | null
+          service_kind?: string | null
+          state?: string
         }
         Update: {
           address?: string | null
@@ -1670,12 +1760,16 @@ export type Database = {
           id?: string
           is_public?: boolean
           last_seen_at?: string
+          managed?: boolean
+          note?: string | null
           owner_id?: string
           port?: number
           process_name?: string | null
           protocol?: string
           server_id?: string
           service?: string | null
+          service_kind?: string | null
+          state?: string
         }
         Relationships: [
           {
@@ -3009,6 +3103,7 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      can_manage: { Args: { _owner: string }; Returns: boolean }
       has_role: {
         Args: {
           _role: Database["public"]["Enums"]["app_role"]

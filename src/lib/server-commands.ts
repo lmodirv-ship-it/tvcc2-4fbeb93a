@@ -30,6 +30,16 @@ export const COMMAND_WHITELIST = [
   "ollama_pull",
   "ollama_rm",
   "ollama_ps",
+  "site_start",
+  "site_stop",
+  "site_restart",
+  "site_logs",
+  "unit_write",
+  "db_create",
+  "db_user_grant",
+  "db_ping",
+  "watch_start",
+  "watch_stop",
 ] as const;
 
 export type CommandAction = (typeof COMMAND_WHITELIST)[number];
@@ -65,6 +75,16 @@ export const COMMAND_LABELS: Record<string, string> = {
   ollama_pull: "تنزيل نموذج",
   ollama_rm: "حذف نموذج",
   ollama_ps: "النماذج قيد التشغيل",
+  site_start: "تشغيل موقع",
+  site_stop: "إيقاف موقع",
+  site_restart: "إعادة تشغيل موقع",
+  site_logs: "سجلات موقع",
+  unit_write: "كتابة وحدة تشغيل الموقع",
+  db_create: "إنشاء قاعدة بيانات",
+  db_user_grant: "إنشاء مستخدم قاعدة ومنح صلاحيات",
+  db_ping: "فحص الاتصال بقاعدة البيانات",
+  watch_start: "تفعيل المزامنة اللحظية",
+  watch_stop: "إيقاف المزامنة اللحظية",
 };
 
 /** Actions that take a free-text argument, with the arg key + placeholder. */

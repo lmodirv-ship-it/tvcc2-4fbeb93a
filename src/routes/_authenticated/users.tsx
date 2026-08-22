@@ -242,7 +242,61 @@ function TeamTab() {
           </p>
         </CardContent>
       </Card>
+
+      <PermissionsMatrix />
     </div>
+  );
+}
+
+/* ---------------- Permissions matrix ---------------- */
+
+const PERMISSIONS: { label: string; owner: boolean; admin: boolean; editor: boolean; viewer: boolean }[] = [
+  { label: "عرض المواقع والسيرفرات والخدمات", owner: true, admin: true, editor: true, viewer: true },
+  { label: "إضافة وتعديل المواقع والنطاقات", owner: true, admin: true, editor: true, viewer: false },
+  { label: "إدارة السيرفرات والمنافذ والجسور", owner: true, admin: true, editor: true, viewer: false },
+  { label: "تشغيل أوامر الوكيل والنسخ الاحتياطي", owner: true, admin: true, editor: true, viewer: false },
+  { label: "إدارة نماذج الذكاء والمزوّدين", owner: true, admin: true, editor: true, viewer: false },
+  { label: "حذف المواقع (188 موقعاً)", owner: true, admin: false, editor: false, viewer: false },
+  { label: "حذف السيرفرات", owner: true, admin: false, editor: false, viewer: false },
+  { label: "قراءة قيم الخزنة بصريح النص", owner: true, admin: false, editor: false, viewer: false },
+  { label: "منح الأدوار ودعوة الأعضاء", owner: true, admin: false, editor: false, viewer: false },
+];
+
+function Mark({ on }: { on: boolean }) {
+  return on
+    ? <Check className="w-4 h-4 text-success inline" aria-label="مسموح" />
+    : <X className="w-4 h-4 text-muted-foreground inline" aria-label="ممنوع" />;
+}
+
+function PermissionsMatrix() {
+  return (
+    <Card>
+      <CardContent className="p-4">
+        <div className="font-semibold mb-3">مصفوفة الصلاحيات</div>
+        <Table>
+          <TableHeader>
+            <TableRow>
+              <TableHead>الصلاحية</TableHead>
+              <TableHead className="text-center">مالك المنصة</TableHead>
+              <TableHead className="text-center">مدير</TableHead>
+              <TableHead className="text-center">محرر</TableHead>
+              <TableHead className="text-center">مشاهد</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            {PERMISSIONS.map((p) => (
+              <TableRow key={p.label}>
+                <TableCell className="text-sm">{p.label}</TableCell>
+                <TableCell className="text-center"><Mark on={p.owner} /></TableCell>
+                <TableCell className="text-center"><Mark on={p.admin} /></TableCell>
+                <TableCell className="text-center"><Mark on={p.editor} /></TableCell>
+                <TableCell className="text-center"><Mark on={p.viewer} /></TableCell>
+              </TableRow>
+            ))}
+          </TableBody>
+        </Table>
+      </CardContent>
+    </Card>
   );
 }
 

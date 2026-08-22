@@ -2100,11 +2100,15 @@ export type Database = {
           domain: string | null
           id: string
           last_seen_at: string
+          last_sync_at: string | null
           name: string
           owner_id: string
           role: string
           server_id: string
           status: string
+          sync_interval_seconds: number
+          sync_mode: string
+          sync_status: string
         }
         Insert: {
           cluster_id: string
@@ -2112,11 +2116,15 @@ export type Database = {
           domain?: string | null
           id?: string
           last_seen_at?: string
+          last_sync_at?: string | null
           name: string
           owner_id: string
           role?: string
           server_id: string
           status?: string
+          sync_interval_seconds?: number
+          sync_mode?: string
+          sync_status?: string
         }
         Update: {
           cluster_id?: string
@@ -2124,11 +2132,15 @@ export type Database = {
           domain?: string | null
           id?: string
           last_seen_at?: string
+          last_sync_at?: string | null
           name?: string
           owner_id?: string
           role?: string
           server_id?: string
           status?: string
+          sync_interval_seconds?: number
+          sync_mode?: string
+          sync_status?: string
         }
         Relationships: [
           {
@@ -2191,6 +2203,101 @@ export type Database = {
           },
           {
             foreignKeyName: "site_clusters_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_databases: {
+        Row: {
+          connection_kind: string
+          created_at: string
+          database_id: string | null
+          db_engine: string
+          db_name: string | null
+          db_user: string | null
+          env_key: string
+          host: string | null
+          id: string
+          last_checked_at: string | null
+          latency_ms: number | null
+          owner_id: string
+          port: number | null
+          role: string
+          secret_id: string | null
+          server_id: string | null
+          status: string
+          updated_at: string
+          website_id: string
+        }
+        Insert: {
+          connection_kind?: string
+          created_at?: string
+          database_id?: string | null
+          db_engine?: string
+          db_name?: string | null
+          db_user?: string | null
+          env_key?: string
+          host?: string | null
+          id?: string
+          last_checked_at?: string | null
+          latency_ms?: number | null
+          owner_id?: string
+          port?: number | null
+          role?: string
+          secret_id?: string | null
+          server_id?: string | null
+          status?: string
+          updated_at?: string
+          website_id: string
+        }
+        Update: {
+          connection_kind?: string
+          created_at?: string
+          database_id?: string | null
+          db_engine?: string
+          db_name?: string | null
+          db_user?: string | null
+          env_key?: string
+          host?: string | null
+          id?: string
+          last_checked_at?: string | null
+          latency_ms?: number | null
+          owner_id?: string
+          port?: number | null
+          role?: string
+          secret_id?: string | null
+          server_id?: string | null
+          status?: string
+          updated_at?: string
+          website_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_databases_database_id_fkey"
+            columns: ["database_id"]
+            isOneToOne: false
+            referencedRelation: "databases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_databases_secret_id_fkey"
+            columns: ["secret_id"]
+            isOneToOne: false
+            referencedRelation: "vault_secrets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_databases_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_databases_website_id_fkey"
             columns: ["website_id"]
             isOneToOne: false
             referencedRelation: "websites"
@@ -2314,6 +2421,78 @@ export type Database = {
           },
           {
             foreignKeyName: "site_provisioning_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_runtimes: {
+        Row: {
+          created_at: string
+          domain: string
+          exec_start: string | null
+          id: string
+          last_output: string | null
+          last_restart_at: string | null
+          memory_mb: number | null
+          owner_id: string
+          port: number | null
+          root_path: string | null
+          runtime_kind: string
+          server_id: string
+          status: string
+          unit_name: string | null
+          updated_at: string
+          website_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          domain: string
+          exec_start?: string | null
+          id?: string
+          last_output?: string | null
+          last_restart_at?: string | null
+          memory_mb?: number | null
+          owner_id?: string
+          port?: number | null
+          root_path?: string | null
+          runtime_kind?: string
+          server_id: string
+          status?: string
+          unit_name?: string | null
+          updated_at?: string
+          website_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          domain?: string
+          exec_start?: string | null
+          id?: string
+          last_output?: string | null
+          last_restart_at?: string | null
+          memory_mb?: number | null
+          owner_id?: string
+          port?: number | null
+          root_path?: string | null
+          runtime_kind?: string
+          server_id?: string
+          status?: string
+          unit_name?: string | null
+          updated_at?: string
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_runtimes_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_runtimes_website_id_fkey"
             columns: ["website_id"]
             isOneToOne: false
             referencedRelation: "websites"
@@ -2539,12 +2718,75 @@ export type Database = {
         }
         Relationships: []
       }
+      storage_events: {
+        Row: {
+          created_at: string
+          detail: string | null
+          event_kind: string
+          id: string
+          owner_id: string
+          path: string | null
+          server_id: string | null
+          size_mb: number | null
+          storage_id: string | null
+          website_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          detail?: string | null
+          event_kind: string
+          id?: string
+          owner_id?: string
+          path?: string | null
+          server_id?: string | null
+          size_mb?: number | null
+          storage_id?: string | null
+          website_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          detail?: string | null
+          event_kind?: string
+          id?: string
+          owner_id?: string
+          path?: string | null
+          server_id?: string | null
+          size_mb?: number | null
+          storage_id?: string | null
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storage_events_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storage_events_storage_id_fkey"
+            columns: ["storage_id"]
+            isOneToOne: false
+            referencedRelation: "storages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storage_events_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       storages: {
         Row: {
           auto_provisioned: boolean
           bucket: string | null
           created_at: string
           id: string
+          identity_written: boolean
+          last_sync_at: string | null
           name: string
           owner_id: string
           path: string | null
@@ -2553,8 +2795,10 @@ export type Database = {
           size_gb: number | null
           status: string
           storage_type: string
+          sync_status: string
           updated_at: string
           used_gb: number | null
+          watch_enabled: boolean
           website_id: string | null
         }
         Insert: {
@@ -2562,6 +2806,8 @@ export type Database = {
           bucket?: string | null
           created_at?: string
           id?: string
+          identity_written?: boolean
+          last_sync_at?: string | null
           name: string
           owner_id: string
           path?: string | null
@@ -2570,8 +2816,10 @@ export type Database = {
           size_gb?: number | null
           status?: string
           storage_type?: string
+          sync_status?: string
           updated_at?: string
           used_gb?: number | null
+          watch_enabled?: boolean
           website_id?: string | null
         }
         Update: {
@@ -2579,6 +2827,8 @@ export type Database = {
           bucket?: string | null
           created_at?: string
           id?: string
+          identity_written?: boolean
+          last_sync_at?: string | null
           name?: string
           owner_id?: string
           path?: string | null
@@ -2587,8 +2837,10 @@ export type Database = {
           size_gb?: number | null
           status?: string
           storage_type?: string
+          sync_status?: string
           updated_at?: string
           used_gb?: number | null
+          watch_enabled?: boolean
           website_id?: string | null
         }
         Relationships: [

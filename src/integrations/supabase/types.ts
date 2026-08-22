@@ -1156,6 +1156,95 @@ export type Database = {
           },
         ]
       }
+      file_transfers: {
+        Row: {
+          build_cmd: string | null
+          command_id: string | null
+          created_at: string
+          dry_run: boolean
+          file_count: number | null
+          host: string | null
+          id: string
+          install_cmd: string | null
+          log: string | null
+          mode: string
+          name: string
+          output_dir: string | null
+          owner_id: string
+          port: number | null
+          server_id: string | null
+          service_name: string | null
+          size_bytes: number | null
+          ssh_user: string | null
+          start_cmd: string | null
+          status: string
+          steps: Json
+          storage_path: string | null
+          target_path: string
+          updated_at: string
+        }
+        Insert: {
+          build_cmd?: string | null
+          command_id?: string | null
+          created_at?: string
+          dry_run?: boolean
+          file_count?: number | null
+          host?: string | null
+          id?: string
+          install_cmd?: string | null
+          log?: string | null
+          mode?: string
+          name: string
+          output_dir?: string | null
+          owner_id?: string
+          port?: number | null
+          server_id?: string | null
+          service_name?: string | null
+          size_bytes?: number | null
+          ssh_user?: string | null
+          start_cmd?: string | null
+          status?: string
+          steps?: Json
+          storage_path?: string | null
+          target_path?: string
+          updated_at?: string
+        }
+        Update: {
+          build_cmd?: string | null
+          command_id?: string | null
+          created_at?: string
+          dry_run?: boolean
+          file_count?: number | null
+          host?: string | null
+          id?: string
+          install_cmd?: string | null
+          log?: string | null
+          mode?: string
+          name?: string
+          output_dir?: string | null
+          owner_id?: string
+          port?: number | null
+          server_id?: string | null
+          service_name?: string | null
+          size_bytes?: number | null
+          ssh_user?: string | null
+          start_cmd?: string | null
+          status?: string
+          steps?: Json
+          storage_path?: string | null
+          target_path?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "file_transfers_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       git_deployments: {
         Row: {
           command_id: string | null

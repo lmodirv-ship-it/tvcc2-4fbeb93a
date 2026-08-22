@@ -1,4 +1,6 @@
 /** Site-management tools exposed to AI models. Executed with the caller's RLS-scoped client. */
+import { COMMAND_WHITELIST } from "./server-commands";
+
 export type ToolDef = {
   name: string;
   description: string;

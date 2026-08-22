@@ -111,8 +111,8 @@ export const saveAiTask = createServerFn({ method: "POST" })
       server_id: data.serverId ?? null,
       website_id: data.websiteId ?? null,
       status: data.status ?? "pending",
-      model_id: data.modelId ?? null,
-      stage: data.stage ?? "planning",
+      ...(data.modelId !== undefined ? { model_id: data.modelId } : {}),
+      ...(data.stage !== undefined ? { stage: data.stage } : {}),
       priority: data.priority ?? 2,
       result: data.result ?? null,
     };

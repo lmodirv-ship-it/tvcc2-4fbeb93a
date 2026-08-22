@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/select";
 import { MessageSquare, Send, Loader2, Plus, Trash2, Wrench, Laptop } from "lucide-react";
 import { toast } from "sonner";
+import { EDIT_COMMAND_HINT, hasEditCommand } from "@/lib/ai-write-command";
 import {
   listAiProviders, aiChat, listConversations, getConversation, deleteConversation,
   listAiToolSchemas, runAiTool,
@@ -46,7 +47,6 @@ function AiChatPage() {
   const execTool = useServerFn(runAiTool);
 
   const [modelId, setModelId] = useState("");
-  const [allowWrites, setAllowWrites] = useState(false);
   const [conversationId, setConversationId] = useState<string | null>(null);
   const [input, setInput] = useState("");
   const [pending, setPending] = useState(false);
@@ -115,7 +115,7 @@ function AiChatPage() {
           data: {
             name: String(c.function?.name ?? ""),
             args,
-            allowWrites,
+            allowWrites: hasEditCommand(text),
             serverId: serverId || null,
           },
         });
@@ -148,7 +148,7 @@ function AiChatPage() {
       } else {
         const r: any = await chat({
           data: {
-            modelId, conversationId, message: prefix + text, allowWrites,
+            modelId, conversationId, message: prefix + text,
             serverId: serverId || null,
             filePaths: selectedFiles,
             taskIds: activeTasks,
@@ -209,10 +209,7 @@ function AiChatPage() {
               {models.map((m) => <SelectItem key={m.id} value={m.id}>{m.name}</SelectItem>)}
             </SelectContent>
           </Select>
-          <div className="flex items-center gap-2 text-xs">
-            <Switch checked={allowWrites} onCheckedChange={setAllowWrites} />
-            <span>السماح بالتعديل</span>
-          </div>
+          <span className="text-[11px] text-muted-foreground max-w-xs leading-snug">{EDIT_COMMAND_HINT}</span>
         </div>
 
         {models.length === 0 && (

@@ -17,6 +17,7 @@ import { ListChecks, Loader2, Play, RotateCcw, Trash2, Plus, RefreshCw } from "l
 import { useServerFn } from "@tanstack/react-start";
 import { createJob, runJob, deleteJob } from "@/lib/jobs.functions";
 import { toast } from "sonner";
+import { TaskCenter } from "@/components/ai/TaskCenter";
 
 export const Route = createFileRoute("/_authenticated/jobs")({
   component: JobsPage,
@@ -140,9 +141,11 @@ function JobsPage() {
           <TabsTrigger value="running">قيد التنفيذ</TabsTrigger>
           <TabsTrigger value="completed">مكتملة</TabsTrigger>
           <TabsTrigger value="failed">فاشلة</TabsTrigger>
+          <TabsTrigger value="ai">مهام النماذج</TabsTrigger>
         </TabsList>
 
         <TabsContent value={tab} className="mt-4">
+          {tab === "ai" ? <TaskCenter /> : (
           <Card>
             <CardContent className="p-4">
               <Table>
@@ -219,6 +222,7 @@ function JobsPage() {
               </Table>
             </CardContent>
           </Card>
+          )}
         </TabsContent>
       </Tabs>
 

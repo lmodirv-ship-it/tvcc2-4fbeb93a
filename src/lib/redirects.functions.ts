@@ -28,12 +28,24 @@ async function queue(
   return data?.id as string | undefined;
 }
 
-async function logOp(sb: any, ownerId: string, action: string, detail: Record<string, unknown>) {
+async function logOp(
+  sb: any,
+  ownerId: string,
+  operation: string,
+  title: string,
+  input: Record<string, unknown>,
+  serverId?: string | null,
+) {
   await sb.from("operation_log").insert({
     owner_id: ownerId,
-    action,
+    scope: "domains",
+    server_id: serverId ?? null,
+    operation,
+    title,
+    input,
+    result: {},
     status: "queued",
-    details: detail,
+    actor: ownerId,
   });
 }
 

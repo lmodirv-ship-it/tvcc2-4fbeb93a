@@ -82,6 +82,9 @@
     "backups": "Sauvegardes",
     "topology": "Carte des relations",
     "logs": "Centre des journaux",
+    "failover": "Bascule auto",
+    "deploy": "Déploiement Git",
+    "automation": "Automatisation",
     "network": "Réseau serveurs"
   },
   "dashboard": {

@@ -315,6 +315,68 @@ function PermissionsMatrix() {
   );
 }
 
+/* ---------------- Grant role ---------------- */
+
+type Member = { id: string; email: string | null; full_name: string | null };
+
+function GrantRoleDialog({
+  members,
+  onGrant,
+}: {
+  members: Member[];
+  onGrant: (userId: string, email: string, role: string) => Promise<void>;
+}) {
+  const selectable = members.filter((m) => (m.email || "").toLowerCase() !== PERMANENT_OWNER_EMAIL);
+  const [userId, setUserId] = useState("");
+  const [role, setRole] = useState("editor");
+  const [loading, setLoading] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const member = selectable.find((m) => m.id === userId);
+    if (!member) return toast.error("اختر عضواً أولاً");
+    setLoading(true);
+    await onGrant(member.id, member.email || "", role);
+    setLoading(false);
+  };
+
+  return (
+    <DialogContent>
+      <DialogHeader><DialogTitle>منح دور لعضو</DialogTitle></DialogHeader>
+      <form onSubmit={submit} className="space-y-4">
+        <div className="space-y-2">
+          <Label>العضو</Label>
+          <Select value={userId} onValueChange={setUserId}>
+            <SelectTrigger><SelectValue placeholder="اختر عضواً" /></SelectTrigger>
+            <SelectContent>
+              {selectable.map((m) => (
+                <SelectItem key={m.id} value={m.id}>{m.full_name || m.email}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label>الدور</Label>
+          <Select value={role} onValueChange={setRole}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="admin">مدير (Admin) — كل الصلاحيات عدا المحمية</SelectItem>
+              <SelectItem value="editor">محرر (Editor) — عرض وتعديل</SelectItem>
+              <SelectItem value="viewer">مشاهد (Viewer) — عرض فقط</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <p className="text-xs text-muted-foreground">دور «مالك المنصة» محمي ولا يمكن منحه أو سحبه من أي حساب.</p>
+        <DialogFooter>
+          <Button type="submit" disabled={loading || !userId}>
+            {loading && <Loader2 className="w-4 h-4 animate-spin ml-2" />}منح الدور
+          </Button>
+        </DialogFooter>
+      </form>
+    </DialogContent>
+  );
+}
+
 function InviteDialog({ onDone }: { onDone: () => void }) {
   const [email, setEmail] = useState("");
   const [full_name, setName] = useState("");

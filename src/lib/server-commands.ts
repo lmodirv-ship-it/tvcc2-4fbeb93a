@@ -98,4 +98,10 @@ export const COMMAND_ARG: Record<string, { key: string; placeholder: string }> =
   db_dump: { key: "domain", placeholder: "example.com" },
   site_dir: { key: "domain", placeholder: "example.com" },
   issue_ssl: { key: "domain", placeholder: "example.com" },
+  site_start: { key: "name", placeholder: "tvcc-site-example.com" },
+  site_stop: { key: "name", placeholder: "tvcc-site-example.com" },
+  site_restart: { key: "name", placeholder: "tvcc-site-example.com" },
+  site_logs: { key: "name", placeholder: "tvcc-site-example.com" },
+  watch_start: { key: "domain", placeholder: "example.com" },
+  watch_stop: { key: "domain", placeholder: "example.com" },
 };

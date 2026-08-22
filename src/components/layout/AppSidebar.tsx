@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Globe, Users, CreditCard, UserCog, Activity, Settings,
   Code2, LogOut, Wand2, FolderOpen, LayoutTemplate, Radio, ListChecks, Plug,
   Smartphone, KeyRound, Server, ShieldCheck, BadgeCheck, Bell, FileCog, LifeBuoy, ClipboardCheck,
-  FileBarChart, Wallet, Boxes, Brain, Film, HardDrive, MessageSquare, History, NotebookPen, Archive, Network, Share2, ScrollText,
+  FileBarChart, Wallet, Boxes, Brain, Film, HardDrive, MessageSquare, History, NotebookPen, Archive, Network, Share2, ScrollText, ShieldAlert, GitBranch, Zap,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -44,6 +44,9 @@ const opsItems = [
   { titleKey: "sidebar.backups", url: "/backups", icon: Archive },
   { titleKey: "sidebar.operations", url: "/operations", icon: NotebookPen },
   { titleKey: "sidebar.logs", url: "/logs", icon: ScrollText },
+  { titleKey: "sidebar.failover", url: "/failover", icon: ShieldAlert },
+  { titleKey: "sidebar.deploy", url: "/deploy", icon: GitBranch },
+  { titleKey: "sidebar.automation", url: "/automation", icon: Zap },
   { titleKey: "sidebar.domains", url: "/domains", icon: Server },
   { titleKey: "sidebar.ssl", url: "/ssl", icon: ShieldCheck },
   { titleKey: "sidebar.certificates", url: "/certificates", icon: BadgeCheck },

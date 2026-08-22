@@ -82,6 +82,9 @@
     "backups": "Backups",
     "topology": "Topology Map",
     "logs": "Logs Center",
+    "failover": "Failover",
+    "deploy": "Git Deploy",
+    "automation": "Automation",
     "network": "Server Mesh"
   },
   "dashboard": {

@@ -44,6 +44,53 @@ export type Database = {
         }
         Relationships: []
       }
+      agent_installers: {
+        Row: {
+          created_at: string
+          expires_at: string | null
+          id: string
+          install_command: string
+          label: string | null
+          os_target: string
+          owner_id: string
+          server_id: string | null
+          status: string
+          used_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          install_command: string
+          label?: string | null
+          os_target?: string
+          owner_id?: string
+          server_id?: string | null
+          status?: string
+          used_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          expires_at?: string | null
+          id?: string
+          install_command?: string
+          label?: string | null
+          os_target?: string
+          owner_id?: string
+          server_id?: string | null
+          status?: string
+          used_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_installers_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       ai_conversations: {
         Row: {
           created_at: string
@@ -972,6 +1019,285 @@ export type Database = {
         }
         Relationships: []
       }
+      failover_events: {
+        Row: {
+          created_at: string
+          details: Json
+          event_type: string
+          from_server_id: string | null
+          id: string
+          owner_id: string
+          policy_id: string | null
+          reason: string | null
+          to_server_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          details?: Json
+          event_type: string
+          from_server_id?: string | null
+          id?: string
+          owner_id?: string
+          policy_id?: string | null
+          reason?: string | null
+          to_server_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          details?: Json
+          event_type?: string
+          from_server_id?: string | null
+          id?: string
+          owner_id?: string
+          policy_id?: string | null
+          reason?: string | null
+          to_server_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "failover_events_from_server_id_fkey"
+            columns: ["from_server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "failover_events_policy_id_fkey"
+            columns: ["policy_id"]
+            isOneToOne: false
+            referencedRelation: "failover_policies"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "failover_events_to_server_id_fkey"
+            columns: ["to_server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      failover_policies: {
+        Row: {
+          auto_failback: boolean
+          backup_server_id: string | null
+          check_interval_sec: number
+          consecutive_failures: number
+          created_at: string
+          current_state: string
+          failure_threshold: number
+          health_url: string | null
+          id: string
+          is_active: boolean
+          last_checked_at: string | null
+          name: string
+          owner_id: string
+          primary_server_id: string | null
+          updated_at: string
+          website_id: string | null
+        }
+        Insert: {
+          auto_failback?: boolean
+          backup_server_id?: string | null
+          check_interval_sec?: number
+          consecutive_failures?: number
+          created_at?: string
+          current_state?: string
+          failure_threshold?: number
+          health_url?: string | null
+          id?: string
+          is_active?: boolean
+          last_checked_at?: string | null
+          name: string
+          owner_id?: string
+          primary_server_id?: string | null
+          updated_at?: string
+          website_id?: string | null
+        }
+        Update: {
+          auto_failback?: boolean
+          backup_server_id?: string | null
+          check_interval_sec?: number
+          consecutive_failures?: number
+          created_at?: string
+          current_state?: string
+          failure_threshold?: number
+          health_url?: string | null
+          id?: string
+          is_active?: boolean
+          last_checked_at?: string | null
+          name?: string
+          owner_id?: string
+          primary_server_id?: string | null
+          updated_at?: string
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "failover_policies_backup_server_id_fkey"
+            columns: ["backup_server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "failover_policies_primary_server_id_fkey"
+            columns: ["primary_server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "failover_policies_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      git_deployments: {
+        Row: {
+          command_id: string | null
+          commit_message: string | null
+          commit_sha: string | null
+          created_at: string
+          finished_at: string | null
+          id: string
+          logs: string | null
+          owner_id: string
+          repository_id: string | null
+          server_id: string | null
+          started_at: string | null
+          status: string
+          trigger_source: string
+          website_id: string | null
+        }
+        Insert: {
+          command_id?: string | null
+          commit_message?: string | null
+          commit_sha?: string | null
+          created_at?: string
+          finished_at?: string | null
+          id?: string
+          logs?: string | null
+          owner_id?: string
+          repository_id?: string | null
+          server_id?: string | null
+          started_at?: string | null
+          status?: string
+          trigger_source?: string
+          website_id?: string | null
+        }
+        Update: {
+          command_id?: string | null
+          commit_message?: string | null
+          commit_sha?: string | null
+          created_at?: string
+          finished_at?: string | null
+          id?: string
+          logs?: string | null
+          owner_id?: string
+          repository_id?: string | null
+          server_id?: string | null
+          started_at?: string | null
+          status?: string
+          trigger_source?: string
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "git_deployments_repository_id_fkey"
+            columns: ["repository_id"]
+            isOneToOne: false
+            referencedRelation: "git_repositories"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "git_deployments_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "git_deployments_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      git_repositories: {
+        Row: {
+          auto_deploy: boolean
+          branch: string
+          build_command: string | null
+          created_at: string
+          deploy_path: string | null
+          id: string
+          last_commit: string | null
+          output_dir: string | null
+          owner_id: string
+          provider: string
+          repo_url: string
+          server_id: string | null
+          updated_at: string
+          webhook_secret: string | null
+          website_id: string | null
+        }
+        Insert: {
+          auto_deploy?: boolean
+          branch?: string
+          build_command?: string | null
+          created_at?: string
+          deploy_path?: string | null
+          id?: string
+          last_commit?: string | null
+          output_dir?: string | null
+          owner_id?: string
+          provider?: string
+          repo_url: string
+          server_id?: string | null
+          updated_at?: string
+          webhook_secret?: string | null
+          website_id?: string | null
+        }
+        Update: {
+          auto_deploy?: boolean
+          branch?: string
+          build_command?: string | null
+          created_at?: string
+          deploy_path?: string | null
+          id?: string
+          last_commit?: string | null
+          output_dir?: string | null
+          owner_id?: string
+          provider?: string
+          repo_url?: string
+          server_id?: string | null
+          updated_at?: string
+          webhook_secret?: string | null
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "git_repositories_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "git_repositories_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hn_certificates: {
         Row: {
           created_at: string
@@ -1435,6 +1761,78 @@ export type Database = {
           website_id?: string
         }
         Relationships: []
+      }
+      scheduled_tasks: {
+        Row: {
+          created_at: string
+          cron_expression: string | null
+          id: string
+          interval_minutes: number
+          is_active: boolean
+          last_run_at: string | null
+          last_status: string | null
+          name: string
+          next_run_at: string | null
+          owner_id: string
+          payload: Json
+          schedule_kind: string
+          server_id: string | null
+          task_type: string
+          updated_at: string
+          website_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          cron_expression?: string | null
+          id?: string
+          interval_minutes?: number
+          is_active?: boolean
+          last_run_at?: string | null
+          last_status?: string | null
+          name: string
+          next_run_at?: string | null
+          owner_id?: string
+          payload?: Json
+          schedule_kind?: string
+          server_id?: string | null
+          task_type: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          cron_expression?: string | null
+          id?: string
+          interval_minutes?: number
+          is_active?: boolean
+          last_run_at?: string | null
+          last_status?: string | null
+          name?: string
+          next_run_at?: string | null
+          owner_id?: string
+          payload?: Json
+          schedule_kind?: string
+          server_id?: string | null
+          task_type?: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "scheduled_tasks_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "scheduled_tasks_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       server_alert_history: {
         Row: {
@@ -2968,6 +3366,47 @@ export type Database = {
           },
         ]
       }
+      task_runs: {
+        Row: {
+          error_message: string | null
+          finished_at: string | null
+          id: string
+          output: string | null
+          owner_id: string
+          started_at: string
+          status: string
+          task_id: string | null
+        }
+        Insert: {
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          output?: string | null
+          owner_id?: string
+          started_at?: string
+          status?: string
+          task_id?: string | null
+        }
+        Update: {
+          error_message?: string | null
+          finished_at?: string | null
+          id?: string
+          output?: string | null
+          owner_id?: string
+          started_at?: string
+          status?: string
+          task_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "task_runs_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       team_invitations: {
         Row: {
           accepted_at: string | null
@@ -2997,6 +3436,178 @@ export type Database = {
           role?: Database["public"]["Enums"]["app_role"]
         }
         Relationships: []
+      }
+      uptime_checks: {
+        Row: {
+          checked_at: string
+          error_message: string | null
+          http_status: number | null
+          id: string
+          latency_ms: number | null
+          monitor_id: string | null
+          owner_id: string
+          status: string
+        }
+        Insert: {
+          checked_at?: string
+          error_message?: string | null
+          http_status?: number | null
+          id?: string
+          latency_ms?: number | null
+          monitor_id?: string | null
+          owner_id?: string
+          status: string
+        }
+        Update: {
+          checked_at?: string
+          error_message?: string | null
+          http_status?: number | null
+          id?: string
+          latency_ms?: number | null
+          monitor_id?: string | null
+          owner_id?: string
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uptime_checks_monitor_id_fkey"
+            columns: ["monitor_id"]
+            isOneToOne: false
+            referencedRelation: "uptime_monitors"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      uptime_monitors: {
+        Row: {
+          created_at: string
+          expected_status: number
+          id: string
+          interval_sec: number
+          is_active: boolean
+          last_checked_at: string | null
+          last_latency_ms: number | null
+          last_status: string | null
+          method: string
+          name: string
+          owner_id: string
+          timeout_ms: number
+          updated_at: string
+          url: string
+          website_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          expected_status?: number
+          id?: string
+          interval_sec?: number
+          is_active?: boolean
+          last_checked_at?: string | null
+          last_latency_ms?: number | null
+          last_status?: string | null
+          method?: string
+          name: string
+          owner_id?: string
+          timeout_ms?: number
+          updated_at?: string
+          url: string
+          website_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          expected_status?: number
+          id?: string
+          interval_sec?: number
+          is_active?: boolean
+          last_checked_at?: string | null
+          last_latency_ms?: number | null
+          last_status?: string | null
+          method?: string
+          name?: string
+          owner_id?: string
+          timeout_ms?: number
+          updated_at?: string
+          url?: string
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "uptime_monitors_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      usage_costs: {
+        Row: {
+          category: string
+          created_at: string
+          currency: string
+          id: string
+          notes: string | null
+          owner_id: string
+          period_end: string | null
+          period_start: string | null
+          provider: string | null
+          quantity: number
+          server_id: string | null
+          total_cost: number
+          unit: string
+          unit_cost: number
+          website_id: string | null
+        }
+        Insert: {
+          category: string
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          period_end?: string | null
+          period_start?: string | null
+          provider?: string | null
+          quantity?: number
+          server_id?: string | null
+          total_cost?: number
+          unit?: string
+          unit_cost?: number
+          website_id?: string | null
+        }
+        Update: {
+          category?: string
+          created_at?: string
+          currency?: string
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          period_end?: string | null
+          period_start?: string | null
+          provider?: string | null
+          quantity?: number
+          server_id?: string | null
+          total_cost?: number
+          unit?: string
+          unit_cost?: number
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "usage_costs_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "usage_costs_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       user_roles: {
         Row: {
@@ -3164,6 +3775,92 @@ export type Database = {
           thumbnail_url?: string | null
           updated_at?: string
           video_url?: string | null
+        }
+        Relationships: []
+      }
+      webhook_deliveries: {
+        Row: {
+          created_at: string
+          endpoint_id: string | null
+          error_message: string | null
+          event: string
+          id: string
+          owner_id: string
+          payload: Json
+          response_code: number | null
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          endpoint_id?: string | null
+          error_message?: string | null
+          event: string
+          id?: string
+          owner_id?: string
+          payload?: Json
+          response_code?: number | null
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          endpoint_id?: string | null
+          error_message?: string | null
+          event?: string
+          id?: string
+          owner_id?: string
+          payload?: Json
+          response_code?: number | null
+          status?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "webhook_deliveries_endpoint_id_fkey"
+            columns: ["endpoint_id"]
+            isOneToOne: false
+            referencedRelation: "webhook_endpoints"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      webhook_endpoints: {
+        Row: {
+          created_at: string
+          direction: string
+          events: string[]
+          id: string
+          is_active: boolean
+          last_delivery_at: string | null
+          name: string
+          owner_id: string
+          secret: string | null
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          direction?: string
+          events?: string[]
+          id?: string
+          is_active?: boolean
+          last_delivery_at?: string | null
+          name: string
+          owner_id?: string
+          secret?: string | null
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          direction?: string
+          events?: string[]
+          id?: string
+          is_active?: boolean
+          last_delivery_at?: string | null
+          name?: string
+          owner_id?: string
+          secret?: string | null
+          updated_at?: string
+          url?: string
         }
         Relationships: []
       }

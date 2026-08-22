@@ -40,11 +40,15 @@ export const COMMAND_WHITELIST = [
   "db_ping",
   "watch_start",
   "watch_stop",
+  "git_deploy",
+  "failover_switch",
 ] as const;
 
 export type CommandAction = (typeof COMMAND_WHITELIST)[number];
 
 export const COMMAND_LABELS: Record<string, string> = {
+  git_deploy: "نشر من Git",
+  failover_switch: "تحويل تلقائي إلى سيرفر احتياطي",
   scan_ports: "فحص المنافذ المفتوحة",
   read_configs: "قراءة ملفات الإعداد",
   service_status: "حالة خدمة",

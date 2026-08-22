@@ -38,15 +38,18 @@ import { Route as AuthenticatedLogsRouteImport } from './routes/_authenticated/l
 import { Route as AuthenticatedJobsRouteImport } from './routes/_authenticated/jobs'
 import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authenticated/integrations'
 import { Route as AuthenticatedGroupsRouteImport } from './routes/_authenticated/groups'
+import { Route as AuthenticatedFailoverRouteImport } from './routes/_authenticated/failover'
 import { Route as AuthenticatedEnvironmentRouteImport } from './routes/_authenticated/environment'
 import { Route as AuthenticatedEditorRouteImport } from './routes/_authenticated/editor'
 import { Route as AuthenticatedDomainsRouteImport } from './routes/_authenticated/domains'
+import { Route as AuthenticatedDeployRouteImport } from './routes/_authenticated/deploy'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedCoreHubRouteImport } from './routes/_authenticated/core-hub'
 import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
 import { Route as AuthenticatedCertificatesRouteImport } from './routes/_authenticated/certificates'
 import { Route as AuthenticatedBlogManagerRouteImport } from './routes/_authenticated/blog-manager'
 import { Route as AuthenticatedBackupsRouteImport } from './routes/_authenticated/backups'
+import { Route as AuthenticatedAutomationRouteImport } from './routes/_authenticated/automation'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedApkManagerRouteImport } from './routes/_authenticated/apk-manager'
 import { Route as AuthenticatedAiTestsRouteImport } from './routes/_authenticated/ai-tests'
@@ -235,6 +238,11 @@ const AuthenticatedGroupsRoute = AuthenticatedGroupsRouteImport.update({
   path: '/groups',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedFailoverRoute = AuthenticatedFailoverRouteImport.update({
+  id: '/failover',
+  path: '/failover',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedEnvironmentRoute =
   AuthenticatedEnvironmentRouteImport.update({
     id: '/environment',
@@ -249,6 +257,11 @@ const AuthenticatedEditorRoute = AuthenticatedEditorRouteImport.update({
 const AuthenticatedDomainsRoute = AuthenticatedDomainsRouteImport.update({
   id: '/domains',
   path: '/domains',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedDeployRoute = AuthenticatedDeployRouteImport.update({
+  id: '/deploy',
+  path: '/deploy',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
@@ -281,6 +294,11 @@ const AuthenticatedBlogManagerRoute =
 const AuthenticatedBackupsRoute = AuthenticatedBackupsRouteImport.update({
   id: '/backups',
   path: '/backups',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedAutomationRoute = AuthenticatedAutomationRouteImport.update({
+  id: '/automation',
+  path: '/automation',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedAuditRoute = AuthenticatedAuditRouteImport.update({
@@ -500,15 +518,18 @@ export interface FileRoutesByFullPath {
   '/ai-tests': typeof AuthenticatedAiTestsRoute
   '/apk-manager': typeof AuthenticatedApkManagerRoute
   '/audit': typeof AuthenticatedAuditRoute
+  '/automation': typeof AuthenticatedAutomationRoute
   '/backups': typeof AuthenticatedBackupsRoute
   '/blog-manager': typeof AuthenticatedBlogManagerRoute
   '/certificates': typeof AuthenticatedCertificatesRoute
   '/clients': typeof AuthenticatedClientsRoute
   '/core-hub': typeof AuthenticatedCoreHubRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/deploy': typeof AuthenticatedDeployRoute
   '/domains': typeof AuthenticatedDomainsRoute
   '/editor': typeof AuthenticatedEditorRouteWithChildren
   '/environment': typeof AuthenticatedEnvironmentRoute
+  '/failover': typeof AuthenticatedFailoverRoute
   '/groups': typeof AuthenticatedGroupsRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/jobs': typeof AuthenticatedJobsRoute
@@ -576,14 +597,17 @@ export interface FileRoutesByTo {
   '/ai-tests': typeof AuthenticatedAiTestsRoute
   '/apk-manager': typeof AuthenticatedApkManagerRoute
   '/audit': typeof AuthenticatedAuditRoute
+  '/automation': typeof AuthenticatedAutomationRoute
   '/backups': typeof AuthenticatedBackupsRoute
   '/blog-manager': typeof AuthenticatedBlogManagerRoute
   '/certificates': typeof AuthenticatedCertificatesRoute
   '/clients': typeof AuthenticatedClientsRoute
   '/core-hub': typeof AuthenticatedCoreHubRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
+  '/deploy': typeof AuthenticatedDeployRoute
   '/domains': typeof AuthenticatedDomainsRoute
   '/environment': typeof AuthenticatedEnvironmentRoute
+  '/failover': typeof AuthenticatedFailoverRoute
   '/groups': typeof AuthenticatedGroupsRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/jobs': typeof AuthenticatedJobsRoute
@@ -653,15 +677,18 @@ export interface FileRoutesById {
   '/_authenticated/ai-tests': typeof AuthenticatedAiTestsRoute
   '/_authenticated/apk-manager': typeof AuthenticatedApkManagerRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
+  '/_authenticated/automation': typeof AuthenticatedAutomationRoute
   '/_authenticated/backups': typeof AuthenticatedBackupsRoute
   '/_authenticated/blog-manager': typeof AuthenticatedBlogManagerRoute
   '/_authenticated/certificates': typeof AuthenticatedCertificatesRoute
   '/_authenticated/clients': typeof AuthenticatedClientsRoute
   '/_authenticated/core-hub': typeof AuthenticatedCoreHubRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/deploy': typeof AuthenticatedDeployRoute
   '/_authenticated/domains': typeof AuthenticatedDomainsRoute
   '/_authenticated/editor': typeof AuthenticatedEditorRouteWithChildren
   '/_authenticated/environment': typeof AuthenticatedEnvironmentRoute
+  '/_authenticated/failover': typeof AuthenticatedFailoverRoute
   '/_authenticated/groups': typeof AuthenticatedGroupsRoute
   '/_authenticated/integrations': typeof AuthenticatedIntegrationsRoute
   '/_authenticated/jobs': typeof AuthenticatedJobsRoute
@@ -731,15 +758,18 @@ export interface FileRouteTypes {
     | '/ai-tests'
     | '/apk-manager'
     | '/audit'
+    | '/automation'
     | '/backups'
     | '/blog-manager'
     | '/certificates'
     | '/clients'
     | '/core-hub'
     | '/dashboard'
+    | '/deploy'
     | '/domains'
     | '/editor'
     | '/environment'
+    | '/failover'
     | '/groups'
     | '/integrations'
     | '/jobs'
@@ -807,14 +837,17 @@ export interface FileRouteTypes {
     | '/ai-tests'
     | '/apk-manager'
     | '/audit'
+    | '/automation'
     | '/backups'
     | '/blog-manager'
     | '/certificates'
     | '/clients'
     | '/core-hub'
     | '/dashboard'
+    | '/deploy'
     | '/domains'
     | '/environment'
+    | '/failover'
     | '/groups'
     | '/integrations'
     | '/jobs'
@@ -883,15 +916,18 @@ export interface FileRouteTypes {
     | '/_authenticated/ai-tests'
     | '/_authenticated/apk-manager'
     | '/_authenticated/audit'
+    | '/_authenticated/automation'
     | '/_authenticated/backups'
     | '/_authenticated/blog-manager'
     | '/_authenticated/certificates'
     | '/_authenticated/clients'
     | '/_authenticated/core-hub'
     | '/_authenticated/dashboard'
+    | '/_authenticated/deploy'
     | '/_authenticated/domains'
     | '/_authenticated/editor'
     | '/_authenticated/environment'
+    | '/_authenticated/failover'
     | '/_authenticated/groups'
     | '/_authenticated/integrations'
     | '/_authenticated/jobs'
@@ -1176,6 +1212,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGroupsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/failover': {
+      id: '/_authenticated/failover'
+      path: '/failover'
+      fullPath: '/failover'
+      preLoaderRoute: typeof AuthenticatedFailoverRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/environment': {
       id: '/_authenticated/environment'
       path: '/environment'
@@ -1195,6 +1238,13 @@ declare module '@tanstack/react-router' {
       path: '/domains'
       fullPath: '/domains'
       preLoaderRoute: typeof AuthenticatedDomainsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/deploy': {
+      id: '/_authenticated/deploy'
+      path: '/deploy'
+      fullPath: '/deploy'
+      preLoaderRoute: typeof AuthenticatedDeployRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/dashboard': {
@@ -1237,6 +1287,13 @@ declare module '@tanstack/react-router' {
       path: '/backups'
       fullPath: '/backups'
       preLoaderRoute: typeof AuthenticatedBackupsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/automation': {
+      id: '/_authenticated/automation'
+      path: '/automation'
+      fullPath: '/automation'
+      preLoaderRoute: typeof AuthenticatedAutomationRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/audit': {
@@ -1560,15 +1617,18 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAiTestsRoute: typeof AuthenticatedAiTestsRoute
   AuthenticatedApkManagerRoute: typeof AuthenticatedApkManagerRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
+  AuthenticatedAutomationRoute: typeof AuthenticatedAutomationRoute
   AuthenticatedBackupsRoute: typeof AuthenticatedBackupsRoute
   AuthenticatedBlogManagerRoute: typeof AuthenticatedBlogManagerRoute
   AuthenticatedCertificatesRoute: typeof AuthenticatedCertificatesRoute
   AuthenticatedClientsRoute: typeof AuthenticatedClientsRoute
   AuthenticatedCoreHubRoute: typeof AuthenticatedCoreHubRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDeployRoute: typeof AuthenticatedDeployRoute
   AuthenticatedDomainsRoute: typeof AuthenticatedDomainsRoute
   AuthenticatedEditorRoute: typeof AuthenticatedEditorRouteWithChildren
   AuthenticatedEnvironmentRoute: typeof AuthenticatedEnvironmentRoute
+  AuthenticatedFailoverRoute: typeof AuthenticatedFailoverRoute
   AuthenticatedGroupsRoute: typeof AuthenticatedGroupsRoute
   AuthenticatedIntegrationsRoute: typeof AuthenticatedIntegrationsRoute
   AuthenticatedJobsRoute: typeof AuthenticatedJobsRoute
@@ -1602,15 +1662,18 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAiTestsRoute: AuthenticatedAiTestsRoute,
   AuthenticatedApkManagerRoute: AuthenticatedApkManagerRoute,
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
+  AuthenticatedAutomationRoute: AuthenticatedAutomationRoute,
   AuthenticatedBackupsRoute: AuthenticatedBackupsRoute,
   AuthenticatedBlogManagerRoute: AuthenticatedBlogManagerRoute,
   AuthenticatedCertificatesRoute: AuthenticatedCertificatesRoute,
   AuthenticatedClientsRoute: AuthenticatedClientsRoute,
   AuthenticatedCoreHubRoute: AuthenticatedCoreHubRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDeployRoute: AuthenticatedDeployRoute,
   AuthenticatedDomainsRoute: AuthenticatedDomainsRoute,
   AuthenticatedEditorRoute: AuthenticatedEditorRouteWithChildren,
   AuthenticatedEnvironmentRoute: AuthenticatedEnvironmentRoute,
+  AuthenticatedFailoverRoute: AuthenticatedFailoverRoute,
   AuthenticatedGroupsRoute: AuthenticatedGroupsRoute,
   AuthenticatedIntegrationsRoute: AuthenticatedIntegrationsRoute,
   AuthenticatedJobsRoute: AuthenticatedJobsRoute,

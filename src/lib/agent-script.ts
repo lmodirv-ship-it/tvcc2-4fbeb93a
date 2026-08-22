@@ -7,7 +7,7 @@ TVCC_TOKEN="${token}"
 TVCC_ENDPOINT="${endpoint}"
 TVCC_AI_ENDPOINT="\${TVCC_AI_ENDPOINT:-http://127.0.0.1:11434}"
 TVCC_BACKUP_DIR="\${TVCC_BACKUP_DIR:-/var/backups/tvcc}"
-TVCC_AGENT_VERSION="2.4.0"
+TVCC_AGENT_VERSION="2.5.0"
 mkdir -p "$TVCC_BACKUP_DIR"
 
 json_escape() { python3 -c 'import sys,json;print(json.dumps(sys.stdin.read()))'; }
@@ -76,6 +76,8 @@ run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
       db_ping)         echo "[dry-run] connect $(GET engine) $(GET host):$(GET port)/$(GET database)" ;;
       watch_start)     echo "[dry-run] inotifywait watcher on /var/www/$(GET domain)" ;;
       watch_stop)      echo "[dry-run] systemctl stop tvcc-watch-$(GET domain)" ;;
+      git_deploy)      echo "[dry-run] git clone/pull $(GET repo) ($(GET branch)) -> $(GET path); build: $(GET build)" ;;
+      failover_switch) echo "[dry-run] switch upstream of $(GET domain) -> $(GET target) then nginx -s reload" ;;
       *) echo "[dry-run] unsupported action: $ACTION"; return 127 ;;
     esac
     return 0
@@ -191,6 +193,29 @@ WantedBy=multi-user.target
 EOF4
       systemctl daemon-reload && systemctl enable --now "tvcc-watch-$D.service" && echo "live sync watching /var/www/$D" ;;
     watch_stop)      D="$(GET domain)"; systemctl disable --now "tvcc-watch-$D.service" 2>/dev/null; echo "watcher stopped for $D" ;;
+    git_deploy)
+      REPO="$(GET repo)"; BR="$(GET branch)"; DIR="$(GET path)"; BUILD="$(GET build)"
+      [ -z "$BR" ] && BR="main"
+      [ -z "$DIR" ] && { echo "missing path"; return 2; }
+      if [ -d "$DIR/.git" ]; then
+        git -C "$DIR" fetch --all -q && git -C "$DIR" reset --hard "origin/$BR" 2>&1
+      else
+        mkdir -p "$DIR" && git clone -q -b "$BR" "$REPO" "$DIR" 2>&1
+      fi || { echo "git failed"; return 3; }
+      if [ -n "$BUILD" ]; then ( cd "$DIR" && sh -c "$BUILD" 2>&1 | tail -n 60 ); fi
+      echo "deployed $(git -C "$DIR" rev-parse --short HEAD 2>/dev/null) to $DIR" ;;
+    failover_switch)
+      D="$(GET domain)"; T="$(GET target)"
+      [ -z "$D" ] || [ -z "$T" ] && { echo "missing domain/target"; return 2; }
+      CONF="/etc/nginx/conf.d/tvcc-failover-$D.conf"
+      cat > "$CONF" <<EOF5
+server {
+  listen 80;
+  server_name $D;
+  location / { proxy_pass http://$T; proxy_set_header Host \$host; proxy_set_header X-Real-IP \$remote_addr; }
+}
+EOF5
+      nginx -t 2>&1 && nginx -s reload 2>&1 && echo "failover: $D -> $T" ;;
     *) echo "unsupported action: $ACTION"; return 127 ;;
   esac
 }

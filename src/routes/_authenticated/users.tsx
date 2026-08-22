@@ -114,8 +114,22 @@ function TeamTab() {
             <div className="font-semibold text-sm">مالك المنصة الدائم</div>
             <div className="text-xs text-muted-foreground" dir="ltr">{PERMANENT_OWNER_EMAIL}</div>
           </div>
-          <Badge className="gap-1"><Lock className="w-3 h-3" /> محمي — لا يُحذف ولا تتغير صلاحيته</Badge>
-          {isSystemOwner && (
+          <Badge className="gap-1"><Lock className="w-3 h-3" /> محمي — مالك + مدير (Admin) لا يُحذف</Badge>
+          {isAdmin && (
+            <Dialog open={grantOpen} onOpenChange={setGrantOpen}>
+              <DialogTrigger asChild>
+                <Button variant="secondary"><ShieldCheck className="w-4 h-4 ml-1" /> منح الأدوار</Button>
+              </DialogTrigger>
+              <GrantRoleDialog
+                members={members || []}
+                onGrant={async (userId, email, role) => {
+                  await setRole(userId, email, role);
+                  setGrantOpen(false);
+                }}
+              />
+            </Dialog>
+          )}
+          {isAdmin && (
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
                 <Button><UserPlus className="w-4 h-4 ml-1" /> دعوة عضو</Button>

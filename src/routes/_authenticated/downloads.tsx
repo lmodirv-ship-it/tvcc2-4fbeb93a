@@ -11,6 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { listServers, getAgentInstall } from "@/lib/servers.functions";
 import { exportDashboardHtml } from "@/lib/html-export";
+import { TransferPanel } from "@/components/downloads/TransferPanel";
+
 
 export const Route = createFileRoute("/_authenticated/downloads")({
   head: () => ({

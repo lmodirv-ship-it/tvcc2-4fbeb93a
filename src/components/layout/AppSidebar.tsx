@@ -40,6 +40,7 @@ const aiItems = [
 const opsItems = [
   { titleKey: "sidebar.servers", url: "/servers", icon: HardDrive },
   { titleKey: "sidebar.downloads", url: "/downloads", icon: Download },
+  { titleKey: "sidebar.connect", url: "/connect", icon: Link2 },
   { titleKey: "sidebar.topology", url: "/topology", icon: Share2 },
   { titleKey: "sidebar.network", url: "/network", icon: Network },
   { titleKey: "sidebar.backups", url: "/backups", icon: Archive },

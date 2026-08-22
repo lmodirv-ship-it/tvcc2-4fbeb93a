@@ -404,7 +404,11 @@ export const aiChat = createServerFn({ method: "POST" })
           try {
             args = JSON.parse(c.function?.arguments || "{}");
           } catch { /* ignore */ }
-          const result = await runTool(sb, context.userId, c.function?.name, args, !!data.allowWrites);
+          const result = await runTool(sb, context.userId, c.function?.name, args, !!data.allowWrites, {
+            serverId: data.serverId ?? null,
+            websiteId: data.websiteIds?.[0] ?? null,
+          });
+
           toolLog.push({ name: String(c.function?.name ?? ""), args: JSON.stringify(args) });
           messages.push({
             role: "tool",

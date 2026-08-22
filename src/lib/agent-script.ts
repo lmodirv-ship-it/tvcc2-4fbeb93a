@@ -7,10 +7,135 @@ TVCC_TOKEN="${token}"
 TVCC_ENDPOINT="${endpoint}"
 TVCC_AI_ENDPOINT="\${TVCC_AI_ENDPOINT:-http://127.0.0.1:11434}"
 TVCC_BACKUP_DIR="\${TVCC_BACKUP_DIR:-/var/backups/tvcc}"
-TVCC_AGENT_VERSION="2.5.0"
+TVCC_AGENT_VERSION="2.6.0"
+TVCC_HN_DIR="\${TVCC_HN_DIR:-/home/ismail/hn}"
 mkdir -p "$TVCC_BACKUP_DIR"
+mkdir -p "$TVCC_HN_DIR" 2>/dev/null || true
 
 json_escape() { python3 -c 'import sys,json;print(json.dumps(sys.stdin.read()))'; }
+
+free_port() { # $1 = wanted port -> prints a free port
+  local P="\${1:-3000}"
+  local I=0
+  while [ $I -lt 60 ]; do
+    if ! (ss -tulpnH 2>/dev/null | awk '{print $5}' | grep -qE ":$P\\$"); then echo "$P"; return 0; fi
+    P=$((P+1)); I=$((I+1))
+  done
+  echo "$P"
+}
+
+ensure_node() {
+  command -v node >/dev/null && return 0
+  (apt-get update -y >/dev/null 2>&1 && apt-get install -y nodejs npm >/dev/null 2>&1) || true
+  command -v node >/dev/null || (curl -fsSL https://deb.nodesource.com/setup_20.x 2>/dev/null | bash - >/dev/null 2>&1 && apt-get install -y nodejs >/dev/null 2>&1) || true
+  command -v node >/dev/null
+}
+
+write_site_unit() { # $1 name, $2 dir, $3 exec, $4 port
+  cat > "/etc/systemd/system/$1.service" <<EOFU
+[Unit]
+Description=TVCC site $1
+After=network.target
+
+[Service]
+WorkingDirectory=$2
+Environment="PORT=$4"
+Environment="HOST=0.0.0.0"
+Environment="NODE_ENV=production"
+ExecStart=/bin/bash -lc "$3"
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOFU
+  systemctl daemon-reload
+  systemctl enable "$1.service" >/dev/null 2>&1 || true
+  systemctl restart "$1.service" 2>&1 | tail -3
+}
+
+tvcc_deploy() { # $1 url $2 name $3 base $4 port $5 install $6 build $7 start $8 outdir $9 service
+  local URL="$1" NAME="$2" BASE="$3" WPORT="$4" INS="$5" BLD="$6" STR="$7" OUT="$8" SVC="$9"
+  [ -z "$BASE" ] && BASE="$TVCC_HN_DIR"
+  local DIR="$BASE/$NAME"
+  echo "== target: $DIR"
+  mkdir -p "$DIR" || { echo "ERR: cannot create $DIR"; return 2; }
+  local TMP="/tmp/tvcc-$NAME.zip"
+  curl -fsSL --max-time 600 -o "$TMP" "$URL" || { echo "ERR: download failed"; return 3; }
+  echo "== downloaded $(du -m "$TMP" | cut -f1)MB"
+  command -v unzip >/dev/null || (apt-get update -y >/dev/null 2>&1 && apt-get install -y unzip >/dev/null 2>&1)
+  rm -rf "$DIR.new"; mkdir -p "$DIR.new"
+  unzip -oq "$TMP" -d "$DIR.new" || { echo "ERR: unzip failed"; rm -f "$TMP"; return 4; }
+  # flatten single wrapper folder
+  local INNER
+  INNER=$(find "$DIR.new" -mindepth 1 -maxdepth 1 | head -2 | wc -l)
+  if [ "$INNER" = "1" ] && [ -d "$(find "$DIR.new" -mindepth 1 -maxdepth 1)" ] && [ ! -f "$DIR.new/index.html" ]; then
+    local SUB; SUB=$(find "$DIR.new" -mindepth 1 -maxdepth 1)
+    if [ -f "$SUB/package.json" ] || [ -f "$SUB/index.html" ]; then mv "$SUB"/* "$SUB"/.[!.]* "$DIR.new"/ 2>/dev/null || true; rmdir "$SUB" 2>/dev/null || true; fi
+  fi
+  cp -a "$DIR.new/." "$DIR/" && rm -rf "$DIR.new" "$TMP"
+  echo "== extracted $(find "$DIR" -type f | wc -l) files"
+  cd "$DIR" || return 5
+
+  local EXEC="" STATIC=false
+  if [ -f package.json ]; then
+    ensure_node || { echo "ERR: Node.js غير مثبت وتعذّر تثبيته تلقائياً — ثبّته يدوياً: apt install nodejs npm"; return 6; }
+    local PM="npm"
+    [ -f pnpm-lock.yaml ] && command -v pnpm >/dev/null && PM="pnpm"
+    [ -f bun.lockb ] && command -v bun >/dev/null && PM="bun"
+    [ -f yarn.lock ] && command -v yarn >/dev/null && PM="yarn"
+    echo "== installing with $PM"
+    if [ -n "$INS" ]; then
+      bash -lc "$INS" 2>&1 | tail -n 25 || true
+    else
+      bash -lc "$PM install" 2>&1 | tail -n 25 || bash -lc "npm install --legacy-peer-deps" 2>&1 | tail -n 25 || bash -lc "npm install --force" 2>&1 | tail -n 25 || echo "WARN: install failed"
+    fi
+    local BUILDCMD="$BLD"
+    if [ -z "$BUILDCMD" ] && grep -q '"build"' package.json; then BUILDCMD="$PM run build"; fi
+    if [ -n "$BUILDCMD" ]; then
+      echo "== building: $BUILDCMD"
+      if ! NODE_OPTIONS="--max-old-space-size=2048" bash -lc "$BUILDCMD" 2>&1 | tail -n 60; then
+        echo "WARN: build failed, retrying with more memory"
+        NODE_OPTIONS="--max-old-space-size=4096" bash -lc "$BUILDCMD" 2>&1 | tail -n 60 || echo "ERR: build failed twice"
+      fi
+    fi
+    [ -z "$OUT" ] && for D in dist build out public .output/public; do [ -d "$D" ] && OUT="$D" && break; done
+    if [ -n "$STR" ]; then EXEC="$STR"
+    elif grep -q '"start"' package.json; then EXEC="$PM run start"
+    elif [ -n "$OUT" ]; then STATIC=true
+    else EXEC="node index.js"; fi
+  elif [ -f requirements.txt ]; then
+    command -v python3 >/dev/null || (apt-get update -y >/dev/null 2>&1 && apt-get install -y python3 python3-pip >/dev/null 2>&1)
+    python3 -m pip install -r requirements.txt >/dev/null 2>&1 || pip3 install -r requirements.txt 2>&1 | tail -n 10 || echo "WARN: pip install failed"
+    EXEC="\${STR:-python3 app.py}"
+  else
+    STATIC=true; [ -z "$OUT" ] && OUT="."
+  fi
+
+  local PORT; PORT=$(free_port "\${WPORT:-3000}")
+  [ "$PORT" != "\${WPORT:-3000}" ] && echo "WARN: المنفذ \${WPORT} مشغول — تم اختيار $PORT"
+
+  if [ "$STATIC" = "true" ]; then
+    EXEC="python3 -m http.server $PORT --bind 0.0.0.0 --directory $DIR/\${OUT:-.}"
+  fi
+
+  local SERVICE="\${SVC:-tvcc-hn-$NAME}"
+  echo "== service: $SERVICE  exec: $EXEC"
+  write_site_unit "$SERVICE" "$DIR" "$EXEC" "$PORT"
+  sleep 3
+  ufw allow "$PORT/tcp" >/dev/null 2>&1 || true
+  if systemctl is-active --quiet "$SERVICE"; then
+    local CODE; CODE=$(curl -s -o /dev/null -w '%{http_code}' -m 8 "http://127.0.0.1:$PORT" || echo 000)
+    echo "RESULT port=$PORT service=$SERVICE http=$CODE dir=$DIR"
+    [ "$CODE" = "000" ] && { echo "WARN: لا استجابة على المنفذ — آخر السجلات:"; journalctl -u "$SERVICE" -n 40 --no-pager 2>&1 | tail -40; }
+  else
+    echo "ERR: الخدمة لم تعمل — آخر السجلات:"
+    journalctl -u "$SERVICE" -n 60 --no-pager 2>&1 | tail -60
+    echo "RESULT port=$PORT service=$SERVICE http=000 dir=$DIR"
+    return 7
+  fi
+}
+
 
 post() { # $1 = body -> echoes response
   local BODY="$1"
@@ -78,6 +203,11 @@ run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
       watch_stop)      echo "[dry-run] systemctl stop tvcc-watch-$(GET domain)" ;;
       git_deploy)      echo "[dry-run] git clone/pull $(GET repo) ($(GET branch)) -> $(GET path); build: $(GET build)" ;;
       failover_switch) echo "[dry-run] switch upstream of $(GET domain) -> $(GET target) then nginx -s reload" ;;
+      deploy_upload)   echo "[dry-run] download $(GET url) -> $(GET path)/$(GET name); unzip; install/build; systemd $(GET service); ufw allow $(GET port)/tcp" ;;
+      build_run)       echo "[dry-run] cd $(GET path)/$(GET name) && $(GET build)" ;;
+      serve_start)     echo "[dry-run] systemctl restart $(GET service) && ufw allow $(GET port)/tcp" ;;
+      serve_stop)      echo "[dry-run] systemctl disable --now $(GET service)" ;;
+
       *) echo "[dry-run] unsupported action: $ACTION"; return 127 ;;
     esac
     return 0
@@ -216,6 +346,25 @@ server {
 }
 EOF5
       nginx -t 2>&1 && nginx -s reload 2>&1 && echo "failover: $D -> $T" ;;
+    deploy_upload)
+      U="$(GET url)"; N="$(GET name)"; BP="$(GET path)"; PT="$(GET port)"
+      IN="$(GET install)"; BD="$(GET build)"; ST="$(GET start)"; OD="$(GET output_dir)"; SV="$(GET service)"
+      [ -z "$U" ] || [ -z "$N" ] && { echo "missing url/name"; return 2; }
+      tvcc_deploy "$U" "$N" "$BP" "$PT" "$IN" "$BD" "$ST" "$OD" "$SV" ;;
+    build_run)
+      N="$(GET name)"; BP="$(GET path)"; BD="$(GET build)"
+      [ -z "$BP" ] && BP="$TVCC_HN_DIR"
+      cd "$BP/$N" || { echo "missing dir $BP/$N"; return 2; }
+      bash -lc "\${BD:-npm run build}" 2>&1 | tail -n 80 ;;
+    serve_start)
+      SV="$(GET service)"; PT="$(GET port)"
+      systemctl restart "$SV" 2>&1 | tail -3
+      [ -n "$PT" ] && ufw allow "$PT/tcp" >/dev/null 2>&1 || true
+      systemctl is-active "$SV" 2>&1 ;;
+    serve_stop)
+      SV="$(GET service)"
+      systemctl disable --now "$SV" 2>&1 | tail -3; echo "stopped $SV" ;;
+
     *) echo "unsupported action: $ACTION"; return 127 ;;
   esac
 }

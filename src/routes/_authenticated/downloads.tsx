@@ -11,6 +11,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { listServers, getAgentInstall } from "@/lib/servers.functions";
 import { exportDashboardHtml } from "@/lib/html-export";
+import { TransferPanel } from "@/components/downloads/TransferPanel";
+
 
 export const Route = createFileRoute("/_authenticated/downloads")({
   head: () => ({
@@ -96,9 +98,15 @@ function DownloadsPage() {
       <Tabs defaultValue="agent" className="space-y-4">
         <TabsList>
           <TabsTrigger value="agent">وكيل السيرفر</TabsTrigger>
+          <TabsTrigger value="transfer">نقل وبناء موقع</TabsTrigger>
           <TabsTrigger value="docs">الأدلة</TabsTrigger>
           <TabsTrigger value="apps">النسخ المحلية</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="transfer">
+          <TransferPanel />
+        </TabsContent>
+
 
         <TabsContent value="agent">
           <Card>

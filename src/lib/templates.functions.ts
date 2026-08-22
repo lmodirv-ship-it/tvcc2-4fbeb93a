@@ -100,7 +100,7 @@ export const applyTemplate = createServerFn({ method: "POST" })
         action_type: "apply_template",
         status: "running",
         target_count: websiteIds.length,
-        payload: { template_id: tpl.id, settings },
+        payload: { template_id: tpl.id, settings } as never,
       })
       .select("id")
       .single();

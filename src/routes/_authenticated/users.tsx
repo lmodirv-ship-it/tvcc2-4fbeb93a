@@ -60,7 +60,7 @@ function Page() {
 
 function TeamTab() {
   const qc = useQueryClient();
-  const { isSystemOwner, isAdmin } = useRoles();
+  const { isAdmin } = useRoles();
   const [open, setOpen] = useState(false);
   const [grantOpen, setGrantOpen] = useState(false);
 

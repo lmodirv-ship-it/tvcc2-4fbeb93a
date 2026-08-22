@@ -2,7 +2,7 @@
   "meta": {
     "name": "tvcc",
     "package": "@ws-rwrj5um4yjqhbejpny8m/b4f7d096-0b0d-4a25-815e-9faa0862c50f",
-    "version": "2.0.0",
+    "version": "2.1.0",
     "framework": "react",
     "css_framework": "tailwind",
     "starter_template": "custom_design_system_tailwind",
@@ -12,7 +12,7 @@
     ],
     "source_type": "local",
     "source_manifest": {
-      "#enrichment": "23f70aa4ed8fb984ca7e53ed11a87f7b689e4cf1d612096b734de125f5ff262c",
+      "#enrichment": "3c970a80a1a39ab673de4a0be6670a4719058c930bb5f8899cf2de17fe7ff288",
       ".gitignore": "6d9e901a692b46a83707c245fb03bc91",
       ".lovable/mcp/manifest.json": "bf3727431f1ef5eb839b8d2e2b38f76b",
       ".lovable/meta.yaml": "954a981e8847ec1692669dbb04ae9ae9",
@@ -52,12 +52,14 @@
       "public/favicon.ico": "a0494cb045d933093e124f484fbe064c",
       "public/index.html": "eb9d2cfbe3fdac73d58630c395ca38ed",
       "src/assets/tvcc-logo.asset.json": "5615ef0e6f92a486ea03ce74b5d0868b",
+      "src/components/ai/ServerModelsPanel.tsx": "62933f27cc7c8c0fe9c9fccf44f75780",
       "src/components/editor/BulkEditor.tsx": "387dba02684b5ec5724373613a280949",
       "src/components/layout/AppHeader.tsx": "4be9343a5c20d9916d7427ba4eef9ad3",
       "src/components/layout/AppSidebar.tsx": "2f4b51badd0e14c77334dd5302b32414",
       "src/components/layout/LanguageSwitcher.tsx": "98c1354f6f2ae331828a3560af83d0e1",
       "src/components/layout/NotificationBell.tsx": "48cfe0f343386c3f0217592f62876361",
       "src/components/layout/ThemeSwitcher.tsx": "a7b3c4a3f9e2a68f78fb2d8cc5d97944",
+      "src/components/servers/PortsHub.tsx": "c1de38ecbdbc1dd800871022fc88f9dd",
       "src/components/ui/accordion.tsx": "55f9dda62b4e3913c9b23e5015a86aef",
       "src/components/ui/alert-dialog.tsx": "96350e949e9b7b674545430a410ab89c",
       "src/components/ui/alert.tsx": "f993d7e96b1e25ce50e68ed97e11d2a8",
@@ -119,7 +121,7 @@
       "src/integrations/supabase/client.server.ts": "291dd248c905ba0f0eefbcb5db2d6fc2",
       "src/integrations/supabase/client.ts": "fd589a47997c6b1f046e53c2441d9ce9",
       "src/integrations/supabase/types.ts": "718fbeea6bbda82e3d19789280f7abf9",
-      "src/lib/agent-script.ts": "19b1663caa26712760bc76fcd7e9b658",
+      "src/lib/agent-script.ts": "ccee5403493e18b13bca08db56d1af3e",
       "src/lib/agent-token.ts": "ec07060e10032f12f2987a1098f05284",
       "src/lib/ai-hub.functions.ts": "385d74f922cf7176ced97033a630ef9c",
       "src/lib/ai-hub.server.ts": "5a0f5a0ab4656a0bd8e9975815ef32ef",
@@ -153,7 +155,7 @@
       "src/lib/mesh.server.ts": "b43182991db45f380ed5d89248fa9d70",
       "src/lib/ports.functions.ts": "18bcba322c0b369cded296d79972b927",
       "src/lib/ports.server.ts": "758ec45bcbd684ba84cb6bda40d80de6",
-      "src/lib/server-commands.ts": "a0671bbad438de9fe8e944df55acaea9",
+      "src/lib/server-commands.ts": "8ae7036f1a1bbf10aaa76521bcd7ea07",
       "src/lib/server-ops.functions.ts": "6736534ad16b46466792d965ea2ebb1e",
       "src/lib/servers.functions.ts": "4cc693afeec5b2d09b78d0812977ada4",
       "src/lib/supabase-import.functions.ts": "367d4ead15b4b1c3795296a48c89f441",
@@ -171,7 +173,7 @@
       "src/routes/_authenticated.tsx": "72d37c1bddbd6f613267f0d78ae3adf6",
       "src/routes/_authenticated/activity.tsx": "9e1f23393a8d064245c72c19511761cf",
       "src/routes/_authenticated/ai-chat.tsx": "db3a0d236a472e882488b996ea380c04",
-      "src/routes/_authenticated/ai-connect.tsx": "0bab36e454a87457db7178d9cf61244e",
+      "src/routes/_authenticated/ai-connect.tsx": "55cc5ac2d7150757b45abe5554624e2d",
       "src/routes/_authenticated/ai-models.tsx": "21765119e3a225ef8a88c4b5b79fa5ac",
       "src/routes/_authenticated/ai-tests.tsx": "39d5a492710c7dccbab3e3d323df4519",
       "src/routes/_authenticated/apk-manager.tsx": "c1a2e602e5dd55fe417202e2cd302666",
@@ -209,14 +211,14 @@
       "src/routes/_authenticated/payments-hub.tsx": "cabc894592e089972625bac0a4854a3c",
       "src/routes/_authenticated/recovery.tsx": "e208722fafc55563f8095b338465dfa6",
       "src/routes/_authenticated/reports.tsx": "a6db354ff5356ddcef744a9b1b0751fd",
-      "src/routes/_authenticated/servers.tsx": "4e1855afdddf8ec9d6d28a0a4af7ba3d",
+      "src/routes/_authenticated/servers.tsx": "058757f2633a62cba982d5bdebe5f006",
       "src/routes/_authenticated/services.tsx": "883f249a3c7b24c09c2407173775454e",
       "src/routes/_authenticated/settings.notifications.tsx": "52e1a08860f4d29c4a712a1539105678",
       "src/routes/_authenticated/settings.tsx": "8eaa268038a76fda150abae5cd30a861",
       "src/routes/_authenticated/ssl.tsx": "42551f11048fbb452e9e63481dac1349",
       "src/routes/_authenticated/subscriptions.tsx": "7bc1adc9195535298233b39be1d85e64",
       "src/routes/_authenticated/templates.tsx": "ca6e9ffe363f4ad8e3b7ca99bb655ac9",
-      "src/routes/_authenticated/users.tsx": "849174b431bcf26f2bb09e72782edaf0",
+      "src/routes/_authenticated/users.tsx": "0eff68299dc68b4379adc670b07ad63f",
       "src/routes/_authenticated/vault.tsx": "5718c8b19baf1ee6cec13f20d836177e",
       "src/routes/_authenticated/video-studio.tsx": "1dcdd344e9a4207ed062fb687dded0bb",
       "src/routes/_authenticated/websites.tsx": "6228d5e40a61a1ea1eb8b7a346ca7c79",
@@ -276,6 +278,7 @@
       "supabase/migrations/20260822082701_69dc952f-9ec4-432b-a28b-7141495c0cad.sql": "b7be81a0b9a53b1c636782af4bc863a4",
       "supabase/migrations/20260822084027_ce04b13c-42ea-4df0-b3d5-3bc1740d5be0.sql": "6815a8a273ef384ece3f04d9f33f5a91",
       "supabase/migrations/20260822084045_efda52bd-0823-461f-95a9-f881d24d8ef8.sql": "fb09fe7686a928947b23b7900d66e41a",
+      "supabase/migrations/20260822160125_99f334f3-2ac8-4332-82de-77a653d8a8cd.sql": "c0ccdc992e66073f3d1e4c04d38864c9",
       "tsconfig.json": "829522627cf7b8e60c7709a715dd35b0",
       "vite.config.ts": "337cb40643ba3abc2f71a4b19d955283"
     },
@@ -508,6 +511,11 @@
   },
   "components": [
     {
+      "name": "ServerModelsPanel",
+      "file": "src/components/ai/ServerModelsPanel",
+      "import_path": ""
+    },
+    {
       "name": "BulkEditor",
       "file": "src/components/editor/BulkEditor",
       "import_path": "",
@@ -581,6 +589,33 @@
       "name": "ThemeSwitcher",
       "file": "src/components/layout/ThemeSwitcher",
       "import_path": ""
+    },
+    {
+      "name": "PortsHub",
+      "file": "src/components/servers/PortsHub",
+      "import_path": "",
+      "props": [
+        {
+          "name": "serverId",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "servers",
+          "type": "any",
+          "required": true
+        },
+        {
+          "name": "websites",
+          "type": "any",
+          "required": true
+        },
+        {
+          "name": "dryRun",
+          "type": "boolean",
+          "required": true
+        }
+      ]
     },
     {
       "name": "AlertDialog",
@@ -1138,6 +1173,26 @@
     {
       "name": "TableCaption",
       "file": "src/components/ui/table",
+      "import_path": ""
+    },
+    {
+      "name": "Tabs",
+      "file": "src/components/ui/tabs",
+      "import_path": ""
+    },
+    {
+      "name": "TabsList",
+      "file": "src/components/ui/tabs",
+      "import_path": ""
+    },
+    {
+      "name": "TabsTrigger",
+      "file": "src/components/ui/tabs",
+      "import_path": ""
+    },
+    {
+      "name": "TabsContent",
+      "file": "src/components/ui/tabs",
       "import_path": ""
     },
     {

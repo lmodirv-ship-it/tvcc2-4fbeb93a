@@ -346,6 +346,21 @@ import { PopoverContent } from "@ws-rwrj5um4yjqhbejpny8m/b4f7d096-0b0d-4a25-815e
 import { PopoverTrigger } from "@ws-rwrj5um4yjqhbejpny8m/b4f7d096-0b0d-4a25-815e-9faa0862c50f"
 ```
 
+### PortsHub
+
+```ts
+import { PortsHub } from "@ws-rwrj5um4yjqhbejpny8m/b4f7d096-0b0d-4a25-815e-9faa0862c50f"
+```
+
+**Props:**
+
+| Prop | Type | Default |
+|---|---|---|
+| `serverId` | string | `—` |
+| `servers` | any | `—` |
+| `websites` | any | `—` |
+| `dryRun` | boolean | `—` |
+
 ### ScrollArea
 
 ```ts
@@ -422,6 +437,12 @@ import { SelectValue } from "@ws-rwrj5um4yjqhbejpny8m/b4f7d096-0b0d-4a25-815e-9f
 
 ```ts
 import { Separator } from "@ws-rwrj5um4yjqhbejpny8m/b4f7d096-0b0d-4a25-815e-9faa0862c50f"
+```
+
+### ServerModelsPanel
+
+```ts
+import { ServerModelsPanel } from "@ws-rwrj5um4yjqhbejpny8m/b4f7d096-0b0d-4a25-815e-9faa0862c50f"
 ```
 
 ### Sheet
@@ -687,6 +708,30 @@ import { TableHeader } from "@ws-rwrj5um4yjqhbejpny8m/b4f7d096-0b0d-4a25-815e-9f
 
 ```ts
 import { TableRow } from "@ws-rwrj5um4yjqhbejpny8m/b4f7d096-0b0d-4a25-815e-9faa0862c50f"
+```
+
+### Tabs
+
+```ts
+import { Tabs } from "@ws-rwrj5um4yjqhbejpny8m/b4f7d096-0b0d-4a25-815e-9faa0862c50f"
+```
+
+### TabsContent
+
+```ts
+import { TabsContent } from "@ws-rwrj5um4yjqhbejpny8m/b4f7d096-0b0d-4a25-815e-9faa0862c50f"
+```
+
+### TabsList
+
+```ts
+import { TabsList } from "@ws-rwrj5um4yjqhbejpny8m/b4f7d096-0b0d-4a25-815e-9faa0862c50f"
+```
+
+### TabsTrigger
+
+```ts
+import { TabsTrigger } from "@ws-rwrj5um4yjqhbejpny8m/b4f7d096-0b0d-4a25-815e-9faa0862c50f"
 ```
 
 ### ThemeSwitcher

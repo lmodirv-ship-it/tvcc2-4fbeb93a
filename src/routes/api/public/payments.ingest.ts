@@ -35,8 +35,14 @@ export const Route = createFileRoute("/api/public/payments/ingest")({
     handlers: {
       OPTIONS: async () => new Response(null, { status: 204, headers: CORS }),
       POST: async ({ request }) => {
+        const auth = await verifyIngestSignature(request, "PAYMENTS_INGEST_SECRET", [
+          "x-tvcc-signature",
+          "x-hnpay-signature",
+        ]);
+        if (!auth.ok) return auth.response;
         try {
-          const body: any = await request.json().catch(() => ({}));
+          const body: any = JSON.parse(auth.raw || "{}");
+
           const {
             event_type = "payment.received",
             provider = "hnpay-ai",

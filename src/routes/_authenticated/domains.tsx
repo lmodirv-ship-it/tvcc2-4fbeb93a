@@ -58,7 +58,7 @@ function RedirectPanel() {
   const [preview, setPreview] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
 
-  const { data } = useQuery({ queryKey: ["redirects"], queryFn: () => list({ data: undefined as never }) });
+  const { data } = useQuery({ queryKey: ["redirects"], queryFn: () => list({ data: {} }) });
 
   const sk = kindOf(from);
   const tk = kindOf(to);

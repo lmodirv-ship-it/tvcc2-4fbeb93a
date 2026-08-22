@@ -51,6 +51,7 @@ async function logOp(
 
 export const listRedirects = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
+  .inputValidator((input: Record<string, never>) => input)
   .handler(async ({ context }) => {
     const sb = context.supabase as any;
     const [{ data: rows }, { data: servers }] = await Promise.all([

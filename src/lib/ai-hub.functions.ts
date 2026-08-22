@@ -1,4 +1,5 @@
 import { createServerFn } from "@tanstack/react-start";
+import { hasEditCommand } from "./ai-write-command";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { AI_TOOLS, runTool } from "./ai-tools.server";
 import { GATEWAY, DEFAULT_PROMPT, callModel, providerModels, type ChatMsg, type TestParams } from "./ai-hub.server";
@@ -371,7 +372,10 @@ export const aiChat = createServerFn({ method: "POST" })
           "استخدم الأدوات المتاحة لقراءة البيانات والملفات الحقيقية قبل الإجابة. " +
           "عند تعديل ملف: اقرأه أولاً (fs_read)، ثم اكتب المحتوى الكامل الجديد (fs_write)، ثم نفّذ البناء أو إعادة التشغيل عند الحاجة (run_server_command). " +
           "نظّم العمل الطويل في مهام عبر create_task/update_task. " +
-          "لا تنفّذ أي تعديل أو حذف دون طلب صريح من المستخدم." +
+          (writeAllowed
+            ? "المستخدم أعطى أمر تعديل صريح في هذه الرسالة: يمكنك تنفيذ أدوات التعديل المطلوبة فقط. "
+            : "لا تملك صلاحية التعديل في هذه الرسالة: اشرح التغيير المقترح واطلب من المستخدم كتابة أمر تعديل (مثال: «عدّل ...» أو /تعديل). ") +
+          "سجّل تقدّمك بأداة log_task_step وحدّث المرحلة بـ set_task_progress عند العمل على مهمة." +
           contextNote,
       },
 
@@ -386,6 +390,7 @@ export const aiChat = createServerFn({ method: "POST" })
       content: data.message,
     });
 
+    const writeAllowed = hasEditCommand(data.message) || !!data.allowWrites;
     const toolLog: Array<{ name: string; args: string }> = [];
     let answer = "";
     const started = Date.now();
@@ -404,7 +409,7 @@ export const aiChat = createServerFn({ method: "POST" })
           try {
             args = JSON.parse(c.function?.arguments || "{}");
           } catch { /* ignore */ }
-          const result = await runTool(sb, context.userId, c.function?.name, args, !!data.allowWrites, {
+          const result = await runTool(sb, context.userId, c.function?.name, args, writeAllowed, {
             serverId: data.serverId ?? null,
             websiteId: data.websiteIds?.[0] ?? null,
           });

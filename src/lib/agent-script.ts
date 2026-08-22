@@ -58,6 +58,14 @@ run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
       storage_usage)   echo "[dry-run] du -sm /var/www/*" ;;
       site_dir)        echo "[dry-run] mkdir -p /var/www/$(GET domain) && chown -R www-data:www-data /var/www/$(GET domain)" ;;
       issue_ssl)       echo "[dry-run] certbot --nginx -d $(GET domain) --non-interactive --agree-tos -m admin@$(GET domain)" ;;
+      port_check)      echo "[dry-run] nc -z -w5 $(GET host) $(GET port)" ;;
+      port_forward)    echo "[dry-run] socat TCP4-LISTEN:$(GET local_port),fork,reuseaddr TCP4:$(GET target_host):$(GET target_port) (systemd unit $(GET name))" ;;
+      ai_models_list)  echo "[dry-run] curl http://127.0.0.1:$(GET port)/api/tags" ;;
+      ollama_start)    echo "[dry-run] systemctl start ollama" ;;
+      ollama_stop)     echo "[dry-run] systemctl stop ollama" ;;
+      ollama_pull)     echo "[dry-run] ollama pull $(GET model)" ;;
+      ollama_rm)       echo "[dry-run] ollama rm $(GET model)" ;;
+      ollama_ps)       echo "[dry-run] ollama ps" ;;
       *) echo "[dry-run] unsupported action: $ACTION"; return 127 ;;
     esac
     return 0

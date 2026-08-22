@@ -475,6 +475,12 @@ function ServersPage() {
                   ) : null}
                 </TabsContent>
 
+                <TabsContent value="hub" className="pt-1">
+                  {detailId ? (
+                    <PortsHub serverId={detailId} servers={(servers as any[]) ?? []} websites={myWebsites} dryRun={dryRun} />
+                  ) : null}
+                </TabsContent>
+
                 <TabsContent value="configs" className="space-y-2 pt-3">
                   {((ops as any)?.configs ?? []).length === 0 ? (
                     <p className="text-xs text-muted-foreground">لا توجد ملفات إعداد مقروءة بعد.</p>

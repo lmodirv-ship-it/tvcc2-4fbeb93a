@@ -99,6 +99,8 @@ export const saveAiTask = createServerFn({ method: "POST" })
     status?: string;
     priority?: number;
     result?: string | null;
+    modelId?: string | null;
+    stage?: string;
   }) => input)
   .handler(async ({ data, context }) => {
     const sb = context.supabase as any;
@@ -109,6 +111,8 @@ export const saveAiTask = createServerFn({ method: "POST" })
       server_id: data.serverId ?? null,
       website_id: data.websiteId ?? null,
       status: data.status ?? "pending",
+      model_id: data.modelId ?? null,
+      stage: data.stage ?? "planning",
       priority: data.priority ?? 2,
       result: data.result ?? null,
     };

@@ -297,7 +297,11 @@ export const aiChat = createServerFn({ method: "POST" })
     message: string;
     allowWrites?: boolean;
     websiteIds?: string[];
+    serverId?: string | null;
+    filePaths?: string[];
+    taskIds?: string[];
   }) => input)
+
   .handler(async ({ data, context }) => {
     const sb = context.supabase as any;
     const { data: model } = await sb.from("ai_models").select("*").eq("id", data.modelId).maybeSingle();

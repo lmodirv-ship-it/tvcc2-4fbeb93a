@@ -20,7 +20,7 @@ export function AppHeader() {
   const initial = (email || "A").charAt(0).toUpperCase();
 
   return (
-    <header className="h-16 flex items-center gap-4 border-b border-border bg-card/40 backdrop-blur px-5 sticky top-0 z-10">
+    <header dir="rtl" className="h-16 flex items-center gap-4 border-b border-border bg-card/95 backdrop-blur px-5 sticky top-0 z-30">
       <div className="flex items-center gap-3">
         <div
           className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"

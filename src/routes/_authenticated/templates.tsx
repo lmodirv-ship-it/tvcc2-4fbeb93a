@@ -17,6 +17,8 @@ import {
 } from "@/components/ui/select";
 import { Plus, Trash2, Loader2, LayoutTemplate, Globe, Settings2, Send } from "lucide-react";
 import { toast } from "sonner";
+import { useServerFn } from "@tanstack/react-start";
+import { applyTemplate, seedStarterTemplates } from "@/lib/templates.functions";
 
 export const Route = createFileRoute("/_authenticated/templates")({
   component: TemplatesPage,
@@ -36,6 +38,9 @@ function TemplatesPage() {
   const [open, setOpen] = useState(false);
   const [editing, setEditing] = useState<any>(null);
   const [linkOpen, setLinkOpen] = useState<any>(null);
+  const [busy, setBusy] = useState<string | null>(null);
+  const applyTpl = useServerFn(applyTemplate);
+  const seedTpl = useServerFn(seedStarterTemplates);
 
   const { data: templates, isLoading } = useQuery({
     queryKey: ["site_templates"],
@@ -62,37 +67,38 @@ function TemplatesPage() {
     qc.invalidateQueries({ queryKey: ["wtl"] });
   };
 
-  const apply = async (tpl: any) => {
+  const apply = async (tpl: any, dryRun = false) => {
     const count = countFor(tpl.id);
     if (!count) return toast.error("لا توجد مواقع مرتبطة بهذا القالب");
-    if (!confirm(`تطبيق إعدادات "${tpl.name}" على ${count} موقع؟`)) return;
+    if (!dryRun && !confirm(`تطبيق إعدادات "${tpl.name}" على ${count} موقع؟`)) return;
 
-    const { data: { user } } = await supabase.auth.getUser();
-    if (!user) return toast.error("غير مصرح");
+    setBusy(tpl.id);
+    try {
+      const res: any = await applyTpl({ data: { template_id: tpl.id, dry_run: dryRun } });
+      if (!res.ok) return toast.error(res.error || "فشل التطبيق");
+      if (dryRun) {
+        toast.info(`محاكاة: ${res.preview.keys.length} إعداد على ${res.preview.websites} موقع`);
+        return;
+      }
+      toast.success(`تم تطبيق ${res.keys} إعداد على ${res.applied} موقع${res.failed ? ` (فشل ${res.failed})` : ""}`);
+      qc.invalidateQueries({ queryKey: ["site_templates"] });
+    } catch (e: any) {
+      toast.error(e?.message || "خطأ غير متوقع");
+    } finally {
+      setBusy(null);
+    }
+  };
 
-    // Create a deployment job (queued — runner comes in Batch B)
-    const { data: job, error } = await (supabase as any).from("deployment_jobs").insert({
-      owner_id: user.id,
-      title: `تطبيق قالب: ${tpl.name}`,
-      scope_type: "template",
-      scope_id: tpl.id,
-      action_type: "apply_template",
-      status: "queued",
-      target_count: count,
-      payload: { template_id: tpl.id, settings: tpl.default_settings },
-    }).select().single();
-    if (error) return toast.error(error.message);
-
-    // Insert targets
-    const targets = links!.filter((l: any) => l.template_id === tpl.id).map((l: any) => ({
-      owner_id: user.id,
-      job_id: job.id,
-      website_id: l.website_id,
-      status: "pending",
-    }));
-    await (supabase as any).from("deployment_job_targets").insert(targets);
-
-    toast.success(`تم إنشاء مهمة لتطبيق القالب على ${count} موقع`);
+  const seed = async () => {
+    setBusy("seed");
+    try {
+      const res: any = await seedTpl();
+      if (!res.ok) return toast.error(res.error || "تعذّر الإنشاء");
+      toast.success(res.created ? `تم إنشاء ${res.created} قالب جاهز` : "القوالب الجاهزة موجودة مسبقاً");
+      qc.invalidateQueries({ queryKey: ["site_templates"] });
+    } finally {
+      setBusy(null);
+    }
   };
 
   return (
@@ -120,7 +126,11 @@ function TemplatesPage() {
       ) : !templates?.length ? (
         <Card><CardContent className="p-16 text-center text-muted-foreground">
           <LayoutTemplate className="w-12 h-12 mx-auto mb-3 opacity-40" />
-          لا توجد قوالب بعد. القوالب هي مفتاح "غيّر مرة، طبّق في كل مكان".
+          <div className="mb-4">لا توجد قوالب بعد. القوالب هي مفتاح "غيّر مرة، طبّق في كل مكان".</div>
+          <Button onClick={seed} disabled={busy === "seed"} className="bg-primary">
+            {busy === "seed" ? <Loader2 className="w-4 h-4 animate-spin ml-1" /> : <Plus className="w-4 h-4 ml-1" />}
+            إنشاء قوالب جاهزة
+          </Button>
         </CardContent></Card>
       ) : (
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
@@ -143,8 +153,11 @@ function TemplatesPage() {
                 </div>
                 {t.description && <p className="text-sm text-muted-foreground line-clamp-2" dir="rtl">{t.description}</p>}
                 <div className="flex gap-2 pt-2 border-t border-border/40">
-                  <Button size="sm" className="flex-1 bg-primary" onClick={() => apply(t)}>
-                    <Send className="w-3.5 h-3.5 ml-1" /> تطبيق
+                  <Button size="sm" className="flex-1 bg-primary" onClick={() => apply(t)} disabled={busy === t.id}>
+                    {busy === t.id ? <Loader2 className="w-3.5 h-3.5 animate-spin ml-1" /> : <Send className="w-3.5 h-3.5 ml-1" />} تطبيق
+                  </Button>
+                  <Button size="sm" variant="outline" title="محاكاة" onClick={() => apply(t, true)} disabled={busy === t.id}>
+                    محاكاة
                   </Button>
                   <Button size="sm" variant="outline" onClick={() => setLinkOpen(t)}>
                     <Settings2 className="w-3.5 h-3.5" />

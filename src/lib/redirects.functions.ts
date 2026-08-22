@@ -166,6 +166,6 @@ export const deleteRedirect = createServerFn({ method: "POST" })
     }
     const { error } = await sb.from("domain_redirects").delete().eq("id", data.id);
     if (error) throw new Error(error.message);
-    await logOp(sb, context.userId, "redirect_delete", { id: data.id });
+    await logOp(sb, context.userId, "redirect_delete", `حذف توجيه ${row?.source ?? ""}`, { id: data.id }, row?.server_id ?? null);
     return { ok: true };
   });

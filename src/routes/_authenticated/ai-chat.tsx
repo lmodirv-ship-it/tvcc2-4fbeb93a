@@ -74,47 +74,88 @@ function AiChatPage() {
     bottom.current?.scrollIntoView({ behavior: "smooth" });
   }, [localMsgs, pending]);
 
-  /** Local models live on the user's machine, so the browser calls them directly. */
+  /** Local models live on the user's machine, so the browser calls them directly — with tools proxied through the server. */
   const sendLocal = async (text: string) => {
     const base = (current?.endpoint_url ?? currentProvider?.base_url ?? "").replace(/\/+$/, "");
-    const res = await fetch(`${base}/v1/chat/completions`, {
-      method: "POST",
-      headers: { "content-type": "application/json" },
-      body: JSON.stringify({
-        model: current.model_id,
-        messages: [
-          { role: "system", content: "أنت مساعد TVCC لإدارة المواقع. أجب بالعربية بإيجاز." },
-          ...localMsgs.map((m) => ({ role: m.role, content: m.content })),
-          { role: "user", content: text },
-        ],
-      }),
-    });
-    if (!res.ok) throw new Error(`النموذج المحلي رفض الطلب (${res.status})`);
-    const json: any = await res.json();
-    return json?.choices?.[0]?.message?.content ?? "";
+    const { tools } = (await toolSchemas()) as any;
+    const parsedTools = JSON.parse(tools);
+    const convo: any[] = [
+      { role: "system", content: systemPrompt() },
+      ...localMsgs.map((m) => ({ role: m.role, content: m.content })),
+      { role: "user", content: text },
+    ];
+    const used: { name: string }[] = [];
+
+    for (let step = 0; step < 8; step++) {
+      const res = await fetch(`${base}/v1/chat/completions`, {
+        method: "POST",
+        headers: { "content-type": "application/json" },
+        body: JSON.stringify({ model: current.model_id, messages: convo, tools: parsedTools, tool_choice: "auto" }),
+      });
+      if (!res.ok) throw new Error(`النموذج المحلي رفض الطلب (${res.status})`);
+      const json: any = await res.json();
+      const msg = json?.choices?.[0]?.message ?? {};
+      const calls = msg.tool_calls ?? [];
+      if (!calls.length) return { answer: msg.content ?? "", tools: used };
+      convo.push(msg);
+      for (const c of calls) {
+        let args: Record<string, unknown> = {};
+        try { args = JSON.parse(c.function?.arguments || "{}"); } catch { /* ignore */ }
+        used.push({ name: String(c.function?.name ?? "") });
+        const r: any = await execTool({
+          data: {
+            name: String(c.function?.name ?? ""),
+            args,
+            allowWrites,
+            serverId: serverId || null,
+          },
+        });
+        convo.push({ role: "tool", tool_call_id: c.id, content: r.result });
+      }
+    }
+    return { answer: "توقّفت بعد عدة خطوات دون إجابة نهائية.", tools: used };
+  };
+
+  const systemPrompt = () => {
+    let p = "أنت مساعد TVCC لإدارة وتطوير المواقع والسيرفرات. أجب بالعربية بإيجاز. استخدم الأدوات لقراءة البيانات والملفات الحقيقية.";
+    if (serverId) p += ` سيرفر ورشة العمل الحالي: ${serverId} (أدوات fs_* تعمل عليه).`;
+    if (selectedFiles.length) p += ` الملفات المستهدفة: ${selectedFiles.join("، ")}.`;
+    return p;
   };
 
   const send = async () => {
     const text = input.trim();
     if (!text || !modelId) return;
+    const prefix = selectedFiles.length
+      ? `الملفات المستهدفة على السيرفر:\n${selectedFiles.map((f) => `- ${f}`).join("\n")}\n\n`
+      : "";
     setInput("");
     setLocalMsgs((m) => [...m, { role: "user", content: text }]);
     setPending(true);
     try {
       if (isLocal) {
-        const answer = await sendLocal(text);
-        setLocalMsgs((m) => [...m, { role: "assistant", content: answer, model_label: current.name }]);
+        const r = await sendLocal(prefix + text);
+        setLocalMsgs((m) => [...m, { role: "assistant", content: r.answer, model_label: current.name, tool_calls: r.tools }]);
       } else {
-        const r: any = await chat({ data: { modelId, conversationId, message: text, allowWrites } });
+        const r: any = await chat({
+          data: {
+            modelId, conversationId, message: prefix + text, allowWrites,
+            serverId: serverId || null,
+            filePaths: selectedFiles,
+            taskIds: activeTasks,
+          },
+        });
         setConversationId(r.conversationId);
         setLocalMsgs((m) => [...m, { role: "assistant", content: r.answer, tool_calls: r.tools }]);
         qc.invalidateQueries({ queryKey: ["ai-convs"] });
+        qc.invalidateQueries({ queryKey: ["ai-tasks"] });
       }
     } catch (e) {
       toast.error((e as Error).message);
     }
     setPending(false);
   };
+
 
   return (
     <div className="p-6 grid gap-4 lg:grid-cols-[260px_1fr] h-[calc(100vh-6rem)]">

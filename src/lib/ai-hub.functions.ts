@@ -297,7 +297,11 @@ export const aiChat = createServerFn({ method: "POST" })
     message: string;
     allowWrites?: boolean;
     websiteIds?: string[];
+    serverId?: string | null;
+    filePaths?: string[];
+    taskIds?: string[];
   }) => input)
+
   .handler(async ({ data, context }) => {
     const sb = context.supabase as any;
     const { data: model } = await sb.from("ai_models").select("*").eq("id", data.modelId).maybeSingle();
@@ -340,16 +344,37 @@ export const aiChat = createServerFn({ method: "POST" })
         .in("id", data.websiteIds);
       contextNote = `\nالمواقع قيد النقاش: ${JSON.stringify(sites ?? [])}`;
     }
+    if (data.serverId) {
+      const { data: srv } = await sb
+        .from("servers")
+        .select("id, name, hostname, os, status")
+        .eq("id", data.serverId)
+        .maybeSingle();
+      contextNote += `\nسيرفر ورشة العمل: ${JSON.stringify(srv ?? {})} (استخدم أدوات fs_* عليه دون الحاجة لتمرير server_id)`;
+    }
+    if (data.filePaths?.length) {
+      contextNote += `\nالملفات المستهدفة: ${data.filePaths.join("، ")} — اقرأها بأداة fs_read قبل أي تعديل.`;
+    }
+    if (data.taskIds?.length) {
+      const { data: tasks } = await sb
+        .from("ai_tasks")
+        .select("id, title, instructions, status, file_paths")
+        .in("id", data.taskIds);
+      contextNote += `\nالمهام المطلوب إنجازها: ${JSON.stringify(tasks ?? [])} — حدّث حالة كل مهمة بأداة update_task عند الانتهاء.`;
+    }
 
     const messages: ChatMsg[] = [
       {
         role: "system",
         content:
           "أنت مساعد TVCC لإدارة وتطوير المواقع والسيرفرات. أجب بالعربية بإيجاز ودقة. " +
-          "استخدم الأدوات المتاحة لقراءة البيانات الحقيقية قبل الإجابة. " +
+          "استخدم الأدوات المتاحة لقراءة البيانات والملفات الحقيقية قبل الإجابة. " +
+          "عند تعديل ملف: اقرأه أولاً (fs_read)، ثم اكتب المحتوى الكامل الجديد (fs_write)، ثم نفّذ البناء أو إعادة التشغيل عند الحاجة (run_server_command). " +
+          "نظّم العمل الطويل في مهام عبر create_task/update_task. " +
           "لا تنفّذ أي تعديل أو حذف دون طلب صريح من المستخدم." +
           contextNote,
       },
+
       ...((history ?? []) as ChatMsg[]).map((m) => ({ role: m.role as ChatMsg["role"], content: m.content })),
       { role: "user", content: data.message },
     ];
@@ -365,7 +390,7 @@ export const aiChat = createServerFn({ method: "POST" })
     let answer = "";
     const started = Date.now();
 
-    for (let step = 0; step < 6; step++) {
+    for (let step = 0; step < 12; step++) {
       const json = await callModel(model, provider, messages, true);
       const choice = json?.choices?.[0];
       const msg = choice?.message;
@@ -379,7 +404,11 @@ export const aiChat = createServerFn({ method: "POST" })
           try {
             args = JSON.parse(c.function?.arguments || "{}");
           } catch { /* ignore */ }
-          const result = await runTool(sb, context.userId, c.function?.name, args, !!data.allowWrites);
+          const result = await runTool(sb, context.userId, c.function?.name, args, !!data.allowWrites, {
+            serverId: data.serverId ?? null,
+            websiteId: data.websiteIds?.[0] ?? null,
+          });
+
           toolLog.push({ name: String(c.function?.name ?? ""), args: JSON.stringify(args) });
           messages.push({
             role: "tool",
@@ -607,7 +636,13 @@ export const listAiToolSchemas = createServerFn({ method: "GET" })
 /** Executes one AI tool with the caller's RLS-scoped client (used by browser-run models). */
 export const runAiTool = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { name: string; args?: Record<string, unknown>; allowWrites?: boolean }) => input)
+  .inputValidator((input: {
+    name: string;
+    args?: Record<string, unknown>;
+    allowWrites?: boolean;
+    serverId?: string | null;
+    websiteId?: string | null;
+  }) => input)
   .handler(async ({ data, context }) => {
     const result = await runTool(
       context.supabase as any,
@@ -615,9 +650,11 @@ export const runAiTool = createServerFn({ method: "POST" })
       data.name,
       (data.args ?? {}) as Record<string, any>,
       !!data.allowWrites,
+      { serverId: data.serverId ?? null, websiteId: data.websiteId ?? null },
     );
     return { result: JSON.stringify(result ?? null) };
   });
+
 
 
 /** Persists a full chat turn produced in the browser (local/LAN models). */

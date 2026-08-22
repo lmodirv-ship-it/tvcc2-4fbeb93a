@@ -1,4 +1,6 @@
 /** Site-management tools exposed to AI models. Executed with the caller's RLS-scoped client. */
+import { COMMAND_WHITELIST } from "./server-commands";
+
 export type ToolDef = {
   name: string;
   description: string;
@@ -69,7 +71,188 @@ export const AI_TOOLS: ToolDef[] = [
     description: "إحصائيات عامة: عدد المواقع، الحالات، النطاقات القريبة من الانتهاء، السيرفرات.",
     parameters: { type: "object", properties: {} },
   },
+
+  /* ---------- ملفات السيرفر (عبر الوكيل) ---------- */
+  {
+    name: "fs_list",
+    description: "عرض محتويات مجلد على السيرفر (ls). إن لم يُحدَّد المسار يُستخدم مجلد العمل الافتراضي.",
+    parameters: {
+      type: "object",
+      properties: { server_id: { type: "string" }, path: { type: "string" } },
+    },
+  },
+  {
+    name: "fs_tree",
+    description: "شجرة ملفات مجلد على السيرفر حتى عمق محدد (بدون node_modules/.git).",
+    parameters: {
+      type: "object",
+      properties: { server_id: { type: "string" }, path: { type: "string" }, depth: { type: "number" } },
+    },
+  },
+  {
+    name: "fs_read",
+    description: "قراءة محتوى ملف نصي من السيرفر (حتى عدد أسطر محدد).",
+    parameters: {
+      type: "object",
+      properties: { server_id: { type: "string" }, path: { type: "string" }, limit: { type: "number" } },
+      required: ["path"],
+    },
+  },
+  {
+    name: "fs_search",
+    description: "بحث نصي داخل ملفات مجلد على السيرفر (grep).",
+    parameters: {
+      type: "object",
+      properties: { server_id: { type: "string" }, path: { type: "string" }, query: { type: "string" } },
+      required: ["query"],
+    },
+  },
+  {
+    name: "fs_write",
+    description: "كتابة أو تعديل ملف على السيرفر (تُحفظ نسخة .tvcc.bak قبل الاستبدال). يتطلب السماح بالتعديل.",
+    mutating: true,
+    parameters: {
+      type: "object",
+      properties: { server_id: { type: "string" }, path: { type: "string" }, content: { type: "string" } },
+      required: ["path", "content"],
+    },
+  },
+  {
+    name: "fs_mkdir",
+    description: "إنشاء مجلد على السيرفر. يتطلب السماح بالتعديل.",
+    mutating: true,
+    parameters: {
+      type: "object",
+      properties: { server_id: { type: "string" }, path: { type: "string" } },
+      required: ["path"],
+    },
+  },
+  {
+    name: "fs_move",
+    description: "نقل أو إعادة تسمية ملف/مجلد على السيرفر. يتطلب السماح بالتعديل.",
+    mutating: true,
+    parameters: {
+      type: "object",
+      properties: { server_id: { type: "string" }, path: { type: "string" }, target: { type: "string" } },
+      required: ["path", "target"],
+    },
+  },
+  {
+    name: "fs_delete",
+    description: "حذف ملف أو مجلد (داخل /home أو /var/www أو /opt/tvcc فقط). يتطلب السماح بالتعديل.",
+    mutating: true,
+    parameters: {
+      type: "object",
+      properties: { server_id: { type: "string" }, path: { type: "string" } },
+      required: ["path"],
+    },
+  },
+  {
+    name: "run_server_command",
+    description:
+      "تنفيذ أمر مُصرّح به على السيرفر عبر الوكيل (مثل build_run، site_restart، nginx_test، git_deploy). يتطلب السماح بالتعديل.",
+    mutating: true,
+    parameters: {
+      type: "object",
+      properties: {
+        server_id: { type: "string" },
+        action: { type: "string" },
+        args: { type: "object" },
+      },
+      required: ["action"],
+    },
+  },
+
+  /* ---------- تنظيم العمل: المهام ---------- */
+  {
+    name: "list_tasks",
+    description: "قائمة مهام التطوير المسجّلة (يمكن التصفية بالحالة).",
+    parameters: {
+      type: "object",
+      properties: { status: { type: "string" }, limit: { type: "number" } },
+    },
+  },
+  {
+    name: "create_task",
+    description: "إنشاء مهمة تطوير جديدة (عنوان، تعليمات، الملفات المستهدفة، السيرفر/الموقع).",
+    mutating: true,
+    parameters: {
+      type: "object",
+      properties: {
+        title: { type: "string" },
+        instructions: { type: "string" },
+        file_paths: { type: "array", items: { type: "string" } },
+        server_id: { type: "string" },
+        website_id: { type: "string" },
+        priority: { type: "number" },
+      },
+      required: ["title"],
+    },
+  },
+  {
+    name: "update_task",
+    description: "تحديث مهمة: الحالة (pending/running/done/failed) أو النتيجة أو التعليمات.",
+    mutating: true,
+    parameters: {
+      type: "object",
+      properties: {
+        id: { type: "string" },
+        status: { type: "string" },
+        result: { type: "string" },
+        instructions: { type: "string" },
+      },
+      required: ["id"],
+    },
+  },
 ];
+
+const FS_ACTIONS = new Set(["fs_list", "fs_tree", "fs_read", "fs_search", "fs_write", "fs_mkdir", "fs_move", "fs_delete"]);
+
+/** Queue an agent command and wait (bounded) for the agent to report back. */
+async function agentRun(
+  sb: any,
+  userId: string,
+  serverId: string,
+  action: string,
+  args: Record<string, unknown>,
+  waitMs = 40000,
+): Promise<unknown> {
+  if (!(COMMAND_WHITELIST as readonly string[]).includes(action)) return { error: `أمر غير مسموح: ${action}` };
+  const { data: row, error } = await sb
+    .from("server_commands")
+    .insert({
+      owner_id: userId,
+      server_id: serverId,
+      action,
+      args,
+      dry_run: false,
+      requested_by: userId,
+      status: "pending",
+    })
+    .select("id")
+    .maybeSingle();
+  if (error) return { error: error.message };
+
+  const id = row?.id;
+  const deadline = Date.now() + waitMs;
+  while (Date.now() < deadline) {
+    await new Promise((r) => setTimeout(r, 2500));
+    const { data: c } = await sb
+      .from("server_commands")
+      .select("status, output, error_message, exit_code")
+      .eq("id", id)
+      .maybeSingle();
+    if (c && ["done", "success", "failed", "error"].includes(String(c.status))) {
+      return {
+        command_id: id,
+        status: c.status,
+        exit_code: c.exit_code,
+        output: String(c.output ?? c.error_message ?? "").slice(0, 6000),
+      };
+    }
+  }
+  return { command_id: id, status: "pending", note: "الوكيل لم يستجب بعد — أعد الاستعلام لاحقاً بمعرّف الأمر." };
+}
 
 export async function runTool(
   sb: any,
@@ -77,6 +260,7 @@ export async function runTool(
   name: string,
   args: Record<string, any>,
   allowWrites: boolean,
+  opts?: { serverId?: string | null; websiteId?: string | null },
 ): Promise<unknown> {
   const def = AI_TOOLS.find((t) => t.name === name);
   if (!def) return { error: `أداة غير معروفة: ${name}` };
@@ -84,7 +268,18 @@ export async function runTool(
     return { error: "هذه العملية تُعدّل البيانات وتحتاج تأكيد المستخدم. فعّل «السماح بالتعديل» أولاً." };
   }
 
+  if (FS_ACTIONS.has(name) || name === "run_server_command") {
+    const serverId = args.server_id || opts?.serverId;
+    if (!serverId) return { error: "حدّد السيرفر أولاً (server_id) من لوحة ورشة العمل." };
+    if (name === "run_server_command") {
+      return agentRun(sb, userId, serverId, String(args.action), (args.args as Record<string, unknown>) ?? {});
+    }
+    const { server_id: _drop, ...rest } = args;
+    return agentRun(sb, userId, serverId, name, rest);
+  }
+
   switch (name) {
+
     case "list_websites": {
       let q = sb.from("websites").select("id, name, domain, status, is_active, verified, server_id").limit(
         Math.min(Number(args.limit) || 50, 200),
@@ -159,7 +354,40 @@ export async function runTool(
         domains_expiring_30d: soon.map((d: any) => ({ domain: d.domain, expires_at: d.expires_at })),
       };
     }
+    case "list_tasks": {
+      let q = sb
+        .from("ai_tasks")
+        .select("id, title, instructions, status, priority, file_paths, server_id, website_id, result, created_at")
+        .order("created_at", { ascending: false })
+        .limit(Math.min(Number(args.limit) || 30, 100));
+      if (args.status) q = q.eq("status", args.status);
+      const { data, error } = await q;
+      return error ? { error: error.message } : { tasks: data };
+    }
+    case "create_task": {
+      const { data, error } = await sb
+        .from("ai_tasks")
+        .insert({
+          owner_id: userId,
+          title: args.title,
+          instructions: args.instructions ?? "",
+          file_paths: Array.isArray(args.file_paths) ? args.file_paths : [],
+          server_id: args.server_id ?? opts?.serverId ?? null,
+          website_id: args.website_id ?? opts?.websiteId ?? null,
+          priority: Number(args.priority) || 2,
+        })
+        .select("id, title, status")
+        .maybeSingle();
+      return error ? { error: error.message } : { task: data };
+    }
+    case "update_task": {
+      const patch: Record<string, unknown> = {};
+      for (const k of ["status", "result", "instructions"]) if (args[k] !== undefined) patch[k] = args[k];
+      const { error } = await sb.from("ai_tasks").update(patch).eq("id", args.id);
+      return error ? { error: error.message } : { ok: true, updated: patch };
+    }
     default:
+
       return { error: "غير مدعوم" };
   }
 }

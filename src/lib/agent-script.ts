@@ -7,7 +7,7 @@ TVCC_TOKEN="${token}"
 TVCC_ENDPOINT="${endpoint}"
 TVCC_AI_ENDPOINT="\${TVCC_AI_ENDPOINT:-http://127.0.0.1:11434}"
 TVCC_BACKUP_DIR="\${TVCC_BACKUP_DIR:-/var/backups/tvcc}"
-TVCC_AGENT_VERSION="2.6.0"
+TVCC_AGENT_VERSION="2.7.0"
 TVCC_HN_DIR="\${TVCC_HN_DIR:-/home/ismail/hn}"
 mkdir -p "$TVCC_BACKUP_DIR"
 mkdir -p "$TVCC_HN_DIR" 2>/dev/null || true
@@ -207,8 +207,17 @@ run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
       build_run)       echo "[dry-run] cd $(GET path)/$(GET name) && $(GET build)" ;;
       serve_start)     echo "[dry-run] systemctl restart $(GET service) && ufw allow $(GET port)/tcp" ;;
       serve_stop)      echo "[dry-run] systemctl disable --now $(GET service)" ;;
+      fs_list)         echo "[dry-run] ls -la $(GET path)" ;;
+      fs_tree)         echo "[dry-run] find $(GET path) -maxdepth $(GET depth)" ;;
+      fs_read)         echo "[dry-run] head -n $(GET limit) $(GET path)" ;;
+      fs_search)       echo "[dry-run] grep -rn $(GET query) $(GET path)" ;;
+      fs_mkdir)        echo "[dry-run] mkdir -p $(GET path)" ;;
+      fs_write)        echo "[dry-run] backup + write $(GET path)" ;;
+      fs_delete)       echo "[dry-run] rm -rf $(GET path)" ;;
+      fs_move)         echo "[dry-run] mv $(GET path) $(GET target)" ;;
 
       *) echo "[dry-run] unsupported action: $ACTION"; return 127 ;;
+
     esac
     return 0
   fi
@@ -365,8 +374,32 @@ EOF5
       SV="$(GET service)"
       systemctl disable --now "$SV" 2>&1 | tail -3; echo "stopped $SV" ;;
 
+    fs_list)
+      P="$(GET path)"; [ -z "$P" ] && P="$TVCC_HN_DIR"
+      ls -la --time-style=long-iso "$P" 2>&1 | head -300 ;;
+    fs_tree)
+      P="$(GET path)"; D="$(GET depth)"; [ -z "$P" ] && P="$TVCC_HN_DIR"
+      find "$P" -maxdepth "\${D:-3}" -not -path '*/node_modules/*' -not -path '*/.git/*' 2>&1 | head -400 ;;
+    fs_read)
+      P="$(GET path)"; L="$(GET limit)"
+      [ -f "$P" ] || { echo "not a file: $P"; return 2; }
+      sed -n "1,\${L:-500}p" "$P" 2>&1 ;;
+    fs_search)
+      P="$(GET path)"; Q="$(GET query)"; [ -z "$P" ] && P="$TVCC_HN_DIR"
+      grep -rn --binary-files=without-match --exclude-dir=node_modules --exclude-dir=.git -- "$Q" "$P" 2>/dev/null | head -100 || echo "no matches" ;;
+    fs_mkdir)
+      P="$(GET path)"; mkdir -p "$P" && echo "created $P" ;;
+    fs_write)
+      echo "$ARGS" | python3 -c 'import sys,json,os,shutil;d=json.load(sys.stdin);p=d["path"];os.makedirs(os.path.dirname(p) or ".",exist_ok=True);shutil.copyfile(p,p+".tvcc.bak") if os.path.isfile(p) else None;open(p,"w").write(d.get("content",""));print("wrote %s (%d bytes)"%(p,len(d.get("content",""))))' 2>&1 ;;
+    fs_delete)
+      P="$(GET path)"
+      case "$P" in /home/*|/var/www/*|/opt/tvcc/*) rm -rf "$P" && echo "deleted $P" ;; *) echo "refused: path outside allowed roots"; return 2 ;; esac ;;
+    fs_move)
+      S="$(GET path)"; T="$(GET target)"; mkdir -p "$(dirname "$T")"; mv "$S" "$T" && echo "moved $S -> $T" ;;
+
     *) echo "unsupported action: $ACTION"; return 127 ;;
   esac
+
 }
 
 install_systemd() {

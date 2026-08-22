@@ -426,6 +426,86 @@ export type Database = {
           },
         ]
       }
+      ai_tasks: {
+        Row: {
+          conversation_id: string | null
+          created_at: string
+          file_paths: string[]
+          id: string
+          instructions: string
+          model_id: string | null
+          owner_id: string
+          priority: number
+          result: string | null
+          server_id: string | null
+          status: string
+          title: string
+          updated_at: string
+          website_id: string | null
+        }
+        Insert: {
+          conversation_id?: string | null
+          created_at?: string
+          file_paths?: string[]
+          id?: string
+          instructions?: string
+          model_id?: string | null
+          owner_id?: string
+          priority?: number
+          result?: string | null
+          server_id?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Update: {
+          conversation_id?: string | null
+          created_at?: string
+          file_paths?: string[]
+          id?: string
+          instructions?: string
+          model_id?: string | null
+          owner_id?: string
+          priority?: number
+          result?: string | null
+          server_id?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "ai_tasks_conversation_id_fkey"
+            columns: ["conversation_id"]
+            isOneToOne: false
+            referencedRelation: "ai_conversations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_tasks_model_id_fkey"
+            columns: ["model_id"]
+            isOneToOne: false
+            referencedRelation: "ai_models"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_tasks_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "ai_tasks_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       backup_schedules: {
         Row: {
           backup_type: string

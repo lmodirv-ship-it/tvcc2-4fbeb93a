@@ -46,7 +46,16 @@ export const COMMAND_WHITELIST = [
   "build_run",
   "serve_start",
   "serve_stop",
+  "fs_list",
+  "fs_tree",
+  "fs_read",
+  "fs_search",
+  "fs_mkdir",
+  "fs_write",
+  "fs_delete",
+  "fs_move",
 ] as const;
+
 
 
 export type CommandAction = (typeof COMMAND_WHITELIST)[number];
@@ -99,6 +108,16 @@ export const COMMAND_LABELS: Record<string, string> = {
   db_ping: "فحص الاتصال بقاعدة البيانات",
   watch_start: "تفعيل المزامنة اللحظية",
   watch_stop: "إيقاف المزامنة اللحظية",
+
+  fs_list: "عرض محتويات مجلد",
+  fs_tree: "شجرة الملفات",
+  fs_read: "قراءة ملف",
+  fs_search: "بحث داخل الملفات",
+  fs_mkdir: "إنشاء مجلد",
+  fs_write: "كتابة/تعديل ملف",
+  fs_delete: "حذف ملف أو مجلد",
+  fs_move: "نقل أو إعادة تسمية",
+
 };
 
 /** Actions that take a free-text argument, with the arg key + placeholder. */

@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { verifyIngestSignature } from "@/lib/ingest-auth.server";
 
 export const Route = createFileRoute("/api/public/video/ingest")({
   server: {
@@ -6,11 +7,17 @@ export const Route = createFileRoute("/api/public/video/ingest")({
       OPTIONS: async () => new Response(null, { status: 204, headers: {
         "access-control-allow-origin": "*",
         "access-control-allow-methods": "POST, OPTIONS",
-        "access-control-allow-headers": "content-type, x-tvcc-source",
+        "access-control-allow-headers": "content-type, x-tvcc-source, x-tvcc-signature, x-video-signature",
       } }),
       POST: async ({ request }) => {
+        const auth = await verifyIngestSignature(request, "VIDEO_INGEST_SECRET", [
+          "x-tvcc-signature",
+          "x-video-signature",
+        ]);
+        if (!auth.ok) return auth.response;
         try {
-          const body: any = await request.json().catch(() => ({}));
+          const body: any = JSON.parse(auth.raw || "{}");
+
           const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
           const requestId: string | undefined = body?.request_id;
           if (!requestId) return Response.json({ ok: false, error: "missing request_id" }, { status: 400 });

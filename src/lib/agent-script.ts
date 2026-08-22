@@ -94,6 +94,30 @@ run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
     storage_usage)   du -sm /var/www/* 2>/dev/null | awk '{print $2" "$1"MB"}' | head -200 ;;
     site_dir)        D="$(GET domain)"; mkdir -p "/var/www/$D" && chown -R www-data:www-data "/var/www/$D" 2>/dev/null; echo "ready /var/www/$D ($(du -sm "/var/www/$D" | cut -f1) MB)" ;;
     issue_ssl)       D="$(GET domain)"; certbot --nginx -d "$D" --non-interactive --agree-tos --register-unsafely-without-email 2>&1 | tail -20 ;;
+    port_check)      H="$(GET host)"; P="$(GET port)"; S=$(date +%s%3N); if nc -z -w5 "\${H:-127.0.0.1}" "$P" 2>/dev/null; then E=$(date +%s%3N); echo "open \${H:-127.0.0.1}:$P latency_ms=$((E-S))"; else echo "closed \${H:-127.0.0.1}:$P"; exit 1; fi ;;
+    port_forward)
+      N="$(GET name)"; LP="$(GET local_port)"; TH="$(GET target_host)"; TP="$(GET target_port)"
+      command -v socat >/dev/null || (apt-get update -y >/dev/null 2>&1 && apt-get install -y socat >/dev/null 2>&1)
+      cat > "/etc/systemd/system/\${N}.service" <<EOF2
+[Unit]
+Description=TVCC port bridge \${N}
+After=network.target
+
+[Service]
+ExecStart=/usr/bin/socat TCP4-LISTEN:\${LP},fork,reuseaddr TCP4:\${TH}:\${TP}
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=multi-user.target
+EOF2
+      systemctl daemon-reload && systemctl enable --now "\${N}.service" && systemctl is-active "\${N}.service" && echo "bridge \${LP} -> \${TH}:\${TP} active" ;;
+    ai_models_list)  P="$(GET port)"; curl -s -m 8 "http://127.0.0.1/\${P}" >/dev/null 2>&1; curl -s -m 8 "http://127.0.0.1:\${P}/api/tags" || curl -s -m 8 "http://127.0.0.1:\${P}/v1/models" || echo "no response on \${P}" ;;
+    ollama_start)    systemctl start ollama 2>/dev/null || (OLLAMA_HOST=0.0.0.0:$(GET port) nohup ollama serve >/var/log/ollama.log 2>&1 & echo started) ;;
+    ollama_stop)     systemctl stop ollama 2>/dev/null || pkill -f "ollama serve" || true; echo "stopped" ;;
+    ollama_pull)     ollama pull "$(GET model)" 2>&1 | tail -5 ;;
+    ollama_rm)       ollama rm "$(GET model)" 2>&1 | tail -5 ;;
+    ollama_ps)       ollama ps 2>&1 | head -30 ;;
     *) echo "unsupported action: $ACTION"; return 127 ;;
   esac
 }

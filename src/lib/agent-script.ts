@@ -346,6 +346,25 @@ server {
 }
 EOF5
       nginx -t 2>&1 && nginx -s reload 2>&1 && echo "failover: $D -> $T" ;;
+    deploy_upload)
+      U="$(GET url)"; N="$(GET name)"; BP="$(GET path)"; PT="$(GET port)"
+      IN="$(GET install)"; BD="$(GET build)"; ST="$(GET start)"; OD="$(GET output_dir)"; SV="$(GET service)"
+      [ -z "$U" ] || [ -z "$N" ] && { echo "missing url/name"; return 2; }
+      tvcc_deploy "$U" "$N" "$BP" "$PT" "$IN" "$BD" "$ST" "$OD" "$SV" ;;
+    build_run)
+      N="$(GET name)"; BP="$(GET path)"; BD="$(GET build)"
+      [ -z "$BP" ] && BP="$TVCC_HN_DIR"
+      cd "$BP/$N" || { echo "missing dir $BP/$N"; return 2; }
+      bash -lc "\${BD:-npm run build}" 2>&1 | tail -n 80 ;;
+    serve_start)
+      SV="$(GET service)"; PT="$(GET port)"
+      systemctl restart "$SV" 2>&1 | tail -3
+      [ -n "$PT" ] && ufw allow "$PT/tcp" >/dev/null 2>&1 || true
+      systemctl is-active "$SV" 2>&1 ;;
+    serve_stop)
+      SV="$(GET service)"
+      systemctl disable --now "$SV" 2>&1 | tail -3; echo "stopped $SV" ;;
+
     *) echo "unsupported action: $ACTION"; return 127 ;;
   esac
 }

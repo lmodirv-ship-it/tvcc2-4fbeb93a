@@ -96,9 +96,15 @@ function DownloadsPage() {
       <Tabs defaultValue="agent" className="space-y-4">
         <TabsList>
           <TabsTrigger value="agent">وكيل السيرفر</TabsTrigger>
+          <TabsTrigger value="transfer">نقل وبناء موقع</TabsTrigger>
           <TabsTrigger value="docs">الأدلة</TabsTrigger>
           <TabsTrigger value="apps">النسخ المحلية</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="transfer">
+          <TransferPanel />
+        </TabsContent>
+
 
         <TabsContent value="agent">
           <Card>

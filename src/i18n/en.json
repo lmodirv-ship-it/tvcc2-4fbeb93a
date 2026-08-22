@@ -55,6 +55,7 @@
     "services": "Cross Services",
     "core_hub": "Core Hub",
     "video_studio": "Video Studio",
+    "blog": "Blog",
     "domains": "Domain Manager",
     "ssl": "SSL Monitor",
     "certificates": "HN.RLS Certificates",

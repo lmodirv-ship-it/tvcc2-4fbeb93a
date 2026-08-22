@@ -13,6 +13,8 @@ import { Route as McpRouteImport } from './routes/mcp'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as BlogIndexRouteImport } from './routes/blog/index'
+import { Route as BlogSlugRouteImport } from './routes/blog/$slug'
 import { Route as AuthenticatedWebsitesRouteImport } from './routes/_authenticated/websites'
 import { Route as AuthenticatedVideoStudioRouteImport } from './routes/_authenticated/video-studio'
 import { Route as AuthenticatedVaultRouteImport } from './routes/_authenticated/vault'
@@ -41,6 +43,7 @@ import { Route as AuthenticatedDashboardRouteImport } from './routes/_authentica
 import { Route as AuthenticatedCoreHubRouteImport } from './routes/_authenticated/core-hub'
 import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
 import { Route as AuthenticatedCertificatesRouteImport } from './routes/_authenticated/certificates'
+import { Route as AuthenticatedBlogManagerRouteImport } from './routes/_authenticated/blog-manager'
 import { Route as AuthenticatedBackupsRouteImport } from './routes/_authenticated/backups'
 import { Route as AuthenticatedAuditRouteImport } from './routes/_authenticated/audit'
 import { Route as AuthenticatedApkManagerRouteImport } from './routes/_authenticated/apk-manager'
@@ -97,6 +100,16 @@ const AuthenticatedRoute = AuthenticatedRouteImport.update({
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogIndexRoute = BlogIndexRouteImport.update({
+  id: '/blog/',
+  path: '/blog/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const BlogSlugRoute = BlogSlugRouteImport.update({
+  id: '/blog/$slug',
+  path: '/blog/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedWebsitesRoute = AuthenticatedWebsitesRouteImport.update({
@@ -245,6 +258,12 @@ const AuthenticatedCertificatesRoute =
   AuthenticatedCertificatesRouteImport.update({
     id: '/certificates',
     path: '/certificates',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedBlogManagerRoute =
+  AuthenticatedBlogManagerRouteImport.update({
+    id: '/blog-manager',
+    path: '/blog-manager',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedBackupsRoute = AuthenticatedBackupsRouteImport.update({
@@ -470,6 +489,7 @@ export interface FileRoutesByFullPath {
   '/apk-manager': typeof AuthenticatedApkManagerRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/backups': typeof AuthenticatedBackupsRoute
+  '/blog-manager': typeof AuthenticatedBlogManagerRoute
   '/certificates': typeof AuthenticatedCertificatesRoute
   '/clients': typeof AuthenticatedClientsRoute
   '/core-hub': typeof AuthenticatedCoreHubRoute
@@ -498,6 +518,8 @@ export interface FileRoutesByFullPath {
   '/vault': typeof AuthenticatedVaultRoute
   '/video-studio': typeof AuthenticatedVideoStudioRoute
   '/websites': typeof AuthenticatedWebsitesRoute
+  '/blog/$slug': typeof BlogSlugRoute
+  '/blog/': typeof BlogIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/editor/ai': typeof AuthenticatedEditorAiRoute
@@ -541,6 +563,7 @@ export interface FileRoutesByTo {
   '/apk-manager': typeof AuthenticatedApkManagerRoute
   '/audit': typeof AuthenticatedAuditRoute
   '/backups': typeof AuthenticatedBackupsRoute
+  '/blog-manager': typeof AuthenticatedBlogManagerRoute
   '/certificates': typeof AuthenticatedCertificatesRoute
   '/clients': typeof AuthenticatedClientsRoute
   '/core-hub': typeof AuthenticatedCoreHubRoute
@@ -568,6 +591,8 @@ export interface FileRoutesByTo {
   '/vault': typeof AuthenticatedVaultRoute
   '/video-studio': typeof AuthenticatedVideoStudioRoute
   '/websites': typeof AuthenticatedWebsitesRoute
+  '/blog/$slug': typeof BlogSlugRoute
+  '/blog': typeof BlogIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/editor/ai': typeof AuthenticatedEditorAiRoute
@@ -613,6 +638,7 @@ export interface FileRoutesById {
   '/_authenticated/apk-manager': typeof AuthenticatedApkManagerRoute
   '/_authenticated/audit': typeof AuthenticatedAuditRoute
   '/_authenticated/backups': typeof AuthenticatedBackupsRoute
+  '/_authenticated/blog-manager': typeof AuthenticatedBlogManagerRoute
   '/_authenticated/certificates': typeof AuthenticatedCertificatesRoute
   '/_authenticated/clients': typeof AuthenticatedClientsRoute
   '/_authenticated/core-hub': typeof AuthenticatedCoreHubRoute
@@ -641,6 +667,8 @@ export interface FileRoutesById {
   '/_authenticated/vault': typeof AuthenticatedVaultRoute
   '/_authenticated/video-studio': typeof AuthenticatedVideoStudioRoute
   '/_authenticated/websites': typeof AuthenticatedWebsitesRoute
+  '/blog/$slug': typeof BlogSlugRoute
+  '/blog/': typeof BlogIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
   '/_authenticated/editor/ai': typeof AuthenticatedEditorAiRoute
@@ -686,6 +714,7 @@ export interface FileRouteTypes {
     | '/apk-manager'
     | '/audit'
     | '/backups'
+    | '/blog-manager'
     | '/certificates'
     | '/clients'
     | '/core-hub'
@@ -714,6 +743,8 @@ export interface FileRouteTypes {
     | '/vault'
     | '/video-studio'
     | '/websites'
+    | '/blog/$slug'
+    | '/blog/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/editor/ai'
@@ -757,6 +788,7 @@ export interface FileRouteTypes {
     | '/apk-manager'
     | '/audit'
     | '/backups'
+    | '/blog-manager'
     | '/certificates'
     | '/clients'
     | '/core-hub'
@@ -784,6 +816,8 @@ export interface FileRouteTypes {
     | '/vault'
     | '/video-studio'
     | '/websites'
+    | '/blog/$slug'
+    | '/blog'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/editor/ai'
@@ -828,6 +862,7 @@ export interface FileRouteTypes {
     | '/_authenticated/apk-manager'
     | '/_authenticated/audit'
     | '/_authenticated/backups'
+    | '/_authenticated/blog-manager'
     | '/_authenticated/certificates'
     | '/_authenticated/clients'
     | '/_authenticated/core-hub'
@@ -856,6 +891,8 @@ export interface FileRouteTypes {
     | '/_authenticated/vault'
     | '/_authenticated/video-studio'
     | '/_authenticated/websites'
+    | '/blog/$slug'
+    | '/blog/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
     | '/_authenticated/editor/ai'
@@ -893,6 +930,8 @@ export interface RootRouteChildren {
   McpRoute: typeof McpRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
+  BlogSlugRoute: typeof BlogSlugRoute
+  BlogIndexRoute: typeof BlogIndexRoute
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicSiteConfigRoute: typeof ApiPublicSiteConfigRoute
@@ -936,6 +975,20 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/': {
+      id: '/blog/'
+      path: '/blog'
+      fullPath: '/blog/'
+      preLoaderRoute: typeof BlogIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/blog/$slug': {
+      id: '/blog/$slug'
+      path: '/blog/$slug'
+      fullPath: '/blog/$slug'
+      preLoaderRoute: typeof BlogSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/websites': {
@@ -1132,6 +1185,13 @@ declare module '@tanstack/react-router' {
       path: '/certificates'
       fullPath: '/certificates'
       preLoaderRoute: typeof AuthenticatedCertificatesRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/blog-manager': {
+      id: '/_authenticated/blog-manager'
+      path: '/blog-manager'
+      fullPath: '/blog-manager'
+      preLoaderRoute: typeof AuthenticatedBlogManagerRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/backups': {
@@ -1463,6 +1523,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedApkManagerRoute: typeof AuthenticatedApkManagerRoute
   AuthenticatedAuditRoute: typeof AuthenticatedAuditRoute
   AuthenticatedBackupsRoute: typeof AuthenticatedBackupsRoute
+  AuthenticatedBlogManagerRoute: typeof AuthenticatedBlogManagerRoute
   AuthenticatedCertificatesRoute: typeof AuthenticatedCertificatesRoute
   AuthenticatedClientsRoute: typeof AuthenticatedClientsRoute
   AuthenticatedCoreHubRoute: typeof AuthenticatedCoreHubRoute
@@ -1502,6 +1563,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedApkManagerRoute: AuthenticatedApkManagerRoute,
   AuthenticatedAuditRoute: AuthenticatedAuditRoute,
   AuthenticatedBackupsRoute: AuthenticatedBackupsRoute,
+  AuthenticatedBlogManagerRoute: AuthenticatedBlogManagerRoute,
   AuthenticatedCertificatesRoute: AuthenticatedCertificatesRoute,
   AuthenticatedClientsRoute: AuthenticatedClientsRoute,
   AuthenticatedCoreHubRoute: AuthenticatedCoreHubRoute,
@@ -1544,6 +1606,8 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,
+  BlogSlugRoute: BlogSlugRoute,
+  BlogIndexRoute: BlogIndexRoute,
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicSiteConfigRoute: ApiPublicSiteConfigRoute,

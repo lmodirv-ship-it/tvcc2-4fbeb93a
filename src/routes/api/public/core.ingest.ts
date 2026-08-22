@@ -25,7 +25,7 @@ export const Route = createFileRoute("/api/public/core/ingest")({
           return Response.json({ ok: false, error: e?.message ?? "err" }, { status: 500 });
         }
       },
-      OPTIONS: async () => new Response(null, { status: 204, headers: { "access-control-allow-origin": "*", "access-control-allow-methods": "POST, OPTIONS", "access-control-allow-headers": "content-type, x-core-key" } }),
+      OPTIONS: async () => new Response(null, { status: 204, headers: { "access-control-allow-origin": "*", "access-control-allow-methods": "POST, OPTIONS", "access-control-allow-headers": "content-type, x-core-key, x-tvcc-signature, x-core-signature" } }),
     },
   },
 });

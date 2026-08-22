@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2, Loader2, ShieldCheck, Lock, UserPlus, Copy } from "lucide-react";
+import { Plus, Trash2, Loader2, ShieldCheck, Lock, UserPlus, Copy, Check, X } from "lucide-react";
 import { toast } from "sonner";
 import { useRoles, PERMANENT_OWNER_EMAIL } from "@/hooks/use-roles";
 
@@ -351,7 +351,7 @@ function InviteDialog({ onDone }: { onDone: () => void }) {
 
 function SiteUsersTab() {
   const qc = useQueryClient();
-  const { isSystemOwner } = useRoles();
+  const { isSystemOwner, isEditor } = useRoles();
   const [open, setOpen] = useState(false);
 
   const { data, isLoading } = useQuery({
@@ -367,10 +367,12 @@ function SiteUsersTab() {
     <div className="space-y-4">
       <div className="flex items-center justify-between">
         <p className="text-muted-foreground text-sm">حساب واحد يصل لعدة مواقع</p>
-        <Dialog open={open} onOpenChange={setOpen}>
-          <DialogTrigger asChild><Button><Plus className="w-4 h-4 ml-1" /> مستخدم جديد</Button></DialogTrigger>
-          <AddDialog onDone={() => { setOpen(false); qc.invalidateQueries({ queryKey: ["site_users"] }); }} />
-        </Dialog>
+        {isEditor && (
+          <Dialog open={open} onOpenChange={setOpen}>
+            <DialogTrigger asChild><Button><Plus className="w-4 h-4 ml-1" /> مستخدم جديد</Button></DialogTrigger>
+            <AddDialog onDone={() => { setOpen(false); qc.invalidateQueries({ queryKey: ["site_users"] }); }} />
+          </Dialog>
+        )}
       </div>
 
       <Card>

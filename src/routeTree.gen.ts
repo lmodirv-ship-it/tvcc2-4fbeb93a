@@ -19,6 +19,7 @@ import { Route as AuthenticatedWebsitesRouteImport } from './routes/_authenticat
 import { Route as AuthenticatedVideoStudioRouteImport } from './routes/_authenticated/video-studio'
 import { Route as AuthenticatedVaultRouteImport } from './routes/_authenticated/vault'
 import { Route as AuthenticatedUsersRouteImport } from './routes/_authenticated/users'
+import { Route as AuthenticatedTopologyRouteImport } from './routes/_authenticated/topology'
 import { Route as AuthenticatedTemplatesRouteImport } from './routes/_authenticated/templates'
 import { Route as AuthenticatedSubscriptionsRouteImport } from './routes/_authenticated/subscriptions'
 import { Route as AuthenticatedSslRouteImport } from './routes/_authenticated/ssl'
@@ -131,6 +132,11 @@ const AuthenticatedVaultRoute = AuthenticatedVaultRouteImport.update({
 const AuthenticatedUsersRoute = AuthenticatedUsersRouteImport.update({
   id: '/users',
   path: '/users',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedTopologyRoute = AuthenticatedTopologyRouteImport.update({
+  id: '/topology',
+  path: '/topology',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedTemplatesRoute = AuthenticatedTemplatesRouteImport.update({
@@ -514,6 +520,7 @@ export interface FileRoutesByFullPath {
   '/ssl': typeof AuthenticatedSslRoute
   '/subscriptions': typeof AuthenticatedSubscriptionsRoute
   '/templates': typeof AuthenticatedTemplatesRoute
+  '/topology': typeof AuthenticatedTopologyRoute
   '/users': typeof AuthenticatedUsersRoute
   '/vault': typeof AuthenticatedVaultRoute
   '/video-studio': typeof AuthenticatedVideoStudioRoute
@@ -587,6 +594,7 @@ export interface FileRoutesByTo {
   '/ssl': typeof AuthenticatedSslRoute
   '/subscriptions': typeof AuthenticatedSubscriptionsRoute
   '/templates': typeof AuthenticatedTemplatesRoute
+  '/topology': typeof AuthenticatedTopologyRoute
   '/users': typeof AuthenticatedUsersRoute
   '/vault': typeof AuthenticatedVaultRoute
   '/video-studio': typeof AuthenticatedVideoStudioRoute
@@ -663,6 +671,7 @@ export interface FileRoutesById {
   '/_authenticated/ssl': typeof AuthenticatedSslRoute
   '/_authenticated/subscriptions': typeof AuthenticatedSubscriptionsRoute
   '/_authenticated/templates': typeof AuthenticatedTemplatesRoute
+  '/_authenticated/topology': typeof AuthenticatedTopologyRoute
   '/_authenticated/users': typeof AuthenticatedUsersRoute
   '/_authenticated/vault': typeof AuthenticatedVaultRoute
   '/_authenticated/video-studio': typeof AuthenticatedVideoStudioRoute
@@ -739,6 +748,7 @@ export interface FileRouteTypes {
     | '/ssl'
     | '/subscriptions'
     | '/templates'
+    | '/topology'
     | '/users'
     | '/vault'
     | '/video-studio'
@@ -812,6 +822,7 @@ export interface FileRouteTypes {
     | '/ssl'
     | '/subscriptions'
     | '/templates'
+    | '/topology'
     | '/users'
     | '/vault'
     | '/video-studio'
@@ -887,6 +898,7 @@ export interface FileRouteTypes {
     | '/_authenticated/ssl'
     | '/_authenticated/subscriptions'
     | '/_authenticated/templates'
+    | '/_authenticated/topology'
     | '/_authenticated/users'
     | '/_authenticated/vault'
     | '/_authenticated/video-studio'
@@ -1017,6 +1029,13 @@ declare module '@tanstack/react-router' {
       path: '/users'
       fullPath: '/users'
       preLoaderRoute: typeof AuthenticatedUsersRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/topology': {
+      id: '/_authenticated/topology'
+      path: '/topology'
+      fullPath: '/topology'
+      preLoaderRoute: typeof AuthenticatedTopologyRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/templates': {
@@ -1548,6 +1567,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedSslRoute: typeof AuthenticatedSslRoute
   AuthenticatedSubscriptionsRoute: typeof AuthenticatedSubscriptionsRoute
   AuthenticatedTemplatesRoute: typeof AuthenticatedTemplatesRoute
+  AuthenticatedTopologyRoute: typeof AuthenticatedTopologyRoute
   AuthenticatedUsersRoute: typeof AuthenticatedUsersRoute
   AuthenticatedVaultRoute: typeof AuthenticatedVaultRoute
   AuthenticatedVideoStudioRoute: typeof AuthenticatedVideoStudioRoute
@@ -1588,6 +1608,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedSslRoute: AuthenticatedSslRoute,
   AuthenticatedSubscriptionsRoute: AuthenticatedSubscriptionsRoute,
   AuthenticatedTemplatesRoute: AuthenticatedTemplatesRoute,
+  AuthenticatedTopologyRoute: AuthenticatedTopologyRoute,
   AuthenticatedUsersRoute: AuthenticatedUsersRoute,
   AuthenticatedVaultRoute: AuthenticatedVaultRoute,
   AuthenticatedVideoStudioRoute: AuthenticatedVideoStudioRoute,

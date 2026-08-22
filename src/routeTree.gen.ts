@@ -38,6 +38,7 @@ import { Route as AuthenticatedLogsRouteImport } from './routes/_authenticated/l
 import { Route as AuthenticatedJobsRouteImport } from './routes/_authenticated/jobs'
 import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authenticated/integrations'
 import { Route as AuthenticatedGroupsRouteImport } from './routes/_authenticated/groups'
+import { Route as AuthenticatedFailoverRouteImport } from './routes/_authenticated/failover'
 import { Route as AuthenticatedEnvironmentRouteImport } from './routes/_authenticated/environment'
 import { Route as AuthenticatedEditorRouteImport } from './routes/_authenticated/editor'
 import { Route as AuthenticatedDomainsRouteImport } from './routes/_authenticated/domains'
@@ -233,6 +234,11 @@ const AuthenticatedIntegrationsRoute =
 const AuthenticatedGroupsRoute = AuthenticatedGroupsRouteImport.update({
   id: '/groups',
   path: '/groups',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedFailoverRoute = AuthenticatedFailoverRouteImport.update({
+  id: '/failover',
+  path: '/failover',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedEnvironmentRoute =
@@ -509,6 +515,7 @@ export interface FileRoutesByFullPath {
   '/domains': typeof AuthenticatedDomainsRoute
   '/editor': typeof AuthenticatedEditorRouteWithChildren
   '/environment': typeof AuthenticatedEnvironmentRoute
+  '/failover': typeof AuthenticatedFailoverRoute
   '/groups': typeof AuthenticatedGroupsRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/jobs': typeof AuthenticatedJobsRoute
@@ -584,6 +591,7 @@ export interface FileRoutesByTo {
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/domains': typeof AuthenticatedDomainsRoute
   '/environment': typeof AuthenticatedEnvironmentRoute
+  '/failover': typeof AuthenticatedFailoverRoute
   '/groups': typeof AuthenticatedGroupsRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/jobs': typeof AuthenticatedJobsRoute
@@ -662,6 +670,7 @@ export interface FileRoutesById {
   '/_authenticated/domains': typeof AuthenticatedDomainsRoute
   '/_authenticated/editor': typeof AuthenticatedEditorRouteWithChildren
   '/_authenticated/environment': typeof AuthenticatedEnvironmentRoute
+  '/_authenticated/failover': typeof AuthenticatedFailoverRoute
   '/_authenticated/groups': typeof AuthenticatedGroupsRoute
   '/_authenticated/integrations': typeof AuthenticatedIntegrationsRoute
   '/_authenticated/jobs': typeof AuthenticatedJobsRoute
@@ -740,6 +749,7 @@ export interface FileRouteTypes {
     | '/domains'
     | '/editor'
     | '/environment'
+    | '/failover'
     | '/groups'
     | '/integrations'
     | '/jobs'
@@ -815,6 +825,7 @@ export interface FileRouteTypes {
     | '/dashboard'
     | '/domains'
     | '/environment'
+    | '/failover'
     | '/groups'
     | '/integrations'
     | '/jobs'
@@ -892,6 +903,7 @@ export interface FileRouteTypes {
     | '/_authenticated/domains'
     | '/_authenticated/editor'
     | '/_authenticated/environment'
+    | '/_authenticated/failover'
     | '/_authenticated/groups'
     | '/_authenticated/integrations'
     | '/_authenticated/jobs'
@@ -1174,6 +1186,13 @@ declare module '@tanstack/react-router' {
       path: '/groups'
       fullPath: '/groups'
       preLoaderRoute: typeof AuthenticatedGroupsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/failover': {
+      id: '/_authenticated/failover'
+      path: '/failover'
+      fullPath: '/failover'
+      preLoaderRoute: typeof AuthenticatedFailoverRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/environment': {
@@ -1569,6 +1588,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDomainsRoute: typeof AuthenticatedDomainsRoute
   AuthenticatedEditorRoute: typeof AuthenticatedEditorRouteWithChildren
   AuthenticatedEnvironmentRoute: typeof AuthenticatedEnvironmentRoute
+  AuthenticatedFailoverRoute: typeof AuthenticatedFailoverRoute
   AuthenticatedGroupsRoute: typeof AuthenticatedGroupsRoute
   AuthenticatedIntegrationsRoute: typeof AuthenticatedIntegrationsRoute
   AuthenticatedJobsRoute: typeof AuthenticatedJobsRoute
@@ -1611,6 +1631,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDomainsRoute: AuthenticatedDomainsRoute,
   AuthenticatedEditorRoute: AuthenticatedEditorRouteWithChildren,
   AuthenticatedEnvironmentRoute: AuthenticatedEnvironmentRoute,
+  AuthenticatedFailoverRoute: AuthenticatedFailoverRoute,
   AuthenticatedGroupsRoute: AuthenticatedGroupsRoute,
   AuthenticatedIntegrationsRoute: AuthenticatedIntegrationsRoute,
   AuthenticatedJobsRoute: AuthenticatedJobsRoute,

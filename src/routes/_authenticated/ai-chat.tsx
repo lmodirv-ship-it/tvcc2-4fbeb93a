@@ -167,7 +167,7 @@ function AiChatPage() {
 
 
   return (
-    <div className="p-6 grid gap-4 lg:grid-cols-[260px_1fr] h-[calc(100vh-6rem)]">
+    <div className="p-6 grid gap-4 lg:grid-cols-[240px_1fr_320px] h-[calc(100vh-6rem)]">
       <Card className="hidden lg:block overflow-y-auto">
         <CardContent className="p-3 space-y-2">
           <Button

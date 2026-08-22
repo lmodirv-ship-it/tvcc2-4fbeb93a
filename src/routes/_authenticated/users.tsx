@@ -60,8 +60,9 @@ function Page() {
 
 function TeamTab() {
   const qc = useQueryClient();
-  const { isSystemOwner } = useRoles();
+  const { isSystemOwner, isAdmin } = useRoles();
   const [open, setOpen] = useState(false);
+  const [grantOpen, setGrantOpen] = useState(false);
 
   const { data: members, isLoading } = useQuery({
     queryKey: ["team-members"],

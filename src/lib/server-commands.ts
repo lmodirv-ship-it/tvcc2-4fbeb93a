@@ -46,7 +46,16 @@ export const COMMAND_WHITELIST = [
   "build_run",
   "serve_start",
   "serve_stop",
+  "fs_list",
+  "fs_tree",
+  "fs_read",
+  "fs_search",
+  "fs_mkdir",
+  "fs_write",
+  "fs_delete",
+  "fs_move",
 ] as const;
+
 
 
 export type CommandAction = (typeof COMMAND_WHITELIST)[number];

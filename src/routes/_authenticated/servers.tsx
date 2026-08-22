@@ -399,6 +399,7 @@ function ServersPage() {
               <Tabs defaultValue="ports">
                 <TabsList className="flex-wrap h-auto">
                   <TabsTrigger value="ports"><Network className="w-3 h-3 ml-1" /> المنافذ</TabsTrigger>
+                  <TabsTrigger value="hub"><Plug className="w-3 h-3 ml-1" /> مركز المنافذ</TabsTrigger>
                   <TabsTrigger value="configs"><Settings2 className="w-3 h-3 ml-1" /> الإعدادات</TabsTrigger>
                   <TabsTrigger value="tools"><Play className="w-3 h-3 ml-1" /> الأدوات</TabsTrigger>
                   <TabsTrigger value="deploy"><Rocket className="w-3 h-3 ml-1" /> ترحيل المنصة</TabsTrigger>

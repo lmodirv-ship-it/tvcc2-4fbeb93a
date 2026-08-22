@@ -60,8 +60,9 @@ function Page() {
 
 function TeamTab() {
   const qc = useQueryClient();
-  const { isSystemOwner } = useRoles();
+  const { isAdmin } = useRoles();
   const [open, setOpen] = useState(false);
+  const [grantOpen, setGrantOpen] = useState(false);
 
   const { data: members, isLoading } = useQuery({
     queryKey: ["team-members"],
@@ -113,8 +114,22 @@ function TeamTab() {
             <div className="font-semibold text-sm">مالك المنصة الدائم</div>
             <div className="text-xs text-muted-foreground" dir="ltr">{PERMANENT_OWNER_EMAIL}</div>
           </div>
-          <Badge className="gap-1"><Lock className="w-3 h-3" /> محمي — لا يُحذف ولا تتغير صلاحيته</Badge>
-          {isSystemOwner && (
+          <Badge className="gap-1"><Lock className="w-3 h-3" /> محمي — مالك + مدير (Admin) لا يُحذف</Badge>
+          {isAdmin && (
+            <Dialog open={grantOpen} onOpenChange={setGrantOpen}>
+              <DialogTrigger asChild>
+                <Button variant="secondary"><ShieldCheck className="w-4 h-4 ml-1" /> منح الأدوار</Button>
+              </DialogTrigger>
+              <GrantRoleDialog
+                members={members || []}
+                onGrant={async (userId, email, role) => {
+                  await setRole(userId, email, role);
+                  setGrantOpen(false);
+                }}
+              />
+            </Dialog>
+          )}
+          {isAdmin && (
             <Dialog open={open} onOpenChange={setOpen}>
               <DialogTrigger asChild>
                 <Button><UserPlus className="w-4 h-4 ml-1" /> دعوة عضو</Button>
@@ -165,7 +180,7 @@ function TeamTab() {
                       <TableCell>
                         {locked ? (
                           <span className="text-xs text-muted-foreground flex items-center gap-1"><Lock className="w-3 h-3" /> محمي</span>
-                        ) : isSystemOwner ? (
+                        ) : isAdmin ? (
                           <Select value={current} onValueChange={(v) => setRole(m.id, m.email || "", v)}>
                             <SelectTrigger className="w-40"><SelectValue /></SelectTrigger>
                             <SelectContent>
@@ -225,7 +240,7 @@ function TeamTab() {
                       </Button>
                     </TableCell>
                     <TableCell>
-                      {isSystemOwner && (
+                      {isAdmin && (
                         <Button size="sm" variant="ghost" onClick={() => removeInvite(i.id)}>
                           <Trash2 className="w-3 h-3" />
                         </Button>
@@ -259,7 +274,7 @@ const PERMISSIONS: { label: string; owner: boolean; admin: boolean; editor: bool
   { label: "حذف المواقع (188 موقعاً)", owner: true, admin: false, editor: false, viewer: false },
   { label: "حذف السيرفرات", owner: true, admin: false, editor: false, viewer: false },
   { label: "قراءة قيم الخزنة بصريح النص", owner: true, admin: false, editor: false, viewer: false },
-  { label: "منح الأدوار ودعوة الأعضاء", owner: true, admin: false, editor: false, viewer: false },
+  { label: "منح الأدوار ودعوة الأعضاء (عدا دور المالك)", owner: true, admin: true, editor: false, viewer: false },
 ];
 
 function Mark({ on }: { on: boolean }) {
@@ -297,6 +312,68 @@ function PermissionsMatrix() {
         </Table>
       </CardContent>
     </Card>
+  );
+}
+
+/* ---------------- Grant role ---------------- */
+
+type Member = { id: string; email: string | null; full_name: string | null };
+
+function GrantRoleDialog({
+  members,
+  onGrant,
+}: {
+  members: Member[];
+  onGrant: (userId: string, email: string, role: string) => Promise<void>;
+}) {
+  const selectable = members.filter((m) => (m.email || "").toLowerCase() !== PERMANENT_OWNER_EMAIL);
+  const [userId, setUserId] = useState("");
+  const [role, setRole] = useState("editor");
+  const [loading, setLoading] = useState(false);
+
+  const submit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const member = selectable.find((m) => m.id === userId);
+    if (!member) return toast.error("اختر عضواً أولاً");
+    setLoading(true);
+    await onGrant(member.id, member.email || "", role);
+    setLoading(false);
+  };
+
+  return (
+    <DialogContent>
+      <DialogHeader><DialogTitle>منح دور لعضو</DialogTitle></DialogHeader>
+      <form onSubmit={submit} className="space-y-4">
+        <div className="space-y-2">
+          <Label>العضو</Label>
+          <Select value={userId} onValueChange={setUserId}>
+            <SelectTrigger><SelectValue placeholder="اختر عضواً" /></SelectTrigger>
+            <SelectContent>
+              {selectable.map((m) => (
+                <SelectItem key={m.id} value={m.id}>{m.full_name || m.email}</SelectItem>
+              ))}
+            </SelectContent>
+          </Select>
+        </div>
+        <div className="space-y-2">
+          <Label>الدور</Label>
+          <Select value={role} onValueChange={setRole}>
+            <SelectTrigger><SelectValue /></SelectTrigger>
+            <SelectContent>
+              <SelectItem value="admin">مدير (Admin) — كل الصلاحيات عدا المحمية</SelectItem>
+              <SelectItem value="editor">محرر (Editor) — عرض وتعديل</SelectItem>
+              <SelectItem value="viewer">مشاهد (Viewer) — عرض فقط</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+        <p className="text-xs text-muted-foreground">دور «مالك المنصة» محمي ولا يمكن منحه أو سحبه من أي حساب.</p>
+        <DialogFooter>
+          <Button type="submit" disabled={loading || !userId}>
+            {loading && <Loader2 className="w-4 h-4 animate-spin ml-2" />}منح الدور
+          </Button>
+        </DialogFooter>
+      </form>
+    </DialogContent>
   );
 }
 

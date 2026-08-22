@@ -1,0 +1,1191 @@
+{
+  "meta": {
+    "name": "tvcc",
+    "package": "@ws-rwrj5um4yjqhbejpny8m/b4f7d096-0b0d-4a25-815e-9faa0862c50f",
+    "version": "1.0.0",
+    "framework": "react",
+    "css_framework": "tailwind",
+    "starter_template": "custom_design_system_tailwind",
+    "theme_files": [
+      "src/lib/themes.ts",
+      "src/styles.css"
+    ],
+    "source_type": "local",
+    "source_manifest": {
+      "#enrichment": "23f70aa4ed8fb984ca7e53ed11a87f7b689e4cf1d612096b734de125f5ff262c",
+      ".gitignore": "6d9e901a692b46a83707c245fb03bc91",
+      ".lovable/mcp/manifest.json": "bf3727431f1ef5eb839b8d2e2b38f76b",
+      ".lovable/plan/إدارة-المواقع-من-السيرفرات-vps-الحالة-والموارد-2026-08-18.md": "33dbd54937f3fd761ecdab13d6be4d0b",
+      ".lovable/plan/إصدار-شهادة-hn-rls-وتسجيل-المشروع-بعد-التحقق-من-النطاق-2026-08-18.md": "28e113fdaf3a0d88f138a5611c37b7a0",
+      ".lovable/plan/اختبار-النماذج-م-دخل-مخصص-إعدادات-وسجل-نتائج-2026-08-18.md": "009d505cf135af263c18233584204ac7",
+      ".lovable/plan/ترابط-السيرفرات-محلي-سحابي-وربط-المنافذ-والتخزين-2026-08-21.md": "3c66012d9d3f5245638b98283b95f8d9",
+      ".lovable/plan/تطوير-مركز-المنافذ-الأدوار-وتشغيل-النماذج-المحلية-2026-08-22.md": "2c6343c7ae0007aab8b8f02bcf8f6a33",
+      ".lovable/plan/تفعيل-الأزرار-فعليا-تقرير-فحص-شامل-2026-08-18.md": "e3fea2be68029d3c087ddfa8c03b57f6",
+      ".lovable/plan/زر-العودة-للصفحة-الرئيسية-في-أعلى-كل-الصفحات-2026-08-21.md": "e94fa8da552363403be41d6852cc5085",
+      ".lovable/plan/صلاحيات-ومميزات-إدارة-السيرفرات-dry-run-جدولة-نسخ-تنبيهات-أس-2026-08-18.md": "b2fa2bf042e099b976f4cf1b3b8e6966",
+      ".lovable/project.json": "c0753cc24bcd0818244572c58e5e5f0b",
+      ".prettierignore": "7279a476f196a2da5f7edd18db568dc6",
+      ".prettierrc": "185ef0234746ab738ac1ab6cec5e2bd9",
+      "ANDROID_STUDIO_AR.md": "c07c94c06b5a45da8a88e625a3229085",
+      "ARCHITECTURE.md": "1e3dbc7445f9ee867e681f3e52849efc",
+      "DEPLOYMENT.md": "74c8408209f15c9a96c3e54257399a76",
+      "DESKTOP_APP_AR.md": "dc7493f578e5071a3ac862d4f20a69dc",
+      "FINAL_REPORT.md": "5fec0dbfd450dd6a9a632535ab4e35f2",
+      "INSTALLATION.md": "fe2b874f79e13ee44f72efdf3ae0a7d1",
+      "PROJECT_STATUS_AR.md": "ea8bc8b8d34ecdf3cc3a5d35489e9813",
+      "README.md": "5a3916d7cf0ee4397a1bb39c8c70656d",
+      "ROADMAP_AR.md": "94f57c371d9f42be27d22957319a5f1e",
+      "SETUP_GUIDE_AR.md": "0141231cf72dcb36d85cf91b9562860e",
+      "bunfig.toml": "06df017e61bba1ddb38372a88b93a532",
+      "components.json": "30d3d035361ce807021f5c54620962e9",
+      "desktop-app/package.json": "9fad38fda30e8edb3a3cc7e99fb4e530",
+      "desktop-app/src-tauri/Cargo.toml": "def1ef8d7a564a9e9ad47add39a510f1",
+      "desktop-app/src-tauri/build.rs": "1be34a5c61c2c35365de3dab14298f0b",
+      "desktop-app/src-tauri/src/main.rs": "593aa7f4d7ed3a46800a4d9243ccb652",
+      "desktop-app/src-tauri/tauri.conf.json": "8789c61b8eebb262534aaf4d22c9b666",
+      "desktop-app/ui/index.html": "29a71a8c9af39386bd338e56459ca56b",
+      "ecosystem.config.cjs": "fc20b4bcde35d33500c946f02694b4be",
+      "eslint.config.js": "345bdd57e188e0e4525edcd00e5003f5",
+      "package.json": "1cfa1526814aaee510cd4abf803bd0ad",
+      "public/favicon.ico": "a0494cb045d933093e124f484fbe064c",
+      "public/index.html": "eb9d2cfbe3fdac73d58630c395ca38ed",
+      "src/assets/tvcc-logo.asset.json": "5615ef0e6f92a486ea03ce74b5d0868b",
+      "src/components/editor/BulkEditor.tsx": "387dba02684b5ec5724373613a280949",
+      "src/components/layout/AppHeader.tsx": "4be9343a5c20d9916d7427ba4eef9ad3",
+      "src/components/layout/AppSidebar.tsx": "2f4b51badd0e14c77334dd5302b32414",
+      "src/components/layout/LanguageSwitcher.tsx": "98c1354f6f2ae331828a3560af83d0e1",
+      "src/components/layout/NotificationBell.tsx": "48cfe0f343386c3f0217592f62876361",
+      "src/components/layout/ThemeSwitcher.tsx": "a7b3c4a3f9e2a68f78fb2d8cc5d97944",
+      "src/components/ui/accordion.tsx": "55f9dda62b4e3913c9b23e5015a86aef",
+      "src/components/ui/alert-dialog.tsx": "96350e949e9b7b674545430a410ab89c",
+      "src/components/ui/alert.tsx": "f993d7e96b1e25ce50e68ed97e11d2a8",
+      "src/components/ui/aspect-ratio.tsx": "c5c364545e1b25a94e9e752cd67ad048",
+      "src/components/ui/avatar.tsx": "72989cd32f72c4122802540ef32525a5",
+      "src/components/ui/badge.tsx": "81cade001fc4260f9943e18dcd79449b",
+      "src/components/ui/breadcrumb.tsx": "bb9ac254f12662b20d5d50b84308bf3a",
+      "src/components/ui/button.tsx": "7d07d520f486b12bd47373d694ecd2ee",
+      "src/components/ui/calendar.tsx": "415d91d7006d4cc654e27620fca340f6",
+      "src/components/ui/card.tsx": "d6c48ea36221b9cdc3576d305d12d5d5",
+      "src/components/ui/carousel.tsx": "e324c68ae00cd5aed49317638abd429a",
+      "src/components/ui/chart.tsx": "6a3baf94f2e89f1f97d4d7a28f3622d2",
+      "src/components/ui/checkbox.tsx": "f78aac270ca482c8c2cb907ef6260462",
+      "src/components/ui/collapsible.tsx": "767631bbc344945c236f185f4078d71d",
+      "src/components/ui/command.tsx": "014782599cc838b021ec68b07ad4ea02",
+      "src/components/ui/context-menu.tsx": "e9d689beb53d9adb63165bfe64838bf6",
+      "src/components/ui/dialog.tsx": "ef4fe8e7de8675730afe3d633b260e09",
+      "src/components/ui/drawer.tsx": "8be333e8fd8e42576b1b5f72f07f4337",
+      "src/components/ui/dropdown-menu.tsx": "32156e221f3473280114c80fdb818829",
+      "src/components/ui/form.tsx": "1b0aa6302b9017ea2a1307c22a1d2983",
+      "src/components/ui/hover-card.tsx": "1442794c5ca2a78d69e4e613b315ed3d",
+      "src/components/ui/input-otp.tsx": "58cff10c8942cac8483c0bcd65d39d3c",
+      "src/components/ui/input.tsx": "1d4cc52a4cd8afb3e18e45bda942bb8a",
+      "src/components/ui/label.tsx": "7e35df4ca8edd0835efd97ca7937ef92",
+      "src/components/ui/menubar.tsx": "5870465653e12c3d0e35a2fad6f9faa9",
+      "src/components/ui/navigation-menu.tsx": "e85351147a02b29577ff83d188b63c24",
+      "src/components/ui/pagination.tsx": "fac6cdbb4bbf78b273d85cd36d6cbb49",
+      "src/components/ui/popover.tsx": "f18aa1da2144f25ee60795c539c51bcd",
+      "src/components/ui/progress.tsx": "55c462e5c9dd678dcf2c0c510b014ac4",
+      "src/components/ui/radio-group.tsx": "0e1ace237a5da3197e3eb1e6683faba9",
+      "src/components/ui/resizable.tsx": "d9fcb9203c749fcab4e125a99bb12a86",
+      "src/components/ui/scroll-area.tsx": "87b65d3eb26f2b02ff35a7acea585ba5",
+      "src/components/ui/select.tsx": "31ea1bbd6671833b010b2e852c8a55d0",
+      "src/components/ui/separator.tsx": "433d163c4ffa00b59398a0c293198b5e",
+      "src/components/ui/sheet.tsx": "0221fbf97b69611b47fcbc10bb27669a",
+      "src/components/ui/sidebar.tsx": "83c1623eb50ebc370d7b1b84a542e369",
+      "src/components/ui/skeleton.tsx": "41b182e6e2fc3805960d41e767d4a972",
+      "src/components/ui/slider.tsx": "4752f1bfa26426988d325599e01c335b",
+      "src/components/ui/sonner.tsx": "97f59f60be3413196d095fcbf7383216",
+      "src/components/ui/switch.tsx": "82f5d8b0c59bb7ff305caa9f502e79ff",
+      "src/components/ui/table.tsx": "7cc889989d53894b659903c73aded96e",
+      "src/components/ui/tabs.tsx": "56e725558c2ce72c18243bf51717f385",
+      "src/components/ui/textarea.tsx": "c7aad96fb9545210d53135a96c76ed6b",
+      "src/components/ui/toggle-group.tsx": "ac26383acf721d116ca8e3ab5c5355d5",
+      "src/components/ui/toggle.tsx": "ee8c5adac74e7242b85b544db1a8fbad",
+      "src/components/ui/tooltip.tsx": "67d71db5a1ab935695d1def497f5b8a6",
+      "src/components/visual/LiveScene.tsx": "b5625a403881305ad9dea70f7b31a8b9",
+      "src/hooks/use-auth.ts": "72744e68e3bae2934d29deb943698d77",
+      "src/hooks/use-mobile.tsx": "c0a0bdd4638c391a1dd06ac82074e60b",
+      "src/hooks/use-roles.ts": "216729604a20cd44c677a26e9342f308",
+      "src/i18n/ar.json": "38f8b42505d63ffe7c89457eaadddec8",
+      "src/i18n/en.json": "e178679b323fc6f9ab51abebbf0891e2",
+      "src/i18n/fr.json": "1e6c21b8ba14e633e70a5d3f2e84e783",
+      "src/i18n/index.ts": "fd3f436e05736287df1addefbf37cf15",
+      "src/integrations/lovable/index.ts": "2b281422ef62231e654f8668addb90a5",
+      "src/integrations/supabase/auth-attacher.ts": "dad043cda134d909e52de0346c16625e",
+      "src/integrations/supabase/auth-middleware.ts": "cd3d931e149752681dfbf58f6046488c",
+      "src/integrations/supabase/client.server.ts": "291dd248c905ba0f0eefbcb5db2d6fc2",
+      "src/integrations/supabase/client.ts": "fd589a47997c6b1f046e53c2441d9ce9",
+      "src/integrations/supabase/types.ts": "718fbeea6bbda82e3d19789280f7abf9",
+      "src/lib/agent-script.ts": "19b1663caa26712760bc76fcd7e9b658",
+      "src/lib/agent-token.ts": "ec07060e10032f12f2987a1098f05284",
+      "src/lib/ai-hub.functions.ts": "385d74f922cf7176ced97033a630ef9c",
+      "src/lib/ai-hub.server.ts": "5a0f5a0ab4656a0bd8e9975815ef32ef",
+      "src/lib/ai-local.ts": "97d9bf4405105066726cac73361fe70c",
+      "src/lib/ai-tools.server.ts": "2c5ca49417d3a806a2a69ce661ba4c3b",
+      "src/lib/api/example.functions.ts": "043d58c65b874e64b81caf99e5963ecf",
+      "src/lib/config.server.ts": "630ee452f2db063bc3eb97a65e1ade1f",
+      "src/lib/core-hub.functions.ts": "e9075a87153a7f4e019dd976f191c8e9",
+      "src/lib/dns.functions.ts": "5e451a336830b2307e5c631c16cd2978",
+      "src/lib/error-capture.ts": "00e77bfacfb2d79c0816361e678f1b65",
+      "src/lib/error-page.ts": "8da0ddd7569bac2676b9a5c8edff8a36",
+      "src/lib/health-check.functions.ts": "02351fa34a449078af5d77bc6ff3415f",
+      "src/lib/hn-rls.functions.ts": "c8a2b76d712d4134729e0a46b0aa3612",
+      "src/lib/hn-rls.server.ts": "10235331a0871fc21189e4ee5bd77de2",
+      "src/lib/html-export.ts": "9273d624893ed989aff727d470fb94e8",
+      "src/lib/jobs.functions.ts": "f3b99bff355df428c9badc3cfccbadf9",
+      "src/lib/lovable-error-reporting.ts": "0e6014b8724d59792cd855f3d014c2fe",
+      "src/lib/mcp/index.ts": "7c03608dd6bc32c449dda9e418ff012c",
+      "src/lib/mcp/supabase.ts": "ad4e21f1971e5b93fff8f122def5afc8",
+      "src/lib/mcp/tools/create-website.ts": "3215c08d6486e6688281a05026b072dd",
+      "src/lib/mcp/tools/get-dashboard-stats.ts": "51ddc5a9e4c8ef2efcab97e2c6f0eefe",
+      "src/lib/mcp/tools/get-hn-certificate.ts": "b79c97b4f02fb95a5cdc3e0dd789d98f",
+      "src/lib/mcp/tools/get-server-status.ts": "2fbb1cf4517c177761a2d38a13bd3ae2",
+      "src/lib/mcp/tools/get-website.ts": "edfeff9c32bd0385a1fb7d687922ec25",
+      "src/lib/mcp/tools/list-expiring-domains.ts": "c3a0e360471f8155c80b9dd840a0a280",
+      "src/lib/mcp/tools/list-servers.ts": "cd7602713afc1f6f94ea166be062e66b",
+      "src/lib/mcp/tools/list-site-groups.ts": "bebfa20d7c39f8e3c49dcb90d2be5fb9",
+      "src/lib/mcp/tools/list-websites.ts": "a0c9d7aa957e02fd543105724e664435",
+      "src/lib/mcp/tools/update-website.ts": "d0766ea21ad74303644bc1a9531be7af",
+      "src/lib/mesh.functions.ts": "f3bd59300027327efb33d1dc81cb3d80",
+      "src/lib/mesh.server.ts": "b43182991db45f380ed5d89248fa9d70",
+      "src/lib/ports.functions.ts": "18bcba322c0b369cded296d79972b927",
+      "src/lib/ports.server.ts": "758ec45bcbd684ba84cb6bda40d80de6",
+      "src/lib/server-commands.ts": "a0671bbad438de9fe8e944df55acaea9",
+      "src/lib/server-ops.functions.ts": "6736534ad16b46466792d965ea2ebb1e",
+      "src/lib/servers.functions.ts": "4cc693afeec5b2d09b78d0812977ada4",
+      "src/lib/supabase-import.functions.ts": "367d4ead15b4b1c3795296a48c89f441",
+      "src/lib/themes.ts": "0f457935078509c9e7499b53e9f19f87",
+      "src/lib/utils.ts": "d9837f38cc05303254571985e3164050",
+      "src/lib/video-studio.functions.ts": "3333140416bca944306cb26980a879e1",
+      "src/routeTree.gen.ts": "af7f3682c91743a8b7678c16c2ae21fa",
+      "src/router.tsx": "8f905e713b0eba7fa8148b7995a708c9",
+      "src/routes/README.md": "7f49cf3bb7558aa775fd62140a37b175",
+      "src/routes/[.]lovable.oauth.consent.tsx": "5a15223326a2792a090022dfa5a48615",
+      "src/routes/[.mcp]/invoke-tool/$tool.ts": "2cc296128352d61d70726e7428ef5ca5",
+      "src/routes/[.mcp]/list-tools.ts": "bc1d258eb3237605d066b9a536a63d5d",
+      "src/routes/[.well-known]/oauth-protected-resource.ts": "2dbcc907a7d3ab43955e6dbbb99e7a1d",
+      "src/routes/__root.tsx": "dab2ff526f38a8b085ad42188fac1008",
+      "src/routes/_authenticated.tsx": "72d37c1bddbd6f613267f0d78ae3adf6",
+      "src/routes/_authenticated/activity.tsx": "9e1f23393a8d064245c72c19511761cf",
+      "src/routes/_authenticated/ai-chat.tsx": "db3a0d236a472e882488b996ea380c04",
+      "src/routes/_authenticated/ai-connect.tsx": "0bab36e454a87457db7178d9cf61244e",
+      "src/routes/_authenticated/ai-models.tsx": "21765119e3a225ef8a88c4b5b79fa5ac",
+      "src/routes/_authenticated/ai-tests.tsx": "39d5a492710c7dccbab3e3d323df4519",
+      "src/routes/_authenticated/apk-manager.tsx": "c1a2e602e5dd55fe417202e2cd302666",
+      "src/routes/_authenticated/audit.tsx": "fccbae56c723e65eac8cee70185c07cc",
+      "src/routes/_authenticated/backups.tsx": "8984411063b039fa6a7f073afc18281f",
+      "src/routes/_authenticated/certificates.tsx": "aea8056c54efc669c66c4f8fe6ca9d3e",
+      "src/routes/_authenticated/clients.tsx": "17fa665aec8dc34b9d42fa637f658dde",
+      "src/routes/_authenticated/core-hub.tsx": "237794ffa22c67369fb9d2782fdfa9c9",
+      "src/routes/_authenticated/dashboard.tsx": "93680248b5d45d0527743a54afdf7076",
+      "src/routes/_authenticated/domains.tsx": "5c1e2ec6306d5f9e1391f8c3c5ddb846",
+      "src/routes/_authenticated/editor.ai.tsx": "46fcbac8fbc6cf8c41271a8a2c625626",
+      "src/routes/_authenticated/editor.bulk.tsx": "c59dcf62444ca5295481e589e70d886d",
+      "src/routes/_authenticated/editor.content.tsx": "0dec3e04c824bd9b092bf2a3cc86f4c7",
+      "src/routes/_authenticated/editor.design.tsx": "2a4a46d07990d4ce4d1ff521c064edce",
+      "src/routes/_authenticated/editor.dns.tsx": "70a9de3f7fa5ff64c349d28e38d424f3",
+      "src/routes/_authenticated/editor.general.tsx": "64dfb8d583c4dbc9f136e165e4550d97",
+      "src/routes/_authenticated/editor.index.tsx": "71a5f3b7922310604a570c64ad7ef8b9",
+      "src/routes/_authenticated/editor.modes.tsx": "ae095fb7955ca624ec74fa208c30a0ea",
+      "src/routes/_authenticated/editor.scripts.tsx": "6ba0d6f6d703a2558cf8a92cf5d6a648",
+      "src/routes/_authenticated/editor.security.tsx": "e6895f10787c16ce78222087d49f0da2",
+      "src/routes/_authenticated/editor.seo.tsx": "99e9587e058242126f330757f8a901b6",
+      "src/routes/_authenticated/editor.social.tsx": "6c2d21e8979bc6b7c4afe4c4c2f7f518",
+      "src/routes/_authenticated/editor.subscriptions.tsx": "2271764b53f2dabd3c27789e40d4ddfc",
+      "src/routes/_authenticated/editor.tsx": "f4bf66fa846ea77e852ad3cf7ed414c9",
+      "src/routes/_authenticated/editor.users.tsx": "129dde2f728d112553d0057637c377c3",
+      "src/routes/_authenticated/environment.tsx": "72167fbea3bba3248ec8eac43f7acdbb",
+      "src/routes/_authenticated/groups.tsx": "83fc677465a33f6cbf6c3949d0d913b0",
+      "src/routes/_authenticated/integrations.tsx": "647978fb21eb2fa80932b322f4130006",
+      "src/routes/_authenticated/jobs.tsx": "8ab60e15fd9772e2b2f3426f6792ceed",
+      "src/routes/_authenticated/monitoring.tsx": "6498d7014595e20d424f2e2d9d34f719",
+      "src/routes/_authenticated/network.tsx": "d4e37d2464812d32dcf91aefbadf0332",
+      "src/routes/_authenticated/notifications.tsx": "feff607e77333536844795232d23d839",
+      "src/routes/_authenticated/operations.tsx": "7753f780e4e2c3d88471c3d6b85da0a5",
+      "src/routes/_authenticated/payment-providers.tsx": "66a710a207387e4a6da184317b528292",
+      "src/routes/_authenticated/payments-hub.tsx": "cabc894592e089972625bac0a4854a3c",
+      "src/routes/_authenticated/recovery.tsx": "e208722fafc55563f8095b338465dfa6",
+      "src/routes/_authenticated/reports.tsx": "a6db354ff5356ddcef744a9b1b0751fd",
+      "src/routes/_authenticated/servers.tsx": "4e1855afdddf8ec9d6d28a0a4af7ba3d",
+      "src/routes/_authenticated/services.tsx": "883f249a3c7b24c09c2407173775454e",
+      "src/routes/_authenticated/settings.notifications.tsx": "52e1a08860f4d29c4a712a1539105678",
+      "src/routes/_authenticated/settings.tsx": "8eaa268038a76fda150abae5cd30a861",
+      "src/routes/_authenticated/ssl.tsx": "42551f11048fbb452e9e63481dac1349",
+      "src/routes/_authenticated/subscriptions.tsx": "7bc1adc9195535298233b39be1d85e64",
+      "src/routes/_authenticated/templates.tsx": "ca6e9ffe363f4ad8e3b7ca99bb655ac9",
+      "src/routes/_authenticated/users.tsx": "849174b431bcf26f2bb09e72782edaf0",
+      "src/routes/_authenticated/vault.tsx": "5718c8b19baf1ee6cec13f20d836177e",
+      "src/routes/_authenticated/video-studio.tsx": "1dcdd344e9a4207ed062fb687dded0bb",
+      "src/routes/_authenticated/websites.tsx": "6228d5e40a61a1ea1eb8b7a346ca7c79",
+      "src/routes/api/public/backups/run-due.ts": "00d12ae950f26980a4dfa7d31fed5faf",
+      "src/routes/api/public/core.ingest.ts": "fcccf653d401daf82f1fb603e18077ea",
+      "src/routes/api/public/hn-rls.verify.ts": "d9fc7870a4e1c0d0acc2d03ebe637ddc",
+      "src/routes/api/public/hooks/health-check.ts": "9dcaef8a5f1118115d4087622d5052bf",
+      "src/routes/api/public/notifications.ingest.ts": "1a455b4de0222a5037efae7e34bc00fc",
+      "src/routes/api/public/payments.ingest.ts": "2428401a6d6af620042c4e7c801b8312",
+      "src/routes/api/public/servers.agent.ts": "e27f57fdcdcbb42a92d7957189fb3e04",
+      "src/routes/api/public/servers.heartbeat.ts": "cf897c85393c24ae70cf85158aee2d22",
+      "src/routes/api/public/servers/check-alerts.ts": "e2753c8e518421d68aada3a324de77e4",
+      "src/routes/api/public/site-config.ts": "04b97aa4323b06f4f5bf3521c7089b23",
+      "src/routes/api/public/video.ingest.ts": "92aaf83df57a8ead3296387fdd608661",
+      "src/routes/auth.tsx": "221895a1c392770cb7e9ea56f4757d14",
+      "src/routes/index.tsx": "04444a861b7d0d30c493fca679f612e7",
+      "src/routes/mcp.ts": "300ada44271329e833b338d197b2395b",
+      "src/server.ts": "fbc6ebe75c2c10edbbe88119737e2f68",
+      "src/start.ts": "5f68ed421b064a9844dbb117e08f614b",
+      "src/styles.css": "b31c397a0a87558192e876ad7a271231",
+      "supabase/config.toml": "292c31b39ba151215009cebe8b9316cc",
+      "supabase/migrations/20260607132018_31331e64-4ba2-426e-9a65-6410337d29b4.sql": "84a751787f8b9f6adf4d0224624a58c7",
+      "supabase/migrations/20260607132032_c4af2f92-9869-4c8c-ae42-691e335cfbf9.sql": "0ae2f5e80b15b99f02078b3856384b7c",
+      "supabase/migrations/20260607141223_0212211a-058d-4bf0-bdce-396dd4527d12.sql": "1e514c80dff62abd2b281f7526124c4b",
+      "supabase/migrations/20260607150321_2c94bb41-a007-4b27-b4c3-ebfb03e9dfbc.sql": "8663af3d32f670e147b9e5100b9658d3",
+      "supabase/migrations/20260607170111_4d5f2815-bed3-4437-bf22-0323c27b18b0.sql": "bd22f1c9894f4f943b4b6eb33e27b6da",
+      "supabase/migrations/20260607171718_039876b3-12c7-4222-b5be-4812c2fab35f.sql": "75165d77b914b59630accfff33fe9828",
+      "supabase/migrations/20260607175553_418a8724-681d-4c25-93be-4eed0c32752f.sql": "2734f91bad4267db7cf4c83b9d014b5e",
+      "supabase/migrations/20260607175614_5b4dc7bb-53b8-4144-a1b2-105d3a45b361.sql": "116df647342e0a4daa8abf657b5100dc",
+      "supabase/migrations/20260607175626_951d0185-f2c7-45ad-bc96-b03fc555babd.sql": "3b5e722d22d0a6fe2e832544dd9f5c7e",
+      "supabase/migrations/20260607180036_bd016b8f-cc0e-4297-add4-ed327d827196.sql": "a902134b6c3b693e3e60e79894f4e0d5",
+      "supabase/migrations/20260607234211_6cca3c60-e9e3-4d39-a6d3-4ce03515c1a0.sql": "3f860d8fb73559aadde68a70b22865f5",
+      "supabase/migrations/20260609210033_b5b8dce2-0dc7-41a1-8438-670d5da249dd.sql": "86d4dddef2f1360865b164b8c8fc89eb",
+      "supabase/migrations/20260609221036_83072449-52a1-4de2-b928-d1ded5dac7df.sql": "9cf09c690643886613a9efc1a1a21b67",
+      "supabase/migrations/20260712052207_374e02f2-566b-4c30-a8eb-07652248b8e3.sql": "7805c5da07af14ef936359d98b67ae35",
+      "supabase/migrations/20260712063233_be87ff6f-26e5-4c01-b427-c1484eb161b0.sql": "a0788a90433aeb15114ee51df7d78271",
+      "supabase/migrations/20260712063529_bbb683ca-b563-4e26-9ec2-2d28efcd6554.sql": "040831aa9de03f8549e855f5b1abc586",
+      "supabase/migrations/20260712075327_55149592-202b-4143-8bd8-b98026890445.sql": "6c26f24b13f7fb90afbed60c5a1d3080",
+      "supabase/migrations/20260712075824_4e1db0f8-4e4d-4164-bb99-1af6ee9df2dc.sql": "0f2cbc27d2d97bfa195112f7fff8ec5f",
+      "supabase/migrations/20260712080940_60caf644-b1b8-4260-8570-b5f7b2219706.sql": "bf9dc48cfddc420c4912f8ba55888f89",
+      "supabase/migrations/20260712082655_79569145-f9a6-488d-a0bd-a948d15191e0.sql": "8432281d1a856ef8d69d063c41734aac",
+      "supabase/migrations/20260712090224_54f8d0af-ef70-4611-a8da-f36f36290b10.sql": "a6025ee1ca25cc31bf1eddfb45318283",
+      "supabase/migrations/20260712110605_44b35402-990f-48a1-9923-9feee7d0c9dc.sql": "01e07376e24bc7e3865cba819cfa5763",
+      "supabase/migrations/20260712115945_f056da78-ee6b-492f-93ac-e103695565d5.sql": "7d7b231307fe85e9c9ffdcd2cc2cddb9",
+      "supabase/migrations/20260818145307_5f402521-fd91-40c0-88ed-324ffae61d9c.sql": "d9138f0e87c5a2da25d1ad3e5073eef2",
+      "supabase/migrations/20260818203143_8f76cbf2-1b7d-4e4e-a671-27420456daaa.sql": "05ecafb2ac4b109b1792a9a259352590",
+      "supabase/migrations/20260818204600_a1bd3a49-a68c-44d2-a731-429d43891e8e.sql": "61bbfde4a708d04751f240ad31ef9a3b",
+      "supabase/migrations/20260818204638_c8637283-bf28-436f-8371-ad226c8369dc.sql": "180a6a15b7d2798900b4c473502916ef",
+      "supabase/migrations/20260818211619_d473803c-7a8e-4b7f-8d7b-eab386b2339f.sql": "ce302d918e283c8b0ddc282b8461eeed",
+      "supabase/migrations/20260818215015_af2e609a-a284-491f-a844-c8b9411f77f5.sql": "302885611e715bca69d15580427f7199",
+      "supabase/migrations/20260818220855_80f21490-de27-4231-9b77-4feaec5be6b8.sql": "95c5f4fa5b454cdf4b5f2296d7513ec2",
+      "supabase/migrations/20260821040226_da6efad7-5cdf-4c04-afba-43f24d0a343d.sql": "dee00898586566340e2a397d9effd253",
+      "supabase/migrations/20260821041227_49ee50b8-ada9-431c-875e-14b04ea19cb0.sql": "a383e130e815d1b6bc4e86ec0a3284d7",
+      "supabase/migrations/20260821051824_d092b2c4-0f56-4b24-999a-3efd937103be.sql": "271d9400ac11f4c6e77a8adbca3fb7d8",
+      "supabase/migrations/20260821061356_de65d990-68ab-4ff1-a9b7-c6f7acf8e472.sql": "277543bc54093ee5fe6ffdeddadaec2c",
+      "supabase/migrations/20260821061422_a408e4fe-7b7f-479a-9462-224e0d8cc2ef.sql": "8fcaace6d3a274e463ee23335a2425b3",
+      "supabase/migrations/20260822082701_69dc952f-9ec4-432b-a28b-7141495c0cad.sql": "b7be81a0b9a53b1c636782af4bc863a4",
+      "supabase/migrations/20260822084027_ce04b13c-42ea-4df0-b3d5-3bc1740d5be0.sql": "6815a8a273ef384ece3f04d9f33f5a91",
+      "supabase/migrations/20260822084045_efda52bd-0823-461f-95a9-f881d24d8ef8.sql": "fb09fe7686a928947b23b7900d66e41a",
+      "tsconfig.json": "829522627cf7b8e60c7709a715dd35b0",
+      "vite.config.ts": "337cb40643ba3abc2f71a4b19d955283"
+    },
+    "pipeline_version": 8
+  },
+  "tokens": {
+    "color": [
+      {
+        "name": "--background",
+        "raw": "oklch(0.16 0.022 260)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--foreground",
+        "raw": "oklch(0.95 0.01 240)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--card",
+        "raw": "oklch(0.205 0.025 260)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--card-foreground",
+        "raw": "oklch(0.95 0.01 240)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--popover",
+        "raw": "oklch(0.205 0.025 260)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--popover-foreground",
+        "raw": "oklch(0.95 0.01 240)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--primary",
+        "raw": "oklch(0.7 0.18 245)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--primary-foreground",
+        "raw": "oklch(0.1 0.02 250)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--primary-glow",
+        "raw": "oklch(0.82 0.16 220)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--secondary",
+        "raw": "oklch(0.26 0.035 265)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--secondary-foreground",
+        "raw": "oklch(0.95 0.01 240)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--muted",
+        "raw": "oklch(0.24 0.025 260)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--muted-foreground",
+        "raw": "oklch(0.7 0.025 250)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--accent",
+        "raw": "oklch(0.55 0.22 295)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--accent-foreground",
+        "raw": "oklch(0.98 0.005 240)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--destructive",
+        "raw": "oklch(0.65 0.25 25)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--destructive-foreground",
+        "raw": "oklch(0.99 0 0)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--success",
+        "raw": "oklch(0.78 0.2 150)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--success-foreground",
+        "raw": "oklch(0.1 0 0)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--warning",
+        "raw": "oklch(0.78 0.18 60)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--warning-foreground",
+        "raw": "oklch(0.12 0 0)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--border",
+        "raw": "oklch(0.3 0.03 260 / 0.7)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--input",
+        "raw": "oklch(0.24 0.028 260)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--ring",
+        "raw": "oklch(0.7 0.18 245)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--sidebar",
+        "raw": "oklch(0.13 0.02 260)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--sidebar-foreground",
+        "raw": "oklch(0.9 0.012 245)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--sidebar-primary",
+        "raw": "oklch(0.7 0.18 245)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--sidebar-primary-foreground",
+        "raw": "oklch(0.1 0.02 250)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--sidebar-accent",
+        "raw": "oklch(0.22 0.03 265)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--sidebar-accent-foreground",
+        "raw": "oklch(0.96 0.008 240)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--sidebar-border",
+        "raw": "oklch(0.24 0.03 260)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--sidebar-ring",
+        "raw": "oklch(0.7 0.18 245)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--gradient-primary",
+        "raw": "linear-gradient(135deg, oklch(0.7 0.18 245), oklch(0.62 0.2 285))",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--gradient-card",
+        "raw": "linear-gradient(180deg, oklch(0.21 0.025 260), oklch(0.185 0.022 260))",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--neon-glow-primary",
+        "raw": "0 0 18px oklch(0.7 0.18 245 / 0.35)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--neon-glow-accent",
+        "raw": "0 0 18px oklch(0.55 0.22 295 / 0.35)",
+        "source": "src/styles.css"
+      }
+    ],
+    "typography": [
+      {
+        "name": "--font-sans",
+        "raw": "\"Cairo\", \"Tajawal\", system-ui, sans-serif",
+        "source": "src/styles.css"
+      }
+    ],
+    "radius": [
+      {
+        "name": "--radius-sm",
+        "raw": "calc(var(--radius) - 4px)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--radius-md",
+        "raw": "calc(var(--radius) - 2px)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--radius-xl",
+        "raw": "calc(var(--radius) + 4px)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--radius",
+        "raw": "0.75rem",
+        "source": "src/styles.css"
+      }
+    ],
+    "shadow": [
+      {
+        "name": "--shadow-elegant",
+        "raw": "0 0 0 1px oklch(0.7 0.18 245 / 0.15), 0 8px 32px -12px oklch(0.7 0.18 245 / 0.25)",
+        "source": "src/styles.css"
+      },
+      {
+        "name": "--shadow-card",
+        "raw": "0 4px 20px -6px oklch(0.05 0 0 / 0.5)",
+        "source": "src/styles.css"
+      }
+    ]
+  },
+  "components": [
+    {
+      "name": "BulkEditor",
+      "file": "src/components/editor/BulkEditor",
+      "import_path": "",
+      "props": [
+        {
+          "name": "title",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "subtitle",
+          "type": "string"
+        },
+        {
+          "name": "icon",
+          "type": "any",
+          "required": true
+        },
+        {
+          "name": "settingKey",
+          "type": "string",
+          "required": true
+        },
+        {
+          "name": "actionLabel",
+          "type": "string",
+          "default": "تطبيق التغيير"
+        },
+        {
+          "name": "renderForm",
+          "type": "any",
+          "required": true
+        },
+        {
+          "name": "initial",
+          "type": "object"
+        }
+      ]
+    },
+    {
+      "name": "Field",
+      "file": "src/components/editor/BulkEditor",
+      "import_path": ""
+    },
+    {
+      "name": "ColorField",
+      "file": "src/components/editor/BulkEditor",
+      "import_path": ""
+    },
+    {
+      "name": "AppHeader",
+      "file": "src/components/layout/AppHeader",
+      "import_path": ""
+    },
+    {
+      "name": "AppSidebar",
+      "file": "src/components/layout/AppSidebar",
+      "import_path": ""
+    },
+    {
+      "name": "LanguageSwitcher",
+      "file": "src/components/layout/LanguageSwitcher",
+      "import_path": ""
+    },
+    {
+      "name": "NotificationBell",
+      "file": "src/components/layout/NotificationBell",
+      "import_path": ""
+    },
+    {
+      "name": "ThemeSwitcher",
+      "file": "src/components/layout/ThemeSwitcher",
+      "import_path": ""
+    },
+    {
+      "name": "AlertDialog",
+      "file": "src/components/ui/alert-dialog",
+      "import_path": ""
+    },
+    {
+      "name": "AlertDialogPortal",
+      "file": "src/components/ui/alert-dialog",
+      "import_path": ""
+    },
+    {
+      "name": "AlertDialogOverlay",
+      "file": "src/components/ui/alert-dialog",
+      "import_path": ""
+    },
+    {
+      "name": "AlertDialogTrigger",
+      "file": "src/components/ui/alert-dialog",
+      "import_path": ""
+    },
+    {
+      "name": "AlertDialogContent",
+      "file": "src/components/ui/alert-dialog",
+      "import_path": ""
+    },
+    {
+      "name": "AlertDialogHeader",
+      "file": "src/components/ui/alert-dialog",
+      "import_path": ""
+    },
+    {
+      "name": "AlertDialogFooter",
+      "file": "src/components/ui/alert-dialog",
+      "import_path": ""
+    },
+    {
+      "name": "AlertDialogTitle",
+      "file": "src/components/ui/alert-dialog",
+      "import_path": ""
+    },
+    {
+      "name": "AlertDialogDescription",
+      "file": "src/components/ui/alert-dialog",
+      "import_path": ""
+    },
+    {
+      "name": "AlertDialogAction",
+      "file": "src/components/ui/alert-dialog",
+      "import_path": ""
+    },
+    {
+      "name": "AlertDialogCancel",
+      "file": "src/components/ui/alert-dialog",
+      "import_path": ""
+    },
+    {
+      "name": "Badge",
+      "file": "src/components/ui/badge",
+      "import_path": "",
+      "props": [
+        {
+          "name": "variant",
+          "type": "enum",
+          "values": [
+            "default",
+            "secondary",
+            "destructive",
+            "outline"
+          ],
+          "default": "default"
+        }
+      ]
+    },
+    {
+      "name": "Button",
+      "file": "src/components/ui/button",
+      "import_path": "",
+      "props": [
+        {
+          "name": "variant",
+          "type": "enum",
+          "values": [
+            "default",
+            "destructive",
+            "outline",
+            "secondary",
+            "ghost",
+            "link"
+          ],
+          "default": "default"
+        },
+        {
+          "name": "size",
+          "type": "enum",
+          "values": [
+            "default",
+            "sm",
+            "lg",
+            "icon"
+          ],
+          "default": "default"
+        },
+        {
+          "name": "asChild",
+          "type": "boolean",
+          "default": "false"
+        }
+      ]
+    },
+    {
+      "name": "Card",
+      "file": "src/components/ui/card",
+      "import_path": ""
+    },
+    {
+      "name": "CardHeader",
+      "file": "src/components/ui/card",
+      "import_path": ""
+    },
+    {
+      "name": "CardFooter",
+      "file": "src/components/ui/card",
+      "import_path": ""
+    },
+    {
+      "name": "CardTitle",
+      "file": "src/components/ui/card",
+      "import_path": ""
+    },
+    {
+      "name": "CardDescription",
+      "file": "src/components/ui/card",
+      "import_path": ""
+    },
+    {
+      "name": "CardContent",
+      "file": "src/components/ui/card",
+      "import_path": ""
+    },
+    {
+      "name": "Checkbox",
+      "file": "src/components/ui/checkbox",
+      "import_path": ""
+    },
+    {
+      "name": "DropdownMenu",
+      "file": "src/components/ui/dropdown-menu",
+      "import_path": ""
+    },
+    {
+      "name": "DropdownMenuTrigger",
+      "file": "src/components/ui/dropdown-menu",
+      "import_path": ""
+    },
+    {
+      "name": "DropdownMenuContent",
+      "file": "src/components/ui/dropdown-menu",
+      "import_path": ""
+    },
+    {
+      "name": "DropdownMenuItem",
+      "file": "src/components/ui/dropdown-menu",
+      "import_path": ""
+    },
+    {
+      "name": "DropdownMenuCheckboxItem",
+      "file": "src/components/ui/dropdown-menu",
+      "import_path": ""
+    },
+    {
+      "name": "DropdownMenuRadioItem",
+      "file": "src/components/ui/dropdown-menu",
+      "import_path": ""
+    },
+    {
+      "name": "DropdownMenuLabel",
+      "file": "src/components/ui/dropdown-menu",
+      "import_path": ""
+    },
+    {
+      "name": "DropdownMenuSeparator",
+      "file": "src/components/ui/dropdown-menu",
+      "import_path": ""
+    },
+    {
+      "name": "DropdownMenuShortcut",
+      "file": "src/components/ui/dropdown-menu",
+      "import_path": ""
+    },
+    {
+      "name": "DropdownMenuGroup",
+      "file": "src/components/ui/dropdown-menu",
+      "import_path": ""
+    },
+    {
+      "name": "DropdownMenuPortal",
+      "file": "src/components/ui/dropdown-menu",
+      "import_path": ""
+    },
+    {
+      "name": "DropdownMenuSub",
+      "file": "src/components/ui/dropdown-menu",
+      "import_path": ""
+    },
+    {
+      "name": "DropdownMenuSubContent",
+      "file": "src/components/ui/dropdown-menu",
+      "import_path": ""
+    },
+    {
+      "name": "DropdownMenuSubTrigger",
+      "file": "src/components/ui/dropdown-menu",
+      "import_path": ""
+    },
+    {
+      "name": "DropdownMenuRadioGroup",
+      "file": "src/components/ui/dropdown-menu",
+      "import_path": ""
+    },
+    {
+      "name": "Input",
+      "file": "src/components/ui/input",
+      "import_path": ""
+    },
+    {
+      "name": "Label",
+      "file": "src/components/ui/label",
+      "import_path": ""
+    },
+    {
+      "name": "Popover",
+      "file": "src/components/ui/popover",
+      "import_path": ""
+    },
+    {
+      "name": "PopoverTrigger",
+      "file": "src/components/ui/popover",
+      "import_path": ""
+    },
+    {
+      "name": "PopoverContent",
+      "file": "src/components/ui/popover",
+      "import_path": ""
+    },
+    {
+      "name": "PopoverAnchor",
+      "file": "src/components/ui/popover",
+      "import_path": ""
+    },
+    {
+      "name": "ScrollArea",
+      "file": "src/components/ui/scroll-area",
+      "import_path": ""
+    },
+    {
+      "name": "ScrollBar",
+      "file": "src/components/ui/scroll-area",
+      "import_path": ""
+    },
+    {
+      "name": "Select",
+      "file": "src/components/ui/select",
+      "import_path": ""
+    },
+    {
+      "name": "SelectGroup",
+      "file": "src/components/ui/select",
+      "import_path": ""
+    },
+    {
+      "name": "SelectValue",
+      "file": "src/components/ui/select",
+      "import_path": ""
+    },
+    {
+      "name": "SelectTrigger",
+      "file": "src/components/ui/select",
+      "import_path": ""
+    },
+    {
+      "name": "SelectContent",
+      "file": "src/components/ui/select",
+      "import_path": ""
+    },
+    {
+      "name": "SelectLabel",
+      "file": "src/components/ui/select",
+      "import_path": ""
+    },
+    {
+      "name": "SelectItem",
+      "file": "src/components/ui/select",
+      "import_path": ""
+    },
+    {
+      "name": "SelectSeparator",
+      "file": "src/components/ui/select",
+      "import_path": ""
+    },
+    {
+      "name": "SelectScrollUpButton",
+      "file": "src/components/ui/select",
+      "import_path": ""
+    },
+    {
+      "name": "SelectScrollDownButton",
+      "file": "src/components/ui/select",
+      "import_path": ""
+    },
+    {
+      "name": "Separator",
+      "file": "src/components/ui/separator",
+      "import_path": ""
+    },
+    {
+      "name": "Sheet",
+      "file": "src/components/ui/sheet",
+      "import_path": "",
+      "props": [
+        {
+          "name": "side",
+          "type": "enum",
+          "values": [
+            "top",
+            "bottom",
+            "left",
+            "right"
+          ],
+          "default": "right"
+        }
+      ]
+    },
+    {
+      "name": "SheetPortal",
+      "file": "src/components/ui/sheet",
+      "import_path": ""
+    },
+    {
+      "name": "SheetOverlay",
+      "file": "src/components/ui/sheet",
+      "import_path": ""
+    },
+    {
+      "name": "SheetTrigger",
+      "file": "src/components/ui/sheet",
+      "import_path": ""
+    },
+    {
+      "name": "SheetClose",
+      "file": "src/components/ui/sheet",
+      "import_path": ""
+    },
+    {
+      "name": "SheetContent",
+      "file": "src/components/ui/sheet",
+      "import_path": ""
+    },
+    {
+      "name": "SheetHeader",
+      "file": "src/components/ui/sheet",
+      "import_path": ""
+    },
+    {
+      "name": "SheetFooter",
+      "file": "src/components/ui/sheet",
+      "import_path": ""
+    },
+    {
+      "name": "SheetTitle",
+      "file": "src/components/ui/sheet",
+      "import_path": ""
+    },
+    {
+      "name": "SheetDescription",
+      "file": "src/components/ui/sheet",
+      "import_path": ""
+    },
+    {
+      "name": "Sidebar",
+      "file": "src/components/ui/sidebar",
+      "import_path": ""
+    },
+    {
+      "name": "SidebarContent",
+      "file": "src/components/ui/sidebar",
+      "import_path": ""
+    },
+    {
+      "name": "SidebarFooter",
+      "file": "src/components/ui/sidebar",
+      "import_path": ""
+    },
+    {
+      "name": "SidebarGroup",
+      "file": "src/components/ui/sidebar",
+      "import_path": ""
+    },
+    {
+      "name": "SidebarGroupAction",
+      "file": "src/components/ui/sidebar",
+      "import_path": ""
+    },
+    {
+      "name": "SidebarGroupContent",
+      "file": "src/components/ui/sidebar",
+      "import_path": ""
+    },
+    {
+      "name": "SidebarGroupLabel",
+      "file": "src/components/ui/sidebar",
+      "import_path": ""
+    },
+    {
+      "name": "SidebarHeader",
+      "file": "src/components/ui/sidebar",
+      "import_path": ""
+    },
+    {
+      "name": "SidebarInput",
+      "file": "src/components/ui/sidebar",
+      "import_path": ""
+    },
+    {
+      "name": "SidebarInset",
+      "file": "src/components/ui/sidebar",
+      "import_path": ""
+    },
+    {
+      "name": "SidebarMenu",
+      "file": "src/components/ui/sidebar",
+      "import_path": ""
+    },
+    {
+      "name": "SidebarMenuAction",
+      "file": "src/components/ui/sidebar",
+      "import_path": ""
+    },
+    {
+      "name": "SidebarMenuBadge",
+      "file": "src/components/ui/sidebar",
+      "import_path": ""
+    },
+    {
+      "name": "SidebarMenuButton",
+      "file": "src/components/ui/sidebar",
+      "import_path": "",
+      "props": [
+        {
+          "name": "variant",
+          "type": "enum",
+          "values": [
+            "default",
+            "outline"
+          ],
+          "default": "default"
+        },
+        {
+          "name": "size",
+          "type": "enum",
+          "values": [
+            "default",
+            "sm",
+            "lg"
+          ],
+          "default": "default"
+        }
+      ]
+    },
+    {
+      "name": "SidebarMenuItem",
+      "file": "src/components/ui/sidebar",
+      "import_path": ""
+    },
+    {
+      "name": "SidebarMenuSkeleton",
+      "file": "src/components/ui/sidebar",
+      "import_path": ""
+    },
+    {
+      "name": "SidebarMenuSub",
+      "file": "src/components/ui/sidebar",
+      "import_path": ""
+    },
+    {
+      "name": "SidebarMenuSubButton",
+      "file": "src/components/ui/sidebar",
+      "import_path": ""
+    },
+    {
+      "name": "SidebarMenuSubItem",
+      "file": "src/components/ui/sidebar",
+      "import_path": ""
+    },
+    {
+      "name": "SidebarProvider",
+      "file": "src/components/ui/sidebar",
+      "import_path": ""
+    },
+    {
+      "name": "SidebarRail",
+      "file": "src/components/ui/sidebar",
+      "import_path": ""
+    },
+    {
+      "name": "SidebarSeparator",
+      "file": "src/components/ui/sidebar",
+      "import_path": ""
+    },
+    {
+      "name": "SidebarTrigger",
+      "file": "src/components/ui/sidebar",
+      "import_path": ""
+    },
+    {
+      "name": "Skeleton",
+      "file": "src/components/ui/skeleton",
+      "import_path": ""
+    },
+    {
+      "name": "Table",
+      "file": "src/components/ui/table",
+      "import_path": ""
+    },
+    {
+      "name": "TableHeader",
+      "file": "src/components/ui/table",
+      "import_path": ""
+    },
+    {
+      "name": "TableBody",
+      "file": "src/components/ui/table",
+      "import_path": ""
+    },
+    {
+      "name": "TableFooter",
+      "file": "src/components/ui/table",
+      "import_path": ""
+    },
+    {
+      "name": "TableHead",
+      "file": "src/components/ui/table",
+      "import_path": ""
+    },
+    {
+      "name": "TableRow",
+      "file": "src/components/ui/table",
+      "import_path": ""
+    },
+    {
+      "name": "TableCell",
+      "file": "src/components/ui/table",
+      "import_path": ""
+    },
+    {
+      "name": "TableCaption",
+      "file": "src/components/ui/table",
+      "import_path": ""
+    },
+    {
+      "name": "Tooltip",
+      "file": "src/components/ui/tooltip",
+      "import_path": ""
+    },
+    {
+      "name": "TooltipTrigger",
+      "file": "src/components/ui/tooltip",
+      "import_path": ""
+    },
+    {
+      "name": "TooltipContent",
+      "file": "src/components/ui/tooltip",
+      "import_path": ""
+    },
+    {
+      "name": "TooltipProvider",
+      "file": "src/components/ui/tooltip",
+      "import_path": ""
+    },
+    {
+      "name": "LiveBackdrop",
+      "file": "src/components/visual/LiveScene",
+      "import_path": ""
+    },
+    {
+      "name": "Tilt3D",
+      "file": "src/components/visual/LiveScene",
+      "import_path": ""
+    },
+    {
+      "name": "CountUp",
+      "file": "src/components/visual/LiveScene",
+      "import_path": ""
+    },
+    {
+      "name": "Beacon",
+      "file": "src/components/visual/LiveScene",
+      "import_path": ""
+    },
+    {
+      "name": "LivePulse",
+      "file": "src/components/visual/LiveScene",
+      "import_path": ""
+    },
+    {
+      "name": "Constants",
+      "file": "src/integrations/supabase/types",
+      "import_path": ""
+    }
+  ]
+}

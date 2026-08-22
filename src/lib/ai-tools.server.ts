@@ -354,7 +354,40 @@ export async function runTool(
         domains_expiring_30d: soon.map((d: any) => ({ domain: d.domain, expires_at: d.expires_at })),
       };
     }
+    case "list_tasks": {
+      let q = sb
+        .from("ai_tasks")
+        .select("id, title, instructions, status, priority, file_paths, server_id, website_id, result, created_at")
+        .order("created_at", { ascending: false })
+        .limit(Math.min(Number(args.limit) || 30, 100));
+      if (args.status) q = q.eq("status", args.status);
+      const { data, error } = await q;
+      return error ? { error: error.message } : { tasks: data };
+    }
+    case "create_task": {
+      const { data, error } = await sb
+        .from("ai_tasks")
+        .insert({
+          owner_id: userId,
+          title: args.title,
+          instructions: args.instructions ?? "",
+          file_paths: Array.isArray(args.file_paths) ? args.file_paths : [],
+          server_id: args.server_id ?? opts?.serverId ?? null,
+          website_id: args.website_id ?? opts?.websiteId ?? null,
+          priority: Number(args.priority) || 2,
+        })
+        .select("id, title, status")
+        .maybeSingle();
+      return error ? { error: error.message } : { task: data };
+    }
+    case "update_task": {
+      const patch: Record<string, unknown> = {};
+      for (const k of ["status", "result", "instructions"]) if (args[k] !== undefined) patch[k] = args[k];
+      const { error } = await sb.from("ai_tasks").update(patch).eq("id", args.id);
+      return error ? { error: error.message } : { ok: true, updated: patch };
+    }
     default:
+
       return { error: "غير مدعوم" };
   }
 }

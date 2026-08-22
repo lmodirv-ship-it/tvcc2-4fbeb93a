@@ -274,7 +274,7 @@ const PERMISSIONS: { label: string; owner: boolean; admin: boolean; editor: bool
   { label: "حذف المواقع (188 موقعاً)", owner: true, admin: false, editor: false, viewer: false },
   { label: "حذف السيرفرات", owner: true, admin: false, editor: false, viewer: false },
   { label: "قراءة قيم الخزنة بصريح النص", owner: true, admin: false, editor: false, viewer: false },
-  { label: "منح الأدوار ودعوة الأعضاء", owner: true, admin: false, editor: false, viewer: false },
+  { label: "منح الأدوار ودعوة الأعضاء (عدا دور المالك)", owner: true, admin: true, editor: false, viewer: false },
 ];
 
 function Mark({ on }: { on: boolean }) {

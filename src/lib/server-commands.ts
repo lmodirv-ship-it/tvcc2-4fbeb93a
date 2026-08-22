@@ -22,6 +22,14 @@ export const COMMAND_WHITELIST = [
   "storage_usage",
   "site_dir",
   "issue_ssl",
+  "port_check",
+  "port_forward",
+  "ai_models_list",
+  "ollama_start",
+  "ollama_stop",
+  "ollama_pull",
+  "ollama_rm",
+  "ollama_ps",
 ] as const;
 
 export type CommandAction = (typeof COMMAND_WHITELIST)[number];

@@ -129,11 +129,12 @@ example.hn            server #1 : 3000        منطقة DNS + Nginx        http
 
 ## ترتيب التنفيذ الآمن
 
-1. جداول الباقات والاشتراكات + صفحة `/pricing` وقسم الخدمات في الصفحة الرسمية.
-2. نظام المستأجرين والعزل بـ RLS (tenant_id + سياسات storage).
-3. التخزين والحصص وقياس الاستهلاك.
-4. نطاقات ‎.HN‎ وربطها بـ TVCC Agent.
-5. بوابة HTTPS العامة لـ Supabase (Reverse Proxy + WebSocket + نفق WireGuard).
-6. النسخ والاستعادة.
-7. الدفع الآلي.
-8. Supabase Stack مستقل وFailover للباقات الكبيرة.
+1. جداول الباقات والاشتراكات والأدوار (`servers.role`, `subscription_servers`, `file_replicas`) + صفحة `/pricing` وقسم الخدمات.
+2. لوحة المدير `/subscriptions` (منح الخوادم والنطاقات فعلياً) + صفحة المشترك `/my-hosting`.
+3. نظام المستأجرين والعزل بـ RLS (tenant_id + سياسات storage).
+4. التخزين والحصص وقياس الاستهلاك + قاعدة الثلاث نسخ.
+5. نطاقات ‎.HN‎ وربطها بـ TVCC Agent ونشرها عامّاً.
+6. بوابة HTTPS العامة لـ Supabase (Reverse Proxy + WebSocket + نفق WireGuard).
+7. النسخ والاستعادة والمراقبة (سيرفر 8 و9).
+8. الدفع الآلي.
+9. Supabase Stack مستقل وFailover للباقات الكبيرة + مساعدة النماذج المحلية.

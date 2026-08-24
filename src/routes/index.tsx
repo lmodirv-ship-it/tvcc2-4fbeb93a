@@ -35,6 +35,13 @@ function LandingPage() {
     queryFn: async () => (await supabase.from("brand_settings").select("*").maybeSingle()).data,
   });
 
+  const { data: plans } = useQuery({
+    queryKey: ["landing-plans"],
+    queryFn: async () =>
+      (await supabase.from("hosting_plans").select("*").eq("is_active", true).order("price_monthly", { ascending: true })).data ?? [],
+  });
+
+
   const logo = brand?.logo_url || tvccLogo.url;
   const name = brand?.name || "TVCC";
   const tagline = brand?.tagline || "SECURE • VERIFY • PROTECT";

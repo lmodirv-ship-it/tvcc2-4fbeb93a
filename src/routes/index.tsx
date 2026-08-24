@@ -6,5 +6,5 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Globe, Shield, Bell, Zap, Database, HardDrive,
-  Activity, Layers, ArrowLeft, CheckCircle2, Sparkles, Users, BookOpen,
+  Activity, Layers, ArrowLeft, CheckCircle2, Sparkles, Users, BookOpen, Cloud,
 }

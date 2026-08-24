@@ -41,17 +41,16 @@ function CheckoutPage() {
       (await supabase.from("hosting_plans").select("*").eq("id", planId).maybeSingle()).data as any,
   });
 
+  const loadAccount = useServerFn(getCheckoutPaymentAccount);
   const { data: account, isLoading } = useQuery({
     queryKey: ["payment-account-default"],
     queryFn: async () => {
-      const { data } = await supabase
-        .from("payment_accounts")
-        .select("*")
-        .eq("is_active", true)
-        .order("is_default", { ascending: false })
-        .limit(1)
-        .maybeSingle();
-      return data as any;
+      try {
+        const r: any = await loadAccount({});
+        return r?.account ?? null;
+      } catch {
+        return null;
+      }
     },
   });
 

@@ -67,6 +67,10 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1" },
+      { name: "theme-color", content: "#0b1120" },
+      { name: "mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-capable", content: "yes" },
+      { name: "apple-mobile-web-app-title", content: "TVCC" },
       { title: "TVCC — مركز قيادة المواقع" },
       { name: "description", content: "منصة موحّدة لإدارة جميع مشاريعك ومواقعك، مراقبة SSL والدومينات والتنبيهات من لوحة واحدة." },
       { property: "og:title", content: "TVCC — مركز قيادة المواقع" },
@@ -113,6 +117,12 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+
+  useEffect(() => {
+    if ("serviceWorker" in navigator && window.location.protocol === "https:") {
+      navigator.serviceWorker.register("/sw.js").catch(() => {});
+    }
+  }, []);
 
   useEffect(() => {
     import("@/i18n").then(({ applyDirection, default: i18n }) => {

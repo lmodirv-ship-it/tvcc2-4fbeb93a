@@ -90,7 +90,8 @@
     "network": "Server Mesh",
     "hn_domains": ".HN Domains",
     "my_hosting": "My Hosting",
-    "hosting": "Hosting Admin"
+    "hosting": "Hosting Admin",
+    "payment_accounts": "Payment Accounts"
   },
   "dashboard": {
     "title": "Dashboard",

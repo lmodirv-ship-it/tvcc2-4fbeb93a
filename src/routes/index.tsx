@@ -38,7 +38,7 @@ function LandingPage() {
   const { data: plans } = useQuery({
     queryKey: ["landing-plans"],
     queryFn: async () =>
-      (await supabase.from("hosting_plans").select("*").eq("is_active", true).order("price_monthly", { ascending: true })).data ?? [],
+      (await supabase.from("hosting_plans").select("*").eq("is_visible", true).order("sort_order", { ascending: true })).data ?? [],
   });
 
 

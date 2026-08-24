@@ -2323,6 +2323,13 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "payment_orders_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "public_payment_methods"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "payment_orders_plan_id_fkey"
             columns: ["plan_id"]
             isOneToOne: false
@@ -4968,7 +4975,33 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      public_payment_methods: {
+        Row: {
+          currency: string | null
+          gateway_url: string | null
+          id: string | null
+          is_default: boolean | null
+          kind: string | null
+          label: string | null
+        }
+        Insert: {
+          currency?: string | null
+          gateway_url?: string | null
+          id?: string | null
+          is_default?: boolean | null
+          kind?: string | null
+          label?: string | null
+        }
+        Update: {
+          currency?: string | null
+          gateway_url?: string | null
+          id?: string | null
+          is_default?: boolean | null
+          kind?: string | null
+          label?: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       can_manage: { Args: { _owner: string }; Returns: boolean }

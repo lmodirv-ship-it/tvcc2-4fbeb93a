@@ -2142,6 +2142,66 @@ export type Database = {
           },
         ]
       }
+      payment_accounts: {
+        Row: {
+          account_number: string | null
+          bank_name: string | null
+          created_at: string
+          currency: string
+          gateway_url: string | null
+          holder: string | null
+          iban: string | null
+          id: string
+          is_active: boolean
+          is_default: boolean
+          kind: string
+          label: string
+          notes: string | null
+          owner_id: string | null
+          rib: string | null
+          swift: string | null
+          updated_at: string
+        }
+        Insert: {
+          account_number?: string | null
+          bank_name?: string | null
+          created_at?: string
+          currency?: string
+          gateway_url?: string | null
+          holder?: string | null
+          iban?: string | null
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          kind?: string
+          label: string
+          notes?: string | null
+          owner_id?: string | null
+          rib?: string | null
+          swift?: string | null
+          updated_at?: string
+        }
+        Update: {
+          account_number?: string | null
+          bank_name?: string | null
+          created_at?: string
+          currency?: string
+          gateway_url?: string | null
+          holder?: string | null
+          iban?: string | null
+          id?: string
+          is_active?: boolean
+          is_default?: boolean
+          kind?: string
+          label?: string
+          notes?: string | null
+          owner_id?: string | null
+          rib?: string | null
+          swift?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       payment_events: {
         Row: {
           amount: number | null
@@ -2198,6 +2258,78 @@ export type Database = {
           website_id?: string | null
         }
         Relationships: []
+      }
+      payment_orders: {
+        Row: {
+          account_id: string | null
+          amount: number
+          billing_cycle: string
+          buyer_email: string | null
+          buyer_name: string | null
+          created_at: string
+          currency: string
+          id: string
+          method: string
+          note: string | null
+          plan_id: string | null
+          plan_name: string
+          reference: string
+          status: string
+          updated_at: string
+          user_id: string | null
+        }
+        Insert: {
+          account_id?: string | null
+          amount?: number
+          billing_cycle?: string
+          buyer_email?: string | null
+          buyer_name?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          method?: string
+          note?: string | null
+          plan_id?: string | null
+          plan_name: string
+          reference?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Update: {
+          account_id?: string | null
+          amount?: number
+          billing_cycle?: string
+          buyer_email?: string | null
+          buyer_name?: string | null
+          created_at?: string
+          currency?: string
+          id?: string
+          method?: string
+          note?: string | null
+          plan_id?: string | null
+          plan_name?: string
+          reference?: string
+          status?: string
+          updated_at?: string
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payment_orders_account_id_fkey"
+            columns: ["account_id"]
+            isOneToOne: false
+            referencedRelation: "payment_accounts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "payment_orders_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "hosting_plans"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       port_links: {
         Row: {

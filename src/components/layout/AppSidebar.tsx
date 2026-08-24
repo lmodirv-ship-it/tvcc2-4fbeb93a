@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Globe, Users, CreditCard, UserCog, Activity, Settings,
   Code2, LogOut, Wand2, FolderOpen, LayoutTemplate, Radio, ListChecks, Plug,
   Smartphone, KeyRound, Server, ShieldCheck, BadgeCheck, Bell, FileCog, LifeBuoy, ClipboardCheck,
-  FileBarChart, Wallet, Boxes, Brain, Film, HardDrive, MessageSquare, History, NotebookPen, Archive, Network, Share2, ScrollText, ShieldAlert, GitBranch, Zap, Download, Link2,
+  FileBarChart, Wallet, Boxes, Brain, Film, HardDrive, MessageSquare, History, NotebookPen, Archive, Network, Share2, ScrollText, ShieldAlert, GitBranch, Zap, Download, Link2, Cloud, Globe2,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -50,6 +50,8 @@ const opsItems = [
   { titleKey: "sidebar.deploy", url: "/deploy", icon: GitBranch },
   { titleKey: "sidebar.automation", url: "/automation", icon: Zap },
   { titleKey: "sidebar.domains", url: "/domains", icon: Server },
+  { titleKey: "sidebar.hn_domains", url: "/hn-domains", icon: Globe2 },
+  { titleKey: "sidebar.my_hosting", url: "/my-hosting", icon: Cloud },
   { titleKey: "sidebar.ssl", url: "/ssl", icon: ShieldCheck },
   { titleKey: "sidebar.certificates", url: "/certificates", icon: BadgeCheck },
   { titleKey: "sidebar.notifications", url: "/notifications", icon: Bell },
@@ -65,6 +67,7 @@ const adminItems = [
   { titleKey: "sidebar.clients", url: "/clients", icon: Users },
   { titleKey: "sidebar.users", url: "/users", icon: UserCog },
   { titleKey: "sidebar.subscriptions", url: "/subscriptions", icon: CreditCard },
+  { titleKey: "sidebar.hosting", url: "/hosting", icon: Cloud },
   { titleKey: "sidebar.payment_providers", url: "/payment-providers", icon: Wallet },
   { titleKey: "sidebar.payments_hub", url: "/payments-hub", icon: Wallet },
   { titleKey: "sidebar.audit", url: "/audit", icon: ClipboardCheck },

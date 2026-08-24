@@ -6,7 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import {
   Globe, Shield, Bell, Zap, Database, HardDrive,
-  Activity, Layers, ArrowLeft, CheckCircle2, Sparkles, Users, BookOpen,
+  Activity, Layers, ArrowLeft, CheckCircle2, Sparkles, Users, BookOpen, Cloud,
 } from "lucide-react";
 import { PublicNav } from "@/components/site/PublicNav";
 import { LiveBackdrop, Tilt3D } from "@/components/visual/LiveScene";
@@ -89,6 +89,9 @@ function LandingPage() {
             >
               {signedIn ? "افتح لوحة التحكم" : "ابدأ مجاناً"}
               <ArrowLeft className="w-5 h-5 mr-2" />
+            </Button>
+            <Button size="lg" variant="outline" className="text-base px-8 rounded-xl hover:-translate-y-0.5 transition gap-2" asChild>
+              <Link to="/pricing"><Cloud className="w-5 h-5" /> الباقات والاستضافة</Link>
             </Button>
             <Button size="lg" variant="outline" className="text-base px-8 rounded-xl hover:-translate-y-0.5 transition gap-2" asChild>
               <Link to="/blog"><BookOpen className="w-5 h-5" /> المدونة</Link>
@@ -186,6 +189,7 @@ function LandingPage() {
           </div>
           <div className="flex gap-6">
             <Link to="/auth" className="hover:text-foreground">دخول</Link>
+            <Link to="/pricing" className="hover:text-foreground">الباقات</Link>
             <Link to="/blog" className="hover:text-foreground">المدونة</Link>
             <a href="#features" className="hover:text-foreground">المزايا</a>
           </div>

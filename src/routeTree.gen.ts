@@ -9,6 +9,7 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
@@ -33,10 +34,13 @@ import { Route as AuthenticatedPaymentProvidersRouteImport } from './routes/_aut
 import { Route as AuthenticatedOperationsRouteImport } from './routes/_authenticated/operations'
 import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authenticated/notifications'
 import { Route as AuthenticatedNetworkRouteImport } from './routes/_authenticated/network'
+import { Route as AuthenticatedMyHostingRouteImport } from './routes/_authenticated/my-hosting'
 import { Route as AuthenticatedMonitoringRouteImport } from './routes/_authenticated/monitoring'
 import { Route as AuthenticatedLogsRouteImport } from './routes/_authenticated/logs'
 import { Route as AuthenticatedJobsRouteImport } from './routes/_authenticated/jobs'
 import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authenticated/integrations'
+import { Route as AuthenticatedHostingRouteImport } from './routes/_authenticated/hosting'
+import { Route as AuthenticatedHnDomainsRouteImport } from './routes/_authenticated/hn-domains'
 import { Route as AuthenticatedGroupsRouteImport } from './routes/_authenticated/groups'
 import { Route as AuthenticatedFailoverRouteImport } from './routes/_authenticated/failover'
 import { Route as AuthenticatedEnvironmentRouteImport } from './routes/_authenticated/environment'
@@ -90,6 +94,11 @@ import { Route as ApiPublicHnRlsVerifyRouteImport } from './routes/api/public/hn
 import { Route as ApiPublicCoreIngestRouteImport } from './routes/api/public/core.ingest'
 import { Route as ApiPublicBackupsRunDueRouteImport } from './routes/api/public/backups/run-due'
 
+const PricingRoute = PricingRouteImport.update({
+  id: '/pricing',
+  path: '/pricing',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
@@ -214,6 +223,11 @@ const AuthenticatedNetworkRoute = AuthenticatedNetworkRouteImport.update({
   path: '/network',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedMyHostingRoute = AuthenticatedMyHostingRouteImport.update({
+  id: '/my-hosting',
+  path: '/my-hosting',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedMonitoringRoute = AuthenticatedMonitoringRouteImport.update({
   id: '/monitoring',
   path: '/monitoring',
@@ -235,6 +249,16 @@ const AuthenticatedIntegrationsRoute =
     path: '/integrations',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedHostingRoute = AuthenticatedHostingRouteImport.update({
+  id: '/hosting',
+  path: '/hosting',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedHnDomainsRoute = AuthenticatedHnDomainsRouteImport.update({
+  id: '/hn-domains',
+  path: '/hn-domains',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedGroupsRoute = AuthenticatedGroupsRouteImport.update({
   id: '/groups',
   path: '/groups',
@@ -521,6 +545,7 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/mcp': typeof McpRoute
+  '/pricing': typeof PricingRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/activity': typeof AuthenticatedActivityRoute
@@ -545,10 +570,13 @@ export interface FileRoutesByFullPath {
   '/environment': typeof AuthenticatedEnvironmentRoute
   '/failover': typeof AuthenticatedFailoverRoute
   '/groups': typeof AuthenticatedGroupsRoute
+  '/hn-domains': typeof AuthenticatedHnDomainsRoute
+  '/hosting': typeof AuthenticatedHostingRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/jobs': typeof AuthenticatedJobsRoute
   '/logs': typeof AuthenticatedLogsRoute
   '/monitoring': typeof AuthenticatedMonitoringRoute
+  '/my-hosting': typeof AuthenticatedMyHostingRoute
   '/network': typeof AuthenticatedNetworkRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/operations': typeof AuthenticatedOperationsRoute
@@ -602,6 +630,7 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/mcp': typeof McpRoute
+  '/pricing': typeof PricingRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/activity': typeof AuthenticatedActivityRoute
@@ -625,10 +654,13 @@ export interface FileRoutesByTo {
   '/environment': typeof AuthenticatedEnvironmentRoute
   '/failover': typeof AuthenticatedFailoverRoute
   '/groups': typeof AuthenticatedGroupsRoute
+  '/hn-domains': typeof AuthenticatedHnDomainsRoute
+  '/hosting': typeof AuthenticatedHostingRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/jobs': typeof AuthenticatedJobsRoute
   '/logs': typeof AuthenticatedLogsRoute
   '/monitoring': typeof AuthenticatedMonitoringRoute
+  '/my-hosting': typeof AuthenticatedMyHostingRoute
   '/network': typeof AuthenticatedNetworkRoute
   '/notifications': typeof AuthenticatedNotificationsRoute
   '/operations': typeof AuthenticatedOperationsRoute
@@ -684,6 +716,7 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteWithChildren
   '/auth': typeof AuthRoute
   '/mcp': typeof McpRoute
+  '/pricing': typeof PricingRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
   '/.well-known/oauth-protected-resource': typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   '/_authenticated/activity': typeof AuthenticatedActivityRoute
@@ -708,10 +741,13 @@ export interface FileRoutesById {
   '/_authenticated/environment': typeof AuthenticatedEnvironmentRoute
   '/_authenticated/failover': typeof AuthenticatedFailoverRoute
   '/_authenticated/groups': typeof AuthenticatedGroupsRoute
+  '/_authenticated/hn-domains': typeof AuthenticatedHnDomainsRoute
+  '/_authenticated/hosting': typeof AuthenticatedHostingRoute
   '/_authenticated/integrations': typeof AuthenticatedIntegrationsRoute
   '/_authenticated/jobs': typeof AuthenticatedJobsRoute
   '/_authenticated/logs': typeof AuthenticatedLogsRoute
   '/_authenticated/monitoring': typeof AuthenticatedMonitoringRoute
+  '/_authenticated/my-hosting': typeof AuthenticatedMyHostingRoute
   '/_authenticated/network': typeof AuthenticatedNetworkRoute
   '/_authenticated/notifications': typeof AuthenticatedNotificationsRoute
   '/_authenticated/operations': typeof AuthenticatedOperationsRoute
@@ -767,6 +803,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/mcp'
+    | '/pricing'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/activity'
@@ -791,10 +828,13 @@ export interface FileRouteTypes {
     | '/environment'
     | '/failover'
     | '/groups'
+    | '/hn-domains'
+    | '/hosting'
     | '/integrations'
     | '/jobs'
     | '/logs'
     | '/monitoring'
+    | '/my-hosting'
     | '/network'
     | '/notifications'
     | '/operations'
@@ -848,6 +888,7 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/mcp'
+    | '/pricing'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/activity'
@@ -871,10 +912,13 @@ export interface FileRouteTypes {
     | '/environment'
     | '/failover'
     | '/groups'
+    | '/hn-domains'
+    | '/hosting'
     | '/integrations'
     | '/jobs'
     | '/logs'
     | '/monitoring'
+    | '/my-hosting'
     | '/network'
     | '/notifications'
     | '/operations'
@@ -929,6 +973,7 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/mcp'
+    | '/pricing'
     | '/.mcp/list-tools'
     | '/.well-known/oauth-protected-resource'
     | '/_authenticated/activity'
@@ -953,10 +998,13 @@ export interface FileRouteTypes {
     | '/_authenticated/environment'
     | '/_authenticated/failover'
     | '/_authenticated/groups'
+    | '/_authenticated/hn-domains'
+    | '/_authenticated/hosting'
     | '/_authenticated/integrations'
     | '/_authenticated/jobs'
     | '/_authenticated/logs'
     | '/_authenticated/monitoring'
+    | '/_authenticated/my-hosting'
     | '/_authenticated/network'
     | '/_authenticated/notifications'
     | '/_authenticated/operations'
@@ -1012,6 +1060,7 @@ export interface RootRouteChildren {
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
   AuthRoute: typeof AuthRoute
   McpRoute: typeof McpRoute
+  PricingRoute: typeof PricingRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
   Char91DotwellKnownChar93OauthProtectedResourceRoute: typeof Char91DotwellKnownChar93OauthProtectedResourceRoute
   BlogSlugRoute: typeof BlogSlugRoute
@@ -1033,6 +1082,13 @@ export interface RootRouteChildren {
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/pricing': {
+      id: '/pricing'
+      path: '/pricing'
+      fullPath: '/pricing'
+      preLoaderRoute: typeof PricingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/mcp': {
       id: '/mcp'
       path: '/mcp'
@@ -1201,6 +1257,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedNetworkRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/my-hosting': {
+      id: '/_authenticated/my-hosting'
+      path: '/my-hosting'
+      fullPath: '/my-hosting'
+      preLoaderRoute: typeof AuthenticatedMyHostingRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/monitoring': {
       id: '/_authenticated/monitoring'
       path: '/monitoring'
@@ -1227,6 +1290,20 @@ declare module '@tanstack/react-router' {
       path: '/integrations'
       fullPath: '/integrations'
       preLoaderRoute: typeof AuthenticatedIntegrationsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/hosting': {
+      id: '/_authenticated/hosting'
+      path: '/hosting'
+      fullPath: '/hosting'
+      preLoaderRoute: typeof AuthenticatedHostingRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/hn-domains': {
+      id: '/_authenticated/hn-domains'
+      path: '/hn-domains'
+      fullPath: '/hn-domains'
+      preLoaderRoute: typeof AuthenticatedHnDomainsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/groups': {
@@ -1670,10 +1747,13 @@ interface AuthenticatedRouteChildren {
   AuthenticatedEnvironmentRoute: typeof AuthenticatedEnvironmentRoute
   AuthenticatedFailoverRoute: typeof AuthenticatedFailoverRoute
   AuthenticatedGroupsRoute: typeof AuthenticatedGroupsRoute
+  AuthenticatedHnDomainsRoute: typeof AuthenticatedHnDomainsRoute
+  AuthenticatedHostingRoute: typeof AuthenticatedHostingRoute
   AuthenticatedIntegrationsRoute: typeof AuthenticatedIntegrationsRoute
   AuthenticatedJobsRoute: typeof AuthenticatedJobsRoute
   AuthenticatedLogsRoute: typeof AuthenticatedLogsRoute
   AuthenticatedMonitoringRoute: typeof AuthenticatedMonitoringRoute
+  AuthenticatedMyHostingRoute: typeof AuthenticatedMyHostingRoute
   AuthenticatedNetworkRoute: typeof AuthenticatedNetworkRoute
   AuthenticatedNotificationsRoute: typeof AuthenticatedNotificationsRoute
   AuthenticatedOperationsRoute: typeof AuthenticatedOperationsRoute
@@ -1717,10 +1797,13 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedEnvironmentRoute: AuthenticatedEnvironmentRoute,
   AuthenticatedFailoverRoute: AuthenticatedFailoverRoute,
   AuthenticatedGroupsRoute: AuthenticatedGroupsRoute,
+  AuthenticatedHnDomainsRoute: AuthenticatedHnDomainsRoute,
+  AuthenticatedHostingRoute: AuthenticatedHostingRoute,
   AuthenticatedIntegrationsRoute: AuthenticatedIntegrationsRoute,
   AuthenticatedJobsRoute: AuthenticatedJobsRoute,
   AuthenticatedLogsRoute: AuthenticatedLogsRoute,
   AuthenticatedMonitoringRoute: AuthenticatedMonitoringRoute,
+  AuthenticatedMyHostingRoute: AuthenticatedMyHostingRoute,
   AuthenticatedNetworkRoute: AuthenticatedNetworkRoute,
   AuthenticatedNotificationsRoute: AuthenticatedNotificationsRoute,
   AuthenticatedOperationsRoute: AuthenticatedOperationsRoute,
@@ -1750,6 +1833,7 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
   AuthRoute: AuthRoute,
   McpRoute: McpRoute,
+  PricingRoute: PricingRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,
   Char91DotwellKnownChar93OauthProtectedResourceRoute:
     Char91DotwellKnownChar93OauthProtectedResourceRoute,

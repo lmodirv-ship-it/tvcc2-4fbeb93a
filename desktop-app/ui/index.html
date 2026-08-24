@@ -2,9 +2,49 @@
 <html lang="ar" dir="rtl">
   <head>
     <meta charset="utf-8" />
-    <title>TVCC</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>TVCC — ربط النطاق</title>
+    <style>
+      :root { color-scheme: dark; }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0; min-height: 100vh; display: grid; place-items: center;
+        background: radial-gradient(1200px 600px at 50% -10%, #123 0%, #0b1120 60%);
+        color: #e6edf7; font-family: system-ui, "Segoe UI", Tahoma, sans-serif;
+      }
+      .card { width: min(420px, 92vw); background: #0f1729; border: 1px solid #1e2a44; border-radius: 16px; padding: 24px; }
+      h1 { margin: 0 0 4px; font-size: 20px; }
+      p { margin: 0 0 16px; color: #94a3b8; font-size: 13px; }
+      input { width: 100%; padding: 10px 12px; border-radius: 10px; border: 1px solid #24314f; background: #0b1120; color: #e6edf7; direction: ltr; font-family: ui-monospace, monospace; }
+      button { width: 100%; margin-top: 12px; padding: 11px; border: 0; border-radius: 10px; background: #10b981; color: #04231a; font-weight: 700; cursor: pointer; }
+      button.ghost { background: transparent; color: #94a3b8; border: 1px solid #24314f; margin-top: 8px; font-weight: 500; }
+    </style>
   </head>
   <body>
-    <p>جارٍ فتح TVCC…</p>
+    <div class="card">
+      <h1>TVCC</h1>
+      <p>أدخل اسم النطاق الذي تريد فتحه. يُحفظ ويُستعمل تلقائياً في المرات القادمة.</p>
+      <input id="u" placeholder="tvcc.hnpay.live" />
+      <button id="go">ربط وفتح</button>
+      <button class="ghost" id="def">استعمال النطاق الافتراضي</button>
+    </div>
+    <script>
+      var KEY = "tvcc_app_domain";
+      var DEF = "https://tvcc.hnpay.live";
+      var input = document.getElementById("u");
+      input.value = localStorage.getItem(KEY) || DEF;
+      function norm(v) {
+        v = (v || "").trim().replace(/\/+$/, "");
+        if (!v) return DEF;
+        return /^https?:\/\//i.test(v) ? v : "https://" + v;
+      }
+      function open(v) { var u = norm(v); localStorage.setItem(KEY, u); location.replace(u); }
+      document.getElementById("go").onclick = function () { open(input.value); };
+      document.getElementById("def").onclick = function () { open(DEF); };
+      input.addEventListener("keydown", function (e) { if (e.key === "Enter") open(input.value); });
+      // فتح مباشر إذا سبق الربط
+      var saved = localStorage.getItem(KEY);
+      if (saved && !location.search.includes("setup")) location.replace(saved);
+    </script>
   </body>
 </html>

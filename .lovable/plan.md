@@ -72,3 +72,9 @@ example.hn            server #1 : 3000        منطقة DNS + Nginx        http
 - تحديث `src/lib/agent-script.ts` (إصدار 2.8.0) بإجراءات: `hn_dns_install` (تثبيت/تهيئة dnsmasq مرة واحدة)، `hn_domain_publish`، `hn_domain_remove` — مع حراسة الاسم عبر `isSafeDomain` قبل أي كتابة ملف.
 - صفحة `src/routes/_authenticated/hn-domains.tsx` + عنصر في `AppSidebar` بجانب "مدير النطاقات"، مع `head()` خاص بها.
 - أداة MCP `list_hn_domains` لقراءة النطاقات الداخلية من المساعدات الذكية.
+- جداول الاستضافة الجديدة: `hosting_plans` (اسم، سعر شهري/سنوي، حصة تخزين GB، عدد المواقع، عدد النطاقات، هل تشمل قاعدة بيانات محلية، مميزات jsonb، ترتيب، مرئية)، `hosting_subscriptions` (owner_id, website_id, plan_id, status, current_period_end, addons jsonb)، `storage_quotas` (owner_id, website_id, limit_bytes, used_bytes, updated_at)، `local_db_projects` (owner_id, website_id, schema_name, db_user, supabase_url, key_ref → `vault_secrets`, status) — كلها مع GRANT + RLS بسياسات `can_manage(owner_id)`، وقراءة عامة للباقات فقط (`hosting_plans` بسياسة `TO anon` للأعمدة العامة) لعرض التسعير في الصفحة الرسمية.
+- الباقات تُدرج كصفوف حقيقية في الترحيل (migration) لتظهر صفحة التسعير مباشرة.
+- `src/lib/hosting.server.ts` + `src/lib/hosting.functions.ts` (محمية بـ `requireSupabaseAuth`): `subscribePlan`, `provisionHosting`, `getUsage`, `upgradePlan`, `cancelPlan` — الاتصال بـ Supabase الداخلي عبر `SELFHOST_SUPABASE_URL` و`SELFHOST_SUPABASE_SERVICE_KEY` كأسرار خادم (لا تُقرأ إلا داخل الـ handler).
+- التزويد الفعلي (مجلد + quota + مخطط قاعدة + مستخدم) يمر عبر `server_commands` وإجراءات جديدة في الوكيل: `hosting_provision`، `hosting_quota_set`، `hosting_usage_report` (يرفع الاستهلاك دورياً إلى `storage_quotas`).
+- صفحات: `/pricing` عامة (SSR + head خاص + JSON-LD للمنتجات)، وقسم تسعير في `src/routes/index.tsx`، و`/_authenticated/hosting` لإدارة الاشتراك والاستهلاك والترقية.
+- الدفع: يبدأ يدوياً/فاتورة داخلية عبر جدول الاشتراكات الحالي، مع إمكانية تفعيل مزوّد دفع لاحقاً دون تغيير المخطط.

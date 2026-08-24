@@ -80,6 +80,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "icon", type: "image/x-icon", href: "/__l5e/assets-v1/cabd42ee-a07c-45eb-ac0f-021341b6d445/tvcc-logo.jpeg" },
       { rel: "apple-touch-icon", href: "/__l5e/assets-v1/cabd42ee-a07c-45eb-ac0f-021341b6d445/tvcc-logo.jpeg" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },

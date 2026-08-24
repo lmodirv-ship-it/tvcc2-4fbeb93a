@@ -90,7 +90,8 @@
     "network": "شبكة السيرفرات",
     "hn_domains": "نطاقات ‎.HN‎",
     "my_hosting": "استضافتي",
-    "hosting": "إدارة الاستضافة"
+    "hosting": "إدارة الاستضافة",
+    "payment_accounts": "حسابات الدفع"
   },
   "dashboard": {
     "title": "لوحة التحكم",

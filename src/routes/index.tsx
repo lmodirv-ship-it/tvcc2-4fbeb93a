@@ -35,6 +35,13 @@ function LandingPage() {
     queryFn: async () => (await supabase.from("brand_settings").select("*").maybeSingle()).data,
   });
 
+  const { data: plans } = useQuery({
+    queryKey: ["landing-plans"],
+    queryFn: async () =>
+      (await supabase.from("hosting_plans").select("*").eq("is_visible", true).order("sort_order", { ascending: true })).data ?? [],
+  });
+
+
   const logo = brand?.logo_url || tvccLogo.url;
   const name = brand?.name || "TVCC";
   const tagline = brand?.tagline || "SECURE • VERIFY • PROTECT";
@@ -48,12 +55,20 @@ function LandingPage() {
     { icon: Activity, title: "مراقبة الأداء", desc: "Health checks، تقارير، وسجل عمليات كامل." },
   ];
 
+  const services = [
+    { icon: Cloud, title: "استضافة سحابية", desc: "من 2$ شهرياً مع تفعيل فوري" },
+    { icon: Globe, title: "نطاقات ‎.HN‎", desc: "نطاق خاص يعمل على الإنترنت" },
+    { icon: Database, title: "قواعد بيانات معزولة", desc: "عزل كامل وحماية RLS" },
+    { icon: HardDrive, title: "تخزين ونسخ ثلاثي", desc: "نسخ احتياطي على 3 خوادم" },
+  ];
+
   const stats = [
     { label: "مواقع مُدارة", value: "∞" },
     { label: "وقت تشغيل", value: "99.9%" },
     { label: "تكاملات", value: "12+" },
     { label: "لغات", value: "AR · FR · EN" },
   ];
+
 
   return (
     <div className="min-h-screen relative" dir="rtl">
@@ -80,31 +95,93 @@ function LandingPage() {
           <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
             منصة شخصية متكاملة لإدارة كل مشاريعك ومواقعك — المراقبة، الدومينات، SSL، التنبيهات، والتكامل مع HN-DB و HN-Cloud من لوحة واحدة.
           </p>
-          <div className="mt-10 flex items-center justify-center gap-3 flex-wrap">
+          <div className="mt-10 flex flex-col items-center gap-5">
             <Button
               size="lg"
-              className="text-base px-8 rounded-xl shadow-lg hover:-translate-y-0.5 transition"
-              style={{ background: "var(--gradient-primary)" }}
+              className="hn-cta-rainbow text-lg md:text-xl font-bold px-12 py-7 rounded-2xl border-0 hover:-translate-y-1 transition"
+              asChild
+            >
+              <Link to="/pricing">
+                <Sparkles className="w-6 h-6 ml-2" />
+                أنشئ موقعك الآن
+                <ArrowLeft className="w-6 h-6 mr-2" />
+              </Link>
+            </Button>
+
+            <Button
+              size="lg"
+              variant="outline"
+              className="hn-cta-glow text-base md:text-lg font-bold px-14 py-6 rounded-2xl border-2 border-primary/50 hover:-translate-y-0.5 transition"
               onClick={() => navigate({ to: signedIn ? "/dashboard" : "/auth" })}
             >
-              {signedIn ? "افتح لوحة التحكم" : "ابدأ مجاناً"}
-              <ArrowLeft className="w-5 h-5 mr-2" />
+              <Layers className="w-5 h-5 ml-2" />
+              مركز إدارة المواقع
             </Button>
-            <Button size="lg" variant="outline" className="text-base px-8 rounded-xl hover:-translate-y-0.5 transition gap-2" asChild>
-              <Link to="/pricing"><Cloud className="w-5 h-5" /> الباقات والاستضافة</Link>
-            </Button>
-            <Button size="lg" variant="outline" className="text-base px-8 rounded-xl hover:-translate-y-0.5 transition gap-2" asChild>
-              <Link to="/blog"><BookOpen className="w-5 h-5" /> المدونة</Link>
-            </Button>
-            <Button size="lg" variant="ghost" className="text-base px-8 rounded-xl hover:-translate-y-0.5 transition" asChild>
-              <a href="#features">استكشف المزايا</a>
-            </Button>
+
+            <div className="flex items-center justify-center gap-3 flex-wrap">
+              <Button size="sm" variant="outline" className="rounded-xl gap-2" asChild>
+                <Link to="/pricing"><Cloud className="w-4 h-4" /> الباقات والاستضافة</Link>
+              </Button>
+              <Button size="sm" variant="outline" className="rounded-xl gap-2" asChild>
+                <Link to="/blog"><BookOpen className="w-4 h-4" /> المدونة</Link>
+              </Button>
+              <Button size="sm" variant="ghost" className="rounded-xl" asChild>
+                <a href="#features">استكشف المزايا</a>
+              </Button>
+            </div>
           </div>
+
           <div className="mt-12 flex items-center justify-center gap-6 text-sm text-muted-foreground">
             <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" />Realtime</div>
             <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" />RLS Secure</div>
             <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" />Multi-language</div>
           </div>
+        </div>
+      </section>
+
+      {/* SERVICES */}
+      <section id="services" className="container mx-auto px-6 py-10">
+        <h2 className="text-center text-2xl md:text-3xl font-bold mb-8">خدماتنا</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {services.map((s) => (
+            <Card key={s.title} className="bg-card/70 ring-1 ring-primary/20 hover:ring-primary/50 transition">
+              <CardContent className="p-5 text-center">
+                <s.icon className="w-7 h-7 text-primary mx-auto mb-3" />
+                <div className="font-semibold">{s.title}</div>
+                <div className="text-xs text-muted-foreground mt-1">{s.desc}</div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      {/* PLANS PREVIEW */}
+      <section id="plans" className="container mx-auto px-6 py-10">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl md:text-4xl font-bold">الباقات — تبدأ من 2$</h2>
+          <p className="text-muted-foreground mt-2">استضافة + مساحة تخزين + نطاق ‎.HN‎ + قاعدة بيانات معزولة</p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {(plans ?? []).slice(0, 4).map((p: any, i: number) => (
+            <Card key={p.id} className={`bg-card/70 ${i === 2 ? "ring-2 ring-primary" : "ring-1 ring-border"}`}>
+              <CardContent className="p-6 space-y-3">
+                <div className="font-bold text-lg">{p.name_ar || p.name}</div>
+                <div className="flex items-end gap-1">
+                  <span className="text-3xl font-extrabold text-primary">${p.price_monthly}</span>
+                  <span className="text-xs text-muted-foreground mb-1">/شهر</span>
+                </div>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>{p.storage_gb} جيجا تخزين</li>
+                  <li>{p.sites_limit} موقع</li>
+                  <li>{p.hn_domains_limit} نطاق ‎.HN‎</li>
+                </ul>
+                <Button asChild className="w-full"><Link to="/checkout" search={{ plan: p.id }}>اشترِ الآن</Link></Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <div className="text-center mt-6">
+          <Button variant="outline" asChild><Link to="/pricing">كل تفاصيل الباقات</Link></Button>
         </div>
       </section>
 

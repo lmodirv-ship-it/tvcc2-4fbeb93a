@@ -86,7 +86,7 @@ function PricingPage() {
                     <Feat>نسخ احتياطي: {p.backup_policy}</Feat>
                     {(p.features?.list ?? []).map((f: string) => <Feat key={f}>{f}</Feat>)}
                   </ul>
-                  <Button asChild className="w-full"><Link to="/auth">ابدأ الآن</Link></Button>
+                  <Button asChild className="w-full"><Link to="/checkout" search={{ plan: p.id }}>اشترِ الآن</Link></Button>
                 </CardContent>
               </Card>
             ))}

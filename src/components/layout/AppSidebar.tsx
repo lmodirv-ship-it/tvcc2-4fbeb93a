@@ -70,6 +70,7 @@ const adminItems = [
   { titleKey: "sidebar.hosting", url: "/hosting", icon: Cloud },
   { titleKey: "sidebar.payment_providers", url: "/payment-providers", icon: Wallet },
   { titleKey: "sidebar.payments_hub", url: "/payments-hub", icon: Wallet },
+  { titleKey: "sidebar.payment_accounts", url: "/payment-accounts", icon: Wallet },
   { titleKey: "sidebar.audit", url: "/audit", icon: ClipboardCheck },
   { titleKey: "sidebar.settings", url: "/settings", icon: Settings },
 ];

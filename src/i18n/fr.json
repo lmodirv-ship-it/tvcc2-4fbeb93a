@@ -90,7 +90,8 @@
     "network": "Réseau serveurs",
     "hn_domains": "Domaines .HN",
     "my_hosting": "Mon hébergement",
-    "hosting": "Gestion hébergement"
+    "hosting": "Gestion hébergement",
+    "payment_accounts": "Comptes de paiement"
   },
   "dashboard": {
     "title": "Tableau de bord",

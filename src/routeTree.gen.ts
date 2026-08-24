@@ -13,6 +13,7 @@ import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as McpRouteImport } from './routes/mcp'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as AuthRouteImport } from './routes/auth'
+import { Route as AppLinkRouteImport } from './routes/app-link'
 import { Route as AuthenticatedRouteImport } from './routes/_authenticated'
 import { Route as IndexRouteImport } from './routes/index'
 import { Route as BlogIndexRouteImport } from './routes/blog/index'
@@ -114,6 +115,11 @@ const CheckoutRoute = CheckoutRouteImport.update({
 const AuthRoute = AuthRouteImport.update({
   id: '/auth',
   path: '/auth',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AppLinkRoute = AppLinkRouteImport.update({
+  id: '/app-link',
+  path: '/app-link',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedRoute = AuthenticatedRouteImport.update({
@@ -556,6 +562,7 @@ const ApiPublicBackupsRunDueRoute = ApiPublicBackupsRunDueRouteImport.update({
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/app-link': typeof AppLinkRoute
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
   '/mcp': typeof McpRoute
@@ -643,6 +650,7 @@ export interface FileRoutesByFullPath {
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/app-link': typeof AppLinkRoute
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
   '/mcp': typeof McpRoute
@@ -731,6 +739,7 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/_authenticated': typeof AuthenticatedRouteWithChildren
+  '/app-link': typeof AppLinkRoute
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
   '/mcp': typeof McpRoute
@@ -820,6 +829,7 @@ export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
   fullPaths:
     | '/'
+    | '/app-link'
     | '/auth'
     | '/checkout'
     | '/mcp'
@@ -907,6 +917,7 @@ export interface FileRouteTypes {
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
+    | '/app-link'
     | '/auth'
     | '/checkout'
     | '/mcp'
@@ -994,6 +1005,7 @@ export interface FileRouteTypes {
     | '__root__'
     | '/'
     | '/_authenticated'
+    | '/app-link'
     | '/auth'
     | '/checkout'
     | '/mcp'
@@ -1083,6 +1095,7 @@ export interface FileRouteTypes {
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AuthenticatedRoute: typeof AuthenticatedRouteWithChildren
+  AppLinkRoute: typeof AppLinkRoute
   AuthRoute: typeof AuthRoute
   CheckoutRoute: typeof CheckoutRoute
   McpRoute: typeof McpRoute
@@ -1134,6 +1147,13 @@ declare module '@tanstack/react-router' {
       path: '/auth'
       fullPath: '/auth'
       preLoaderRoute: typeof AuthRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/app-link': {
+      id: '/app-link'
+      path: '/app-link'
+      fullPath: '/app-link'
+      preLoaderRoute: typeof AppLinkRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated': {
@@ -1873,6 +1893,7 @@ const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AuthenticatedRoute: AuthenticatedRouteWithChildren,
+  AppLinkRoute: AppLinkRoute,
   AuthRoute: AuthRoute,
   CheckoutRoute: CheckoutRoute,
   McpRoute: McpRoute,

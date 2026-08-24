@@ -54,6 +54,13 @@ export const COMMAND_WHITELIST = [
   "fs_write",
   "fs_delete",
   "fs_move",
+  "hosting_provision",
+  "hosting_quota_set",
+  "hosting_usage_report",
+  "file_replicate",
+  "hn_dns_install",
+  "hn_domain_publish",
+  "hn_domain_remove",
 ] as const;
 
 
@@ -61,6 +68,13 @@ export const COMMAND_WHITELIST = [
 export type CommandAction = (typeof COMMAND_WHITELIST)[number];
 
 export const COMMAND_LABELS: Record<string, string> = {
+  hosting_provision: "تجهيز مساحة استضافة",
+  hosting_quota_set: "ضبط حصة التخزين",
+  hosting_usage_report: "تقرير استهلاك التخزين",
+  file_replicate: "نسخ ملف إلى خادم آخر",
+  hn_dns_install: "تركيب سجل DNS لنطاق .HN",
+  hn_domain_publish: "نشر نطاق .HN",
+  hn_domain_remove: "إزالة نطاق .HN",
   git_deploy: "نشر من Git",
   deploy_upload: "رفع ملفات وبناء وتشغيل موقع",
   build_run: "تنفيذ أمر البناء",

@@ -87,7 +87,10 @@
     "failover": "Bascule auto",
     "deploy": "Déploiement Git",
     "automation": "Automatisation",
-    "network": "Réseau serveurs"
+    "network": "Réseau serveurs",
+    "hn_domains": "Domaines .HN",
+    "my_hosting": "Mon hébergement",
+    "hosting": "Gestion hébergement"
   },
   "dashboard": {
     "title": "Tableau de bord",

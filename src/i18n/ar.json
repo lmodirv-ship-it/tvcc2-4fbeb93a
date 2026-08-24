@@ -87,7 +87,10 @@
     "failover": "التحويل التلقائي",
     "deploy": "النشر من Git",
     "automation": "الأتمتة والمراقبة",
-    "network": "شبكة السيرفرات"
+    "network": "شبكة السيرفرات",
+    "hn_domains": "نطاقات ‎.HN‎",
+    "my_hosting": "استضافتي",
+    "hosting": "إدارة الاستضافة"
   },
   "dashboard": {
     "title": "لوحة التحكم",

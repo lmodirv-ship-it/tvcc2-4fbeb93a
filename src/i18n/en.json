@@ -87,7 +87,10 @@
     "failover": "Failover",
     "deploy": "Git Deploy",
     "automation": "Automation",
-    "network": "Server Mesh"
+    "network": "Server Mesh",
+    "hn_domains": ".HN Domains",
+    "my_hosting": "My Hosting",
+    "hosting": "Hosting Admin"
   },
   "dashboard": {
     "title": "Dashboard",

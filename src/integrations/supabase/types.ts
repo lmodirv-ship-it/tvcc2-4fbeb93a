@@ -1304,6 +1304,83 @@ export type Database = {
           },
         ]
       }
+      file_replicas: {
+        Row: {
+          backup_server_id: string | null
+          checksum: string | null
+          created_at: string
+          file_path: string
+          id: string
+          owner_id: string
+          primary_server_id: string | null
+          replica_server_id: string | null
+          size_bytes: number
+          state: string
+          subscription_id: string | null
+          updated_at: string
+          verified_at: string | null
+        }
+        Insert: {
+          backup_server_id?: string | null
+          checksum?: string | null
+          created_at?: string
+          file_path: string
+          id?: string
+          owner_id: string
+          primary_server_id?: string | null
+          replica_server_id?: string | null
+          size_bytes?: number
+          state?: string
+          subscription_id?: string | null
+          updated_at?: string
+          verified_at?: string | null
+        }
+        Update: {
+          backup_server_id?: string | null
+          checksum?: string | null
+          created_at?: string
+          file_path?: string
+          id?: string
+          owner_id?: string
+          primary_server_id?: string | null
+          replica_server_id?: string | null
+          size_bytes?: number
+          state?: string
+          subscription_id?: string | null
+          updated_at?: string
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "file_replicas_backup_server_id_fkey"
+            columns: ["backup_server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "file_replicas_primary_server_id_fkey"
+            columns: ["primary_server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "file_replicas_replica_server_id_fkey"
+            columns: ["replica_server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "file_replicas_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "hosting_subscriptions"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       file_transfers: {
         Row: {
           build_cmd: string | null
@@ -1596,6 +1673,261 @@ export type Database = {
             columns: ["website_id"]
             isOneToOne: false
             referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hn_domains: {
+        Row: {
+          created_at: string
+          fqdn: string
+          id: string
+          is_public: boolean
+          last_error: string | null
+          last_published_at: string | null
+          name: string
+          owner_id: string
+          public_fqdn: string | null
+          records: Json
+          server_id: string | null
+          status: string
+          subscription_id: string | null
+          target_ip: string | null
+          target_port: number | null
+          updated_at: string
+          website_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          fqdn: string
+          id?: string
+          is_public?: boolean
+          last_error?: string | null
+          last_published_at?: string | null
+          name: string
+          owner_id: string
+          public_fqdn?: string | null
+          records?: Json
+          server_id?: string | null
+          status?: string
+          subscription_id?: string | null
+          target_ip?: string | null
+          target_port?: number | null
+          updated_at?: string
+          website_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          fqdn?: string
+          id?: string
+          is_public?: boolean
+          last_error?: string | null
+          last_published_at?: string | null
+          name?: string
+          owner_id?: string
+          public_fqdn?: string | null
+          records?: Json
+          server_id?: string | null
+          status?: string
+          subscription_id?: string | null
+          target_ip?: string | null
+          target_port?: number | null
+          updated_at?: string
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hn_domains_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hn_domains_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "hosting_subscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hn_domains_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hosting_plans: {
+        Row: {
+          backup_policy: string
+          code: string
+          created_at: string
+          db_isolation: string
+          db_quota_mb: number
+          external_domains_limit: number
+          features: Json
+          hn_domains_limit: number
+          id: string
+          is_visible: boolean
+          name: string
+          name_ar: string
+          price_monthly: number
+          price_yearly: number
+          sites_limit: number
+          sort_order: number
+          storage_gb: number
+          transfer_gb: number
+          updated_at: string
+        }
+        Insert: {
+          backup_policy?: string
+          code: string
+          created_at?: string
+          db_isolation?: string
+          db_quota_mb?: number
+          external_domains_limit?: number
+          features?: Json
+          hn_domains_limit?: number
+          id?: string
+          is_visible?: boolean
+          name: string
+          name_ar: string
+          price_monthly?: number
+          price_yearly?: number
+          sites_limit?: number
+          sort_order?: number
+          storage_gb?: number
+          transfer_gb?: number
+          updated_at?: string
+        }
+        Update: {
+          backup_policy?: string
+          code?: string
+          created_at?: string
+          db_isolation?: string
+          db_quota_mb?: number
+          external_domains_limit?: number
+          features?: Json
+          hn_domains_limit?: number
+          id?: string
+          is_visible?: boolean
+          name?: string
+          name_ar?: string
+          price_monthly?: number
+          price_yearly?: number
+          sites_limit?: number
+          sort_order?: number
+          storage_gb?: number
+          transfer_gb?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      hosting_subscriptions: {
+        Row: {
+          addons: Json
+          billing_cycle: string
+          created_at: string
+          current_period_end: string | null
+          id: string
+          notes: string | null
+          owner_id: string
+          plan_id: string
+          status: string
+          updated_at: string
+          website_id: string | null
+        }
+        Insert: {
+          addons?: Json
+          billing_cycle?: string
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          notes?: string | null
+          owner_id: string
+          plan_id: string
+          status?: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Update: {
+          addons?: Json
+          billing_cycle?: string
+          created_at?: string
+          current_period_end?: string | null
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          plan_id?: string
+          status?: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hosting_subscriptions_plan_id_fkey"
+            columns: ["plan_id"]
+            isOneToOne: false
+            referencedRelation: "hosting_plans"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "hosting_subscriptions_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      hosting_tenants: {
+        Row: {
+          bucket_name: string | null
+          created_at: string
+          db_role: string | null
+          id: string
+          isolation: string
+          owner_id: string
+          schema_name: string | null
+          status: string
+          subscription_id: string
+          tenant_key: string
+          updated_at: string
+        }
+        Insert: {
+          bucket_name?: string | null
+          created_at?: string
+          db_role?: string | null
+          id?: string
+          isolation?: string
+          owner_id: string
+          schema_name?: string | null
+          status?: string
+          subscription_id: string
+          tenant_key: string
+          updated_at?: string
+        }
+        Update: {
+          bucket_name?: string | null
+          created_at?: string
+          db_role?: string | null
+          id?: string
+          isolation?: string
+          owner_id?: string
+          schema_name?: string | null
+          status?: string
+          subscription_id?: string
+          tenant_key?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hosting_tenants_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "hosting_subscriptions"
             referencedColumns: ["id"]
           },
         ]
@@ -2596,6 +2928,7 @@ export type Database = {
           public_ip: string | null
           ram_mb: number | null
           region: string | null
+          role: Database["public"]["Enums"]["server_role"]
           status: string
           tvcc_url: string | null
           tvcc_version: string | null
@@ -2623,6 +2956,7 @@ export type Database = {
           public_ip?: string | null
           ram_mb?: number | null
           region?: string | null
+          role?: Database["public"]["Enums"]["server_role"]
           status?: string
           tvcc_url?: string | null
           tvcc_version?: string | null
@@ -2650,6 +2984,7 @@ export type Database = {
           public_ip?: string | null
           ram_mb?: number | null
           region?: string | null
+          role?: Database["public"]["Enums"]["server_role"]
           status?: string
           tvcc_url?: string | null
           tvcc_version?: string | null
@@ -3462,6 +3797,60 @@ export type Database = {
           },
         ]
       }
+      storage_quotas: {
+        Row: {
+          created_at: string
+          id: string
+          limit_bytes: number
+          owner_id: string
+          subscription_id: string | null
+          transfer_limit_bytes: number
+          transfer_used_bytes: number
+          updated_at: string
+          used_bytes: number
+          website_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          limit_bytes?: number
+          owner_id: string
+          subscription_id?: string | null
+          transfer_limit_bytes?: number
+          transfer_used_bytes?: number
+          updated_at?: string
+          used_bytes?: number
+          website_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          limit_bytes?: number
+          owner_id?: string
+          subscription_id?: string | null
+          transfer_limit_bytes?: number
+          transfer_used_bytes?: number
+          updated_at?: string
+          used_bytes?: number
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storage_quotas_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "hosting_subscriptions"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "storage_quotas_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       storages: {
         Row: {
           auto_provisioned: boolean
@@ -3539,6 +3928,66 @@ export type Database = {
             columns: ["website_id"]
             isOneToOne: false
             referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      subscription_servers: {
+        Row: {
+          cpu_quota: number
+          created_at: string
+          disk_quota_gb: number
+          granted_at: string
+          granted_by: string | null
+          id: string
+          owner_id: string
+          ram_quota_mb: number
+          role: Database["public"]["Enums"]["server_role"]
+          server_id: string
+          subscription_id: string
+          updated_at: string
+        }
+        Insert: {
+          cpu_quota?: number
+          created_at?: string
+          disk_quota_gb?: number
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          owner_id: string
+          ram_quota_mb?: number
+          role?: Database["public"]["Enums"]["server_role"]
+          server_id: string
+          subscription_id: string
+          updated_at?: string
+        }
+        Update: {
+          cpu_quota?: number
+          created_at?: string
+          disk_quota_gb?: number
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          owner_id?: string
+          ram_quota_mb?: number
+          role?: Database["public"]["Enums"]["server_role"]
+          server_id?: string
+          subscription_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "subscription_servers_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "subscription_servers_subscription_id_fkey"
+            columns: ["subscription_id"]
+            isOneToOne: false
+            referencedRelation: "hosting_subscriptions"
             referencedColumns: ["id"]
           },
         ]
@@ -4404,6 +4853,14 @@ export type Database = {
     }
     Enums: {
       app_role: "admin" | "editor" | "viewer" | "system_owner"
+      server_role:
+        | "control"
+        | "db_primary"
+        | "db_replica"
+        | "web"
+        | "storage"
+        | "backup"
+        | "monitor"
       site_status: "online" | "offline" | "warning" | "pending"
     }
     CompositeTypes: {
@@ -4533,6 +4990,15 @@ export const Constants = {
   public: {
     Enums: {
       app_role: ["admin", "editor", "viewer", "system_owner"],
+      server_role: [
+        "control",
+        "db_primary",
+        "db_replica",
+        "web",
+        "storage",
+        "backup",
+        "monitor",
+      ],
       site_status: ["online", "offline", "warning", "pending"],
     },
   },

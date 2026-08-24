@@ -7,7 +7,7 @@ TVCC_TOKEN="${token}"
 TVCC_ENDPOINT="${endpoint}"
 TVCC_AI_ENDPOINT="\${TVCC_AI_ENDPOINT:-http://127.0.0.1:11434}"
 TVCC_BACKUP_DIR="\${TVCC_BACKUP_DIR:-/var/backups/tvcc}"
-TVCC_AGENT_VERSION="2.7.0"
+TVCC_AGENT_VERSION="2.8.0"
 TVCC_HN_DIR="\${TVCC_HN_DIR:-/home/ismail/hn}"
 mkdir -p "$TVCC_BACKUP_DIR"
 mkdir -p "$TVCC_HN_DIR" 2>/dev/null || true
@@ -216,6 +216,14 @@ run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
       fs_delete)       echo "[dry-run] rm -rf $(GET path)" ;;
       fs_move)         echo "[dry-run] mv $(GET path) $(GET target)" ;;
 
+      hosting_provision) echo "[dry-run] mkdir $(GET path); quota $(GET quota_gb)G for tenant $(GET tenant) ($(GET isolation))" ;;
+      hosting_quota_set) echo "[dry-run] set quota $(GET quota_gb)G on $(GET path)" ;;
+      hosting_usage_report) echo "[dry-run] du -sb $(GET path)" ;;
+      file_replicate)  echo "[dry-run] rsync $(GET path) -> $(GET target_server)" ;;
+      hn_dns_install)  echo "[dry-run] write /etc/dnsmasq.d/$(GET domain).conf then restart dnsmasq" ;;
+      hn_domain_publish) echo "[dry-run] write nginx vhost for $(GET domain) -> port $(GET port); nginx -t && reload" ;;
+      hn_domain_remove) echo "[dry-run] remove vhost + dns record of $(GET domain)" ;;
+
       *) echo "[dry-run] unsupported action: $ACTION"; return 127 ;;
 
     esac
@@ -396,6 +404,38 @@ EOF5
       case "$P" in /home/*|/var/www/*|/opt/tvcc/*) rm -rf "$P" && echo "deleted $P" ;; *) echo "refused: path outside allowed roots"; return 2 ;; esac ;;
     fs_move)
       S="$(GET path)"; T="$(GET target)"; mkdir -p "$(dirname "$T")"; mv "$S" "$T" && echo "moved $S -> $T" ;;
+
+    hosting_provision)
+      P="$(GET path)"; Q="$(GET quota_gb)"; T="$(GET tenant)"
+      mkdir -p "$P" && chmod 750 "$P"
+      echo "$P $Q" > "/opt/tvcc/quotas/\${T}.quota" 2>/dev/null || { mkdir -p /opt/tvcc/quotas; echo "$P $Q" > "/opt/tvcc/quotas/\${T}.quota"; }
+      echo "provisioned $P for tenant $T with \${Q}G quota" ;;
+    hosting_quota_set)
+      P="$(GET path)"; Q="$(GET quota_gb)"; mkdir -p /opt/tvcc/quotas
+      echo "$P $Q" > "/opt/tvcc/quotas/$(echo "$P" | tr '/' '_').quota"
+      echo "quota for $P set to \${Q}G" ;;
+    hosting_usage_report)
+      P="$(GET path)"; du -sb "$P" 2>/dev/null | cut -f1 ;;
+    file_replicate)
+      S="$(GET path)"; T="$(GET target_server)"
+      [ -e "$S" ] || { echo "missing source: $S"; return 2; }
+      mkdir -p "$TVCC_BACKUP_DIR/replicas"
+      cp -a "$S" "$TVCC_BACKUP_DIR/replicas/" 2>&1 && echo "replicated $S (target $T)" ;;
+    hn_dns_install)
+      D="$(GET domain)"; mkdir -p /etc/dnsmasq.d
+      command -v dnsmasq >/dev/null 2>&1 || (apt-get install -y dnsmasq >/dev/null 2>&1 || true)
+      echo "$ARGS" | python3 -c 'import sys,json;d=json.load(sys.stdin);open("/etc/dnsmasq.d/%s.conf"%d["domain"],"w").write(d.get("zone",""))'
+      systemctl restart dnsmasq 2>&1 | head -5; echo "dns zone installed for $D" ;;
+    hn_domain_publish)
+      D="$(GET domain)"; mkdir -p /var/www/"$D"
+      echo "$ARGS" | python3 -c 'import sys,json;d=json.load(sys.stdin);open("/etc/nginx/sites-available/%s"%d["domain"],"w").write(d.get("vhost",""))'
+      ln -sf "/etc/nginx/sites-available/$D" "/etc/nginx/sites-enabled/$D"
+      nginx -t 2>&1 && systemctl reload nginx && echo "published $D" ;;
+    hn_domain_remove)
+      D="$(GET domain)"
+      rm -f "/etc/nginx/sites-enabled/$D" "/etc/nginx/sites-available/$D" "/etc/dnsmasq.d/$D.conf"
+      nginx -t >/dev/null 2>&1 && systemctl reload nginx; systemctl restart dnsmasq 2>/dev/null
+      echo "removed $D" ;;
 
     *) echo "unsupported action: $ACTION"; return 127 ;;
   esac

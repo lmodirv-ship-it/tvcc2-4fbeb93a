@@ -124,6 +124,52 @@ function LandingPage() {
         </div>
       </section>
 
+      {/* SERVICES */}
+      <section id="services" className="container mx-auto px-6 py-10">
+        <h2 className="text-center text-2xl md:text-3xl font-bold mb-8">خدماتنا</h2>
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {services.map((s) => (
+            <Card key={s.title} className="bg-card/70 ring-1 ring-primary/20 hover:ring-primary/50 transition">
+              <CardContent className="p-5 text-center">
+                <s.icon className="w-7 h-7 text-primary mx-auto mb-3" />
+                <div className="font-semibold">{s.title}</div>
+                <div className="text-xs text-muted-foreground mt-1">{s.desc}</div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+      </section>
+
+      {/* PLANS PREVIEW */}
+      <section id="plans" className="container mx-auto px-6 py-10">
+        <div className="text-center mb-8">
+          <h2 className="text-3xl md:text-4xl font-bold">الباقات — تبدأ من 2$</h2>
+          <p className="text-muted-foreground mt-2">استضافة + مساحة تخزين + نطاق ‎.HN‎ + قاعدة بيانات معزولة</p>
+        </div>
+        <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-4">
+          {(plans ?? []).slice(0, 4).map((p: any, i: number) => (
+            <Card key={p.id} className={`bg-card/70 ${i === 2 ? "ring-2 ring-primary" : "ring-1 ring-border"}`}>
+              <CardContent className="p-6 space-y-3">
+                <div className="font-bold text-lg">{p.name_ar || p.name}</div>
+                <div className="flex items-end gap-1">
+                  <span className="text-3xl font-extrabold text-primary">${p.price_monthly}</span>
+                  <span className="text-xs text-muted-foreground mb-1">/شهر</span>
+                </div>
+                <ul className="text-sm text-muted-foreground space-y-1">
+                  <li>{p.storage_gb} جيجا تخزين</li>
+                  <li>{p.sites_limit} موقع</li>
+                  <li>{p.hn_domains_limit} نطاق ‎.HN‎</li>
+                </ul>
+                <Button asChild className="w-full"><Link to="/checkout" search={{ plan: p.id }}>اشترِ الآن</Link></Button>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
+        <div className="text-center mt-6">
+          <Button variant="outline" asChild><Link to="/pricing">كل تفاصيل الباقات</Link></Button>
+        </div>
+      </section>
+
 
       {/* STATS */}
       <section id="stats" className="container mx-auto px-6 py-12">

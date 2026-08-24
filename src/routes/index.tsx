@@ -80,26 +80,42 @@ function LandingPage() {
           <p className="mt-6 text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
             منصة شخصية متكاملة لإدارة كل مشاريعك ومواقعك — المراقبة، الدومينات، SSL، التنبيهات، والتكامل مع HN-DB و HN-Cloud من لوحة واحدة.
           </p>
-          <div className="mt-10 flex items-center justify-center gap-3 flex-wrap">
+          <div className="mt-10 flex flex-col items-center gap-5">
             <Button
               size="lg"
-              className="text-base px-8 rounded-xl shadow-lg hover:-translate-y-0.5 transition"
-              style={{ background: "var(--gradient-primary)" }}
+              className="hn-cta-rainbow text-lg md:text-xl font-bold px-12 py-7 rounded-2xl border-0 hover:-translate-y-1 transition"
+              asChild
+            >
+              <Link to="/pricing">
+                <Sparkles className="w-6 h-6 ml-2" />
+                أنشئ موقعك الآن
+                <ArrowLeft className="w-6 h-6 mr-2" />
+              </Link>
+            </Button>
+
+            <Button
+              size="lg"
+              variant="outline"
+              className="hn-cta-glow text-base md:text-lg font-bold px-14 py-6 rounded-2xl border-2 border-primary/50 hover:-translate-y-0.5 transition"
               onClick={() => navigate({ to: signedIn ? "/dashboard" : "/auth" })}
             >
-              {signedIn ? "افتح لوحة التحكم" : "ابدأ مجاناً"}
-              <ArrowLeft className="w-5 h-5 mr-2" />
+              <Layers className="w-5 h-5 ml-2" />
+              مركز إدارة المواقع
             </Button>
-            <Button size="lg" variant="outline" className="text-base px-8 rounded-xl hover:-translate-y-0.5 transition gap-2" asChild>
-              <Link to="/pricing"><Cloud className="w-5 h-5" /> الباقات والاستضافة</Link>
-            </Button>
-            <Button size="lg" variant="outline" className="text-base px-8 rounded-xl hover:-translate-y-0.5 transition gap-2" asChild>
-              <Link to="/blog"><BookOpen className="w-5 h-5" /> المدونة</Link>
-            </Button>
-            <Button size="lg" variant="ghost" className="text-base px-8 rounded-xl hover:-translate-y-0.5 transition" asChild>
-              <a href="#features">استكشف المزايا</a>
-            </Button>
+
+            <div className="flex items-center justify-center gap-3 flex-wrap">
+              <Button size="sm" variant="outline" className="rounded-xl gap-2" asChild>
+                <Link to="/pricing"><Cloud className="w-4 h-4" /> الباقات والاستضافة</Link>
+              </Button>
+              <Button size="sm" variant="outline" className="rounded-xl gap-2" asChild>
+                <Link to="/blog"><BookOpen className="w-4 h-4" /> المدونة</Link>
+              </Button>
+              <Button size="sm" variant="ghost" className="rounded-xl" asChild>
+                <a href="#features">استكشف المزايا</a>
+              </Button>
+            </div>
           </div>
+
           <div className="mt-12 flex items-center justify-center gap-6 text-sm text-muted-foreground">
             <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" />Realtime</div>
             <div className="flex items-center gap-2"><CheckCircle2 className="w-4 h-4 text-success" />RLS Secure</div>

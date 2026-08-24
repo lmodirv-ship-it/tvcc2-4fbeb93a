@@ -111,8 +111,8 @@ export const publishHnDomain = createServerFn({ method: "POST" })
     const { buildDnsZone, buildHnVhost, isSafeDomain } = await import("./hn-domains.server");
     if (!isSafeDomain(dom.fqdn)) throw new Error("اسم نطاق غير آمن");
 
-    const { data: web } = await sb.from("servers").select("id,host,private_ip,public_ip").eq("id", data.webServerId).maybeSingle();
-    const ip = data.targetIp || web?.private_ip || web?.public_ip || web?.host || "127.0.0.1";
+    const { data: web } = await sb.from("servers").select("id,hostname,private_ip,public_ip").eq("id", data.webServerId).maybeSingle();
+    const ip = data.targetIp || web?.private_ip || web?.public_ip || web?.hostname || "127.0.0.1";
     const port = data.port ?? 80;
 
     const dnsCmd = await queue(sb, dom.owner_id, data.dnsServerId, "hn_dns_install", {
@@ -173,7 +173,7 @@ export const listHnDomains = createServerFn({ method: "POST" })
     if (!admin) q = q.eq("owner_id", context.userId);
     const [{ data: domains }, { data: servers }, { data: subs }] = await Promise.all([
       q,
-      sb.from("servers").select("id,name,host,role,status"),
+      sb.from("servers").select("id,name,hostname,public_ip,private_ip,role,status"),
       sb.from("hosting_subscriptions").select("id, status, plan:hosting_plans(code,name_ar,hn_domains_limit)"),
     ]);
     return { domains: domains ?? [], servers: servers ?? [], subscriptions: subs ?? [], isAdmin: admin };

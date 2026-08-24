@@ -154,9 +154,9 @@ export const adminListHosting = createServerFn({ method: "POST" })
       await Promise.all([
         sb.from("hosting_subscriptions").select("*, plan:hosting_plans(*)").order("created_at", { ascending: false }),
         sb.from("hosting_plans").select("*").order("sort_order"),
-        sb.from("servers").select("id,name,host,role,status"),
+        sb.from("servers").select("id,name,hostname,public_ip,private_ip,role,status"),
         sb.from("profiles").select("id,email,full_name"),
-        sb.from("subscription_servers").select("*, server:servers(id,name,host,role)"),
+        sb.from("subscription_servers").select("*, server:servers(id,name,hostname,role)"),
         sb.from("storage_quotas").select("*"),
         sb.from("hn_domains").select("*").order("created_at", { ascending: false }),
       ]);

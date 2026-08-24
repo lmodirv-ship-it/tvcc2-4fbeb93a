@@ -48,12 +48,20 @@ function LandingPage() {
     { icon: Activity, title: "مراقبة الأداء", desc: "Health checks، تقارير، وسجل عمليات كامل." },
   ];
 
+  const services = [
+    { icon: Cloud, title: "استضافة سحابية", desc: "من 2$ شهرياً مع تفعيل فوري" },
+    { icon: Globe, title: "نطاقات ‎.HN‎", desc: "نطاق خاص يعمل على الإنترنت" },
+    { icon: Database, title: "قواعد بيانات معزولة", desc: "عزل كامل وحماية RLS" },
+    { icon: HardDrive, title: "تخزين ونسخ ثلاثي", desc: "نسخ احتياطي على 3 خوادم" },
+  ];
+
   const stats = [
     { label: "مواقع مُدارة", value: "∞" },
     { label: "وقت تشغيل", value: "99.9%" },
     { label: "تكاملات", value: "12+" },
     { label: "لغات", value: "AR · FR · EN" },
   ];
+
 
   return (
     <div className="min-h-screen relative" dir="rtl">

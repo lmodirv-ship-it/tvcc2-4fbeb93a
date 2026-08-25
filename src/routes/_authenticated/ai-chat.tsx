@@ -245,9 +245,12 @@ function AiChatPage() {
             لا توجد نماذج مفعّلة — <Link to="/ai-connect" className="text-primary underline">اربط مزوّداً</Link> أولاً.
           </CardContent></Card>
         )}
-        {isLocal && (
+        {(
           <div className="mb-3 flex items-center gap-2 flex-wrap text-xs text-muted-foreground">
-            <Laptop className="w-3 h-3" /> نموذج محلي: يعمل من متصفحك مع نفس أدوات إدارة المواقع والملفات.
+            <Laptop className="w-3 h-3" />
+            {isLocal
+              ? "نموذج محلي: يعمل من متصفحك مع نفس أدوات إدارة المواقع والملفات."
+              : "الخادم المحلي Ollama:"}
             <Button
               size="sm"
               variant="outline"

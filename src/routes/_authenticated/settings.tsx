@@ -5,7 +5,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
-import { Settings as SettingsIcon, Save, X, Pencil, Bell, Globe, Shield, Mail } from "lucide-react";
+import { Settings as SettingsIcon, Save, X, Pencil, Bell, Globe, Shield, Mail, KeyRound, Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/settings")({
   component: SettingsPage,
@@ -112,6 +114,9 @@ function SettingsPage() {
           )}
         </CardContent>
       </Card>
+
+      {/* Password */}
+      <PasswordCard />
 
       {/* Contact Settings */}
       <Card>
@@ -268,5 +273,55 @@ function SettingsPage() {
         </CardContent>
       </Card>
     </div>
+  );
+}
+
+function PasswordCard() {
+  const [pw, setPw] = useState("");
+  const [confirm, setConfirm] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const save = async () => {
+    if (pw.length < 8) return toast.error("كلمة السر يجب أن تكون 8 أحرف على الأقل");
+    if (pw !== confirm) return toast.error("كلمتا السر غير متطابقتين");
+    setBusy(true);
+    const { error } = await supabase.auth.updateUser({ password: pw });
+    setBusy(false);
+    if (error) return toast.error(error.message);
+    setPw("");
+    setConfirm("");
+    toast.success("تم تغيير كلمة السر");
+  };
+
+  return (
+    <Card>
+      <CardHeader>
+        <CardTitle className="text-base flex items-center gap-2">
+          <KeyRound className="w-4 h-4 text-primary" />
+          كلمة السر
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-4 text-sm">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div className="space-y-2">
+            <Label>كلمة السر الجديدة</Label>
+            <Input type="password" dir="ltr" value={pw} onChange={(e) => setPw(e.target.value)} />
+          </div>
+          <div className="space-y-2">
+            <Label>تأكيد كلمة السر</Label>
+            <Input type="password" dir="ltr" value={confirm} onChange={(e) => setConfirm(e.target.value)} />
+          </div>
+        </div>
+        <div className="flex justify-end">
+          <Button size="sm" onClick={save} disabled={busy}>
+            {busy ? <Loader2 className="w-3.5 h-3.5 animate-spin ml-1.5" /> : <Save className="w-3.5 h-3.5 ml-1.5" />}
+            حفظ كلمة السر
+          </Button>
+        </div>
+        <p className="text-xs text-muted-foreground">
+          المالك أو المدير يمكنه تغيير كلمة سر أي عضو من صفحة «المستخدمون والفريق».
+        </p>
+      </CardContent>
+    </Card>
   );
 }

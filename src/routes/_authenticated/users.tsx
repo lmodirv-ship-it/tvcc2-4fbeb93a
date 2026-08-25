@@ -11,9 +11,11 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger, Dialog
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Plus, Trash2, Loader2, ShieldCheck, Lock, UserPlus, Copy, Check, X } from "lucide-react";
+import { Plus, Trash2, Loader2, ShieldCheck, Lock, UserPlus, Copy, Check, X, KeyRound } from "lucide-react";
 import { toast } from "sonner";
-import { useRoles, PERMANENT_OWNER_EMAIL } from "@/hooks/use-roles";
+import { useServerFn } from "@tanstack/react-start";
+import { adminSetPassword } from "@/lib/account.functions";
+import { useRoles, PERMANENT_OWNER_EMAILS, isPermanentOwnerEmail } from "@/hooks/use-roles";
 
 export const Route = createFileRoute("/_authenticated/users")({
   component: Page,
@@ -85,7 +87,7 @@ function TeamTab() {
   });
 
   const setRole = async (userId: string, email: string, role: string) => {
-    if (email.toLowerCase() === PERMANENT_OWNER_EMAIL) return toast.error("حساب مالك المنصة محمي");
+    if (isPermanentOwnerEmail(email)) return toast.error("حساب مالك المنصة محمي");
     const { error: delErr } = await supabase
       .from("user_roles")
       .delete()
@@ -112,7 +114,7 @@ function TeamTab() {
           <ShieldCheck className="w-5 h-5 text-success" />
           <div className="flex-1 min-w-[240px]">
             <div className="font-semibold text-sm">مالك المنصة الدائم</div>
-            <div className="text-xs text-muted-foreground" dir="ltr">{PERMANENT_OWNER_EMAIL}</div>
+            <div className="text-xs text-muted-foreground" dir="ltr">{PERMANENT_OWNER_EMAILS.join(" · ")}</div>
           </div>
           <Badge className="gap-1"><Lock className="w-3 h-3" /> محمي — مالك + مدير (Admin) لا يُحذف</Badge>
           {isAdmin && (
@@ -155,16 +157,17 @@ function TeamTab() {
                 <TableHead>البريد</TableHead>
                 <TableHead>الدور</TableHead>
                 <TableHead>تغيير الدور</TableHead>
+                <TableHead>كلمة السر</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {isLoading ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-8"><Loader2 className="w-5 h-5 animate-spin inline" /></TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center py-8"><Loader2 className="w-5 h-5 animate-spin inline" /></TableCell></TableRow>
               ) : !members?.length ? (
-                <TableRow><TableCell colSpan={4} className="text-center py-8 text-muted-foreground">لا يوجد أعضاء</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="text-center py-8 text-muted-foreground">لا يوجد أعضاء</TableCell></TableRow>
               ) : (
                 members.map((m) => {
-                  const locked = (m.email || "").toLowerCase() === PERMANENT_OWNER_EMAIL;
+                  const locked = isPermanentOwnerEmail(m.email);
                   const current = m.roles.find((r) => r.role !== "system_owner")?.role || "viewer";
                   return (
                     <TableRow key={m.id}>
@@ -191,6 +194,13 @@ function TeamTab() {
                           </Select>
                         ) : (
                           <span className="text-xs text-muted-foreground">للمالك فقط</span>
+                        )}
+                      </TableCell>
+                      <TableCell>
+                        {isAdmin ? (
+                          <PasswordDialog userId={m.id} email={m.email || ""} />
+                        ) : (
+                          <span className="text-xs text-muted-foreground">—</span>
                         )}
                       </TableCell>
                     </TableRow>
@@ -326,7 +336,7 @@ function GrantRoleDialog({
   members: Member[];
   onGrant: (userId: string, email: string, role: string) => Promise<void>;
 }) {
-  const selectable = members.filter((m) => (m.email || "").toLowerCase() !== PERMANENT_OWNER_EMAIL);
+  const selectable = members.filter((m) => !isPermanentOwnerEmail(m.email));
   const [userId, setUserId] = useState("");
   const [role, setRole] = useState("editor");
   const [loading, setLoading] = useState(false);
@@ -506,5 +516,48 @@ function AddDialog({ onDone }: { onDone: () => void }) {
         <DialogFooter><Button type="submit" disabled={loading}>{loading && <Loader2 className="w-4 h-4 animate-spin ml-2" />}حفظ</Button></DialogFooter>
       </form>
     </DialogContent>
+  );
+}
+
+/* ---------------- Password reset (admin/owner) ---------------- */
+
+function PasswordDialog({ userId, email }: { userId: string; email: string }) {
+  const setPassword = useServerFn(adminSetPassword);
+  const [open, setOpen] = useState(false);
+  const [value, setValue] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  const submit = async () => {
+    setBusy(true);
+    try {
+      await setPassword({ data: { userId, password: value } });
+      toast.success("تم تغيير كلمة السر");
+      setValue("");
+      setOpen(false);
+    } catch (e) {
+      toast.error((e as Error).message);
+    }
+    setBusy(false);
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={setOpen}>
+      <DialogTrigger asChild>
+        <Button variant="outline" size="sm"><KeyRound className="w-3.5 h-3.5 ml-1" /> تغيير</Button>
+      </DialogTrigger>
+      <DialogContent>
+        <DialogHeader><DialogTitle>تغيير كلمة سر <span dir="ltr">{email}</span></DialogTitle></DialogHeader>
+        <div className="space-y-3">
+          <Label>كلمة السر الجديدة</Label>
+          <Input type="password" dir="ltr" value={value} onChange={(e) => setValue(e.target.value)} placeholder="8 أحرف على الأقل" />
+        </div>
+        <DialogFooter>
+          <Button disabled={busy || value.length < 8} onClick={submit}>
+            {busy && <Loader2 className="w-4 h-4 animate-spin ml-2" />}
+            حفظ
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   );
 }

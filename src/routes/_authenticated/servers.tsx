@@ -253,7 +253,29 @@ function ServersPage() {
       )}
 
       {isLoading ? (
-        <div className="flex justify-center py-16"><Loader2 className="w-6 h-6 animate-spin text-primary" /></div>
+        <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+          {[0, 1, 2, 3, 4, 5].map((i) => (
+            <Card key={i}>
+              <CardContent className="p-5 space-y-4">
+                <div className="flex items-center gap-3">
+                  <Skeleton className="w-10 h-10 rounded-xl" />
+                  <div className="flex-1 space-y-2">
+                    <Skeleton className="h-4 w-2/3" />
+                    <Skeleton className="h-3 w-1/2" />
+                  </div>
+                  <Skeleton className="h-5 w-16 rounded-full" />
+                </div>
+                <Skeleton className="h-2 w-full" />
+                <Skeleton className="h-2 w-full" />
+                <Skeleton className="h-2 w-3/4" />
+                <div className="flex gap-2">
+                  <Skeleton className="h-8 w-24" />
+                  <Skeleton className="h-8 w-24" />
+                </div>
+              </CardContent>
+            </Card>
+          ))}
+        </div>
       ) : list.length === 0 ? (
         <Card><CardContent className="p-10 text-center text-muted-foreground">لا توجد سيرفرات بعد — أضف أول سيرفر لبدء المراقبة.</CardContent></Card>
       ) : (

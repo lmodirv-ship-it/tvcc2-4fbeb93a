@@ -19,6 +19,7 @@ import {
   Network, Settings2, Play, Rocket, Save, CheckSquare, Plug,
 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { listConnectables, publishPortAsService, createProxyForPort } from "@/lib/mesh.functions";
 import { toast } from "sonner";
 import {
@@ -94,9 +95,12 @@ function ServersPage() {
   const fetchConnectables = useServerFn(listConnectables);
   const publishPortFn = useServerFn(publishPortAsService);
   const proxyFn = useServerFn(createProxyForPort);
+  // Loaded lazily (only when the publish dialog needs it) to keep the first paint fast.
   const { data: connectables } = useQuery({
     queryKey: ["connectables"],
     queryFn: () => fetchConnectables({}),
+    enabled: publishPort !== null,
+    staleTime: 60_000,
   });
   const myWebsites = ((connectables as any)?.websites ?? []) as any[];
 
@@ -111,6 +115,7 @@ function ServersPage() {
     queryKey: ["servers"],
     queryFn: () => fetchServers(),
     refetchInterval: 30000,
+    staleTime: 15_000,
   });
 
   const { data: detailData } = useQuery({

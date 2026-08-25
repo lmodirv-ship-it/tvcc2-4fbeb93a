@@ -1,7 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
 import { supabase } from "@/integrations/supabase/client";
 
-export const PERMANENT_OWNER_EMAIL = "lmodirv@gmail.com";
+/** Permanent platform owners — protected in the database, never removable. */
+export const PERMANENT_OWNER_EMAILS = [
+  "lmodirv@gmail.com",
+  "info@hnchat.net",
+  "taltnamart@gmail.com",
+];
+
+export const PERMANENT_OWNER_EMAIL = PERMANENT_OWNER_EMAILS[0];
+
+export function isPermanentOwnerEmail(email?: string | null) {
+  return PERMANENT_OWNER_EMAILS.includes((email || "").toLowerCase());
+}
 
 export function useRoles() {
   const { data, isLoading } = useQuery({
@@ -18,7 +29,7 @@ export function useRoles() {
 
   const roles = data?.roles || [];
   const email = data?.email || "";
-  const isSystemOwner = roles.includes("system_owner") || email.toLowerCase() === PERMANENT_OWNER_EMAIL;
+  const isSystemOwner = roles.includes("system_owner") || isPermanentOwnerEmail(email);
 
   return {
     loading: isLoading,

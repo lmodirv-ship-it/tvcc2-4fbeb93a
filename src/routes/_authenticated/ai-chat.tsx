@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import {
   Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
 } from "@/components/ui/select";
-import { MessageSquare, Send, Loader2, Plus, Trash2, Wrench, Laptop } from "lucide-react";
+import { MessageSquare, Send, Loader2, Plus, Trash2, Wrench, Laptop, Plug, CheckCircle2, XCircle } from "lucide-react";
 import { toast } from "sonner";
 import { EDIT_COMMAND_HINT, hasEditCommand } from "@/lib/ai-write-command";
 import {
@@ -54,6 +54,7 @@ function AiChatPage() {
   const [selectedFiles, setSelectedFiles] = useState<string[]>([]);
   const [activeTasks, setActiveTasks] = useState<string[]>([]);
   const bottom = useRef<HTMLDivElement>(null);
+  const [conn, setConn] = useState<{ state: "idle" | "testing" | "ok" | "fail"; msg: string }>({ state: "idle", msg: "" });
 
 
   const { data } = useQuery({ queryKey: ["ai-hub"], queryFn: () => fetchAll() });
@@ -81,6 +82,34 @@ function AiChatPage() {
   useEffect(() => {
     bottom.current?.scrollIntoView({ behavior: "smooth" });
   }, [localMsgs, pending]);
+
+  const localBase = () =>
+    (current?.endpoint_url ?? currentProvider?.base_url ?? "http://192.168.100.66:11434").replace(/\/+$/, "");
+
+  /** Pings the local Ollama server directly from the browser so the user sees a live reachability status. */
+  const testConnection = async () => {
+    const base = localBase();
+    setConn({ state: "testing", msg: "" });
+    const ctrl = new AbortController();
+    const timer = setTimeout(() => ctrl.abort(), 6000);
+    try {
+      const res = await fetch(`${base}/api/tags`, { signal: ctrl.signal });
+      clearTimeout(timer);
+      if (!res.ok) throw new Error(`رد بحالة ${res.status}`);
+      const json: any = await res.json();
+      const count = Array.isArray(json?.models) ? json.models.length : 0;
+      setConn({ state: "ok", msg: `متصل — ${count} نموذجاً متاحاً` });
+    } catch (e) {
+      clearTimeout(timer);
+      const err = e as Error;
+      setConn({
+        state: "fail",
+        msg: err.name === "AbortError"
+          ? "انتهت المهلة — تأكد أن Ollama يعمل وأنك على نفس الشبكة"
+          : `تعذّر الوصول (${err.message})`,
+      });
+    }
+  };
 
   /** Local models live on the user's machine, so the browser calls them directly — with tools proxied through the server. */
   const sendLocal = async (text: string) => {
@@ -216,9 +245,29 @@ function AiChatPage() {
             لا توجد نماذج مفعّلة — <Link to="/ai-connect" className="text-primary underline">اربط مزوّداً</Link> أولاً.
           </CardContent></Card>
         )}
-        {isLocal && (
-          <div className="mb-3 text-xs text-muted-foreground flex items-center gap-1">
-            <Laptop className="w-3 h-3" /> نموذج محلي: يعمل من متصفحك مع نفس أدوات إدارة المواقع والملفات.
+        {(
+          <div className="mb-3 flex items-center gap-2 flex-wrap text-xs text-muted-foreground">
+            <Laptop className="w-3 h-3" />
+            {isLocal
+              ? "نموذج محلي: يعمل من متصفحك مع نفس أدوات إدارة المواقع والملفات."
+              : "الخادم المحلي Ollama:"}
+            <Button
+              size="sm"
+              variant="outline"
+              className="h-7"
+              disabled={conn.state === "testing"}
+              onClick={testConnection}
+            >
+              {conn.state === "testing" ? <Loader2 className="w-3 h-3 animate-spin ml-1" /> : <Plug className="w-3 h-3 ml-1" />}
+              اختبار الاتصال
+            </Button>
+            <span className="text-[11px]" dir="ltr">{localBase() || "—"}</span>
+            {conn.state === "ok" && (
+              <span className="flex items-center gap-1 text-success"><CheckCircle2 className="w-3 h-3" /> {conn.msg}</span>
+            )}
+            {conn.state === "fail" && (
+              <span className="flex items-center gap-1 text-destructive"><XCircle className="w-3 h-3" /> {conn.msg}</span>
+            )}
           </div>
         )}
 

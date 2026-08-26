@@ -7,7 +7,7 @@ TVCC_TOKEN="${token}"
 TVCC_ENDPOINT="${endpoint}"
 TVCC_AI_ENDPOINT="\${TVCC_AI_ENDPOINT:-http://127.0.0.1:11434}"
 TVCC_BACKUP_DIR="\${TVCC_BACKUP_DIR:-/var/backups/tvcc}"
-TVCC_AGENT_VERSION="2.8.0"
+TVCC_AGENT_VERSION="3.0.0"
 TVCC_HN_DIR="\${TVCC_HN_DIR:-/home/ismail/hn}"
 mkdir -p "$TVCC_BACKUP_DIR"
 mkdir -p "$TVCC_HN_DIR" 2>/dev/null || true
@@ -477,6 +477,206 @@ while true; do
   OS=$(. /etc/os-release 2>/dev/null && echo "$PRETTY_NAME" || uname -s)
   PUBLIC_IP=$( (curl -s --max-time 5 https://api.ipify.org || curl -s --max-time 5 https://ifconfig.me || echo "") | head -1 | tr -d '\\n')
   PRIVATE_IP=$(hostname -I 2>/dev/null | awk '{print $1}' | tr -d '\\n')
+  KERNEL=$(uname -r 2>/dev/null || echo "")
+  ARCH=$(uname -m 2>/dev/null || echo "")
+
+  # ---- v3 rich telemetry: disks, network, services, containers, security ----
+  EXTRA=$(TVCC_PREV_LAT="\${TVCC_PREV_LAT:-}" python3 <<'PYEOF'
+import json, os, glob, subprocess, time
+
+def sh(cmd, timeout=12):
+    try:
+        return subprocess.check_output(cmd, stderr=subprocess.DEVNULL, timeout=timeout).decode()
+    except Exception:
+        return ""
+
+out = {}
+try:
+    p = open("/proc/loadavg").read().split()
+    out["load5"] = float(p[1]); out["load15"] = float(p[2])
+except Exception: pass
+try:
+    out["cpu_cores"] = os.cpu_count()
+except Exception: pass
+try:
+    for l in open("/proc/cpuinfo"):
+        if l.startswith("model name") and "cpu_model" not in out:
+            out["cpu_model"] = l.split(":", 1)[1].strip()[:80]
+        if l.startswith("cpu MHz") and "cpu_mhz" not in out:
+            out["cpu_mhz"] = round(float(l.split(":", 1)[1].strip()))
+except Exception: pass
+for z in glob.glob("/sys/class/thermal/thermal_zone*/temp"):
+    try:
+        out["cpu_temp_c"] = round(int(open(z).read().strip()) / 1000, 1)
+        break
+    except Exception: pass
+try:
+    mi = {}
+    for l in open("/proc/meminfo"):
+        k, v = l.split(":", 1)
+        mi[k] = int(v.strip().split()[0])
+    out["mem_available_mb"] = round(mi.get("MemAvailable", 0) / 1024)
+    out["swap_total_mb"] = round(mi.get("SwapTotal", 0) / 1024)
+    out["swap_used_mb"] = round((mi.get("SwapTotal", 0) - mi.get("SwapFree", 0)) / 1024)
+except Exception: pass
+
+lat = os.environ.get("TVCC_PREV_LAT", "")
+out["latency_ms"] = float(lat) if lat else None
+
+try:
+    ps = sh(["ps", "-eo", "comm,%cpu,%mem", "--sort=-%cpu"])
+    tops = []
+    for l in ps.splitlines()[1:6]:
+        f = l.split()
+        if len(f) >= 3:
+            tops.append({"name": f[0][:40], "cpu": float(f[1]), "mem": float(f[2])})
+    out["top_processes"] = tops
+except Exception: pass
+
+now = time.time()
+prev = {}
+try: prev = json.load(open("/tmp/tvcc-net-prev.json"))
+except Exception: pass
+ifaces = []
+try:
+    for line in open("/proc/net/dev").read().splitlines()[2:]:
+        name, rest = line.split(":")
+        name = name.strip()
+        if name == "lo": continue
+        f = rest.split()
+        rx, tx = int(f[0]), int(f[8])
+        p = prev.get(name)
+        rx_bps = tx_bps = None
+        if p and now - p["ts"] > 0:
+            dt = now - p["ts"]
+            rx_bps = round(max(0, rx - p["rx"]) / dt)
+            tx_bps = round(max(0, tx - p["tx"]) / dt)
+        prev[name] = {"ts": now, "rx": rx, "tx": tx}
+        ifaces.append({"name": name, "rx_bps": rx_bps, "tx_bps": tx_bps,
+                       "rx_errors": int(f[2]), "tx_errors": int(f[10]),
+                       "rx_dropped": int(f[3]), "tx_dropped": int(f[11])})
+except Exception: pass
+try: json.dump(prev, open("/tmp/tvcc-net-prev.json", "w"))
+except Exception: pass
+out["net_interfaces"] = ifaces[:20]
+out["net_rx_bps"] = sum(i["rx_bps"] or 0 for i in ifaces) or None
+out["net_tx_bps"] = sum(i["tx_bps"] or 0 for i in ifaces) or None
+
+dprev = {}
+try: dprev = json.load(open("/tmp/tvcc-disk-prev.json"))
+except Exception: pass
+diskstats = {}
+try:
+    for l in open("/proc/diskstats"):
+        f = l.split()
+        if len(f) >= 14:
+            diskstats[f[2]] = (int(f[5]), int(f[9]))
+except Exception: pass
+disks = []
+try:
+    lines = sh(["df", "-B1", "--output=target,source,size,used", "-x", "tmpfs", "-x", "devtmpfs", "-x", "overlay", "-x", "squashfs"]).splitlines()[1:]
+    ipct = {}
+    for l in sh(["df", "-i", "--output=target,ipcent", "-x", "tmpfs", "-x", "devtmpfs", "-x", "overlay", "-x", "squashfs"]).splitlines()[1:]:
+        p = l.split()
+        if len(p) >= 2: ipct[p[0]] = p[1].rstrip("%")
+    seen = set()
+    for l in lines:
+        p = l.split()
+        if len(p) < 4 or p[0] in seen: continue
+        seen.add(p[0])
+        size, used = int(p[2]), int(p[3])
+        if size <= 0: continue
+        dev = p[1].split("/")[-1]
+        rd = wr = None
+        d = None
+        for cand in (dev, dev.rstrip("0123456789"), dev.rstrip("p0123456789")):
+            if cand in diskstats:
+                d = diskstats[cand]; break
+        if d:
+            pp = dprev.get(p[1])
+            if pp and now - pp["ts"] > 0:
+                dt = now - pp["ts"]
+                rd = round(max(0, d[0] - pp["r"]) * 512 / dt)
+                wr = round(max(0, d[1] - pp["w"]) * 512 / dt)
+            dprev[p[1]] = {"ts": now, "r": d[0], "w": d[1]}
+        try: ip = float(ipct.get(p[0], "0") or 0)
+        except Exception: ip = 0
+        disks.append({"mount": p[0], "device": p[1], "total_gb": round(size / 1073741824, 2),
+                      "used_gb": round(used / 1073741824, 2), "read_bps": rd, "write_bps": wr,
+                      "inodes_pct": ip, "health": "ok"})
+except Exception: pass
+try: json.dump(dprev, open("/tmp/tvcc-disk-prev.json", "w"))
+except Exception: pass
+out["disks"] = disks[:20]
+
+names = ["nginx", "apache2", "postgresql", "mysql", "mariadb", "docker", "containerd",
+         "redis-server", "ollama", "ssh", "sshd", "ufw", "fail2ban", "dnsmasq", "cron", "tvcc-agent"]
+try:
+    for l in sh(["systemctl", "list-units", "--type=service", "--all", "--no-legend", "--no-pager"]).splitlines():
+        n = l.split()[0].replace(".service", "")
+        if n.startswith("tvcc-") and n not in names: names.append(n)
+except Exception: pass
+services = []
+for n in names:
+    rc = subprocess.run(["systemctl", "status", n], stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL).returncode
+    if rc == 4: continue
+    st = sh(["systemctl", "is-active", n]).strip() or "unknown"
+    if st == "unknown": continue
+    sub = sh(["systemctl", "show", n, "-p", "SubState", "--value"]).strip()
+    rst = sh(["systemctl", "show", n, "-p", "NRestarts", "--value"]).strip()
+    services.append({"name": n, "status": st, "sub_status": sub or None,
+                     "restarts": int(rst) if rst.isdigit() else None})
+out["services"] = services[:60]
+
+containers = []
+if sh(["sh", "-c", "command -v docker"]).strip():
+    stats = {}
+    try:
+        for l in sh(["docker", "stats", "--no-stream", "--format", "{{.Name}}|{{.CPUPerc}}|{{.MemUsage}}"], timeout=20).splitlines():
+            f = l.split("|")
+            if len(f) >= 3: stats[f[0]] = (f[1], f[2])
+    except Exception: pass
+    try:
+        for l in sh(["docker", "ps", "-a", "--format", "{{.Names}}|{{.Image}}|{{.Status}}|{{.State}}|{{.Ports}}"], timeout=15).splitlines():
+            f = l.split("|")
+            if len(f) < 5: continue
+            name, image, status, state, ports = f[0], f[1], f[2], f[3], f[4]
+            cpu = None; mb = None
+            if name in stats:
+                cpu = stats[name][0].rstrip("%")
+                memraw = stats[name][1].split("/")[0].strip()
+                try:
+                    if memraw.endswith("GiB"): mb = round(float(memraw[:-3]) * 1024, 1)
+                    elif memraw.endswith("MiB"): mb = round(float(memraw[:-3]), 1)
+                    elif memraw.endswith("KiB"): mb = round(float(memraw[:-3]) / 1024, 2)
+                except Exception: pass
+            rst = sh(["docker", "inspect", "-f", "{{.RestartCount}}", name]).strip()
+            containers.append({"name": name, "image": image[:80], "status": status[:80], "state": state,
+                               "cpu_pct": float(cpu) if cpu else None, "mem_mb": mb,
+                               "restarts": int(rst) if rst.isdigit() else None,
+                               "ports": ports[:120] or None})
+    except Exception: pass
+out["containers"] = containers[:50]
+
+sec = {}
+try:
+    failed = sh(["sh", "-c", "journalctl -u ssh -u sshd --since '24 hours ago' --no-pager 2>/dev/null | grep -ci 'failed password'"])
+    if not failed.strip().isdigit():
+        failed = sh(["sh", "-c", "grep -ci 'failed password' /var/log/auth.log 2>/dev/null"])
+    sec["failed_ssh_24h"] = int(failed.strip()) if failed.strip().isdigit() else 0
+except Exception: sec["failed_ssh_24h"] = 0
+try:
+    up = sh(["sh", "-c", "apt list --upgradable 2>/dev/null | tail -n +2 | wc -l"], timeout=30)
+    sec["updates_pending"] = int(up.strip()) if up.strip().isdigit() else 0
+except Exception: sec["updates_pending"] = 0
+sec["firewall_active"] = "Status: active" in sh(["ufw", "status"])
+w = sh(["sh", "-c", "who | wc -l"])
+sec["active_users"] = int(w.strip()) if w.strip().isdigit() else 0
+out["security"] = sec
+
+print(json.dumps(out))
+PYEOF
+)
 
   # Detect a TVCC platform copy running on this server (pm2 process, service or /opt/tvcc)
   TVCC_NODE=false
@@ -526,9 +726,16 @@ for kind,p in paths:
 print(json.dumps(out))' 2>/dev/null || echo "[]")
   fi
 
-  BODY="{\\"cpu_percent\\":\${CPU:-0},\\"mem_used_mb\\":\${MEM_USED:-0},\\"mem_total_mb\\":\${MEM_TOTAL:-0},\\"disk_used_gb\\":\${DISK_USED:-0},\\"disk_total_gb\\":\${DISK_TOTAL:-0},\\"load_avg\\":\${LOAD:-0},\\"uptime_seconds\\":\${UPTIME:-0},\\"process_count\\":\${PROCS:-0},\\"os\\":\\"\${OS}\\",\\"agent_version\\":\\"\${TVCC_AGENT_VERSION}\\",\\"public_ip\\":\\"\${PUBLIC_IP}\\",\\"private_ip\\":\\"\${PRIVATE_IP}\\",\\"is_tvcc_node\\":\${TVCC_NODE},\\"tvcc_version\\":\\"\${TVCC_VERSION}\\",\\"ai_endpoint\\":\\"\${TVCC_AI_ENDPOINT}\\",\\"ai_models\\":\${AI_MODELS},\\"ports\\":\${PORTS},\\"configs\\":\${CONFIGS}}"
+  BODY="{\\"cpu_percent\\":\${CPU:-0},\\"mem_used_mb\\":\${MEM_USED:-0},\\"mem_total_mb\\":\${MEM_TOTAL:-0},\\"disk_used_gb\\":\${DISK_USED:-0},\\"disk_total_gb\\":\${DISK_TOTAL:-0},\\"load_avg\\":\${LOAD:-0},\\"uptime_seconds\\":\${UPTIME:-0},\\"process_count\\":\${PROCS:-0},\\"os\\":\\"\${OS}\\",\\"kernel\\":\\"\${KERNEL}\\",\\"arch\\":\\"\${ARCH}\\",\\"agent_version\\":\\"\${TVCC_AGENT_VERSION}\\",\\"public_ip\\":\\"\${PUBLIC_IP}\\",\\"private_ip\\":\\"\${PRIVATE_IP}\\",\\"is_tvcc_node\\":\${TVCC_NODE},\\"tvcc_version\\":\\"\${TVCC_VERSION}\\",\\"ai_endpoint\\":\\"\${TVCC_AI_ENDPOINT}\\",\\"ai_models\\":\${AI_MODELS},\\"ports\\":\${PORTS},\\"configs\\":\${CONFIGS}}"
+  if [ -n "\${EXTRA:-}" ]; then
+    BODY=$(python3 -c 'import sys,json
+b=json.loads(sys.argv[1]); b.update(json.loads(sys.argv[2])); print(json.dumps(b))' "$BODY" "$EXTRA" 2>/dev/null || echo "$BODY")
+  fi
 
+  T0=$(date +%s%3N)
   RESP=$(post "$BODY")
+  T1=$(date +%s%3N)
+  TVCC_PREV_LAT=$((T1-T0))
 
   # Execute any queued whitelisted commands, then report results back.
   CMDS=$(echo "$RESP" | python3 -c 'import sys,json;print(json.dumps(json.load(sys.stdin).get("commands",[])))' 2>/dev/null || echo "[]")
@@ -552,7 +759,7 @@ print(json.dumps(out))' 2>/dev/null || echo "[]")
     post "{\\"agent_version\\":\\"\${TVCC_AGENT_VERSION}\\",\\"command_results\\":$RESULTS}" >/dev/null
   fi
 
-  sleep 60
+  sleep 15
 done
 `;
 }

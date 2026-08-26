@@ -2768,6 +2768,156 @@ export type Database = {
           },
         ]
       }
+      server_containers: {
+        Row: {
+          cpu_pct: number | null
+          id: string
+          image: string | null
+          last_seen_at: string
+          mem_mb: number | null
+          name: string
+          owner_id: string
+          ports: string | null
+          restarts: number | null
+          server_id: string
+          state: string | null
+          status: string | null
+        }
+        Insert: {
+          cpu_pct?: number | null
+          id?: string
+          image?: string | null
+          last_seen_at?: string
+          mem_mb?: number | null
+          name: string
+          owner_id: string
+          ports?: string | null
+          restarts?: number | null
+          server_id: string
+          state?: string | null
+          status?: string | null
+        }
+        Update: {
+          cpu_pct?: number | null
+          id?: string
+          image?: string | null
+          last_seen_at?: string
+          mem_mb?: number | null
+          name?: string
+          owner_id?: string
+          ports?: string | null
+          restarts?: number | null
+          server_id?: string
+          state?: string | null
+          status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "server_containers_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      server_disks: {
+        Row: {
+          device: string | null
+          health: string | null
+          id: string
+          inodes_pct: number | null
+          iops: number | null
+          last_seen_at: string
+          mount: string
+          owner_id: string
+          read_bps: number | null
+          server_id: string
+          total_gb: number | null
+          used_gb: number | null
+          write_bps: number | null
+        }
+        Insert: {
+          device?: string | null
+          health?: string | null
+          id?: string
+          inodes_pct?: number | null
+          iops?: number | null
+          last_seen_at?: string
+          mount: string
+          owner_id: string
+          read_bps?: number | null
+          server_id: string
+          total_gb?: number | null
+          used_gb?: number | null
+          write_bps?: number | null
+        }
+        Update: {
+          device?: string | null
+          health?: string | null
+          id?: string
+          inodes_pct?: number | null
+          iops?: number | null
+          last_seen_at?: string
+          mount?: string
+          owner_id?: string
+          read_bps?: number | null
+          server_id?: string
+          total_gb?: number | null
+          used_gb?: number | null
+          write_bps?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "server_disks_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      server_events: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          message: string
+          meta: Json | null
+          owner_id: string
+          server_id: string
+          severity: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          message: string
+          meta?: Json | null
+          owner_id: string
+          server_id: string
+          severity?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          message?: string
+          meta?: Json | null
+          owner_id?: string
+          server_id?: string
+          severity?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "server_events_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       server_ip_history: {
         Row: {
           created_at: string
@@ -2869,49 +3019,135 @@ export type Database = {
       server_metrics: {
         Row: {
           collected_at: string
+          cpu_cores: number | null
+          cpu_mhz: number | null
           cpu_percent: number | null
+          cpu_temp_c: number | null
           disk_total_gb: number | null
           disk_used_gb: number | null
           id: string
+          latency_ms: number | null
           load_avg: number | null
+          load15: number | null
+          load5: number | null
+          mem_available_mb: number | null
           mem_total_mb: number | null
           mem_used_mb: number | null
+          net_rx_bps: number | null
+          net_tx_bps: number | null
           owner_id: string
           process_count: number | null
           server_id: string
+          swap_total_mb: number | null
+          swap_used_mb: number | null
+          top_processes: Json | null
           uptime_seconds: number | null
         }
         Insert: {
           collected_at?: string
+          cpu_cores?: number | null
+          cpu_mhz?: number | null
           cpu_percent?: number | null
+          cpu_temp_c?: number | null
           disk_total_gb?: number | null
           disk_used_gb?: number | null
           id?: string
+          latency_ms?: number | null
           load_avg?: number | null
+          load15?: number | null
+          load5?: number | null
+          mem_available_mb?: number | null
           mem_total_mb?: number | null
           mem_used_mb?: number | null
+          net_rx_bps?: number | null
+          net_tx_bps?: number | null
           owner_id: string
           process_count?: number | null
           server_id: string
+          swap_total_mb?: number | null
+          swap_used_mb?: number | null
+          top_processes?: Json | null
           uptime_seconds?: number | null
         }
         Update: {
           collected_at?: string
+          cpu_cores?: number | null
+          cpu_mhz?: number | null
           cpu_percent?: number | null
+          cpu_temp_c?: number | null
           disk_total_gb?: number | null
           disk_used_gb?: number | null
           id?: string
+          latency_ms?: number | null
           load_avg?: number | null
+          load15?: number | null
+          load5?: number | null
+          mem_available_mb?: number | null
           mem_total_mb?: number | null
           mem_used_mb?: number | null
+          net_rx_bps?: number | null
+          net_tx_bps?: number | null
           owner_id?: string
           process_count?: number | null
           server_id?: string
+          swap_total_mb?: number | null
+          swap_used_mb?: number | null
+          top_processes?: Json | null
           uptime_seconds?: number | null
         }
         Relationships: [
           {
             foreignKeyName: "server_metrics_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      server_net_interfaces: {
+        Row: {
+          id: string
+          last_seen_at: string
+          name: string
+          owner_id: string
+          rx_bps: number | null
+          rx_dropped: number | null
+          rx_errors: number | null
+          server_id: string
+          tx_bps: number | null
+          tx_dropped: number | null
+          tx_errors: number | null
+        }
+        Insert: {
+          id?: string
+          last_seen_at?: string
+          name: string
+          owner_id: string
+          rx_bps?: number | null
+          rx_dropped?: number | null
+          rx_errors?: number | null
+          server_id: string
+          tx_bps?: number | null
+          tx_dropped?: number | null
+          tx_errors?: number | null
+        }
+        Update: {
+          id?: string
+          last_seen_at?: string
+          name?: string
+          owner_id?: string
+          rx_bps?: number | null
+          rx_dropped?: number | null
+          rx_errors?: number | null
+          server_id?: string
+          tx_bps?: number | null
+          tx_dropped?: number | null
+          tx_errors?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "server_net_interfaces_server_id_fkey"
             columns: ["server_id"]
             isOneToOne: false
             referencedRelation: "servers"
@@ -2974,6 +3210,85 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "server_ports_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      server_security: {
+        Row: {
+          active_users: number | null
+          failed_ssh_24h: number | null
+          firewall_active: boolean | null
+          owner_id: string
+          server_id: string
+          updated_at: string
+          updates_pending: number | null
+        }
+        Insert: {
+          active_users?: number | null
+          failed_ssh_24h?: number | null
+          firewall_active?: boolean | null
+          owner_id: string
+          server_id: string
+          updated_at?: string
+          updates_pending?: number | null
+        }
+        Update: {
+          active_users?: number | null
+          failed_ssh_24h?: number | null
+          firewall_active?: boolean | null
+          owner_id?: string
+          server_id?: string
+          updated_at?: string
+          updates_pending?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "server_security_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: true
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      server_services: {
+        Row: {
+          id: string
+          last_seen_at: string
+          name: string
+          owner_id: string
+          restarts: number | null
+          server_id: string
+          status: string
+          sub_status: string | null
+        }
+        Insert: {
+          id?: string
+          last_seen_at?: string
+          name: string
+          owner_id: string
+          restarts?: number | null
+          server_id: string
+          status?: string
+          sub_status?: string | null
+        }
+        Update: {
+          id?: string
+          last_seen_at?: string
+          name?: string
+          owner_id?: string
+          restarts?: number | null
+          server_id?: string
+          status?: string
+          sub_status?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "server_services_server_id_fkey"
             columns: ["server_id"]
             isOneToOne: false
             referencedRelation: "servers"

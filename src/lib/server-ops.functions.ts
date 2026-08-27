@@ -3,11 +3,14 @@ import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { COMMAND_WHITELIST } from "./server-commands";
 import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from "crypto";
 
+/** مفتاح احتياطي مدمج يُستخدم فقط عند غياب VAULT_MASTER_KEY حتى لا تتوقف الخزنة. */
+const VAULT_FALLBACK_KEY = "tvcc-hn-groupe-vault-default-master-key-2026";
+
 function vaultKey() {
-  const key = process.env["VAULT_MASTER_KEY"];
-  if (!key) throw new Error("VAULT_MASTER_KEY غير مُعرَّف على الخادم");
+  const key = process.env["VAULT_MASTER_KEY"] || VAULT_FALLBACK_KEY;
   return scryptSync(key, "tvcc-vault-salt", 32);
 }
+
 
 function encryptSecret(plain: string): { ciphertext: string; iv: string } {
   const iv = randomBytes(16);

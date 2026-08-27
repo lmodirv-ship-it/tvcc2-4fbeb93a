@@ -1,6 +1,45 @@
 /** Server-only helpers for the AI hub. Kept out of *.functions.ts so the
  * server-function splitter cannot strip them. */
 import { AI_TOOLS } from "./ai-tools.server";
+import { createDecipheriv, scryptSync } from "crypto";
+
+const VAULT_FALLBACK_KEY = "tvcc-hn-groupe-vault-default-master-key-2026";
+
+function vaultDecrypt(ciphertext: string, iv: string): string {
+  const key = scryptSync(process.env["VAULT_MASTER_KEY"] || VAULT_FALLBACK_KEY, "tvcc-vault-salt", 32);
+  const buf = Buffer.from(ciphertext, "base64");
+  const decipher = createDecipheriv("aes-256-gcm", key, Buffer.from(iv, "base64"));
+  decipher.setAuthTag(buf.subarray(0, 16));
+  return Buffer.concat([decipher.update(buf.subarray(16)), decipher.final()]).toString("utf8");
+}
+
+/** Vendor -> accepted secret names inside the vault (case-insensitive). */
+const VENDOR_SECRET_NAMES: Record<string, string[]> = {
+  gemini: ["GEMINI_API_KEY", "apikeygemini", "GOOGLE_API_KEY"],
+  ollama_cloud: ["OLLAMA_API_KEY", "ollamatvv", "ollamatvcc"],
+  openai: ["OPENAI_API_KEY"],
+};
+
+/**
+ * If a provider has no stored key, try to pull one from the encrypted vault
+ * so that adding e.g. GEMINI_API_KEY in /vault instantly enables chat.
+ */
+export async function withVaultKey(sb: any, provider: any): Promise<any> {
+  if (!provider || provider.api_key_encrypted) return provider;
+  const names = VENDOR_SECRET_NAMES[provider.vendor];
+  if (!names) return provider;
+  try {
+    const { data: rows } = await sb.from("vault_secrets").select("name, encrypted_value, iv");
+    const wanted = names.map((n) => n.toLowerCase());
+    const hit = (rows ?? []).find((r: any) => wanted.includes(String(r.name).toLowerCase()));
+    if (!hit) return provider;
+    return { ...provider, api_key_encrypted: vaultDecrypt(hit.encrypted_value, hit.iv) };
+  } catch {
+    return provider;
+  }
+}
+
+
 
 export const GATEWAY = "https://ai.gateway.lovable.dev/v1";
 export const DEFAULT_PROMPT = "قل: مرحباً من TVCC. بجملة واحدة فقط.";
@@ -21,7 +60,7 @@ export const OLLAMA_CLOUD_BASE = "https://ollama.com";
 
 /** Ollama Cloud key stored in project secrets (ollamatvv). */
 export function ollamaCloudKey(): string {
-  const key = process.env["ollamatvv"] ?? process.env["OLLAMATVV"] ?? "";
+  const key = process.env["ollamatvv"] ?? process.env["OLLAMATVV"] ?? process.env["ollamatvcc"] ?? "";
   if (!key) throw new Error("مفتاح Ollama Cloud غير مُهيّأ في الأسرار (ollamatvv)");
   return key;
 }

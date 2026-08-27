@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { hasEditCommand } from "./ai-write-command";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 import { AI_TOOLS, runTool } from "./ai-tools.server";
-import { GATEWAY, DEFAULT_PROMPT, callModel, providerModels, type ChatMsg, type TestParams } from "./ai-hub.server";
+import { GATEWAY, DEFAULT_PROMPT, callModel, providerModels, withVaultKey, type ChatMsg, type TestParams } from "./ai-hub.server";
 
 
 
@@ -307,12 +307,13 @@ export const aiChat = createServerFn({ method: "POST" })
     const sb = context.supabase as any;
     const { data: model } = await sb.from("ai_models").select("*").eq("id", data.modelId).maybeSingle();
     if (!model) throw new Error("النموذج غير موجود");
-    const { data: provider } = await sb
+    const { data: providerRow } = await sb
       .from("ai_providers")
       .select("*")
       .eq("id", model.provider_id)
       .maybeSingle();
-    if (!provider) throw new Error("المزوّد غير موجود");
+    if (!providerRow) throw new Error("المزوّد غير موجود");
+    const provider = await withVaultKey(sb, providerRow);
 
     // conversation
     let conversationId = data.conversationId ?? null;
@@ -493,8 +494,9 @@ export const testAiModel = createServerFn({ method: "POST" })
     const sb = context.supabase as any;
     const { data: model } = await sb.from("ai_models").select("*").eq("id", data.id).maybeSingle();
     if (!model) throw new Error("النموذج غير موجود");
-    const { data: provider } = await sb.from("ai_providers").select("*").eq("id", model.provider_id).maybeSingle();
-    if (!provider) throw new Error("المزوّد غير موجود");
+    const { data: providerRow } = await sb.from("ai_providers").select("*").eq("id", model.provider_id).maybeSingle();
+    if (!providerRow) throw new Error("المزوّد غير موجود");
+    const provider = await withVaultKey(sb, providerRow);
 
     const prompt = data.prompt?.trim() || DEFAULT_PROMPT;
     const params = data.params ?? {};

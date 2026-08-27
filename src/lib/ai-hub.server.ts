@@ -60,7 +60,7 @@ export const OLLAMA_CLOUD_BASE = "https://ollama.com";
 
 /** Ollama Cloud key stored in project secrets (ollamatvv). */
 export function ollamaCloudKey(): string {
-  const key = process.env["ollamatvv"] ?? process.env["OLLAMATVV"] ?? "";
+  const key = process.env["ollamatvv"] ?? process.env["OLLAMATVV"] ?? process.env["ollamatvcc"] ?? "";
   if (!key) throw new Error("مفتاح Ollama Cloud غير مُهيّأ في الأسرار (ollamatvv)");
   return key;
 }

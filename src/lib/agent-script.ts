@@ -7,10 +7,18 @@ TVCC_TOKEN="${token}"
 TVCC_ENDPOINT="${endpoint}"
 TVCC_AI_ENDPOINT="\${TVCC_AI_ENDPOINT:-http://127.0.0.1:11434}"
 TVCC_BACKUP_DIR="\${TVCC_BACKUP_DIR:-/var/backups/tvcc}"
-TVCC_AGENT_VERSION="3.0.0"
+TVCC_AGENT_VERSION="3.1.0"
+TVCC_HEARTBEAT_INTERVAL="\${TVCC_HEARTBEAT_INTERVAL:-180}"
 TVCC_HN_DIR="\${TVCC_HN_DIR:-/home/ismail/hn}"
 mkdir -p "$TVCC_BACKUP_DIR"
 mkdir -p "$TVCC_HN_DIR" 2>/dev/null || true
+# stable agent id per machine
+TVCC_AGENT_ID=$(cat /etc/tvcc-agent-id 2>/dev/null || true)
+if [ -z "\${TVCC_AGENT_ID:-}" ]; then
+  TVCC_AGENT_ID=$( (cat /etc/machine-id 2>/dev/null || head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \\n') )
+  echo "$TVCC_AGENT_ID" > /etc/tvcc-agent-id 2>/dev/null || true
+fi
+
 
 json_escape() { python3 -c 'import sys,json;print(json.dumps(sys.stdin.read()))'; }
 
@@ -466,11 +474,66 @@ EOF
 }
 
 while true; do
-  CPU=$(top -bn1 | awk '/Cpu\\(s\\)/{print 100 - $8}' | head -1)
-  MEM_TOTAL=$(free -m | awk '/Mem:/{print $2}')
-  MEM_USED=$(free -m | awk '/Mem:/{print $3}')
-  DISK_TOTAL=$(df -BG --output=size / | tail -1 | tr -dc '0-9')
-  DISK_USED=$(df -BG --output=used / | tail -1 | tr -dc '0-9')
+  # ---- real OS metrics: /proc/stat, /proc/meminfo, df -B1 / ----
+  CORE=$(python3 <<'PYEOF'
+import json, time
+
+def cpu_sample():
+    with open("/proc/stat") as f:
+        p = f.readline().split()[1:]
+    v = [int(x) for x in p]
+    idle = v[3] + (v[4] if len(v) > 4 else 0)
+    return sum(v), idle
+
+t1, i1 = cpu_sample()
+time.sleep(1)
+t2, i2 = cpu_sample()
+dt, di = t2 - t1, i2 - i1
+cpu = round(max(0.0, min(100.0, (1 - di / dt) * 100)), 2) if dt > 0 else 0.0
+
+mi = {}
+with open("/proc/meminfo") as f:
+    for line in f:
+        k, val = line.split(":", 1)
+        mi[k] = int(val.strip().split()[0]) * 1024  # bytes
+mem_total = mi.get("MemTotal", 0)
+mem_avail = mi.get("MemAvailable", mi.get("MemFree", 0))
+mem_used = max(0, mem_total - mem_avail)
+
+import subprocess
+disk_total = disk_used = 0
+try:
+    out = subprocess.check_output(["df", "-B1", "--output=size,used", "/"], stderr=subprocess.DEVNULL).decode()
+    parts = out.strip().splitlines()[-1].split()
+    disk_total, disk_used = int(parts[0]), int(parts[1])
+except Exception:
+    pass
+
+with open("/proc/uptime") as f:
+    up = int(float(f.read().split()[0]))
+
+print(json.dumps({
+    "cpu_percent": cpu,
+    "memory_used_bytes": mem_used,
+    "memory_total_bytes": mem_total,
+    "memory_available_bytes": mem_avail,
+    "disk_used_bytes": disk_used,
+    "disk_total_bytes": disk_total,
+    "mem_used_mb": round(mem_used / 1048576),
+    "mem_total_mb": round(mem_total / 1048576),
+    "disk_used_gb": round(disk_used / 1073741824, 2),
+    "disk_total_gb": round(disk_total / 1073741824, 2),
+    "uptime_seconds": up,
+    "sent_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+}))
+PYEOF
+)
+  [ -z "$CORE" ] && CORE='{}'
+  CPU=$(echo "$CORE" | python3 -c 'import sys,json;print(json.load(sys.stdin).get("cpu_percent",0))' 2>/dev/null || echo 0)
+  MEM_TOTAL=$(echo "$CORE" | python3 -c 'import sys,json;print(json.load(sys.stdin).get("mem_total_mb",0))' 2>/dev/null || echo 0)
+  MEM_USED=$(echo "$CORE" | python3 -c 'import sys,json;print(json.load(sys.stdin).get("mem_used_mb",0))' 2>/dev/null || echo 0)
+  DISK_TOTAL=$(echo "$CORE" | python3 -c 'import sys,json;print(json.load(sys.stdin).get("disk_total_gb",0))' 2>/dev/null || echo 0)
+  DISK_USED=$(echo "$CORE" | python3 -c 'import sys,json;print(json.load(sys.stdin).get("disk_used_gb",0))' 2>/dev/null || echo 0)
   LOAD=$(awk '{print $1}' /proc/loadavg)
   UPTIME=$(awk '{print int($1)}' /proc/uptime)
   PROCS=$(ps -e --no-headers | wc -l)
@@ -479,6 +542,7 @@ while true; do
   PRIVATE_IP=$(hostname -I 2>/dev/null | awk '{print $1}' | tr -d '\\n')
   KERNEL=$(uname -r 2>/dev/null || echo "")
   ARCH=$(uname -m 2>/dev/null || echo "")
+
 
   # ---- v3 rich telemetry: disks, network, services, containers, security ----
   EXTRA=$(TVCC_PREV_LAT="\${TVCC_PREV_LAT:-}" python3 <<'PYEOF'
@@ -726,11 +790,15 @@ for kind,p in paths:
 print(json.dumps(out))' 2>/dev/null || echo "[]")
   fi
 
-  BODY="{\\"cpu_percent\\":\${CPU:-0},\\"mem_used_mb\\":\${MEM_USED:-0},\\"mem_total_mb\\":\${MEM_TOTAL:-0},\\"disk_used_gb\\":\${DISK_USED:-0},\\"disk_total_gb\\":\${DISK_TOTAL:-0},\\"load_avg\\":\${LOAD:-0},\\"uptime_seconds\\":\${UPTIME:-0},\\"process_count\\":\${PROCS:-0},\\"os\\":\\"\${OS}\\",\\"kernel\\":\\"\${KERNEL}\\",\\"arch\\":\\"\${ARCH}\\",\\"agent_version\\":\\"\${TVCC_AGENT_VERSION}\\",\\"public_ip\\":\\"\${PUBLIC_IP}\\",\\"private_ip\\":\\"\${PRIVATE_IP}\\",\\"is_tvcc_node\\":\${TVCC_NODE},\\"tvcc_version\\":\\"\${TVCC_VERSION}\\",\\"ai_endpoint\\":\\"\${TVCC_AI_ENDPOINT}\\",\\"ai_models\\":\${AI_MODELS},\\"ports\\":\${PORTS},\\"configs\\":\${CONFIGS}}"
-  if [ -n "\${EXTRA:-}" ]; then
-    BODY=$(python3 -c 'import sys,json
-b=json.loads(sys.argv[1]); b.update(json.loads(sys.argv[2])); print(json.dumps(b))' "$BODY" "$EXTRA" 2>/dev/null || echo "$BODY")
-  fi
+  BODY="{\\"server_id\\":\\"\${TVCC_SERVER_ID}\\",\\"agent_id\\":\\"\${TVCC_AGENT_ID}\\",\\"cpu_percent\\":\${CPU:-0},\\"mem_used_mb\\":\${MEM_USED:-0},\\"mem_total_mb\\":\${MEM_TOTAL:-0},\\"disk_used_gb\\":\${DISK_USED:-0},\\"disk_total_gb\\":\${DISK_TOTAL:-0},\\"load_avg\\":\${LOAD:-0},\\"uptime_seconds\\":\${UPTIME:-0},\\"process_count\\":\${PROCS:-0},\\"os\\":\\"\${OS}\\",\\"kernel\\":\\"\${KERNEL}\\",\\"arch\\":\\"\${ARCH}\\",\\"agent_version\\":\\"\${TVCC_AGENT_VERSION}\\",\\"public_ip\\":\\"\${PUBLIC_IP}\\",\\"private_ip\\":\\"\${PRIVATE_IP}\\",\\"is_tvcc_node\\":\${TVCC_NODE},\\"tvcc_version\\":\\"\${TVCC_VERSION}\\",\\"ai_endpoint\\":\\"\${TVCC_AI_ENDPOINT}\\",\\"ai_models\\":\${AI_MODELS},\\"ports\\":\${PORTS},\\"configs\\":\${CONFIGS}}"
+  BODY=$(python3 -c 'import sys,json
+b=json.loads(sys.argv[1])
+for extra in sys.argv[2:]:
+    if extra:
+        try: b.update(json.loads(extra))
+        except Exception: pass
+print(json.dumps(b))' "$BODY" "$CORE" "\${EXTRA:-}" 2>/dev/null || echo "$BODY")
+
 
   T0=$(date +%s%3N)
   RESP=$(post "$BODY")
@@ -759,7 +827,7 @@ b=json.loads(sys.argv[1]); b.update(json.loads(sys.argv[2])); print(json.dumps(b
     post "{\\"agent_version\\":\\"\${TVCC_AGENT_VERSION}\\",\\"command_results\\":$RESULTS}" >/dev/null
   fi
 
-  sleep 15
+  sleep "\${TVCC_HEARTBEAT_INTERVAL}"
 done
 `;
 }

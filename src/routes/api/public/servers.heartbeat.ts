@@ -214,11 +214,22 @@ export const Route = createFileRoute("/api/public/servers/heartbeat")({
         if (!server) return new Response("Unknown server", { status: 404, headers: CORS });
 
         const now = new Date().toISOString();
+        // Agent v3.1 sends raw byte counters; keep MB/GB columns as the source of truth.
+        const bytes = (v: unknown, div: number) => {
+          const n = num(v);
+          return n === null ? null : Math.round((n / div) * 100) / 100;
+        };
         const cpu = num(body.cpu_percent);
-        const memUsed = num(body.mem_used_mb);
-        const memTotal = num(body.mem_total_mb);
-        const diskUsed = num(body.disk_used_gb);
-        const diskTotal = num(body.disk_total_gb);
+        const memUsed = num(body.mem_used_mb) ?? bytes(body.memory_used_bytes, 1048576);
+        const memTotal = num(body.mem_total_mb) ?? bytes(body.memory_total_bytes, 1048576);
+        const diskUsed = num(body.disk_used_gb) ?? bytes(body.disk_used_bytes, 1073741824);
+        const diskTotal = num(body.disk_total_gb) ?? bytes(body.disk_total_bytes, 1073741824);
+        // Prefer the agent's own UTC measurement time when it is sane.
+        const sentAt = typeof body.sent_at === "string" && !Number.isNaN(Date.parse(body.sent_at))
+          ? new Date(body.sent_at).toISOString()
+          : now;
+        const agentId = typeof body.agent_id === "string" ? body.agent_id.slice(0, 64) : null;
+
 
         const worst = Math.max(
           cpu ?? 0,
@@ -264,6 +275,12 @@ export const Route = createFileRoute("/api/public/servers/heartbeat")({
             metadata: {
               ai_endpoint: typeof body.ai_endpoint === "string" ? body.ai_endpoint : null,
               ai_models: Array.isArray(body.ai_models) ? body.ai_models.slice(0, 100) : [],
+              agent_id: agentId,
+              last_sent_at: sentAt,
+              memory_used_bytes: num(body.memory_used_bytes),
+              memory_total_bytes: num(body.memory_total_bytes),
+              disk_used_bytes: num(body.disk_used_bytes),
+              disk_total_bytes: num(body.disk_total_bytes),
             },
           })
           .eq("id", serverId);
@@ -280,7 +297,7 @@ export const Route = createFileRoute("/api/public/servers/heartbeat")({
           load_avg: num(body.load_avg),
           uptime_seconds: num(body.uptime_seconds),
           process_count: num(body.process_count),
-          collected_at: now,
+          collected_at: sentAt,
         });
 
         await evaluateAlerts(admin, serverId, server.owner_id, {

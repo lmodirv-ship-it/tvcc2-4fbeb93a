@@ -7,10 +7,18 @@ TVCC_TOKEN="${token}"
 TVCC_ENDPOINT="${endpoint}"
 TVCC_AI_ENDPOINT="\${TVCC_AI_ENDPOINT:-http://127.0.0.1:11434}"
 TVCC_BACKUP_DIR="\${TVCC_BACKUP_DIR:-/var/backups/tvcc}"
-TVCC_AGENT_VERSION="3.0.0"
+TVCC_AGENT_VERSION="3.1.0"
+TVCC_HEARTBEAT_INTERVAL="\${TVCC_HEARTBEAT_INTERVAL:-180}"
 TVCC_HN_DIR="\${TVCC_HN_DIR:-/home/ismail/hn}"
 mkdir -p "$TVCC_BACKUP_DIR"
 mkdir -p "$TVCC_HN_DIR" 2>/dev/null || true
+# stable agent id per machine
+TVCC_AGENT_ID=$(cat /etc/tvcc-agent-id 2>/dev/null || true)
+if [ -z "\${TVCC_AGENT_ID:-}" ]; then
+  TVCC_AGENT_ID=$( (cat /etc/machine-id 2>/dev/null || head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \\n') )
+  echo "$TVCC_AGENT_ID" > /etc/tvcc-agent-id 2>/dev/null || true
+fi
+
 
 json_escape() { python3 -c 'import sys,json;print(json.dumps(sys.stdin.read()))'; }
 

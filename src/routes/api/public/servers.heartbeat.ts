@@ -275,6 +275,12 @@ export const Route = createFileRoute("/api/public/servers/heartbeat")({
             metadata: {
               ai_endpoint: typeof body.ai_endpoint === "string" ? body.ai_endpoint : null,
               ai_models: Array.isArray(body.ai_models) ? body.ai_models.slice(0, 100) : [],
+              agent_id: agentId,
+              last_sent_at: sentAt,
+              memory_used_bytes: num(body.memory_used_bytes),
+              memory_total_bytes: num(body.memory_total_bytes),
+              disk_used_bytes: num(body.disk_used_bytes),
+              disk_total_bytes: num(body.disk_total_bytes),
             },
           })
           .eq("id", serverId);
@@ -291,7 +297,7 @@ export const Route = createFileRoute("/api/public/servers/heartbeat")({
           load_avg: num(body.load_avg),
           uptime_seconds: num(body.uptime_seconds),
           process_count: num(body.process_count),
-          collected_at: now,
+          collected_at: sentAt,
         });
 
         await evaluateAlerts(admin, serverId, server.owner_id, {

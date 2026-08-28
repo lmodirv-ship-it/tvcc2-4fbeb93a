@@ -466,11 +466,66 @@ EOF
 }
 
 while true; do
-  CPU=$(top -bn1 | awk '/Cpu\\(s\\)/{print 100 - $8}' | head -1)
-  MEM_TOTAL=$(free -m | awk '/Mem:/{print $2}')
-  MEM_USED=$(free -m | awk '/Mem:/{print $3}')
-  DISK_TOTAL=$(df -BG --output=size / | tail -1 | tr -dc '0-9')
-  DISK_USED=$(df -BG --output=used / | tail -1 | tr -dc '0-9')
+  # ---- real OS metrics: /proc/stat, /proc/meminfo, df -B1 / ----
+  CORE=$(python3 <<'PYEOF'
+import json, time
+
+def cpu_sample():
+    with open("/proc/stat") as f:
+        p = f.readline().split()[1:]
+    v = [int(x) for x in p]
+    idle = v[3] + (v[4] if len(v) > 4 else 0)
+    return sum(v), idle
+
+t1, i1 = cpu_sample()
+time.sleep(1)
+t2, i2 = cpu_sample()
+dt, di = t2 - t1, i2 - i1
+cpu = round(max(0.0, min(100.0, (1 - di / dt) * 100)), 2) if dt > 0 else 0.0
+
+mi = {}
+with open("/proc/meminfo") as f:
+    for line in f:
+        k, val = line.split(":", 1)
+        mi[k] = int(val.strip().split()[0]) * 1024  # bytes
+mem_total = mi.get("MemTotal", 0)
+mem_avail = mi.get("MemAvailable", mi.get("MemFree", 0))
+mem_used = max(0, mem_total - mem_avail)
+
+import subprocess
+disk_total = disk_used = 0
+try:
+    out = subprocess.check_output(["df", "-B1", "--output=size,used", "/"], stderr=subprocess.DEVNULL).decode()
+    parts = out.strip().splitlines()[-1].split()
+    disk_total, disk_used = int(parts[0]), int(parts[1])
+except Exception:
+    pass
+
+with open("/proc/uptime") as f:
+    up = int(float(f.read().split()[0]))
+
+print(json.dumps({
+    "cpu_percent": cpu,
+    "memory_used_bytes": mem_used,
+    "memory_total_bytes": mem_total,
+    "memory_available_bytes": mem_avail,
+    "disk_used_bytes": disk_used,
+    "disk_total_bytes": disk_total,
+    "mem_used_mb": round(mem_used / 1048576),
+    "mem_total_mb": round(mem_total / 1048576),
+    "disk_used_gb": round(disk_used / 1073741824, 2),
+    "disk_total_gb": round(disk_total / 1073741824, 2),
+    "uptime_seconds": up,
+    "sent_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
+}))
+PYEOF
+)
+  [ -z "$CORE" ] && CORE='{}'
+  CPU=$(echo "$CORE" | python3 -c 'import sys,json;print(json.load(sys.stdin).get("cpu_percent",0))' 2>/dev/null || echo 0)
+  MEM_TOTAL=$(echo "$CORE" | python3 -c 'import sys,json;print(json.load(sys.stdin).get("mem_total_mb",0))' 2>/dev/null || echo 0)
+  MEM_USED=$(echo "$CORE" | python3 -c 'import sys,json;print(json.load(sys.stdin).get("mem_used_mb",0))' 2>/dev/null || echo 0)
+  DISK_TOTAL=$(echo "$CORE" | python3 -c 'import sys,json;print(json.load(sys.stdin).get("disk_total_gb",0))' 2>/dev/null || echo 0)
+  DISK_USED=$(echo "$CORE" | python3 -c 'import sys,json;print(json.load(sys.stdin).get("disk_used_gb",0))' 2>/dev/null || echo 0)
   LOAD=$(awk '{print $1}' /proc/loadavg)
   UPTIME=$(awk '{print int($1)}' /proc/uptime)
   PROCS=$(ps -e --no-headers | wc -l)
@@ -479,6 +534,7 @@ while true; do
   PRIVATE_IP=$(hostname -I 2>/dev/null | awk '{print $1}' | tr -d '\\n')
   KERNEL=$(uname -r 2>/dev/null || echo "")
   ARCH=$(uname -m 2>/dev/null || echo "")
+
 
   # ---- v3 rich telemetry: disks, network, services, containers, security ----
   EXTRA=$(TVCC_PREV_LAT="\${TVCC_PREV_LAT:-}" python3 <<'PYEOF'

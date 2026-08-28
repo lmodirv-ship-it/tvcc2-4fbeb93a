@@ -827,7 +827,7 @@ print(json.dumps(b))' "$BODY" "$CORE" "\${EXTRA:-}" 2>/dev/null || echo "$BODY")
     post "{\\"agent_version\\":\\"\${TVCC_AGENT_VERSION}\\",\\"command_results\\":$RESULTS}" >/dev/null
   fi
 
-  sleep 15
+  sleep "\${TVCC_HEARTBEAT_INTERVAL}"
 done
 `;
 }

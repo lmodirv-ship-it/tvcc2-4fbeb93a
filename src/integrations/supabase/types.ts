@@ -578,8 +578,10 @@ export type Database = {
         Row: {
           backup_type: string
           created_at: string
+          dest_path: string | null
           id: string
           is_active: boolean
+          label: string | null
           last_run_at: string | null
           next_run_at: string | null
           notify_on_failure: boolean
@@ -587,14 +589,17 @@ export type Database = {
           retention_count: number
           schedule: string
           server_id: string | null
+          target_server_id: string | null
           updated_at: string
           website_id: string | null
         }
         Insert: {
           backup_type?: string
           created_at?: string
+          dest_path?: string | null
           id?: string
           is_active?: boolean
+          label?: string | null
           last_run_at?: string | null
           next_run_at?: string | null
           notify_on_failure?: boolean
@@ -602,14 +607,17 @@ export type Database = {
           retention_count?: number
           schedule?: string
           server_id?: string | null
+          target_server_id?: string | null
           updated_at?: string
           website_id?: string | null
         }
         Update: {
           backup_type?: string
           created_at?: string
+          dest_path?: string | null
           id?: string
           is_active?: boolean
+          label?: string | null
           last_run_at?: string | null
           next_run_at?: string | null
           notify_on_failure?: boolean
@@ -617,6 +625,7 @@ export type Database = {
           retention_count?: number
           schedule?: string
           server_id?: string | null
+          target_server_id?: string | null
           updated_at?: string
           website_id?: string | null
         }
@@ -624,6 +633,13 @@ export type Database = {
           {
             foreignKeyName: "backup_schedules_server_id_fkey"
             columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "backup_schedules_target_server_id_fkey"
+            columns: ["target_server_id"]
             isOneToOne: false
             referencedRelation: "servers"
             referencedColumns: ["id"]
@@ -917,48 +933,92 @@ export type Database = {
       }
       databases: {
         Row: {
+          connection_url: string | null
           created_at: string
+          db_kind: string
+          db_name: string | null
           db_type: string
           db_user: string | null
+          env_key: string | null
           host: string | null
           id: string
+          last_error: string | null
+          last_sync_at: string | null
+          linked_database_id: string | null
           name: string
           owner_id: string
           password_hash: string | null
+          port: number | null
+          server_id: string | null
           size_mb: number | null
           status: string
+          sync_mode: string
           updated_at: string
           website_id: string | null
         }
         Insert: {
+          connection_url?: string | null
           created_at?: string
+          db_kind?: string
+          db_name?: string | null
           db_type?: string
           db_user?: string | null
+          env_key?: string | null
           host?: string | null
           id?: string
+          last_error?: string | null
+          last_sync_at?: string | null
+          linked_database_id?: string | null
           name: string
           owner_id: string
           password_hash?: string | null
+          port?: number | null
+          server_id?: string | null
           size_mb?: number | null
           status?: string
+          sync_mode?: string
           updated_at?: string
           website_id?: string | null
         }
         Update: {
+          connection_url?: string | null
           created_at?: string
+          db_kind?: string
+          db_name?: string | null
           db_type?: string
           db_user?: string | null
+          env_key?: string | null
           host?: string | null
           id?: string
+          last_error?: string | null
+          last_sync_at?: string | null
+          linked_database_id?: string | null
           name?: string
           owner_id?: string
           password_hash?: string | null
+          port?: number | null
+          server_id?: string | null
           size_mb?: number | null
           status?: string
+          sync_mode?: string
           updated_at?: string
           website_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "databases_linked_database_id_fkey"
+            columns: ["linked_database_id"]
+            isOneToOne: false
+            referencedRelation: "databases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "databases_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "databases_website_id_fkey"
             columns: ["website_id"]
@@ -3442,9 +3502,12 @@ export type Database = {
       }
       service_dependencies: {
         Row: {
+          config: Json
           consumer_website_id: string
           created_at: string
+          env_prefix: string | null
           id: string
+          link_method: string
           notes: string | null
           owner_id: string
           provider_website_id: string
@@ -3453,9 +3516,12 @@ export type Database = {
           updated_at: string
         }
         Insert: {
+          config?: Json
           consumer_website_id: string
           created_at?: string
+          env_prefix?: string | null
           id?: string
+          link_method?: string
           notes?: string | null
           owner_id: string
           provider_website_id: string
@@ -3464,9 +3530,12 @@ export type Database = {
           updated_at?: string
         }
         Update: {
+          config?: Json
           consumer_website_id?: string
           created_at?: string
+          env_prefix?: string | null
           id?: string
+          link_method?: string
           notes?: string | null
           owner_id?: string
           provider_website_id?: string
@@ -3503,48 +3572,64 @@ export type Database = {
           backup_type: string
           completed_at: string | null
           created_at: string
+          dest_path: string | null
           error_message: string | null
           id: string
+          is_latest: boolean
           label: string | null
           owner_id: string
           server_id: string | null
           size_mb: number | null
           status: string
           storage_path: string | null
+          target_server_id: string | null
           website_id: string | null
         }
         Insert: {
           backup_type?: string
           completed_at?: string | null
           created_at?: string
+          dest_path?: string | null
           error_message?: string | null
           id?: string
+          is_latest?: boolean
           label?: string | null
           owner_id: string
           server_id?: string | null
           size_mb?: number | null
           status?: string
           storage_path?: string | null
+          target_server_id?: string | null
           website_id?: string | null
         }
         Update: {
           backup_type?: string
           completed_at?: string | null
           created_at?: string
+          dest_path?: string | null
           error_message?: string | null
           id?: string
+          is_latest?: boolean
           label?: string | null
           owner_id?: string
           server_id?: string | null
           size_mb?: number | null
           status?: string
           storage_path?: string | null
+          target_server_id?: string | null
           website_id?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "site_backups_server_id_fkey"
             columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_backups_target_server_id_fkey"
+            columns: ["target_server_id"]
             isOneToOne: false
             referencedRelation: "servers"
             referencedColumns: ["id"]
@@ -3967,42 +4052,57 @@ export type Database = {
       }
       site_services: {
         Row: {
+          auth_type: string
           created_at: string
           description: string | null
           endpoint_url: string | null
+          health_path: string | null
           id: string
           is_public: boolean
+          link_method: string
           metadata: Json | null
           name: string
           owner_id: string
+          port: number | null
+          script: string | null
           service_type: string
           status: string
           updated_at: string
           website_id: string
         }
         Insert: {
+          auth_type?: string
           created_at?: string
           description?: string | null
           endpoint_url?: string | null
+          health_path?: string | null
           id?: string
           is_public?: boolean
+          link_method?: string
           metadata?: Json | null
           name: string
           owner_id: string
+          port?: number | null
+          script?: string | null
           service_type: string
           status?: string
           updated_at?: string
           website_id: string
         }
         Update: {
+          auth_type?: string
           created_at?: string
           description?: string | null
           endpoint_url?: string | null
+          health_path?: string | null
           id?: string
           is_public?: boolean
+          link_method?: string
           metadata?: Json | null
           name?: string
           owner_id?: string
+          port?: number | null
+          script?: string | null
           service_type?: string
           status?: string
           updated_at?: string

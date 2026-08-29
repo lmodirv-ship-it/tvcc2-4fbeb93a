@@ -39,30 +39,48 @@ export const Route = createFileRoute("/api/public/backups/run-due")({
             continue;
           }
           const type = s.backup_type;
+          const destPath = `${(s.dest_path ?? "/var/backups/tvcc").replace(/\/+$/, "")}/${site.domain}/${type}`;
           const { data: backup } = await admin
             .from("site_backups")
             .insert({
               owner_id: s.owner_id,
               website_id: s.website_id,
               server_id: site.server_id,
+              target_server_id: s.target_server_id ?? null,
+              dest_path: destPath,
               backup_type: type,
               label: `${site.domain} — scheduled ${now.toISOString().slice(0, 16)}`,
               status: "pending",
+              is_latest: true,
             })
             .select("id")
             .maybeSingle();
 
           if (backup) {
+            await admin
+              .from("site_backups")
+              .update({ is_latest: false })
+              .eq("website_id", s.website_id)
+              .eq("backup_type", type)
+              .neq("id", backup.id);
+
             await admin.from("server_commands").insert({
               owner_id: s.owner_id,
               server_id: site.server_id,
               website_id: s.website_id,
               action: type === "database" ? "db_dump" : "site_backup",
-              args: { domain: site.domain, backup_id: backup.id, backup_type: type },
+              args: {
+                domain: site.domain,
+                backup_id: backup.id,
+                backup_type: type,
+                dest_path: destPath,
+                target_server_id: s.target_server_id ?? null,
+              },
               requested_by: s.owner_id,
               status: "pending",
             });
           }
+
 
           results.push({ schedule: s.id, backup: backup?.id, status: backup ? "queued" : "failed" });
 

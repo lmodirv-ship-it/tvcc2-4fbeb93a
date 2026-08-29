@@ -180,9 +180,10 @@ export const listBackups = createServerFn({ method: "GET" })
     const sb = context.supabase as any;
     const { data, error } = await sb
       .from("site_backups")
-      .select("*, websites(name, domain)")
+      .select("*, websites(name, domain), servers:target_server_id(name, hostname)")
       .order("created_at", { ascending: false })
       .limit(200);
+
     if (error) throw new Error(error.message);
     return data ?? [];
   });
@@ -505,6 +506,8 @@ export const saveBackupSchedule = createServerFn({ method: "POST" })
       id?: string | null;
       websiteId: string;
       serverId: string;
+      targetServerId?: string | null;
+      destPath?: string | null;
       cron: string;
       backupType: string;
       retentionCount: number;
@@ -518,10 +521,12 @@ export const saveBackupSchedule = createServerFn({ method: "POST" })
       owner_id: context.userId,
       website_id: data.websiteId,
       server_id: data.serverId,
-      cron: data.cron,
+      target_server_id: data.targetServerId ?? null,
+      dest_path: data.destPath ?? null,
+      schedule: data.cron,
       backup_type: ["full", "files", "database"].includes(data.backupType) ? data.backupType : "full",
       retention_count: Math.max(1, Math.min(data.retentionCount || 7, 90)),
-      enabled: data.enabled ?? true,
+      is_active: data.enabled ?? true,
       label: data.label ?? null,
     };
     if (data.id) {
@@ -533,6 +538,7 @@ export const saveBackupSchedule = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true, id: row?.id };
   });
+
 
 export const deleteBackupSchedule = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

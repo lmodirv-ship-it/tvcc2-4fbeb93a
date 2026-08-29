@@ -27,9 +27,9 @@ export const Route = createFileRoute("/api/public/backups/run-due")({
         const { data: schedules } = await admin
           .from("backup_schedules")
           .select("*, websites(id, domain, server_id)")
-          .eq("enabled", true);
+          .eq("is_active", true);
 
-        const due = (schedules as any[] ?? []).filter((s) => matchesCron(s.cron, { minute, hour, dom, month, dow }));
+        const due = (schedules as any[] ?? []).filter((s) => matchesCron(s.schedule, { minute, hour, dom, month, dow }));
         const results = [] as any[];
 
         for (const s of due) {

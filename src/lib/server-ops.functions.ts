@@ -180,9 +180,10 @@ export const listBackups = createServerFn({ method: "GET" })
     const sb = context.supabase as any;
     const { data, error } = await sb
       .from("site_backups")
-      .select("*, websites(name, domain)")
+      .select("*, websites(name, domain), servers:target_server_id(name, hostname)")
       .order("created_at", { ascending: false })
       .limit(200);
+
     if (error) throw new Error(error.message);
     return data ?? [];
   });

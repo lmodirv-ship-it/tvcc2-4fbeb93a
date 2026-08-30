@@ -1,0 +1,107 @@
+import { createServerFn } from "@tanstack/react-start";
+import { z } from "zod";
+import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+
+const saveSchema = z.object({
+  serviceKey: z.string().min(1).max(60),
+  name: z.string().min(1).max(120),
+  method: z.enum(["url", "api", "token", "webhook"]),
+  url: z.string().url().max(500),
+  token: z.string().max(500).optional(),
+  webhookUrl: z.string().url().max(500).optional().or(z.literal("")),
+});
+
+export const listIntegrations = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data, error } = await context.supabase
+      .from("external_integrations")
+      .select("id, service_key, name, method, url, webhook_url, status, last_checked_at, last_error, created_at")
+      .order("created_at", { ascending: true });
+    if (error) throw new Error(error.message);
+    return data ?? [];
+  });
+
+export const saveIntegration = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => saveSchema.parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    const row = {
+      owner_id: userId,
+      service_key: data.serviceKey,
+      name: data.name,
+      method: data.method,
+      url: data.url,
+      token: data.token || null,
+      webhook_url: data.webhookUrl || null,
+      status: "pending" as const,
+      last_error: null,
+    };
+    const { data: saved, error } = await supabase
+      .from("external_integrations")
+      .upsert(row, { onConflict: "owner_id,service_key" })
+      .select("id")
+      .single();
+    if (error) throw new Error(error.message);
+
+    // فحص الاتصال فوراً بعد الحفظ
+    const check = await pingUrl(data.url);
+    await supabase
+      .from("external_integrations")
+      .update({
+        status: check.ok ? "connected" : "failed",
+        last_checked_at: new Date().toISOString(),
+        last_error: check.ok ? null : check.error,
+      })
+      .eq("id", saved.id);
+    return { id: saved.id, connected: check.ok, error: check.error ?? null };
+  });
+
+export const testIntegration = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { supabase } = context;
+    const { data: row, error } = await supabase
+      .from("external_integrations")
+      .select("id, url")
+      .eq("id", data.id)
+      .single();
+    if (error || !row) throw new Error("التكامل غير موجود");
+    const check = await pingUrl(row.url);
+    await supabase
+      .from("external_integrations")
+      .update({
+        status: check.ok ? "connected" : "failed",
+        last_checked_at: new Date().toISOString(),
+        last_error: check.ok ? null : check.error,
+      })
+      .eq("id", row.id);
+    return { connected: check.ok, error: check.error ?? null };
+  });
+
+export const deleteIntegration = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input) => z.object({ id: z.string().uuid() }).parse(input))
+  .handler(async ({ data, context }) => {
+    const { error } = await context.supabase
+      .from("external_integrations")
+      .delete()
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+async function pingUrl(url: string): Promise<{ ok: boolean; error?: string }> {
+  try {
+    const ctrl = new AbortController();
+    const t = setTimeout(() => ctrl.abort(), 8000);
+    const res = await fetch(url, { method: "GET", signal: ctrl.signal, redirect: "follow" });
+    clearTimeout(t);
+    if (res.status < 500) return { ok: true };
+    return { ok: false, error: `HTTP ${res.status}` };
+  } catch (e) {
+    return { ok: false, error: e instanceof Error ? e.message : "تعذّر الوصول" };
+  }
+}

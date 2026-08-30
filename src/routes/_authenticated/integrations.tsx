@@ -101,6 +101,7 @@ function ServiceCard({
     try {
       const r = await test({ data: { id: integration.id } });
       if (r.connected) toast.success("الاتصال ناجح ✓");
+      else if ((r as any).local) toast.info("عنوان محلي — سيُفحص عبر وكيل السيرفر");
       else toast.error(`فشل الاتصال: ${r.error ?? ""}`);
       onChanged();
     } catch (e) {

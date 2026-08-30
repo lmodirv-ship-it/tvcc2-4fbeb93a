@@ -91,7 +91,10 @@ function ConnectPage() {
   const databases = data?.databases ?? [];
 
   // service form
-  const [svc, setSvc] = useState({ websiteId: "", name: "", serviceType: "api", endpointUrl: "", vaultSecretName: "" });
+  const [svc, setSvc] = useState({
+    websiteId: "", name: "", serviceType: "api", endpointUrl: "", vaultSecretName: "",
+    linkMethod: "api", authType: "none", port: "", script: "", healthPath: "",
+  });
   // consumer form
   const [cons, setCons] = useState({ consumerWebsiteId: "", serviceId: "" });
   // db form
@@ -267,6 +270,7 @@ function ConnectPage() {
                 <div key={s.id} className="flex items-center justify-between rounded-lg border border-border/50 p-3">
                   <div className="flex items-center gap-2">
                     <Badge variant="outline">{s.service_type}</Badge>
+                    <Badge variant="secondary" className="text-[10px]">{s.link_method ?? "api"} · {s.auth_type ?? "none"}</Badge>
                     <span className="font-medium">{s.name}</span>
                     <span className="text-xs text-muted-foreground">{s.endpoint_url ?? "—"}</span>
                     <Badge variant={s.status === "error" ? "destructive" : "outline"}>{s.status}</Badge>

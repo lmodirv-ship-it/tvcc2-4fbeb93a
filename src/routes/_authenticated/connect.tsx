@@ -168,12 +168,61 @@ function ConnectPage() {
                 </Select>
               </div>
               <div>
+                <Label className="text-xs">طريقة الربط</Label>
+                <Select value={svc.linkMethod} onValueChange={(v) => setSvc({ ...svc, linkMethod: v })}>
+                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="api">API</SelectItem>
+                    <SelectItem value="url">رابط URL</SelectItem>
+                    <SelectItem value="port">منفذ</SelectItem>
+                    <SelectItem value="script">سكريبت</SelectItem>
+                    <SelectItem value="webhook">Webhook</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-xs">نوع المصادقة</Label>
+                <Select value={svc.authType} onValueChange={(v) => setSvc({ ...svc, authType: v })}>
+                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="none">بدون</SelectItem>
+                    <SelectItem value="token">Token</SelectItem>
+                    <SelectItem value="basic">Basic</SelectItem>
+                    <SelectItem value="hmac">HMAC</SelectItem>
+                    <SelectItem value="key">مفتاح API</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
                 <Label className="text-xs">العنوان (Endpoint)</Label>
                 <Input className="mt-1" value={svc.endpointUrl} onChange={(e) => setSvc({ ...svc, endpointUrl: e.target.value })} placeholder="http://10.0.0.5:6379" />
               </div>
+              {svc.linkMethod === "port" && (
+                <div>
+                  <Label className="text-xs">المنفذ</Label>
+                  <Input className="mt-1" value={svc.port} onChange={(e) => setSvc({ ...svc, port: e.target.value })} placeholder="6379" />
+                </div>
+              )}
+              {svc.linkMethod === "script" && (
+                <div className="md:col-span-2">
+                  <Label className="text-xs">السكريبت</Label>
+                  <Input className="mt-1" value={svc.script} onChange={(e) => setSvc({ ...svc, script: e.target.value })} placeholder="/opt/hn/connect.sh" />
+                </div>
+              )}
+              <div>
+                <Label className="text-xs">مسار الفحص</Label>
+                <Input className="mt-1" value={svc.healthPath} onChange={(e) => setSvc({ ...svc, healthPath: e.target.value })} placeholder="/health" />
+              </div>
               <Button
                 disabled={!svc.websiteId || !svc.name || mReg.isPending}
-                onClick={() => mReg.mutate({ ...svc, endpointUrl: svc.endpointUrl || undefined, vaultSecretName: svc.vaultSecretName || undefined })}
+                onClick={() => mReg.mutate({
+                  ...svc,
+                  endpointUrl: svc.endpointUrl || undefined,
+                  vaultSecretName: svc.vaultSecretName || undefined,
+                  port: svc.port ? Number(svc.port) : null,
+                  script: svc.script || undefined,
+                  healthPath: svc.healthPath || undefined,
+                })}
               >
                 تسجيل
               </Button>

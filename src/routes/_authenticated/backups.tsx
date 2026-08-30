@@ -71,6 +71,32 @@ function BackupsPage() {
   const [schedRetention, setSchedRetention] = useState(7);
   const [schedLabel, setSchedLabel] = useState("");
 
+  // destination + fleet backup
+  const fetchHub = useServerFn(getBackupHub);
+  const fleet = useServerFn(runFleetBackup);
+  const saveDb = useServerFn(saveDatabaseEntry);
+  const delDb = useServerFn(deleteDatabaseEntry);
+  const pairDb = useServerFn(pairDatabases);
+  const syncDb = useServerFn(syncDatabasePair);
+  const testDb = useServerFn(testDatabaseEntry);
+
+  const [targetServerId, setTargetServerId] = useState("");
+  const [destPath, setDestPath] = useState("/var/backups/tvcc");
+  const [dbForm, setDbForm] = useState({
+    name: "", dbKind: "local", dbType: "postgres", host: "", port: "5432",
+    dbName: "", dbUser: "", serverId: "", connectionUrl: "", envKey: "DATABASE_URL",
+  });
+  const [pair, setPair] = useState({ primaryId: "", replicaId: "", syncMode: "mirror" });
+
+  const { data: hub, isLoading: hubLoading } = useQuery({
+    queryKey: ["backup-hub"],
+    queryFn: () => fetchHub(),
+    refetchInterval: 60000,
+  });
+  const hubServers = (hub?.servers ?? []) as any[];
+  const hubDatabases = (hub?.databases ?? []) as any[];
+  const refreshHub = () => qc.invalidateQueries({ queryKey: ["backup-hub"] });
+
   const { data: sites } = useQuery({
     queryKey: ["backup-sites"],
     queryFn: async () => {

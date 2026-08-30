@@ -180,9 +180,10 @@ run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
           printf '%s' "$CONTENT" | diff -u "$PATH_" - || true
         fi
         ;;
-      site_backup)     echo "[dry-run] tar czf /var/backups/tvcc/\${D}-\$(date).tar.gz /var/www/\$D" ;;
+      site_backup)     echo "[dry-run] tar czf $(GET dest_path)/\$D-\$(date).tar.gz /var/www/\$D then rsync -> $(GET target_host)" ;;
       site_restore)    echo "[dry-run] tar xzf $(GET storage_path) -C /" ;;
-      db_dump)         echo "[dry-run] mysqldump --single-transaction DB | gzip > file.sql.gz" ;;
+      db_dump)         echo "[dry-run] dump DB | gzip > $(GET dest_path)/file.sql.gz then rsync -> $(GET target_host)" ;;
+      db_sync)         echo "[dry-run] dump source db then load into linked target db" ;;
       db_import)       echo "[dry-run] gunzip -c $(GET storage_path) | mysql $(GET database)" ;;
       backup_delete)   echo "[dry-run] rm -f $(GET storage_path)" ;;
       platform_deploy) echo "[dry-run] $(GET script)" ;;

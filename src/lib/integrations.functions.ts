@@ -54,6 +54,15 @@ export const saveIntegration = createServerFn({ method: "POST" })
       .single();
     if (error) throw new Error(error.message);
 
+    // عناوين الشبكة المحلية لا يمكن فحصها من السحابة — تبقى «بانتظار الفحص»
+    if (isPrivateUrl(data.url)) {
+      await supabase
+        .from("external_integrations")
+        .update({ status: "pending", last_error: "عنوان محلي — سيُفحص عبر وكيل السيرفر" })
+        .eq("id", saved.id);
+      return { id: saved.id, connected: false, local: true, error: null };
+    }
+
     // فحص الاتصال فوراً بعد الحفظ
     const check = await pingUrl(data.url);
     await supabase
@@ -64,7 +73,7 @@ export const saveIntegration = createServerFn({ method: "POST" })
         last_error: check.ok ? null : check.error,
       })
       .eq("id", saved.id);
-    return { id: saved.id, connected: check.ok, error: check.error ?? null };
+    return { id: saved.id, connected: check.ok, local: false, error: check.error ?? null };
   });
 
 export const testIntegration = createServerFn({ method: "POST" })

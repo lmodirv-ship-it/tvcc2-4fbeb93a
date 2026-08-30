@@ -395,6 +395,8 @@ function BackupsPage() {
                         retentionCount: schedRetention,
                         enabled: schedEnabled,
                         label: schedLabel,
+                        targetServerId: targetServerId || null,
+                        destPath: destPath || null,
                       },
                     });
                     qc.invalidateQueries({ queryKey: ["backup-schedules"] });

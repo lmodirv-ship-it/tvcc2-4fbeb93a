@@ -84,6 +84,7 @@ function ServiceCard({
     try {
       const r = await save({ data: { serviceKey, ...form } });
       if (r.connected) toast.success("تم الربط والاتصال ناجح ✓");
+      else if (r.local) toast.info("تم الحفظ — عنوان محلي، سيُفحص عبر وكيل السيرفر");
       else toast.warning(`تم الحفظ — حالة الاتصال: فشل (${r.error ?? "غير معروف"})`);
       setOpen(false);
       onChanged();

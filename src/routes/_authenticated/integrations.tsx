@@ -428,8 +428,10 @@ function IntegrationsPage() {
       </Card>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+        <HnServiceHubCard />
         <ServiceCard
           serviceKey="hn-db"
+
           defaultName="HN-DB"
           description="مركز إدارة قواعد البيانات"
           icon={Database}

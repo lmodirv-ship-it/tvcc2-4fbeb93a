@@ -2,13 +2,22 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+const urlLike = z
+  .string()
+  .min(4)
+  .max(500)
+  .transform((v) => (/^https?:\/\//i.test(v.trim()) ? v.trim() : `http://${v.trim()}`))
+  .refine((v) => {
+    try { new URL(v); return true; } catch { return false; }
+  }, "رابط غير صالح");
+
 const saveSchema = z.object({
   serviceKey: z.string().min(1).max(60),
   name: z.string().min(1).max(120),
   method: z.enum(["url", "api", "token", "webhook"]),
-  url: z.string().url().max(500),
+  url: urlLike,
   token: z.string().max(500).optional(),
-  webhookUrl: z.string().url().max(500).optional().or(z.literal("")),
+  webhookUrl: z.string().max(500).optional(),
 });
 
 export const listIntegrations = createServerFn({ method: "GET" })

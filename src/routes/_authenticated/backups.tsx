@@ -227,11 +227,50 @@ function BackupsPage() {
         </CardContent>
       </Card>
 
+      <Card className="border-primary/30">
+        <CardContent className="p-4 grid gap-3 md:grid-cols-4 items-end">
+          <div>
+            <Label className="flex items-center gap-1"><Server className="w-3 h-3" /> سيرفر الوجهة</Label>
+            <Select value={targetServerId} onValueChange={setTargetServerId}>
+              <SelectTrigger><SelectValue placeholder={hubLoading ? "جارٍ التحميل…" : "اختر سيرفراً"} /></SelectTrigger>
+              <SelectContent>
+                {hubServers.map((s) => (
+                  <SelectItem key={s.id} value={s.id}>{s.name} — {s.hostname}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="md:col-span-2">
+            <Label>مسار التخزين على الوجهة</Label>
+            <Input className="ltr text-left" value={destPath} onChange={(e) => setDestPath(e.target.value)} placeholder="/var/backups/tvcc" />
+          </div>
+          <Button
+            disabled={!targetServerId || busy}
+            onClick={async () => {
+              setBusy(true);
+              try {
+                const r: any = await fleet({ data: { targetServerId, destPath, backupType: type } });
+                toast.success(`تم إرسال ${r.total} مهمة نسخ إلى الوكلاء`);
+                qc.invalidateQueries({ queryKey: ["backups"] });
+              } catch (e) {
+                toast.error((e as Error).message);
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            <Archive className="w-4 h-4 ml-1" /> نسخ كل المواقع
+          </Button>
+        </CardContent>
+      </Card>
+
       <Tabs defaultValue="backups">
         <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="backups"><Archive className="w-3 h-3 ml-1" /> النسخ الاحتياطية</TabsTrigger>
           <TabsTrigger value="schedules"><Clock className="w-3 h-3 ml-1" /> الجدولة التلقائية</TabsTrigger>
+          <TabsTrigger value="databases"><Database className="w-3 h-3 ml-1" /> قواعد البيانات</TabsTrigger>
         </TabsList>
+
 
         <TabsContent value="backups" className="pt-4">
           {isLoading ? (

@@ -111,6 +111,23 @@ export const deleteIntegration = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+function isPrivateUrl(url: string): boolean {
+  try {
+    const h = new URL(url).hostname;
+    return (
+      h === "localhost" ||
+      h.startsWith("127.") ||
+      h.startsWith("10.") ||
+      h.startsWith("192.168.") ||
+      /^172\.(1[6-9]|2\d|3[01])\./.test(h) ||
+      h.endsWith(".local") ||
+      h.endsWith(".hn")
+    );
+  } catch {
+    return false;
+  }
+}
+
 async function pingUrl(url: string): Promise<{ ok: boolean; error?: string }> {
   try {
     const ctrl = new AbortController();

@@ -36,6 +36,11 @@ export const registerService = createServerFn({ method: "POST" })
       description?: string;
       isPublic?: boolean;
       vaultSecretName?: string;
+      linkMethod?: string;
+      authType?: string;
+      port?: number | null;
+      script?: string;
+      healthPath?: string;
     }) => input,
   )
   .handler(async ({ data, context }) => {
@@ -50,6 +55,11 @@ export const registerService = createServerFn({ method: "POST" })
         endpoint_url: data.endpointUrl ?? null,
         description: data.description ?? null,
         is_public: data.isPublic ?? false,
+        link_method: ["api", "url", "port", "script", "webhook"].includes(data.linkMethod ?? "") ? data.linkMethod : "api",
+        auth_type: ["none", "token", "basic", "hmac", "key"].includes(data.authType ?? "") ? data.authType : "none",
+        port: data.port ?? null,
+        script: data.script ?? null,
+        health_path: data.healthPath ?? null,
         status: "active",
         metadata: data.vaultSecretName ? { vault_secret_name: data.vaultSecretName } : {},
       })

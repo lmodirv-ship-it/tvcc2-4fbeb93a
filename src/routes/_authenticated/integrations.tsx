@@ -240,7 +240,77 @@ function ServiceCard({
   );
 }
 
+function CopyRow({ label, value }: { label: string; value: string }) {
+  return (
+    <div className="flex items-center gap-2">
+      <span className="text-xs text-muted-foreground w-28 shrink-0">{label}</span>
+      <code dir="ltr" className="flex-1 text-xs bg-muted/50 rounded px-2 py-1 truncate">{value}</code>
+      <Button
+        variant="ghost" size="icon" className="shrink-0" title="نسخ"
+        onClick={() => { navigator.clipboard.writeText(value); toast.success("تم النسخ"); }}
+      >
+        <Copy className="w-4 h-4" />
+      </Button>
+    </div>
+  );
+}
+
+function HnServiceHubCard() {
+  const qc = useQueryClient();
+  const fetchLink = useServerFn(getHnServiceLink);
+  const gen = useServerFn(generateHnServiceToken);
+  const [busy, setBusy] = useState(false);
+  const { data } = useQuery({ queryKey: ["hn-service-link"], queryFn: () => fetchLink() });
+
+  return (
+    <Card className="ring-1 ring-primary/40 bg-primary/5">
+      <CardContent className="p-6 space-y-4" dir="rtl">
+        <div className="flex items-start justify-between">
+          <StatusBadge status={(data?.status ?? "pending") as Integration["status"]} />
+          <div className="flex items-center gap-3">
+            <div className="text-right">
+              <h2 className="text-lg font-bold">HN Service Hub</h2>
+              <p className="text-xs text-muted-foreground">مشاركة كتالوج المواقع والخدمات مع منصة التنسيق</p>
+            </div>
+            <div className="w-12 h-12 rounded-xl flex items-center justify-center bg-primary/15 text-primary">
+              <Network className="w-6 h-6" />
+            </div>
+          </div>
+        </div>
+
+        <div className="space-y-2">
+          <CopyRow label="اسم الموقع" value={data?.siteName ?? "TVCC"} />
+          <CopyRow label="Base URL" value={data?.baseUrl ?? "https://tvcc.hnpay.live"} />
+          <CopyRow label="رابط الكتالوج" value={data?.catalogUrl ?? ""} />
+          {data?.token
+            ? <CopyRow label="المفتاح (Token)" value={data.token} />
+            : <p className="text-xs text-muted-foreground">لا يوجد مفتاح بعد — اضغط «توليد مفتاح» ثم الصقه في HN Service Hub.</p>}
+        </div>
+
+        <Button
+          className="w-full gap-1" disabled={busy}
+          onClick={async () => {
+            setBusy(true);
+            try {
+              await gen();
+              await qc.invalidateQueries({ queryKey: ["hn-service-link"] });
+              toast.success("تم توليد مفتاح جديد — الرابط لم يتغيّر");
+            } catch (e) {
+              toast.error((e as Error).message);
+            } finally {
+              setBusy(false);
+            }
+          }}
+        >
+          <KeyRound className="w-4 h-4" /> {data?.token ? "توليد مفتاح جديد" : "توليد مفتاح"}
+        </Button>
+      </CardContent>
+    </Card>
+  );
+}
+
 function IntegrationsPage() {
+
   const qc = useQueryClient();
   const fetchList = useServerFn(listIntegrations);
   const { data: integrations } = useQuery({

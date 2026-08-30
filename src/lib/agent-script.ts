@@ -250,9 +250,55 @@ run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
     firewall_deny)   ufw deny "$(GET port)" 2>&1 ;;
     disk_usage)      df -h; echo; du -sh /var/www/* 2>/dev/null | head -50 ;;
     write_config)    echo "$ARGS" | python3 -c 'import sys,json;d=json.load(sys.stdin);open(d["path"],"w").write(d.get("content",""))' && echo "wrote $(GET path)" ;;
-    site_backup)     D="$(GET domain)"; F="$TVCC_BACKUP_DIR/\${D}-$(date +%Y%m%d%H%M%S).tar.gz"; tar czf "$F" "/var/www/$D" 2>/dev/null && echo "$F ($(du -m "$F" | cut -f1) MB)" ;;
+    site_backup)
+      D="$(GET domain)"; DP="$(GET dest_path)"; TH="$(GET target_host)"
+      OUT="\${DP:-$TVCC_BACKUP_DIR}"; mkdir -p "$OUT" 2>/dev/null
+      F="$OUT/\${D}-$(date +%Y%m%d%H%M%S).tar.gz"
+      tar czf "$F" "/var/www/$D" 2>/dev/null || true
+      if [ ! -f "$F" ]; then echo "backup failed for $D"; exit 1; fi
+      SZ=$(du -m "$F" | cut -f1)
+      if [ -n "$TH" ]; then
+        rsync -az -e "ssh -o StrictHostKeyChecking=no" "$F" "$TH:$OUT/" >/dev/null 2>&1 \\
+          && echo "$F ($SZ MB) -> $TH:$OUT" || echo "$F ($SZ MB) transfer_failed=$TH"
+      else
+        echo "$F ($SZ MB)"
+      fi ;;
     site_restore)    tar xzf "$(GET storage_path)" -C / && echo "restored $(GET storage_path)" ;;
-    db_dump)         D="$(GET domain)"; F="$TVCC_BACKUP_DIR/\${D}-$(date +%Y%m%d%H%M%S).sql.gz"; mysqldump --single-transaction "\${D//./_}" 2>/dev/null | gzip > "$F" && echo "$F" ;;
+    db_dump)
+      D="$(GET domain)"; DP="$(GET dest_path)"; TH="$(GET target_host)"
+      OUT="\${DP:-$TVCC_BACKUP_DIR}"; mkdir -p "$OUT" 2>/dev/null
+      F="$OUT/\${D}-$(date +%Y%m%d%H%M%S).sql.gz"
+      mysqldump --single-transaction "\${D//./_}" 2>/dev/null | gzip > "$F"
+      if [ ! -s "$F" ]; then su - postgres -c "pg_dump '\${D//./_}'" 2>/dev/null | gzip > "$F"; fi
+      if [ ! -s "$F" ]; then echo "db dump failed for $D"; exit 1; fi
+      SZ=$(du -m "$F" | cut -f1)
+      if [ -n "$TH" ]; then
+        rsync -az -e "ssh -o StrictHostKeyChecking=no" "$F" "$TH:$OUT/" >/dev/null 2>&1 \\
+          && echo "$F ($SZ MB) -> $TH:$OUT" || echo "$F ($SZ MB) transfer_failed=$TH"
+      else
+        echo "$F ($SZ MB)"
+      fi ;;
+    db_sync)
+      SRC=$(echo "$ARGS" | python3 -c 'import sys,json;d=json.load(sys.stdin).get("source",{}) or {};print("|".join([str(d.get(k) or "") for k in ("engine","host","port","db","user","password")]))')
+      DST=$(echo "$ARGS" | python3 -c 'import sys,json;d=json.load(sys.stdin).get("target",{}) or {};print("|".join([str(d.get(k) or "") for k in ("engine","host","port","db","user","password")]))')
+      IFS='|' read -r SE SH SP SD SU SPW <<< "$SRC"
+      IFS='|' read -r TE TH2 TP TD TU TPW <<< "$DST"
+      if [ -z "$SD" ] || [ -z "$TD" ]; then echo "missing source/target database"; exit 1; fi
+      TMP="$TVCC_BACKUP_DIR/sync-$(date +%s).sql"
+      mkdir -p "$TVCC_BACKUP_DIR" 2>/dev/null
+      if [ "$SE" = "mysql" ]; then
+        MYSQL_PWD="$SPW" mysqldump --single-transaction -h "\${SH:-127.0.0.1}" -P "\${SP:-3306}" -u "\${SU:-root}" "$SD" > "$TMP" 2>/dev/null
+      else
+        PGPASSWORD="$SPW" pg_dump -h "\${SH:-127.0.0.1}" -p "\${SP:-5432}" -U "\${SU:-postgres}" "$SD" > "$TMP" 2>/dev/null
+      fi
+      if [ ! -s "$TMP" ]; then echo "dump of $SD failed"; rm -f "$TMP"; exit 1; fi
+      if [ "\${TE:-$SE}" = "mysql" ]; then
+        MYSQL_PWD="$TPW" mysql -h "\${TH2:-127.0.0.1}" -P "\${TP:-3306}" -u "\${TU:-root}" "$TD" < "$TMP" 2>&1
+      else
+        PGPASSWORD="$TPW" psql -h "\${TH2:-127.0.0.1}" -p "\${TP:-5432}" -U "\${TU:-postgres}" -d "$TD" -f "$TMP" >/dev/null 2>&1
+      fi
+      R=$?; SZ=$(du -m "$TMP" | cut -f1); rm -f "$TMP"
+      if [ "$R" -eq 0 ]; then echo "synced $SD -> $TD ($SZ MB)"; else echo "sync into $TD failed"; exit 1; fi ;;
     db_import)       gunzip -c "$(GET storage_path)" | mysql "$(GET database)" && echo "imported" ;;
     backup_delete)   rm -f "$(GET storage_path)" && echo "deleted $(GET storage_path)" ;;
     platform_deploy) bash -lc "$(GET script)" ;;

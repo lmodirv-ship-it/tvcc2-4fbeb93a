@@ -87,6 +87,13 @@ export const testIntegration = createServerFn({ method: "POST" })
       .eq("id", data.id)
       .single();
     if (error || !row) throw new Error("التكامل غير موجود");
+    if (isPrivateUrl(row.url)) {
+      await supabase
+        .from("external_integrations")
+        .update({ status: "pending", last_error: "عنوان محلي — سيُفحص عبر وكيل السيرفر" })
+        .eq("id", row.id);
+      return { connected: false, local: true, error: null };
+    }
     const check = await pingUrl(row.url);
     await supabase
       .from("external_integrations")

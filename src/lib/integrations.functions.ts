@@ -2,13 +2,22 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
 
+const urlLike = z
+  .string()
+  .min(4)
+  .max(500)
+  .transform((v) => (/^https?:\/\//i.test(v.trim()) ? v.trim() : `http://${v.trim()}`))
+  .refine((v) => {
+    try { new URL(v); return true; } catch { return false; }
+  }, "رابط غير صالح");
+
 const saveSchema = z.object({
   serviceKey: z.string().min(1).max(60),
   name: z.string().min(1).max(120),
   method: z.enum(["url", "api", "token", "webhook"]),
-  url: z.string().url().max(500),
+  url: urlLike,
   token: z.string().max(500).optional(),
-  webhookUrl: z.string().url().max(500).optional().or(z.literal("")),
+  webhookUrl: z.string().max(500).optional(),
 });
 
 export const listIntegrations = createServerFn({ method: "GET" })
@@ -45,6 +54,15 @@ export const saveIntegration = createServerFn({ method: "POST" })
       .single();
     if (error) throw new Error(error.message);
 
+    // عناوين الشبكة المحلية لا يمكن فحصها من السحابة — تبقى «بانتظار الفحص»
+    if (isPrivateUrl(data.url)) {
+      await supabase
+        .from("external_integrations")
+        .update({ status: "pending", last_error: "عنوان محلي — سيُفحص عبر وكيل السيرفر" })
+        .eq("id", saved.id);
+      return { id: saved.id, connected: false, local: true, error: null };
+    }
+
     // فحص الاتصال فوراً بعد الحفظ
     const check = await pingUrl(data.url);
     await supabase
@@ -55,7 +73,7 @@ export const saveIntegration = createServerFn({ method: "POST" })
         last_error: check.ok ? null : check.error,
       })
       .eq("id", saved.id);
-    return { id: saved.id, connected: check.ok, error: check.error ?? null };
+    return { id: saved.id, connected: check.ok, local: false, error: check.error ?? null };
   });
 
 export const testIntegration = createServerFn({ method: "POST" })
@@ -69,6 +87,13 @@ export const testIntegration = createServerFn({ method: "POST" })
       .eq("id", data.id)
       .single();
     if (error || !row) throw new Error("التكامل غير موجود");
+    if (isPrivateUrl(row.url)) {
+      await supabase
+        .from("external_integrations")
+        .update({ status: "pending", last_error: "عنوان محلي — سيُفحص عبر وكيل السيرفر" })
+        .eq("id", row.id);
+      return { connected: false, local: true, error: null };
+    }
     const check = await pingUrl(row.url);
     await supabase
       .from("external_integrations")
@@ -92,6 +117,23 @@ export const deleteIntegration = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     return { ok: true };
   });
+
+function isPrivateUrl(url: string): boolean {
+  try {
+    const h = new URL(url).hostname;
+    return (
+      h === "localhost" ||
+      h.startsWith("127.") ||
+      h.startsWith("10.") ||
+      h.startsWith("192.168.") ||
+      /^172\.(1[6-9]|2\d|3[01])\./.test(h) ||
+      h.endsWith(".local") ||
+      h.endsWith(".hn")
+    );
+  } catch {
+    return false;
+  }
+}
 
 async function pingUrl(url: string): Promise<{ ok: boolean; error?: string }> {
   try {

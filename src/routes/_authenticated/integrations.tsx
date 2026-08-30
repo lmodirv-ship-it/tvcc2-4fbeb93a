@@ -181,8 +181,20 @@ function ServiceCard({
                 {(form.method === "api" || form.method === "token") && (
                   <div>
                     <Label>رمز API / Token</Label>
-                    <Input dir="ltr" type="password" placeholder="••••••••" value={form.token}
-                      onChange={(e) => setForm({ ...form, token: e.target.value })} />
+                    <div className="flex gap-2 mt-1">
+                      <Input dir="ltr" type="text" placeholder="يُولَّد تلقائياً" value={form.token}
+                        onChange={(e) => setForm({ ...form, token: e.target.value })} />
+                      <Button
+                        type="button" variant="outline" className="shrink-0 gap-1"
+                        onClick={() => {
+                          const t = `hn_${crypto.randomUUID().replace(/-/g, "")}${crypto.randomUUID().replace(/-/g, "").slice(0, 8)}`;
+                          setForm({ ...form, token: t });
+                          toast.success("تم توليد الرمز — انسخه لاستخدامه في الخدمة الأخرى");
+                        }}
+                      >
+                        <KeyRound className="w-4 h-4" /> توليد
+                      </Button>
+                    </div>
                   </div>
                 )}
                 {form.method === "webhook" && (

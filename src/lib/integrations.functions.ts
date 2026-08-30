@@ -118,6 +118,52 @@ export const deleteIntegration = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
+/** بطاقة ربط HN Service Hub: الاسم + Base URL + رابط الكتالوج + المفتاح */
+export const getHnServiceLink = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data } = await context.supabase
+      .from("external_integrations")
+      .select("id, token, status, last_checked_at")
+      .eq("service_key", "hn-service")
+      .maybeSingle();
+    return {
+      siteName: "TVCC",
+      baseUrl: "https://tvcc.hnpay.live",
+      catalogUrl: "https://tvcc.hnpay.live/api/public/hn-service/catalog",
+      token: data?.token ?? null,
+      status: data?.status ?? "pending",
+      lastCheckedAt: data?.last_checked_at ?? null,
+    };
+  });
+
+/** توليد مفتاح جديد لـ HN Service Hub (الرابط ثابت ولا يتغير) */
+export const generateHnServiceToken = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    const token = `hn_${crypto.randomUUID().replace(/-/g, "")}${crypto
+      .randomUUID()
+      .replace(/-/g, "")
+      .slice(0, 8)}`;
+    const { error } = await supabase.from("external_integrations").upsert(
+      {
+        owner_id: userId,
+        service_key: "hn-service",
+        name: "HN Service Hub",
+        method: "token" as const,
+        url: "https://tvcc.hnpay.live/api/public/hn-service/catalog",
+        token,
+        status: "pending" as const,
+        last_error: null,
+      },
+      { onConflict: "owner_id,service_key" },
+    );
+    if (error) throw new Error(error.message);
+    return { token };
+  });
+
+
 function isPrivateUrl(url: string): boolean {
   try {
     const h = new URL(url).hostname;

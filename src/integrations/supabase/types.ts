@@ -1227,6 +1227,54 @@ export type Database = {
         }
         Relationships: []
       }
+      external_integrations: {
+        Row: {
+          created_at: string
+          id: string
+          last_checked_at: string | null
+          last_error: string | null
+          method: string
+          name: string
+          owner_id: string
+          service_key: string
+          status: string
+          token: string | null
+          updated_at: string
+          url: string
+          webhook_url: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_checked_at?: string | null
+          last_error?: string | null
+          method?: string
+          name: string
+          owner_id: string
+          service_key: string
+          status?: string
+          token?: string | null
+          updated_at?: string
+          url: string
+          webhook_url?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_checked_at?: string | null
+          last_error?: string | null
+          method?: string
+          name?: string
+          owner_id?: string
+          service_key?: string
+          status?: string
+          token?: string | null
+          updated_at?: string
+          url?: string
+          webhook_url?: string | null
+        }
+        Relationships: []
+      }
       failover_events: {
         Row: {
           created_at: string

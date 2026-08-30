@@ -93,6 +93,7 @@ import { Route as ApiPublicServersAgentRouteImport } from './routes/api/public/s
 import { Route as ApiPublicPaymentsIngestRouteImport } from './routes/api/public/payments.ingest'
 import { Route as ApiPublicNotificationsIngestRouteImport } from './routes/api/public/notifications.ingest'
 import { Route as ApiPublicHooksHealthCheckRouteImport } from './routes/api/public/hooks/health-check'
+import { Route as ApiPublicHnServiceCatalogRouteImport } from './routes/api/public/hn-service/catalog'
 import { Route as ApiPublicHnRlsVerifyRouteImport } from './routes/api/public/hn-rls.verify'
 import { Route as ApiPublicCoreIngestRouteImport } from './routes/api/public/core.ingest'
 import { Route as ApiPublicBackupsRunDueRouteImport } from './routes/api/public/backups/run-due'
@@ -544,6 +545,12 @@ const ApiPublicHooksHealthCheckRoute =
     path: '/api/public/hooks/health-check',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHnServiceCatalogRoute =
+  ApiPublicHnServiceCatalogRouteImport.update({
+    id: '/api/public/hn-service/catalog',
+    path: '/api/public/hn-service/catalog',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHnRlsVerifyRoute = ApiPublicHnRlsVerifyRouteImport.update({
   id: '/api/public/hn-rls/verify',
   path: '/api/public/hn-rls/verify',
@@ -640,6 +647,7 @@ export interface FileRoutesByFullPath {
   '/api/public/backups/run-due': typeof ApiPublicBackupsRunDueRoute
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hn-rls/verify': typeof ApiPublicHnRlsVerifyRoute
+  '/api/public/hn-service/catalog': typeof ApiPublicHnServiceCatalogRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
   '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
@@ -727,6 +735,7 @@ export interface FileRoutesByTo {
   '/api/public/backups/run-due': typeof ApiPublicBackupsRunDueRoute
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hn-rls/verify': typeof ApiPublicHnRlsVerifyRoute
+  '/api/public/hn-service/catalog': typeof ApiPublicHnServiceCatalogRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
   '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
@@ -817,6 +826,7 @@ export interface FileRoutesById {
   '/api/public/backups/run-due': typeof ApiPublicBackupsRunDueRoute
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hn-rls/verify': typeof ApiPublicHnRlsVerifyRoute
+  '/api/public/hn-service/catalog': typeof ApiPublicHnServiceCatalogRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
   '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
@@ -907,6 +917,7 @@ export interface FileRouteTypes {
     | '/api/public/backups/run-due'
     | '/api/public/core/ingest'
     | '/api/public/hn-rls/verify'
+    | '/api/public/hn-service/catalog'
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
     | '/api/public/payments/ingest'
@@ -994,6 +1005,7 @@ export interface FileRouteTypes {
     | '/api/public/backups/run-due'
     | '/api/public/core/ingest'
     | '/api/public/hn-rls/verify'
+    | '/api/public/hn-service/catalog'
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
     | '/api/public/payments/ingest'
@@ -1083,6 +1095,7 @@ export interface FileRouteTypes {
     | '/api/public/backups/run-due'
     | '/api/public/core/ingest'
     | '/api/public/hn-rls/verify'
+    | '/api/public/hn-service/catalog'
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
     | '/api/public/payments/ingest'
@@ -1110,6 +1123,7 @@ export interface RootRouteChildren {
   ApiPublicBackupsRunDueRoute: typeof ApiPublicBackupsRunDueRoute
   ApiPublicCoreIngestRoute: typeof ApiPublicCoreIngestRoute
   ApiPublicHnRlsVerifyRoute: typeof ApiPublicHnRlsVerifyRoute
+  ApiPublicHnServiceCatalogRoute: typeof ApiPublicHnServiceCatalogRoute
   ApiPublicHooksHealthCheckRoute: typeof ApiPublicHooksHealthCheckRoute
   ApiPublicNotificationsIngestRoute: typeof ApiPublicNotificationsIngestRoute
   ApiPublicPaymentsIngestRoute: typeof ApiPublicPaymentsIngestRoute
@@ -1709,6 +1723,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksHealthCheckRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hn-service/catalog': {
+      id: '/api/public/hn-service/catalog'
+      path: '/api/public/hn-service/catalog'
+      fullPath: '/api/public/hn-service/catalog'
+      preLoaderRoute: typeof ApiPublicHnServiceCatalogRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hn-rls/verify': {
       id: '/api/public/hn-rls/verify'
       path: '/api/public/hn-rls/verify'
@@ -1909,6 +1930,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicBackupsRunDueRoute: ApiPublicBackupsRunDueRoute,
   ApiPublicCoreIngestRoute: ApiPublicCoreIngestRoute,
   ApiPublicHnRlsVerifyRoute: ApiPublicHnRlsVerifyRoute,
+  ApiPublicHnServiceCatalogRoute: ApiPublicHnServiceCatalogRoute,
   ApiPublicHooksHealthCheckRoute: ApiPublicHooksHealthCheckRoute,
   ApiPublicNotificationsIngestRoute: ApiPublicNotificationsIngestRoute,
   ApiPublicPaymentsIngestRoute: ApiPublicPaymentsIngestRoute,

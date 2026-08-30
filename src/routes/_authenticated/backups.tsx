@@ -433,10 +433,10 @@ function BackupsPage() {
                     {(schedules as any[]).map((s) => (
                       <TableRow key={s.id}>
                         <TableCell className="text-xs">{s.websites?.domain ?? "—"}</TableCell>
-                        <TableCell className="text-xs ltr text-left">{s.cron}</TableCell>
+                        <TableCell className="text-xs ltr text-left">{s.schedule}</TableCell>
                         <TableCell className="text-xs">{s.backup_type}</TableCell>
                         <TableCell className="text-xs">{s.retention_count}</TableCell>
-                        <TableCell><Badge variant="outline" className={s.enabled ? statusStyle("completed") : statusStyle("pending")}>{s.enabled ? "مفعّل" : "معطّل"}</Badge></TableCell>
+                        <TableCell><Badge variant="outline" className={s.is_active ? statusStyle("completed") : statusStyle("pending")}>{s.is_active ? "مفعّل" : "معطّل"}</Badge></TableCell>
                         <TableCell>
                           <Button
                             size="sm"

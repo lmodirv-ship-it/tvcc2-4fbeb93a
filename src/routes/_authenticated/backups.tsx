@@ -15,13 +15,17 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Archive, Loader2, Trash2, RotateCcw, Download, Upload, Plus, Clock } from "lucide-react";
+import { Archive, Loader2, Trash2, RotateCcw, Download, Upload, Plus, Clock, Server, Database, RefreshCw, Link2, Activity } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import {
   listBackups, createBackup, deleteBackup, restoreBackup, exportSiteData, importSiteData,
   listBackupSchedules, saveBackupSchedule, deleteBackupSchedule,
 } from "@/lib/server-ops.functions";
+import {
+  getBackupHub, runFleetBackup, saveDatabaseEntry, deleteDatabaseEntry,
+  pairDatabases, syncDatabasePair, testDatabaseEntry,
+} from "@/lib/backup-hub.functions";
 
 export const Route = createFileRoute("/_authenticated/backups")({
   component: BackupsPage,

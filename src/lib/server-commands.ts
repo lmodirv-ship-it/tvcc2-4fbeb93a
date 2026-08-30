@@ -38,6 +38,7 @@ export const COMMAND_WHITELIST = [
   "db_create",
   "db_user_grant",
   "db_ping",
+  "db_sync",
   "watch_start",
   "watch_stop",
   "git_deploy",
@@ -120,6 +121,7 @@ export const COMMAND_LABELS: Record<string, string> = {
   db_create: "إنشاء قاعدة بيانات",
   db_user_grant: "إنشاء مستخدم قاعدة ومنح صلاحيات",
   db_ping: "فحص الاتصال بقاعدة البيانات",
+  db_sync: "مزامنة قاعدتي بيانات",
   watch_start: "تفعيل المزامنة اللحظية",
   watch_stop: "إيقاف المزامنة اللحظية",
 

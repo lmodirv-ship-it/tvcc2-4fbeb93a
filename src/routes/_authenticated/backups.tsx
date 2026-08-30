@@ -15,13 +15,17 @@ import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Archive, Loader2, Trash2, RotateCcw, Download, Upload, Plus, Clock } from "lucide-react";
+import { Archive, Loader2, Trash2, RotateCcw, Download, Upload, Plus, Clock, Server, Database, RefreshCw, Link2, Activity } from "lucide-react";
 import { toast } from "sonner";
 import { supabase } from "@/integrations/supabase/client";
 import {
   listBackups, createBackup, deleteBackup, restoreBackup, exportSiteData, importSiteData,
   listBackupSchedules, saveBackupSchedule, deleteBackupSchedule,
 } from "@/lib/server-ops.functions";
+import {
+  getBackupHub, runFleetBackup, saveDatabaseEntry, deleteDatabaseEntry,
+  pairDatabases, syncDatabasePair, testDatabaseEntry,
+} from "@/lib/backup-hub.functions";
 
 export const Route = createFileRoute("/_authenticated/backups")({
   component: BackupsPage,
@@ -66,6 +70,32 @@ function BackupsPage() {
   const [schedType, setSchedType] = useState("full");
   const [schedRetention, setSchedRetention] = useState(7);
   const [schedLabel, setSchedLabel] = useState("");
+
+  // destination + fleet backup
+  const fetchHub = useServerFn(getBackupHub);
+  const fleet = useServerFn(runFleetBackup);
+  const saveDb = useServerFn(saveDatabaseEntry);
+  const delDb = useServerFn(deleteDatabaseEntry);
+  const pairDb = useServerFn(pairDatabases);
+  const syncDb = useServerFn(syncDatabasePair);
+  const testDb = useServerFn(testDatabaseEntry);
+
+  const [targetServerId, setTargetServerId] = useState("");
+  const [destPath, setDestPath] = useState("/var/backups/tvcc");
+  const [dbForm, setDbForm] = useState({
+    name: "", dbKind: "local", dbType: "postgres", host: "", port: "5432",
+    dbName: "", dbUser: "", serverId: "", connectionUrl: "", envKey: "DATABASE_URL",
+  });
+  const [pair, setPair] = useState({ primaryId: "", replicaId: "", syncMode: "mirror" });
+
+  const { data: hub, isLoading: hubLoading } = useQuery({
+    queryKey: ["backup-hub"],
+    queryFn: () => fetchHub(),
+    refetchInterval: 60000,
+  });
+  const hubServers = (hub?.servers ?? []) as any[];
+  const hubDatabases = (hub?.databases ?? []) as any[];
+  const refreshHub = () => qc.invalidateQueries({ queryKey: ["backup-hub"] });
 
   const { data: sites } = useQuery({
     queryKey: ["backup-sites"],
@@ -197,11 +227,50 @@ function BackupsPage() {
         </CardContent>
       </Card>
 
+      <Card className="border-primary/30">
+        <CardContent className="p-4 grid gap-3 md:grid-cols-4 items-end">
+          <div>
+            <Label className="flex items-center gap-1"><Server className="w-3 h-3" /> سيرفر الوجهة</Label>
+            <Select value={targetServerId} onValueChange={setTargetServerId}>
+              <SelectTrigger><SelectValue placeholder={hubLoading ? "جارٍ التحميل…" : "اختر سيرفراً"} /></SelectTrigger>
+              <SelectContent>
+                {hubServers.map((s) => (
+                  <SelectItem key={s.id} value={s.id}>{s.name} — {s.hostname}</SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="md:col-span-2">
+            <Label>مسار التخزين على الوجهة</Label>
+            <Input className="ltr text-left" value={destPath} onChange={(e) => setDestPath(e.target.value)} placeholder="/var/backups/tvcc" />
+          </div>
+          <Button
+            disabled={!targetServerId || busy}
+            onClick={async () => {
+              setBusy(true);
+              try {
+                const r: any = await fleet({ data: { targetServerId, destPath, backupType: type } });
+                toast.success(`تم إرسال ${r.total} مهمة نسخ إلى الوكلاء`);
+                qc.invalidateQueries({ queryKey: ["backups"] });
+              } catch (e) {
+                toast.error((e as Error).message);
+              } finally {
+                setBusy(false);
+              }
+            }}
+          >
+            <Archive className="w-4 h-4 ml-1" /> نسخ كل المواقع
+          </Button>
+        </CardContent>
+      </Card>
+
       <Tabs defaultValue="backups">
         <TabsList className="flex-wrap h-auto">
           <TabsTrigger value="backups"><Archive className="w-3 h-3 ml-1" /> النسخ الاحتياطية</TabsTrigger>
           <TabsTrigger value="schedules"><Clock className="w-3 h-3 ml-1" /> الجدولة التلقائية</TabsTrigger>
+          <TabsTrigger value="databases"><Database className="w-3 h-3 ml-1" /> قواعد البيانات</TabsTrigger>
         </TabsList>
+
 
         <TabsContent value="backups" className="pt-4">
           {isLoading ? (
@@ -326,6 +395,8 @@ function BackupsPage() {
                         retentionCount: schedRetention,
                         enabled: schedEnabled,
                         label: schedLabel,
+                        targetServerId: targetServerId || null,
+                        destPath: destPath || null,
                       },
                     });
                     qc.invalidateQueries({ queryKey: ["backup-schedules"] });
@@ -362,10 +433,10 @@ function BackupsPage() {
                     {(schedules as any[]).map((s) => (
                       <TableRow key={s.id}>
                         <TableCell className="text-xs">{s.websites?.domain ?? "—"}</TableCell>
-                        <TableCell className="text-xs ltr text-left">{s.cron}</TableCell>
+                        <TableCell className="text-xs ltr text-left">{s.schedule}</TableCell>
                         <TableCell className="text-xs">{s.backup_type}</TableCell>
                         <TableCell className="text-xs">{s.retention_count}</TableCell>
-                        <TableCell><Badge variant="outline" className={s.enabled ? statusStyle("completed") : statusStyle("pending")}>{s.enabled ? "مفعّل" : "معطّل"}</Badge></TableCell>
+                        <TableCell><Badge variant="outline" className={s.is_active ? statusStyle("completed") : statusStyle("pending")}>{s.is_active ? "مفعّل" : "معطّل"}</Badge></TableCell>
                         <TableCell>
                           <Button
                             size="sm"
@@ -376,6 +447,208 @@ function BackupsPage() {
                               qc.invalidateQueries({ queryKey: ["backup-schedules"] });
                             }}
                           >
+                            <Trash2 className="w-3 h-3" />
+                          </Button>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </CardContent>
+            </Card>
+          )}
+        </TabsContent>
+
+        <TabsContent value="databases" className="pt-4 space-y-4">
+          <Card>
+            <CardContent className="p-4 grid gap-3 md:grid-cols-4 items-end">
+              <div>
+                <Label>الاسم</Label>
+                <Input value={dbForm.name} onChange={(e) => setDbForm({ ...dbForm, name: e.target.value })} placeholder="قاعدة المتجر" />
+              </div>
+              <div>
+                <Label>النوع</Label>
+                <Select value={dbForm.dbKind} onValueChange={(v) => setDbForm({ ...dbForm, dbKind: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="local">محلية (على سيرفر)</SelectItem>
+                    <SelectItem value="cloud">سحابية</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>المحرّك</Label>
+                <Select value={dbForm.dbType} onValueChange={(v) => setDbForm({ ...dbForm, dbType: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {["postgres", "mysql", "mongodb", "redis", "supabase"].map((t) => (
+                      <SelectItem key={t} value={t}>{t}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>السيرفر</Label>
+                <Select value={dbForm.serverId} onValueChange={(v) => setDbForm({ ...dbForm, serverId: v })}>
+                  <SelectTrigger><SelectValue placeholder="بدون" /></SelectTrigger>
+                  <SelectContent>
+                    {hubServers.map((s) => <SelectItem key={s.id} value={s.id}>{s.name}</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>المضيف</Label>
+                <Input className="ltr text-left" value={dbForm.host} onChange={(e) => setDbForm({ ...dbForm, host: e.target.value })} placeholder="192.168.100.66" />
+              </div>
+              <div>
+                <Label>المنفذ</Label>
+                <Input className="ltr text-left" value={dbForm.port} onChange={(e) => setDbForm({ ...dbForm, port: e.target.value })} placeholder="5432" />
+              </div>
+              <div>
+                <Label>اسم القاعدة</Label>
+                <Input className="ltr text-left" value={dbForm.dbName} onChange={(e) => setDbForm({ ...dbForm, dbName: e.target.value })} />
+              </div>
+              <div>
+                <Label>المستخدم</Label>
+                <Input className="ltr text-left" value={dbForm.dbUser} onChange={(e) => setDbForm({ ...dbForm, dbUser: e.target.value })} />
+              </div>
+              <div className="md:col-span-2">
+                <Label>رابط الاتصال (اختياري)</Label>
+                <Input className="ltr text-left" value={dbForm.connectionUrl} onChange={(e) => setDbForm({ ...dbForm, connectionUrl: e.target.value })} placeholder="https://db.hn-groupe.org" />
+              </div>
+              <div>
+                <Label>مفتاح البيئة</Label>
+                <Input className="ltr text-left" value={dbForm.envKey} onChange={(e) => setDbForm({ ...dbForm, envKey: e.target.value })} />
+              </div>
+              <Button
+                disabled={!dbForm.name}
+                onClick={async () => {
+                  try {
+                    await saveDb({
+                      data: {
+                        name: dbForm.name,
+                        dbKind: dbForm.dbKind,
+                        dbType: dbForm.dbType,
+                        host: dbForm.host || undefined,
+                        port: dbForm.port ? Number(dbForm.port) : undefined,
+                        dbName: dbForm.dbName || undefined,
+                        dbUser: dbForm.dbUser || undefined,
+                        serverId: dbForm.serverId || undefined,
+                        connectionUrl: dbForm.connectionUrl || undefined,
+                        envKey: dbForm.envKey || undefined,
+                      },
+                    });
+                    setDbForm({ ...dbForm, name: "", dbName: "", connectionUrl: "" });
+                    refreshHub();
+                    toast.success("تم حفظ القاعدة");
+                  } catch (e) {
+                    toast.error((e as Error).message);
+                  }
+                }}
+              >
+                <Plus className="w-4 h-4 ml-1" /> إضافة قاعدة
+              </Button>
+            </CardContent>
+          </Card>
+
+          <Card>
+            <CardContent className="p-4 grid gap-3 md:grid-cols-4 items-end">
+              <div>
+                <Label>القاعدة الأساسية</Label>
+                <Select value={pair.primaryId} onValueChange={(v) => setPair({ ...pair, primaryId: v })}>
+                  <SelectTrigger><SelectValue placeholder="اختر" /></SelectTrigger>
+                  <SelectContent>
+                    {hubDatabases.map((d) => <SelectItem key={d.id} value={d.id}>{d.name} ({d.db_kind})</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>القاعدة المرتبطة</Label>
+                <Select value={pair.replicaId} onValueChange={(v) => setPair({ ...pair, replicaId: v })}>
+                  <SelectTrigger><SelectValue placeholder="اختر" /></SelectTrigger>
+                  <SelectContent>
+                    {hubDatabases.map((d) => <SelectItem key={d.id} value={d.id}>{d.name} ({d.db_kind})</SelectItem>)}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>وضع المزامنة</Label>
+                <Select value={pair.syncMode} onValueChange={(v) => setPair({ ...pair, syncMode: v })}>
+                  <SelectTrigger><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="mirror">ازدواجية (Mirror)</SelectItem>
+                    <SelectItem value="primary_replica">أساسي/نسخة</SelectItem>
+                    <SelectItem value="none">بدون</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <Button
+                variant="outline"
+                disabled={!pair.primaryId || !pair.replicaId}
+                onClick={async () => {
+                  try {
+                    await pairDb({ data: pair });
+                    refreshHub();
+                    toast.success("تم الربط الازدواجي");
+                  } catch (e) {
+                    toast.error((e as Error).message);
+                  }
+                }}
+              >
+                <Link2 className="w-4 h-4 ml-1" /> ربط ازدواجي
+              </Button>
+            </CardContent>
+          </Card>
+
+          {hubDatabases.length === 0 ? (
+            <Card><CardContent className="p-8 text-center text-muted-foreground">لا توجد قواعد بيانات مسجّلة.</CardContent></Card>
+          ) : (
+            <Card>
+              <CardContent className="p-0 overflow-x-auto">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>الاسم</TableHead>
+                      <TableHead>النوع</TableHead>
+                      <TableHead>المحرّك</TableHead>
+                      <TableHead>العنوان</TableHead>
+                      <TableHead>المزامنة</TableHead>
+                      <TableHead>الحالة</TableHead>
+                      <TableHead />
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {hubDatabases.map((d) => (
+                      <TableRow key={d.id}>
+                        <TableCell className="text-xs">{d.name}</TableCell>
+                        <TableCell className="text-xs">{d.db_kind === "local" ? "محلية" : "سحابية"}</TableCell>
+                        <TableCell className="text-xs">{d.db_type}</TableCell>
+                        <TableCell className="text-[11px] ltr text-left max-w-[16rem] truncate">{d.connection_url || `${d.host ?? "—"}:${d.port ?? ""}`}</TableCell>
+                        <TableCell className="text-xs">{d.linked_database_id ? (d.sync_mode ?? "mirror") : "—"}</TableCell>
+                        <TableCell><Badge variant="outline" className={statusStyle(d.status === "active" ? "completed" : d.status === "error" ? "failed" : "pending")}>{d.status}</Badge></TableCell>
+                        <TableCell className="flex gap-1">
+                          <Button size="sm" variant="outline" onClick={async () => {
+                            try {
+                              const r: any = await testDb({ data: { id: d.id } });
+                              toast.info(r.message);
+                              refreshHub();
+                            } catch (e) { toast.error((e as Error).message); }
+                          }}>
+                            <Activity className="w-3 h-3 ml-1" /> فحص
+                          </Button>
+                          <Button size="sm" variant="outline" disabled={!d.linked_database_id} onClick={async () => {
+                            try {
+                              await syncDb({ data: { id: d.id } });
+                              toast.success("تم إرسال مهمة المزامنة");
+                              refreshHub();
+                            } catch (e) { toast.error((e as Error).message); }
+                          }}>
+                            <RefreshCw className="w-3 h-3 ml-1" /> مزامنة
+                          </Button>
+                          <Button size="sm" variant="ghost" className="text-destructive" onClick={async () => {
+                            await delDb({ data: { id: d.id } });
+                            refreshHub();
+                          }}>
                             <Trash2 className="w-3 h-3" />
                           </Button>
                         </TableCell>

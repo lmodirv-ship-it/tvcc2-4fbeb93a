@@ -45,6 +45,7 @@ import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authent
 import { Route as AuthenticatedHostingRouteImport } from './routes/_authenticated/hosting'
 import { Route as AuthenticatedHnDomainsRouteImport } from './routes/_authenticated/hn-domains'
 import { Route as AuthenticatedGroupsRouteImport } from './routes/_authenticated/groups'
+import { Route as AuthenticatedGroupIdsRouteImport } from './routes/_authenticated/group-ids'
 import { Route as AuthenticatedFailoverRouteImport } from './routes/_authenticated/failover'
 import { Route as AuthenticatedEnvironmentRouteImport } from './routes/_authenticated/environment'
 import { Route as AuthenticatedEditorRouteImport } from './routes/_authenticated/editor'
@@ -93,10 +94,12 @@ import { Route as ApiPublicServersAgentRouteImport } from './routes/api/public/s
 import { Route as ApiPublicPaymentsIngestRouteImport } from './routes/api/public/payments.ingest'
 import { Route as ApiPublicNotificationsIngestRouteImport } from './routes/api/public/notifications.ingest'
 import { Route as ApiPublicHooksHealthCheckRouteImport } from './routes/api/public/hooks/health-check'
+import { Route as ApiPublicHnAnnounceRouteImport } from './routes/api/public/hn/announce'
 import { Route as ApiPublicHnServiceCatalogRouteImport } from './routes/api/public/hn-service/catalog'
 import { Route as ApiPublicHnRlsVerifyRouteImport } from './routes/api/public/hn-rls.verify'
 import { Route as ApiPublicCoreIngestRouteImport } from './routes/api/public/core.ingest'
 import { Route as ApiPublicBackupsRunDueRouteImport } from './routes/api/public/backups/run-due'
+import { Route as ApiPublicHnIdentityCodeRouteImport } from './routes/api/public/hn/identity.$code'
 
 const PricingRoute = PricingRouteImport.update({
   id: '/pricing',
@@ -282,6 +285,11 @@ const AuthenticatedHnDomainsRoute = AuthenticatedHnDomainsRouteImport.update({
 const AuthenticatedGroupsRoute = AuthenticatedGroupsRouteImport.update({
   id: '/groups',
   path: '/groups',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedGroupIdsRoute = AuthenticatedGroupIdsRouteImport.update({
+  id: '/group-ids',
+  path: '/group-ids',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedFailoverRoute = AuthenticatedFailoverRouteImport.update({
@@ -545,6 +553,11 @@ const ApiPublicHooksHealthCheckRoute =
     path: '/api/public/hooks/health-check',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHnAnnounceRoute = ApiPublicHnAnnounceRouteImport.update({
+  id: '/api/public/hn/announce',
+  path: '/api/public/hn/announce',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHnServiceCatalogRoute =
   ApiPublicHnServiceCatalogRouteImport.update({
     id: '/api/public/hn-service/catalog',
@@ -564,6 +577,11 @@ const ApiPublicCoreIngestRoute = ApiPublicCoreIngestRouteImport.update({
 const ApiPublicBackupsRunDueRoute = ApiPublicBackupsRunDueRouteImport.update({
   id: '/api/public/backups/run-due',
   path: '/api/public/backups/run-due',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicHnIdentityCodeRoute = ApiPublicHnIdentityCodeRouteImport.update({
+  id: '/api/public/hn/identity/$code',
+  path: '/api/public/hn/identity/$code',
   getParentRoute: () => rootRouteImport,
 } as any)
 
@@ -597,6 +615,7 @@ export interface FileRoutesByFullPath {
   '/editor': typeof AuthenticatedEditorRouteWithChildren
   '/environment': typeof AuthenticatedEnvironmentRoute
   '/failover': typeof AuthenticatedFailoverRoute
+  '/group-ids': typeof AuthenticatedGroupIdsRoute
   '/groups': typeof AuthenticatedGroupsRoute
   '/hn-domains': typeof AuthenticatedHnDomainsRoute
   '/hosting': typeof AuthenticatedHostingRoute
@@ -648,6 +667,7 @@ export interface FileRoutesByFullPath {
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hn-rls/verify': typeof ApiPublicHnRlsVerifyRoute
   '/api/public/hn-service/catalog': typeof ApiPublicHnServiceCatalogRoute
+  '/api/public/hn/announce': typeof ApiPublicHnAnnounceRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
   '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
@@ -655,6 +675,7 @@ export interface FileRoutesByFullPath {
   '/api/public/servers/check-alerts': typeof ApiPublicServersCheckAlertsRoute
   '/api/public/servers/heartbeat': typeof ApiPublicServersHeartbeatRoute
   '/api/public/video/ingest': typeof ApiPublicVideoIngestRoute
+  '/api/public/hn/identity/$code': typeof ApiPublicHnIdentityCodeRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
@@ -685,6 +706,7 @@ export interface FileRoutesByTo {
   '/downloads': typeof AuthenticatedDownloadsRoute
   '/environment': typeof AuthenticatedEnvironmentRoute
   '/failover': typeof AuthenticatedFailoverRoute
+  '/group-ids': typeof AuthenticatedGroupIdsRoute
   '/groups': typeof AuthenticatedGroupsRoute
   '/hn-domains': typeof AuthenticatedHnDomainsRoute
   '/hosting': typeof AuthenticatedHostingRoute
@@ -736,6 +758,7 @@ export interface FileRoutesByTo {
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hn-rls/verify': typeof ApiPublicHnRlsVerifyRoute
   '/api/public/hn-service/catalog': typeof ApiPublicHnServiceCatalogRoute
+  '/api/public/hn/announce': typeof ApiPublicHnAnnounceRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
   '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
@@ -743,6 +766,7 @@ export interface FileRoutesByTo {
   '/api/public/servers/check-alerts': typeof ApiPublicServersCheckAlertsRoute
   '/api/public/servers/heartbeat': typeof ApiPublicServersHeartbeatRoute
   '/api/public/video/ingest': typeof ApiPublicVideoIngestRoute
+  '/api/public/hn/identity/$code': typeof ApiPublicHnIdentityCodeRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -776,6 +800,7 @@ export interface FileRoutesById {
   '/_authenticated/editor': typeof AuthenticatedEditorRouteWithChildren
   '/_authenticated/environment': typeof AuthenticatedEnvironmentRoute
   '/_authenticated/failover': typeof AuthenticatedFailoverRoute
+  '/_authenticated/group-ids': typeof AuthenticatedGroupIdsRoute
   '/_authenticated/groups': typeof AuthenticatedGroupsRoute
   '/_authenticated/hn-domains': typeof AuthenticatedHnDomainsRoute
   '/_authenticated/hosting': typeof AuthenticatedHostingRoute
@@ -827,6 +852,7 @@ export interface FileRoutesById {
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hn-rls/verify': typeof ApiPublicHnRlsVerifyRoute
   '/api/public/hn-service/catalog': typeof ApiPublicHnServiceCatalogRoute
+  '/api/public/hn/announce': typeof ApiPublicHnAnnounceRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
   '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
@@ -834,6 +860,7 @@ export interface FileRoutesById {
   '/api/public/servers/check-alerts': typeof ApiPublicServersCheckAlertsRoute
   '/api/public/servers/heartbeat': typeof ApiPublicServersHeartbeatRoute
   '/api/public/video/ingest': typeof ApiPublicVideoIngestRoute
+  '/api/public/hn/identity/$code': typeof ApiPublicHnIdentityCodeRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -867,6 +894,7 @@ export interface FileRouteTypes {
     | '/editor'
     | '/environment'
     | '/failover'
+    | '/group-ids'
     | '/groups'
     | '/hn-domains'
     | '/hosting'
@@ -918,6 +946,7 @@ export interface FileRouteTypes {
     | '/api/public/core/ingest'
     | '/api/public/hn-rls/verify'
     | '/api/public/hn-service/catalog'
+    | '/api/public/hn/announce'
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
     | '/api/public/payments/ingest'
@@ -925,6 +954,7 @@ export interface FileRouteTypes {
     | '/api/public/servers/check-alerts'
     | '/api/public/servers/heartbeat'
     | '/api/public/video/ingest'
+    | '/api/public/hn/identity/$code'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
@@ -955,6 +985,7 @@ export interface FileRouteTypes {
     | '/downloads'
     | '/environment'
     | '/failover'
+    | '/group-ids'
     | '/groups'
     | '/hn-domains'
     | '/hosting'
@@ -1006,6 +1037,7 @@ export interface FileRouteTypes {
     | '/api/public/core/ingest'
     | '/api/public/hn-rls/verify'
     | '/api/public/hn-service/catalog'
+    | '/api/public/hn/announce'
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
     | '/api/public/payments/ingest'
@@ -1013,6 +1045,7 @@ export interface FileRouteTypes {
     | '/api/public/servers/check-alerts'
     | '/api/public/servers/heartbeat'
     | '/api/public/video/ingest'
+    | '/api/public/hn/identity/$code'
   id:
     | '__root__'
     | '/'
@@ -1045,6 +1078,7 @@ export interface FileRouteTypes {
     | '/_authenticated/editor'
     | '/_authenticated/environment'
     | '/_authenticated/failover'
+    | '/_authenticated/group-ids'
     | '/_authenticated/groups'
     | '/_authenticated/hn-domains'
     | '/_authenticated/hosting'
@@ -1096,6 +1130,7 @@ export interface FileRouteTypes {
     | '/api/public/core/ingest'
     | '/api/public/hn-rls/verify'
     | '/api/public/hn-service/catalog'
+    | '/api/public/hn/announce'
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
     | '/api/public/payments/ingest'
@@ -1103,6 +1138,7 @@ export interface FileRouteTypes {
     | '/api/public/servers/check-alerts'
     | '/api/public/servers/heartbeat'
     | '/api/public/video/ingest'
+    | '/api/public/hn/identity/$code'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -1124,6 +1160,7 @@ export interface RootRouteChildren {
   ApiPublicCoreIngestRoute: typeof ApiPublicCoreIngestRoute
   ApiPublicHnRlsVerifyRoute: typeof ApiPublicHnRlsVerifyRoute
   ApiPublicHnServiceCatalogRoute: typeof ApiPublicHnServiceCatalogRoute
+  ApiPublicHnAnnounceRoute: typeof ApiPublicHnAnnounceRoute
   ApiPublicHooksHealthCheckRoute: typeof ApiPublicHooksHealthCheckRoute
   ApiPublicNotificationsIngestRoute: typeof ApiPublicNotificationsIngestRoute
   ApiPublicPaymentsIngestRoute: typeof ApiPublicPaymentsIngestRoute
@@ -1131,6 +1168,7 @@ export interface RootRouteChildren {
   ApiPublicServersCheckAlertsRoute: typeof ApiPublicServersCheckAlertsRoute
   ApiPublicServersHeartbeatRoute: typeof ApiPublicServersHeartbeatRoute
   ApiPublicVideoIngestRoute: typeof ApiPublicVideoIngestRoute
+  ApiPublicHnIdentityCodeRoute: typeof ApiPublicHnIdentityCodeRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1385,6 +1423,13 @@ declare module '@tanstack/react-router' {
       path: '/groups'
       fullPath: '/groups'
       preLoaderRoute: typeof AuthenticatedGroupsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/group-ids': {
+      id: '/_authenticated/group-ids'
+      path: '/group-ids'
+      fullPath: '/group-ids'
+      preLoaderRoute: typeof AuthenticatedGroupIdsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/failover': {
@@ -1723,6 +1768,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksHealthCheckRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hn/announce': {
+      id: '/api/public/hn/announce'
+      path: '/api/public/hn/announce'
+      fullPath: '/api/public/hn/announce'
+      preLoaderRoute: typeof ApiPublicHnAnnounceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hn-service/catalog': {
       id: '/api/public/hn-service/catalog'
       path: '/api/public/hn-service/catalog'
@@ -1749,6 +1801,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/backups/run-due'
       fullPath: '/api/public/backups/run-due'
       preLoaderRoute: typeof ApiPublicBackupsRunDueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hn/identity/$code': {
+      id: '/api/public/hn/identity/$code'
+      path: '/api/public/hn/identity/$code'
+      fullPath: '/api/public/hn/identity/$code'
+      preLoaderRoute: typeof ApiPublicHnIdentityCodeRouteImport
       parentRoute: typeof rootRouteImport
     }
   }
@@ -1827,6 +1886,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedEditorRoute: typeof AuthenticatedEditorRouteWithChildren
   AuthenticatedEnvironmentRoute: typeof AuthenticatedEnvironmentRoute
   AuthenticatedFailoverRoute: typeof AuthenticatedFailoverRoute
+  AuthenticatedGroupIdsRoute: typeof AuthenticatedGroupIdsRoute
   AuthenticatedGroupsRoute: typeof AuthenticatedGroupsRoute
   AuthenticatedHnDomainsRoute: typeof AuthenticatedHnDomainsRoute
   AuthenticatedHostingRoute: typeof AuthenticatedHostingRoute
@@ -1878,6 +1938,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedEditorRoute: AuthenticatedEditorRouteWithChildren,
   AuthenticatedEnvironmentRoute: AuthenticatedEnvironmentRoute,
   AuthenticatedFailoverRoute: AuthenticatedFailoverRoute,
+  AuthenticatedGroupIdsRoute: AuthenticatedGroupIdsRoute,
   AuthenticatedGroupsRoute: AuthenticatedGroupsRoute,
   AuthenticatedHnDomainsRoute: AuthenticatedHnDomainsRoute,
   AuthenticatedHostingRoute: AuthenticatedHostingRoute,
@@ -1931,6 +1992,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicCoreIngestRoute: ApiPublicCoreIngestRoute,
   ApiPublicHnRlsVerifyRoute: ApiPublicHnRlsVerifyRoute,
   ApiPublicHnServiceCatalogRoute: ApiPublicHnServiceCatalogRoute,
+  ApiPublicHnAnnounceRoute: ApiPublicHnAnnounceRoute,
   ApiPublicHooksHealthCheckRoute: ApiPublicHooksHealthCheckRoute,
   ApiPublicNotificationsIngestRoute: ApiPublicNotificationsIngestRoute,
   ApiPublicPaymentsIngestRoute: ApiPublicPaymentsIngestRoute,
@@ -1938,6 +2000,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicServersCheckAlertsRoute: ApiPublicServersCheckAlertsRoute,
   ApiPublicServersHeartbeatRoute: ApiPublicServersHeartbeatRoute,
   ApiPublicVideoIngestRoute: ApiPublicVideoIngestRoute,
+  ApiPublicHnIdentityCodeRoute: ApiPublicHnIdentityCodeRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

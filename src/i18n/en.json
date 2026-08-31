@@ -91,7 +91,8 @@
     "hn_domains": ".HN Domains",
     "my_hosting": "My Hosting",
     "hosting": "Hosting Admin",
-    "payment_accounts": "Payment Accounts"
+    "payment_accounts": "Payment Accounts",
+    "group_ids": "Group IDs"
   },
   "dashboard": {
     "title": "Dashboard",

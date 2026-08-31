@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Globe, Users, CreditCard, UserCog, Activity, Settings,
   Code2, LogOut, Wand2, FolderOpen, LayoutTemplate, Radio, ListChecks, Plug,
   Smartphone, KeyRound, Server, ShieldCheck, BadgeCheck, Bell, FileCog, LifeBuoy, ClipboardCheck,
-  FileBarChart, Wallet, Boxes, Brain, Film, HardDrive, MessageSquare, History, NotebookPen, Archive, Network, Share2, ScrollText, ShieldAlert, GitBranch, Zap, Download, Link2, Cloud, Globe2,
+  FileBarChart, Wallet, Boxes, Brain, Film, HardDrive, MessageSquare, History, NotebookPen, Archive, Network, Share2, ScrollText, ShieldAlert, GitBranch, Zap, Download, Link2, Cloud, Globe2, Fingerprint,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -61,6 +61,7 @@ const opsItems = [
 ];
 
 const adminItems = [
+  { titleKey: "sidebar.group_ids", url: "/group-ids", icon: Fingerprint },
   { titleKey: "sidebar.vault", url: "/vault", icon: KeyRound },
   { titleKey: "sidebar.recovery", url: "/recovery", icon: LifeBuoy },
   { titleKey: "sidebar.apk_manager", url: "/apk-manager", icon: Smartphone },

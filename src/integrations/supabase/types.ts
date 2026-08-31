@@ -1867,6 +1867,101 @@ export type Database = {
           },
         ]
       }
+      hn_group_identities: {
+        Row: {
+          code: string
+          created_at: string
+          first_seen_at: string
+          hub_source: string | null
+          id: string
+          last_signal_at: string | null
+          metadata: Json
+          origin: string | null
+          service_name: string | null
+          service_number: number | null
+          signal_count: number
+          site_url: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          first_seen_at?: string
+          hub_source?: string | null
+          id?: string
+          last_signal_at?: string | null
+          metadata?: Json
+          origin?: string | null
+          service_name?: string | null
+          service_number?: number | null
+          signal_count?: number
+          site_url?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          first_seen_at?: string
+          hub_source?: string | null
+          id?: string
+          last_signal_at?: string | null
+          metadata?: Json
+          origin?: string | null
+          service_name?: string | null
+          service_number?: number | null
+          signal_count?: number
+          site_url?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      hn_group_identity_signals: {
+        Row: {
+          code: string
+          created_at: string
+          id: string
+          identity_id: string | null
+          ip_hash: string | null
+          origin: string | null
+          payload: Json
+          signature_valid: boolean
+          user_agent: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          id?: string
+          identity_id?: string | null
+          ip_hash?: string | null
+          origin?: string | null
+          payload?: Json
+          signature_valid?: boolean
+          user_agent?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          id?: string
+          identity_id?: string | null
+          ip_hash?: string | null
+          origin?: string | null
+          payload?: Json
+          signature_valid?: boolean
+          user_agent?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "hn_group_identity_signals_identity_id_fkey"
+            columns: ["identity_id"]
+            isOneToOne: false
+            referencedRelation: "hn_group_identities"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       hosting_plans: {
         Row: {
           backup_policy: string

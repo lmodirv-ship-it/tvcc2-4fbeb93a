@@ -362,7 +362,15 @@ run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
       fi
       R=$?; SZ=$(du -m "$TMP" | cut -f1); rm -f "$TMP"
       if [ "$R" -eq 0 ]; then echo "synced $SD -> $TD ($SZ MB)"; else echo "sync into $TD failed"; exit 1; fi ;;
-    db_import)       gunzip -c "$(GET storage_path)" | mysql "$(GET database)" && echo "imported" ;;
+    db_import)
+      SP_FILE="$(GET storage_path)"; DBN="$(GET database)"; ENG="$(GET engine)"
+      [ -s "$SP_FILE" ] || { echo "backup file not found: $SP_FILE"; exit 1; }
+      case "$SP_FILE" in *.gz) CAT="gunzip -c" ;; *) CAT="cat" ;; esac
+      if [ "$ENG" = "postgres" ] || [ "$ENG" = "postgresql" ] || ! command -v mysql >/dev/null 2>&1; then
+        su - postgres -c "psql -d '$DBN'" < <($CAT "$SP_FILE") 2>&1 | tail -20 && echo "imported (postgres) $DBN"
+      else
+        $CAT "$SP_FILE" | mysql "$DBN" && echo "imported (mysql) $DBN"
+      fi ;;
     backup_delete)   rm -f "$(GET storage_path)" && echo "deleted $(GET storage_path)" ;;
     platform_deploy) bash -lc "$(GET script)" ;;
     link_check)      H="$(GET host)"; P="$(GET port)"; S=$(date +%s%3N); if nc -z -w5 "$H" "\${P:-22}" 2>/dev/null; then E=$(date +%s%3N); echo "reachable $H:\${P:-22} latency_ms=$((E-S))"; else echo "unreachable $H:\${P:-22}"; exit 1; fi ;;

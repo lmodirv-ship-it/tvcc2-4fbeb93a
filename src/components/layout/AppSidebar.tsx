@@ -15,6 +15,15 @@ import { exportDashboardHtml } from "@/lib/html-export";
 import { useTranslation } from "react-i18next";
 import tvccLogo from "@/assets/tvcc-logo.asset.json";
 
+function ManaraIcon(props: { className?: string }) {
+  return (
+    <svg {...props} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+      <path d="M12 2l9 4v6c0 5.5-3.8 10.7-9 12-5.2-1.3-9-6.5-9-12V6z" />
+      <circle cx="12" cy="10" r="3" />
+    </svg>
+  );
+}
+
 const coreItems = [
   { titleKey: "sidebar.dashboard", url: "/dashboard", icon: LayoutDashboard },
   { titleKey: "sidebar.websites", url: "/websites", icon: Globe },
@@ -50,6 +59,7 @@ const opsItems = [
   { titleKey: "sidebar.failover", url: "/failover", icon: ShieldAlert },
   { titleKey: "sidebar.deploy", url: "/deploy", icon: GitBranch },
   { titleKey: "sidebar.publish_sync", url: "/publish-sync", icon: Rocket },
+  { titleKey: "sidebar.manara", url: "/manara", icon: ManaraIcon },
   { titleKey: "sidebar.automation", url: "/automation", icon: Zap },
   { titleKey: "sidebar.domains", url: "/domains", icon: Server },
   { titleKey: "sidebar.hn_domains", url: "/hn-domains", icon: Globe2 },

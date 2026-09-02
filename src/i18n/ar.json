@@ -96,7 +96,8 @@
     "group_ids": "هويات المجموعة",
     "bridge": "الجسر والتخزين",
     "domain_settings": "إعدادات النطاق",
-    "publish_sync": "توحيد النشر"
+    "publish_sync": "توحيد النشر",
+    "manara": "منارة"
   },
   "dashboard": {
     "title": "لوحة التحكم",

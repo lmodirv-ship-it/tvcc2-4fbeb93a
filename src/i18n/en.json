@@ -96,7 +96,8 @@
     "group_ids": "Group IDs",
     "bridge": "Bridge & Storage",
     "domain_settings": "Domain settings",
-    "publish_sync": "Unified publishing"
+    "publish_sync": "Unified publishing",
+    "manara": "Manara"
   },
   "dashboard": {
     "title": "Dashboard",

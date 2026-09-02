@@ -1,13 +1,17 @@
+import { AGENT_VERSION } from "./agent-version";
+
 export function buildAgentScript(serverId: string, token: string, endpoint: string): string {
   return `#!/usr/bin/env bash
-# TVCC agent — resources + AI models + open ports + configs, and runs whitelisted commands
+# TVCC agent — metrics heartbeat + fast task channel (long-poll) + self-update
 set -euo pipefail
 TVCC_SERVER_ID="${serverId}"
 TVCC_TOKEN="${token}"
 TVCC_ENDPOINT="${endpoint}"
+TVCC_TASK_ENDPOINT="\${TVCC_TASK_ENDPOINT:-${endpoint.replace(/\/heartbeat$/, "/commands")}}"
+TVCC_TASK_WAIT="\${TVCC_TASK_WAIT:-15000}"
 TVCC_AI_ENDPOINT="\${TVCC_AI_ENDPOINT:-http://127.0.0.1:11434}"
 TVCC_BACKUP_DIR="\${TVCC_BACKUP_DIR:-/var/backups/tvcc}"
-TVCC_AGENT_VERSION="3.5.0"
+TVCC_AGENT_VERSION="${AGENT_VERSION}"
 TVCC_HEARTBEAT_INTERVAL="\${TVCC_HEARTBEAT_INTERVAL:-60}"
 TVCC_STATE_DIR="\${TVCC_STATE_DIR:-/var/lib/tvcc}"
 TVCC_HN_DIR="\${TVCC_HN_DIR:-/home/ismail/hn}"

@@ -97,7 +97,11 @@ function WebsitesPage() {
 
   const filtered = enriched.filter((w) => {
     const q = search.toLowerCase();
-    const matchQ = !q || w.name.toLowerCase().includes(q) || w.domain.toLowerCase().includes(q);
+    const matchQ =
+      !q ||
+      w.name.toLowerCase().includes(q) ||
+      w.domain.toLowerCase().includes(q) ||
+      String((w as any).site_code ?? "").toLowerCase().includes(q);
     const matchS = status === "all" || w.status === status;
     return matchQ && matchS;
   });
@@ -339,6 +343,7 @@ function WebsitesPage() {
                       onCheckedChange={toggleAll}
                     />
                   </TableHead>
+                  <TableHead className="text-right">المعرّف</TableHead>
                   <TableHead className="text-right">الموقع</TableHead>
                   <TableHead className="text-right">النطاق</TableHead>
                   <TableHead className="text-right">الحالة</TableHead>
@@ -351,14 +356,29 @@ function WebsitesPage() {
               </TableHeader>
               <TableBody>
                 {isLoading ? (
-                  <TableRow><TableCell colSpan={9} className="text-center py-10"><Loader2 className="w-5 h-5 animate-spin inline" /></TableCell></TableRow>
+                  <TableRow><TableCell colSpan={10} className="text-center py-10"><Loader2 className="w-5 h-5 animate-spin inline" /></TableCell></TableRow>
                 ) : pageData.length === 0 ? (
-                  <TableRow><TableCell colSpan={9} className="text-center py-10 text-muted-foreground">لا توجد مواقع</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={10} className="text-center py-10 text-muted-foreground">لا توجد مواقع</TableCell></TableRow>
                 ) : (
                   pageData.map((w) => (
                     <TableRow key={w.id} className="border-border/40">
                       <TableCell>
                         <Checkbox checked={selected.has(w.id)} onCheckedChange={() => toggleOne(w.id)} />
+                      </TableCell>
+                      <TableCell>
+                        <button
+                          type="button"
+                          title="نسخ المعرّف"
+                          onClick={() => {
+                            const code = String((w as any).site_code ?? "");
+                            if (!code) return;
+                            navigator.clipboard?.writeText(code);
+                            toast.success(`تم نسخ ${code}`);
+                          }}
+                          className="font-mono text-xs px-2 py-1 rounded bg-primary/10 text-primary hover:bg-primary/20 transition"
+                        >
+                          {(w as any).site_code ?? "—"}
+                        </button>
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">

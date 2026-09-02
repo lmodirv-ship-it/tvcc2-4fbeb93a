@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useState } from "react";
 import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -134,6 +134,26 @@ function ConnectPage() {
           </Card>
         ))}
       </div>
+
+      <Card className="ring-1 ring-primary/40 bg-primary/5">
+        <CardContent className="p-5 flex flex-wrap items-center justify-between gap-4">
+          <div className="flex items-center gap-3">
+            <div className="w-11 h-11 rounded-xl bg-primary/15 flex items-center justify-center">
+              <Cloud className="w-6 h-6 text-primary" />
+            </div>
+            <div>
+              <div className="font-bold flex items-center gap-2">
+                TVCC <Badge variant="secondary" className="text-[10px]">المنصة الأساسية</Badge>
+              </div>
+              <div className="text-xs text-muted-foreground" dir="ltr">tvcc.hnpay.live — {websites.length} موقع مُدار</div>
+            </div>
+          </div>
+          <div className="flex gap-2">
+            <Button asChild size="sm" variant="outline"><Link to="/import-sites">استيراد المواقع</Link></Button>
+            <Button asChild size="sm"><Link to="/publish-sync">مزامنة النشر</Link></Button>
+          </div>
+        </CardContent>
+      </Card>
 
       <Tabs defaultValue="services" dir="rtl">
         <TabsList>

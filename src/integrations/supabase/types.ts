@@ -6615,6 +6615,7 @@ export type Database = {
           registered_at: string | null
           registration_status: string
           server_id: string | null
+          site_code: string | null
           site_id: string | null
           status: Database["public"]["Enums"]["site_status"]
           updated_at: string
@@ -6646,6 +6647,7 @@ export type Database = {
           registered_at?: string | null
           registration_status?: string
           server_id?: string | null
+          site_code?: string | null
           site_id?: string | null
           status?: Database["public"]["Enums"]["site_status"]
           updated_at?: string
@@ -6677,6 +6679,7 @@ export type Database = {
           registered_at?: string | null
           registration_status?: string
           server_id?: string | null
+          site_code?: string | null
           site_id?: string | null
           status?: Database["public"]["Enums"]["site_status"]
           updated_at?: string

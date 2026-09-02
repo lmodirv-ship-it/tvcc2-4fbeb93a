@@ -8,6 +8,7 @@ import {
   Globe, Users, Activity,
   CheckCircle2, AlertTriangle, XCircle, TrendingUp, Home,
   Layers, ArrowUpRight, Clock, Database, HardDrive, Server, Cpu, BrainCircuit,
+  Link2, DownloadCloud,
 } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { LiveBackdrop, Tilt3D, CountUp, Beacon, LivePulse } from "@/components/visual/LiveScene";
@@ -166,6 +167,19 @@ function DashboardPage() {
             </Tilt3D>
           );
         })}
+      </div>
+
+      {/* Quick actions: websites + connect */}
+      <div className="flex flex-wrap items-center gap-3">
+        <Button asChild size="lg" className="gap-2">
+          <Link to="/websites"><Globe className="w-4 h-4" /> المواقع</Link>
+        </Button>
+        <Button asChild size="lg" variant="secondary" className="gap-2 ring-1 ring-primary/40">
+          <Link to="/connect"><Link2 className="w-4 h-4" /> Connect — مركز الربط</Link>
+        </Button>
+        <Button asChild size="lg" variant="outline" className="gap-2">
+          <Link to="/import-sites"><DownloadCloud className="w-4 h-4" /> استيراد المواقع</Link>
+        </Button>
       </div>
 
       {/* Banners */}

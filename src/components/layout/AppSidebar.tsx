@@ -18,6 +18,7 @@ import tvccLogo from "@/assets/tvcc-logo.asset.json";
 const coreItems = [
   { titleKey: "sidebar.dashboard", url: "/dashboard", icon: LayoutDashboard },
   { titleKey: "sidebar.websites", url: "/websites", icon: Globe },
+  { titleKey: "sidebar.import_sites", url: "/import-sites", icon: Download },
   { titleKey: "sidebar.groups", url: "/groups", icon: FolderOpen },
   { titleKey: "sidebar.templates", url: "/templates", icon: LayoutTemplate },
   { titleKey: "sidebar.editor", url: "/editor", icon: Wand2 },

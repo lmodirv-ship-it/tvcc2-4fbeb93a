@@ -166,6 +166,10 @@ export const COMMAND_LABELS: Record<string, string> = {
   gateway_publish: "نشر موقع محلي عبر البوابة",
   storage_sync: "مزامنة نسخة الموقع للتخزين",
   storage_prune: "حذف نسخة التخزين",
+  vpn_setup: "تهيئة شبكة VPN (WireGuard)",
+  vpn_peer_add: "إضافة قرين VPN",
+  vpn_peer_remove: "إزالة قرين VPN",
+  vpn_status: "حالة شبكة VPN",
 
 };
 

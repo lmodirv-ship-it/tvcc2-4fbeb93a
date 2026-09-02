@@ -645,6 +645,16 @@ PYEOF
   OS=$(. /etc/os-release 2>/dev/null && echo "$PRETTY_NAME" || uname -s)
   PUBLIC_IP=$( (curl -s --max-time 5 https://api.ipify.org || curl -s --max-time 5 https://ifconfig.me || echo "") | head -1 | tr -d '\\n')
   PRIVATE_IP=$(hostname -I 2>/dev/null | awk '{print $1}' | tr -d '\\n')
+
+  # ---- immediate signal when the machine's IP changed ----
+  IP_NOW="\${PUBLIC_IP}|\${PRIVATE_IP}"
+  IP_PREV=$(cat "$TVCC_STATE_DIR/last_ip" 2>/dev/null || echo "")
+  if [ "$IP_NOW" != "$IP_PREV" ]; then
+    echo "$IP_NOW" > "$TVCC_STATE_DIR/last_ip" 2>/dev/null || true
+    if [ -n "$IP_PREV" ]; then
+      post "{\\"server_id\\":\\"\${TVCC_SERVER_ID}\\",\\"agent_id\\":\\"\${TVCC_AGENT_ID}\\",\\"agent_version\\":\\"\${TVCC_AGENT_VERSION}\\",\\"public_ip\\":\\"\${PUBLIC_IP}\\",\\"private_ip\\":\\"\${PRIVATE_IP}\\",\\"event\\":{\\"kind\\":\\"ip_changed\\",\\"severity\\":\\"warning\\",\\"message\\":\\"IP changed \${IP_PREV} -> \${IP_NOW}\\"}}" >/dev/null || true
+    fi
+  fi
   KERNEL=$(uname -r 2>/dev/null || echo "")
   ARCH=$(uname -m 2>/dev/null || echo "")
 

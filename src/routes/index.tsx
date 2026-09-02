@@ -18,7 +18,9 @@ export const Route = createFileRoute("/")({
     meta: [
       { title: "TVCC — مركز قيادة المواقع" },
       { name: "description", content: "منصة موحّدة لإدارة جميع مشاريعك ومواقعك، مراقبة SSL والدومينات والتنبيهات من لوحة واحدة." },
+      { property: "og:url", content: "https://tvcc.hnpay.live/" },
     ],
+    links: [{ rel: "canonical", href: "https://tvcc.hnpay.live/" }],
   }),
 });
 

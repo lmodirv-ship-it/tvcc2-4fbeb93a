@@ -3111,6 +3111,121 @@ export type Database = {
         }
         Relationships: []
       }
+      publish_runs: {
+        Row: {
+          command_id: string | null
+          created_at: string
+          error: string | null
+          finished_at: string | null
+          id: string
+          output: string | null
+          owner_id: string
+          started_at: string
+          status: string
+          target_id: string
+          trigger: string
+        }
+        Insert: {
+          command_id?: string | null
+          created_at?: string
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          output?: string | null
+          owner_id: string
+          started_at?: string
+          status?: string
+          target_id: string
+          trigger?: string
+        }
+        Update: {
+          command_id?: string | null
+          created_at?: string
+          error?: string | null
+          finished_at?: string | null
+          id?: string
+          output?: string | null
+          owner_id?: string
+          started_at?: string
+          status?: string
+          target_id?: string
+          trigger?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "publish_runs_target_id_fkey"
+            columns: ["target_id"]
+            isOneToOne: false
+            referencedRelation: "publish_targets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      publish_targets: {
+        Row: {
+          created_at: string
+          health_url: string | null
+          id: string
+          is_active: boolean
+          is_canonical: boolean
+          kind: string
+          label: string
+          last_publish_at: string | null
+          last_status: string | null
+          last_version: string | null
+          owner_id: string
+          port: number | null
+          server_id: string | null
+          service_name: string | null
+          updated_at: string
+          url: string
+        }
+        Insert: {
+          created_at?: string
+          health_url?: string | null
+          id?: string
+          is_active?: boolean
+          is_canonical?: boolean
+          kind?: string
+          label: string
+          last_publish_at?: string | null
+          last_status?: string | null
+          last_version?: string | null
+          owner_id: string
+          port?: number | null
+          server_id?: string | null
+          service_name?: string | null
+          updated_at?: string
+          url: string
+        }
+        Update: {
+          created_at?: string
+          health_url?: string | null
+          id?: string
+          is_active?: boolean
+          is_canonical?: boolean
+          kind?: string
+          label?: string
+          last_publish_at?: string | null
+          last_status?: string | null
+          last_version?: string | null
+          owner_id?: string
+          port?: number | null
+          server_id?: string | null
+          service_name?: string | null
+          updated_at?: string
+          url?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "publish_targets_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recovery_points: {
         Row: {
           created_at: string

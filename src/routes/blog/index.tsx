@@ -17,7 +17,9 @@ export const Route = createFileRoute("/blog/")({
       { property: "og:description", content: "دلائل عملية لإدارة المواقع والسيرفرات والخدمات من منصة TVCC." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:url", content: "https://tvcc.hnpay.live/blog" },
     ],
+    links: [{ rel: "canonical", href: "https://tvcc.hnpay.live/blog" }],
   }),
 });
 

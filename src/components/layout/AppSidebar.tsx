@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Globe, Users, CreditCard, UserCog, Activity, Settings,
   Code2, LogOut, Wand2, FolderOpen, LayoutTemplate, Radio, ListChecks, Plug,
   Smartphone, KeyRound, Server, ShieldCheck, BadgeCheck, Bell, FileCog, LifeBuoy, ClipboardCheck,
-  FileBarChart, Wallet, Boxes, Brain, Film, HardDrive, MessageSquare, History, NotebookPen, Archive, Network, Share2, ScrollText, ShieldAlert, GitBranch, Zap, Download, Link2, Cloud, Globe2, Fingerprint,
+  FileBarChart, Wallet, Boxes, Brain, Film, HardDrive, MessageSquare, History, NotebookPen, Archive, Network, Share2, ScrollText, ShieldAlert, GitBranch, Zap, Download, Link2, Cloud, Globe2, Fingerprint, Rocket,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -48,6 +48,7 @@ const opsItems = [
   { titleKey: "sidebar.logs", url: "/logs", icon: ScrollText },
   { titleKey: "sidebar.failover", url: "/failover", icon: ShieldAlert },
   { titleKey: "sidebar.deploy", url: "/deploy", icon: GitBranch },
+  { titleKey: "sidebar.publish_sync", url: "/publish-sync", icon: Rocket },
   { titleKey: "sidebar.automation", url: "/automation", icon: Zap },
   { titleKey: "sidebar.domains", url: "/domains", icon: Server },
   { titleKey: "sidebar.hn_domains", url: "/hn-domains", icon: Globe2 },

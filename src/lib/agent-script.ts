@@ -162,7 +162,49 @@ post() { # $1 = body -> echoes response
     --data "$BODY" || echo '{}'
 }
 
-run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
+post_tasks() { # $1 = body -> echoes response of the fast task channel
+  local BODY="$1"
+  local SIG
+  SIG=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "$TVCC_TOKEN" -hex | awk '{print $NF}')
+  curl -s --max-time 60 -X POST "$TVCC_TASK_ENDPOINT" \\
+    -H "content-type: application/json" \\
+    -H "x-tvcc-server: $TVCC_SERVER_ID" \\
+    -H "x-tvcc-signature: sha256=$SIG" \\
+    --data "$BODY" || echo '{}'
+}
+
+jget() { # $1 = json, $2 = python expression on variable d
+  printf '%s' "$1" | python3 -c "import sys,json;d=json.load(sys.stdin);print($2)" 2>/dev/null || echo ""
+}
+
+cap_allows() { # $1 = action -> 0 when allowed
+  local F="$TVCC_STATE_DIR/caps.json"
+  [ -s "$F" ] || return 0
+  python3 - "$F" "$1" <<'PYCAP' 2>/dev/null || return 0
+import json,sys
+try:
+    caps=json.load(open(sys.argv[1]))
+except Exception:
+    sys.exit(0)
+if not caps: sys.exit(0)
+row=[c for c in caps if c.get("action")==sys.argv[2]]
+sys.exit(0 if (not row or row[0].get("allowed")) else 3)
+PYCAP
+}
+
+self_update() { # $1 = script url
+  local URL="$1" TMP="/tmp/tvcc-agent.new"
+  [ -n "$URL" ] || return 1
+  curl -fsSL --max-time 60 -o "$TMP" "$URL" || { echo "download failed"; return 2; }
+  bash -n "$TMP" || { echo "syntax check failed"; rm -f "$TMP"; return 3; }
+  local SELF; SELF="$(readlink -f "$0" 2>/dev/null || echo /usr/local/bin/tvcc-agent.sh)"
+  cp -f "$TMP" "$SELF" && chmod +x "$SELF" && rm -f "$TMP"
+  echo "agent updated -> restarting"
+  (systemctl restart tvcc-agent 2>/dev/null || kill -TERM $$) &
+  return 0
+}
+
+
   local ACTION="$1" ARGS="$2" DRY="$3"
   local GET; GET() { echo "$ARGS" | python3 -c "import sys,json;print(json.load(sys.stdin).get('\$1','') )" 2>/dev/null || echo ""; }
   if [ "$DRY" = "true" ]; then

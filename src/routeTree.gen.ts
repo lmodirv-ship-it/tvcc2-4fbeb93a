@@ -86,6 +86,7 @@ import { Route as AuthenticatedEditorDesignRouteImport } from './routes/_authent
 import { Route as AuthenticatedEditorContentRouteImport } from './routes/_authenticated/editor.content'
 import { Route as AuthenticatedEditorBulkRouteImport } from './routes/_authenticated/editor.bulk'
 import { Route as AuthenticatedEditorAiRouteImport } from './routes/_authenticated/editor.ai'
+import { Route as AuthenticatedDomainSettingsDomainRouteImport } from './routes/_authenticated/domain-settings.$domain'
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as ApiPublicVideoIngestRouteImport } from './routes/api/public/video.ingest'
@@ -511,6 +512,12 @@ const AuthenticatedEditorAiRoute = AuthenticatedEditorAiRouteImport.update({
   path: '/ai',
   getParentRoute: () => AuthenticatedEditorRoute,
 } as any)
+const AuthenticatedDomainSettingsDomainRoute =
+  AuthenticatedDomainSettingsDomainRouteImport.update({
+    id: '/domain-settings/$domain',
+    path: '/domain-settings/$domain',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const Char91DotmcpChar93InvokeToolToolRoute =
   Char91DotmcpChar93InvokeToolToolRouteImport.update({
     id: '/.mcp/invoke-tool/$tool',
@@ -654,6 +661,7 @@ export interface FileRoutesByFullPath {
   '/blog/': typeof BlogIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/domain-settings/$domain': typeof AuthenticatedDomainSettingsDomainRoute
   '/editor/ai': typeof AuthenticatedEditorAiRoute
   '/editor/bulk': typeof AuthenticatedEditorBulkRoute
   '/editor/content': typeof AuthenticatedEditorContentRoute
@@ -746,6 +754,7 @@ export interface FileRoutesByTo {
   '/blog': typeof BlogIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/domain-settings/$domain': typeof AuthenticatedDomainSettingsDomainRoute
   '/editor/ai': typeof AuthenticatedEditorAiRoute
   '/editor/bulk': typeof AuthenticatedEditorBulkRoute
   '/editor/content': typeof AuthenticatedEditorContentRoute
@@ -841,6 +850,7 @@ export interface FileRoutesById {
   '/blog/': typeof BlogIndexRoute
   '/.lovable/oauth/consent': typeof DotlovableOauthConsentRoute
   '/.mcp/invoke-tool/$tool': typeof Char91DotmcpChar93InvokeToolToolRoute
+  '/_authenticated/domain-settings/$domain': typeof AuthenticatedDomainSettingsDomainRoute
   '/_authenticated/editor/ai': typeof AuthenticatedEditorAiRoute
   '/_authenticated/editor/bulk': typeof AuthenticatedEditorBulkRoute
   '/_authenticated/editor/content': typeof AuthenticatedEditorContentRoute
@@ -936,6 +946,7 @@ export interface FileRouteTypes {
     | '/blog/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/domain-settings/$domain'
     | '/editor/ai'
     | '/editor/bulk'
     | '/editor/content'
@@ -1028,6 +1039,7 @@ export interface FileRouteTypes {
     | '/blog'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/domain-settings/$domain'
     | '/editor/ai'
     | '/editor/bulk'
     | '/editor/content'
@@ -1122,6 +1134,7 @@ export interface FileRouteTypes {
     | '/blog/'
     | '/.lovable/oauth/consent'
     | '/.mcp/invoke-tool/$tool'
+    | '/_authenticated/domain-settings/$domain'
     | '/_authenticated/editor/ai'
     | '/_authenticated/editor/bulk'
     | '/_authenticated/editor/content'
@@ -1726,6 +1739,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEditorAiRouteImport
       parentRoute: typeof AuthenticatedEditorRoute
     }
+    '/_authenticated/domain-settings/$domain': {
+      id: '/_authenticated/domain-settings/$domain'
+      path: '/domain-settings/$domain'
+      fullPath: '/domain-settings/$domain'
+      preLoaderRoute: typeof AuthenticatedDomainSettingsDomainRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/.mcp/invoke-tool/$tool': {
       id: '/.mcp/invoke-tool/$tool'
       path: '/.mcp/invoke-tool/$tool'
@@ -1934,6 +1954,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedVaultRoute: typeof AuthenticatedVaultRoute
   AuthenticatedVideoStudioRoute: typeof AuthenticatedVideoStudioRoute
   AuthenticatedWebsitesRoute: typeof AuthenticatedWebsitesRoute
+  AuthenticatedDomainSettingsDomainRoute: typeof AuthenticatedDomainSettingsDomainRoute
   AuthenticatedServersServerIdRoute: typeof AuthenticatedServersServerIdRoute
   AuthenticatedServersIndexRoute: typeof AuthenticatedServersIndexRoute
 }
@@ -1987,6 +2008,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedVaultRoute: AuthenticatedVaultRoute,
   AuthenticatedVideoStudioRoute: AuthenticatedVideoStudioRoute,
   AuthenticatedWebsitesRoute: AuthenticatedWebsitesRoute,
+  AuthenticatedDomainSettingsDomainRoute:
+    AuthenticatedDomainSettingsDomainRoute,
   AuthenticatedServersServerIdRoute: AuthenticatedServersServerIdRoute,
   AuthenticatedServersIndexRoute: AuthenticatedServersIndexRoute,
 }

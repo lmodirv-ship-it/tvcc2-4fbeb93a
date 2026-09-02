@@ -261,6 +261,7 @@ run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
       git_deploy)      echo "[dry-run] git clone/pull $(GET repo) ($(GET branch)) -> $(GET path); build: $(GET build)" ;;
       failover_switch) echo "[dry-run] switch upstream of $(GET domain) -> $(GET target) then nginx -s reload" ;;
       deploy_upload)   echo "[dry-run] download $(GET url) -> $(GET path)/$(GET name); unzip; install/build; systemd $(GET service); ufw allow $(GET port)/tcp" ;;
+      site_publish)    echo "[dry-run] pull $(GET source) -> $(GET path); build; systemctl restart $(GET service); ufw allow $(GET port)/tcp; health $(GET health_url)" ;;
       build_run)       echo "[dry-run] cd $(GET path)/$(GET name) && $(GET build)" ;;
       serve_start)     echo "[dry-run] systemctl restart $(GET service) && ufw allow $(GET port)/tcp" ;;
       serve_stop)      echo "[dry-run] systemctl disable --now $(GET service)" ;;

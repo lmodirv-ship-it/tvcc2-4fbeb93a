@@ -28,7 +28,6 @@ import { Route as AuthenticatedSubscriptionsRouteImport } from './routes/_authen
 import { Route as AuthenticatedSslRouteImport } from './routes/_authenticated/ssl'
 import { Route as AuthenticatedSettingsRouteImport } from './routes/_authenticated/settings'
 import { Route as AuthenticatedServicesRouteImport } from './routes/_authenticated/services'
-import { Route as AuthenticatedServersRouteImport } from './routes/_authenticated/servers'
 import { Route as AuthenticatedReportsRouteImport } from './routes/_authenticated/reports'
 import { Route as AuthenticatedRecoveryRouteImport } from './routes/_authenticated/recovery'
 import { Route as AuthenticatedPaymentsHubRouteImport } from './routes/_authenticated/payments-hub'
@@ -69,6 +68,7 @@ import { Route as AuthenticatedAiChatRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
+import { Route as AuthenticatedServersIndexRouteImport } from './routes/_authenticated/servers.index'
 import { Route as AuthenticatedEditorIndexRouteImport } from './routes/_authenticated/editor.index'
 import { Route as ApiPublicSiteConfigRouteImport } from './routes/api/public/site-config'
 import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes/_authenticated/settings.notifications'
@@ -196,11 +196,6 @@ const AuthenticatedSettingsRoute = AuthenticatedSettingsRouteImport.update({
 const AuthenticatedServicesRoute = AuthenticatedServicesRouteImport.update({
   id: '/services',
   path: '/services',
-  getParentRoute: () => AuthenticatedRoute,
-} as any)
-const AuthenticatedServersRoute = AuthenticatedServersRouteImport.update({
-  id: '/servers',
-  path: '/servers',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedReportsRoute = AuthenticatedReportsRouteImport.update({
@@ -413,6 +408,12 @@ const Char91DotmcpChar93ListToolsRoute =
     path: '/.mcp/list-tools',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthenticatedServersIndexRoute =
+  AuthenticatedServersIndexRouteImport.update({
+    id: '/servers/',
+    path: '/servers/',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedEditorIndexRoute =
   AuthenticatedEditorIndexRouteImport.update({
     id: '/',
@@ -432,9 +433,9 @@ const AuthenticatedSettingsNotificationsRoute =
   } as any)
 const AuthenticatedServersServerIdRoute =
   AuthenticatedServersServerIdRouteImport.update({
-    id: '/$serverId',
-    path: '/$serverId',
-    getParentRoute: () => AuthenticatedServersRoute,
+    id: '/servers/$serverId',
+    path: '/servers/$serverId',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedEditorUsersRoute =
   AuthenticatedEditorUsersRouteImport.update({
@@ -639,7 +640,6 @@ export interface FileRoutesByFullPath {
   '/payments-hub': typeof AuthenticatedPaymentsHubRoute
   '/recovery': typeof AuthenticatedRecoveryRoute
   '/reports': typeof AuthenticatedReportsRoute
-  '/servers': typeof AuthenticatedServersRouteWithChildren
   '/services': typeof AuthenticatedServicesRoute
   '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/ssl': typeof AuthenticatedSslRoute
@@ -671,6 +671,7 @@ export interface FileRoutesByFullPath {
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/editor/': typeof AuthenticatedEditorIndexRoute
+  '/servers/': typeof AuthenticatedServersIndexRoute
   '/api/public/backups/run-due': typeof ApiPublicBackupsRunDueRoute
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hn-rls/verify': typeof ApiPublicHnRlsVerifyRoute
@@ -731,7 +732,6 @@ export interface FileRoutesByTo {
   '/payments-hub': typeof AuthenticatedPaymentsHubRoute
   '/recovery': typeof AuthenticatedRecoveryRoute
   '/reports': typeof AuthenticatedReportsRoute
-  '/servers': typeof AuthenticatedServersRouteWithChildren
   '/services': typeof AuthenticatedServicesRoute
   '/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/ssl': typeof AuthenticatedSslRoute
@@ -763,6 +763,7 @@ export interface FileRoutesByTo {
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/editor': typeof AuthenticatedEditorIndexRoute
+  '/servers': typeof AuthenticatedServersIndexRoute
   '/api/public/backups/run-due': typeof ApiPublicBackupsRunDueRoute
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hn-rls/verify': typeof ApiPublicHnRlsVerifyRoute
@@ -826,7 +827,6 @@ export interface FileRoutesById {
   '/_authenticated/payments-hub': typeof AuthenticatedPaymentsHubRoute
   '/_authenticated/recovery': typeof AuthenticatedRecoveryRoute
   '/_authenticated/reports': typeof AuthenticatedReportsRoute
-  '/_authenticated/servers': typeof AuthenticatedServersRouteWithChildren
   '/_authenticated/services': typeof AuthenticatedServicesRoute
   '/_authenticated/settings': typeof AuthenticatedSettingsRouteWithChildren
   '/_authenticated/ssl': typeof AuthenticatedSslRoute
@@ -858,6 +858,7 @@ export interface FileRoutesById {
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/_authenticated/editor/': typeof AuthenticatedEditorIndexRoute
+  '/_authenticated/servers/': typeof AuthenticatedServersIndexRoute
   '/api/public/backups/run-due': typeof ApiPublicBackupsRunDueRoute
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hn-rls/verify': typeof ApiPublicHnRlsVerifyRoute
@@ -921,7 +922,6 @@ export interface FileRouteTypes {
     | '/payments-hub'
     | '/recovery'
     | '/reports'
-    | '/servers'
     | '/services'
     | '/settings'
     | '/ssl'
@@ -953,6 +953,7 @@ export interface FileRouteTypes {
     | '/settings/notifications'
     | '/api/public/site-config'
     | '/editor/'
+    | '/servers/'
     | '/api/public/backups/run-due'
     | '/api/public/core/ingest'
     | '/api/public/hn-rls/verify'
@@ -1013,7 +1014,6 @@ export interface FileRouteTypes {
     | '/payments-hub'
     | '/recovery'
     | '/reports'
-    | '/servers'
     | '/services'
     | '/settings'
     | '/ssl'
@@ -1045,6 +1045,7 @@ export interface FileRouteTypes {
     | '/settings/notifications'
     | '/api/public/site-config'
     | '/editor'
+    | '/servers'
     | '/api/public/backups/run-due'
     | '/api/public/core/ingest'
     | '/api/public/hn-rls/verify'
@@ -1107,7 +1108,6 @@ export interface FileRouteTypes {
     | '/_authenticated/payments-hub'
     | '/_authenticated/recovery'
     | '/_authenticated/reports'
-    | '/_authenticated/servers'
     | '/_authenticated/services'
     | '/_authenticated/settings'
     | '/_authenticated/ssl'
@@ -1139,6 +1139,7 @@ export interface FileRouteTypes {
     | '/_authenticated/settings/notifications'
     | '/api/public/site-config'
     | '/_authenticated/editor/'
+    | '/_authenticated/servers/'
     | '/api/public/backups/run-due'
     | '/api/public/core/ingest'
     | '/api/public/hn-rls/verify'
@@ -1317,13 +1318,6 @@ declare module '@tanstack/react-router' {
       path: '/services'
       fullPath: '/services'
       preLoaderRoute: typeof AuthenticatedServicesRouteImport
-      parentRoute: typeof AuthenticatedRoute
-    }
-    '/_authenticated/servers': {
-      id: '/_authenticated/servers'
-      path: '/servers'
-      fullPath: '/servers'
-      preLoaderRoute: typeof AuthenticatedServersRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/reports': {
@@ -1606,6 +1600,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/servers/': {
+      id: '/_authenticated/servers/'
+      path: '/servers'
+      fullPath: '/servers/'
+      preLoaderRoute: typeof AuthenticatedServersIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/editor/': {
       id: '/_authenticated/editor/'
       path: '/'
@@ -1629,10 +1630,10 @@ declare module '@tanstack/react-router' {
     }
     '/_authenticated/servers/$serverId': {
       id: '/_authenticated/servers/$serverId'
-      path: '/$serverId'
+      path: '/servers/$serverId'
       fullPath: '/servers/$serverId'
       preLoaderRoute: typeof AuthenticatedServersServerIdRouteImport
-      parentRoute: typeof AuthenticatedServersRoute
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/editor/users': {
       id: '/_authenticated/editor/users'
@@ -1870,17 +1871,6 @@ const AuthenticatedEditorRouteChildren: AuthenticatedEditorRouteChildren = {
 const AuthenticatedEditorRouteWithChildren =
   AuthenticatedEditorRoute._addFileChildren(AuthenticatedEditorRouteChildren)
 
-interface AuthenticatedServersRouteChildren {
-  AuthenticatedServersServerIdRoute: typeof AuthenticatedServersServerIdRoute
-}
-
-const AuthenticatedServersRouteChildren: AuthenticatedServersRouteChildren = {
-  AuthenticatedServersServerIdRoute: AuthenticatedServersServerIdRoute,
-}
-
-const AuthenticatedServersRouteWithChildren =
-  AuthenticatedServersRoute._addFileChildren(AuthenticatedServersRouteChildren)
-
 interface AuthenticatedSettingsRouteChildren {
   AuthenticatedSettingsNotificationsRoute: typeof AuthenticatedSettingsNotificationsRoute
 }
@@ -1934,7 +1924,6 @@ interface AuthenticatedRouteChildren {
   AuthenticatedPaymentsHubRoute: typeof AuthenticatedPaymentsHubRoute
   AuthenticatedRecoveryRoute: typeof AuthenticatedRecoveryRoute
   AuthenticatedReportsRoute: typeof AuthenticatedReportsRoute
-  AuthenticatedServersRoute: typeof AuthenticatedServersRouteWithChildren
   AuthenticatedServicesRoute: typeof AuthenticatedServicesRoute
   AuthenticatedSettingsRoute: typeof AuthenticatedSettingsRouteWithChildren
   AuthenticatedSslRoute: typeof AuthenticatedSslRoute
@@ -1945,6 +1934,8 @@ interface AuthenticatedRouteChildren {
   AuthenticatedVaultRoute: typeof AuthenticatedVaultRoute
   AuthenticatedVideoStudioRoute: typeof AuthenticatedVideoStudioRoute
   AuthenticatedWebsitesRoute: typeof AuthenticatedWebsitesRoute
+  AuthenticatedServersServerIdRoute: typeof AuthenticatedServersServerIdRoute
+  AuthenticatedServersIndexRoute: typeof AuthenticatedServersIndexRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -1986,7 +1977,6 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedPaymentsHubRoute: AuthenticatedPaymentsHubRoute,
   AuthenticatedRecoveryRoute: AuthenticatedRecoveryRoute,
   AuthenticatedReportsRoute: AuthenticatedReportsRoute,
-  AuthenticatedServersRoute: AuthenticatedServersRouteWithChildren,
   AuthenticatedServicesRoute: AuthenticatedServicesRoute,
   AuthenticatedSettingsRoute: AuthenticatedSettingsRouteWithChildren,
   AuthenticatedSslRoute: AuthenticatedSslRoute,
@@ -1997,6 +1987,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedVaultRoute: AuthenticatedVaultRoute,
   AuthenticatedVideoStudioRoute: AuthenticatedVideoStudioRoute,
   AuthenticatedWebsitesRoute: AuthenticatedWebsitesRoute,
+  AuthenticatedServersServerIdRoute: AuthenticatedServersServerIdRoute,
+  AuthenticatedServersIndexRoute: AuthenticatedServersIndexRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

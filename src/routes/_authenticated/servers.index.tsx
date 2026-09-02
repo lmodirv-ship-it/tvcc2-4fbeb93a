@@ -34,7 +34,7 @@ import { importServerModels } from "@/lib/ai-hub.functions";
 import { PortsHub } from "@/components/servers/PortsHub";
 import { RuntimeHub } from "@/components/servers/RuntimeHub";
 
-export const Route = createFileRoute("/_authenticated/servers")({
+export const Route = createFileRoute("/_authenticated/servers/")({
   component: ServersPage,
   head: () => ({
     meta: [

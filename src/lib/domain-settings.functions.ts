@@ -118,9 +118,9 @@ async function notify(sb: any, ownerId: string, title: string, body: string, sev
   await sb.from("notifications").insert({
     owner_id: ownerId,
     title,
-    body,
+    message: body,
     severity,
-    kind: "domain",
+    type: "domain",
   }).then(() => null, () => null);
 }
 
@@ -285,6 +285,7 @@ export const applyFirewallRule = createServerFn({ method: "POST" })
       data.dryRun ?? false,
     );
     await sb.from("server_events").insert({
+      owner_id: context.userId,
       server_id: data.serverId,
       kind: "firewall",
       severity: data.action === "deny" ? "warning" : "info",

@@ -803,6 +803,72 @@ BOOT_MSG=$(restore_services 2>&1 | tail -c 4000)
 BOOT_J=$(printf '%s' "$BOOT_MSG" | json_escape)
 post "{\\"server_id\\":\\"\${TVCC_SERVER_ID}\\",\\"agent_id\\":\\"\${TVCC_AGENT_ID}\\",\\"agent_version\\":\\"\${TVCC_AGENT_VERSION}\\",\\"event\\":{\\"kind\\":\\"boot_restore\\",\\"severity\\":\\"info\\",\\"message\\":$BOOT_J}}" >/dev/null || true
 
+# ---- fast task channel: long-poll, execute, report back in seconds ----
+task_loop() {
+  local BACKOFF=1
+  while true; do
+    PUB=$(curl -s --max-time 6 https://api.ipify.org 2>/dev/null || echo "")
+    REQ="{\\"agent_id\\":\\"\${TVCC_AGENT_ID}\\",\\"agent_version\\":\\"\${TVCC_AGENT_VERSION}\\",\\"public_ip\\":\\"\${PUB}\\",\\"os\\":\\"$(. /etc/os-release 2>/dev/null && echo "\${PRETTY_NAME:-linux}" || echo linux)\\",\\"wait\\":\${TVCC_TASK_WAIT},\\"results\\":\${TVCC_PENDING_RESULTS:-[]}}"
+    RESP=$(post_tasks "$REQ")
+    TVCC_PENDING_RESULTS="[]"
+
+    if [ -z "$RESP" ] || [ "$RESP" = "{}" ]; then
+      sleep "$BACKOFF"; BACKOFF=$(( BACKOFF < 30 ? BACKOFF*2 : 30 )); continue
+    fi
+    BACKOFF=1
+
+    # store capability map locally (second line of defence)
+    jget "$RESP" 'json.dumps(d.get("capabilities",[]))' > "$TVCC_STATE_DIR/caps.json" 2>/dev/null || true
+
+    # self-update when the platform ships a newer agent
+    WANT=$(jget "$RESP" 'd.get("agent_version","")')
+    if [ -n "$WANT" ] && [ "$WANT" != "$TVCC_AGENT_VERSION" ]; then
+      self_update "$(jget "$RESP" 'd.get("script_url",""))' )" >/dev/null 2>&1 || true
+    fi
+
+    CMDS=$(jget "$RESP" 'json.dumps(d.get("commands",[]))')
+    [ -n "$CMDS" ] || CMDS="[]"
+    COUNT=$(jget "$CMDS" 'len(d)')
+    [ -n "$COUNT" ] || COUNT=0
+    if [ "$COUNT" -eq 0 ]; then sleep 0.5; continue; fi
+
+    RESULTS="["
+    for i in $(seq 0 $((COUNT-1))); do
+      ID=$(jget "$CMDS" "d[$i]['id']"); [ -n "$ID" ] || continue
+      ACTION=$(jget "$CMDS" "d[$i]['action']"); [ -n "$ACTION" ] || continue
+      ARGS=$(jget "$CMDS" "json.dumps(d[$i].get('args',{}))")
+      DRY=$(jget "$CMDS" "'true' if d[$i].get('dry_run') else 'false'")
+      S0=$(date +%s%3N)
+      set +e
+      case "$ACTION" in
+        agent_self_update)
+          OUT=$(self_update "$(jget "$RESP" 'd.get("script_url","")')" 2>&1); CODE=$? ;;
+        agent_diag)
+          OUT=$(printf 'version=%s\\nstate=%s\\ncaps=%s\\nuptime=%s\\n' "$TVCC_AGENT_VERSION" "$TVCC_STATE_DIR" "$(cat "$TVCC_STATE_DIR/caps.json" 2>/dev/null | head -c 2000)" "$(uptime -p 2>/dev/null)"); CODE=0 ;;
+        job_cancel)
+          OUT="cancelled"; CODE=0 ;;
+        *)
+          if ! cap_allows "$ACTION"; then
+            OUT="rejected: الأمر $ACTION غير مسموح لهذا السيرفر حسب الصلاحيات"; CODE=13
+          else
+            OUT=$(run_command "$ACTION" "$ARGS" "$DRY" 2>&1 | tail -c 20000); CODE=$?
+          fi ;;
+      esac
+      set -e
+      S1=$(date +%s%3N)
+      OUT_J=$(printf '%s' "$OUT" | json_escape)
+      [ "$RESULTS" != "[" ] && RESULTS="$RESULTS,"
+      RESULTS="$RESULTS{\\"id\\":\\"$ID\\",\\"exit_code\\":$CODE,\\"output\\":$OUT_J,\\"duration_ms\\":$((S1-S0))}"
+    done
+    RESULTS="$RESULTS]"
+    TVCC_PENDING_RESULTS="$RESULTS"
+  done
+}
+
+task_loop &
+TVCC_TASK_PID=$!
+trap 'kill $TVCC_TASK_PID 2>/dev/null || true' EXIT
+
 while true; do
   # ---- real OS metrics: /proc/stat, /proc/meminfo, df -B1 / ----
   CORE=$(python3 <<'PYEOF'

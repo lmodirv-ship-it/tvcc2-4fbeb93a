@@ -234,6 +234,16 @@ run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
       hn_dns_install)  echo "[dry-run] write /etc/dnsmasq.d/$(GET domain).conf then restart dnsmasq" ;;
       hn_domain_publish) echo "[dry-run] write nginx vhost for $(GET domain) -> port $(GET port); nginx -t && reload" ;;
       hn_domain_remove) echo "[dry-run] remove vhost + dns record of $(GET domain)" ;;
+      nginx_write_vhost) echo "[dry-run] write /etc/nginx/sites-available/$(GET domain); nginx -t && reload" ;;
+      ssl_issue_manual) echo "[dry-run] install cert files for $(GET domain) then reload nginx" ;;
+      firewall_apply)  echo "[dry-run] ufw $(GET action) $(GET port)/$(GET protocol) from $(GET source)" ;;
+      agent_update)    echo "[dry-run] curl installer from $(GET origin) | bash (agent self-update)" ;;
+      tunnel_setup)    echo "[dry-run] reverse tunnel local:$(GET local_port) -> gateway $(GET gateway_host):$(GET gateway_port)" ;;
+      tunnel_status)   echo "[dry-run] systemctl is-active tvcc-tunnel-$(GET name)" ;;
+      tunnel_drop)     echo "[dry-run] systemctl disable --now tvcc-tunnel-$(GET name)" ;;
+      gateway_publish) echo "[dry-run] on gateway: vhost $(GET domain) -> 127.0.0.1:$(GET gateway_port) + certbot" ;;
+      storage_sync)    echo "[dry-run] rsync -az --delete $(GET source_path)/ $(GET storage_path)/" ;;
+      storage_prune)   echo "[dry-run] rm -rf $(GET storage_path)" ;;
 
       *) echo "[dry-run] unsupported action: $ACTION"; return 127 ;;
 

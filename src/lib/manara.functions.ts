@@ -22,12 +22,26 @@ function clean<T>(v: T): T {
   return JSON.parse(JSON.stringify(v));
 }
 
+function groupBy<T>(arr: T[], key: keyof T): Record<string, T[]> {
+  return arr.reduce((acc, item) => {
+    const k = String(item[key]);
+    (acc[k] ??= []).push(item);
+    return acc;
+  }, {} as Record<string, T[]>);
+}
+
+function keyBy<T>(arr: T[], key: keyof T): Record<string, T> {
+  return arr.reduce((acc, item) => {
+    acc[String(item[key])] = item;
+    return acc;
+  }, {} as Record<string, T>);
+}
+
 export const listManara = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const sb = context.supabase as any;
     const manager = await isManager(sb, context.userId);
-    const { count, error: countErr } = await sb.from("manara_projects").select("*", { count: "exact", head: true });
     const base = manager ? sb.from("manara_projects") : sb.from("manara_projects").eq("owner_id", context.userId);
     const { data: projects, error } = await base
       .select("*")
@@ -37,13 +51,30 @@ export const listManara = createServerFn({ method: "POST" })
     const projectIds = (projects ?? []).map((p: any) => p.id);
     let updates: any[] = [];
     let events: any[] = [];
+    let addresses: any[] = [];
+    let endpoints: any[] = [];
     if (projectIds.length) {
-      [{ data: updates }, { data: events }] = await Promise.all([
+      [{ data: updates }, { data: events }, { data: addresses }, { data: endpoints }] = await Promise.all([
         sb.from("manara_updates").select("*").in("project_id", projectIds).order("created_at", { ascending: false }).limit(200),
         sb.from("manara_events").select("*").in("project_id", projectIds).order("created_at", { ascending: false }).limit(100),
+        sb.from("manara_addresses").select("*").in("project_id", projectIds),
+        sb.from("manara_endpoints").select("*").in("project_id", projectIds),
       ]);
     }
-    return clean({ projects: projects ?? [], updates: updates ?? [], events: events ?? [], manager, count, countErr: countErr?.message, error: error?.message });
+
+    const addrByProject = groupBy(addresses ?? [], "project_id");
+    const epByProject = groupBy(endpoints ?? [], "project_id");
+    const addrById = keyBy(addresses ?? [], "id");
+
+    const enriched = (projects ?? []).map((p: any) => ({
+      ...p,
+      current_address: p.current_address_id ? addrById[p.current_address_id] ?? null : null,
+      addresses: addrByProject[p.id] ?? [],
+      endpoints: epByProject[p.id] ?? [],
+    }));
+
+    if (error) throw new Error(error.message);
+    return clean({ projects: enriched, updates: updates ?? [], events: events ?? [], manager });
   });
 
 export const getManaraProject = createServerFn({ method: "POST" })
@@ -54,16 +85,25 @@ export const getManaraProject = createServerFn({ method: "POST" })
     const manager = await isManager(sb, context.userId);
     const { data: project } = await sb
       .from("manara_projects")
-      .select("*, current_address:current_address_id(*), addresses:manara_addresses(*), endpoints:manara_endpoints(*)")
+      .select("*")
       .eq("project_key", data.key)
       .maybeSingle();
     if (!project) throw new Error("المشروع غير موجود");
     if (!manager && project.owner_id !== context.userId) throw new Error("غير مصرح");
-    const [{ data: updates }, { data: events }] = await Promise.all([
+    const [{ data: addresses }, { data: endpoints }, { data: updates }, { data: events }] = await Promise.all([
+      sb.from("manara_addresses").select("*").eq("project_id", project.id),
+      sb.from("manara_endpoints").select("*").eq("project_id", project.id),
       sb.from("manara_updates").select("*").eq("project_id", project.id).order("created_at", { ascending: false }).limit(100),
       sb.from("manara_events").select("*").eq("project_id", project.id).order("created_at", { ascending: false }).limit(100),
     ]);
-    return { project, updates: updates ?? [], events: events ?? [] };
+    const addrById = keyBy(addresses ?? [], "id");
+    const enriched = {
+      ...project,
+      current_address: project.current_address_id ? addrById[project.current_address_id] ?? null : null,
+      addresses: addresses ?? [],
+      endpoints: endpoints ?? [],
+    };
+    return clean({ project: enriched, updates: updates ?? [], events: events ?? [] });
   });
 
 export const changeAddress = createServerFn({ method: "POST" })

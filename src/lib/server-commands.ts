@@ -76,6 +76,10 @@ export const COMMAND_WHITELIST = [
   "gateway_publish",
   "storage_sync",
   "storage_prune",
+  "vpn_setup",
+  "vpn_peer_add",
+  "vpn_peer_remove",
+  "vpn_status",
 ] as const;
 
 

@@ -56,6 +56,7 @@ import { Route as AuthenticatedCoreHubRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedConnectRouteImport } from './routes/_authenticated/connect'
 import { Route as AuthenticatedClientsRouteImport } from './routes/_authenticated/clients'
 import { Route as AuthenticatedCertificatesRouteImport } from './routes/_authenticated/certificates'
+import { Route as AuthenticatedBridgeRouteImport } from './routes/_authenticated/bridge'
 import { Route as AuthenticatedBlogManagerRouteImport } from './routes/_authenticated/blog-manager'
 import { Route as AuthenticatedBackupsRouteImport } from './routes/_authenticated/backups'
 import { Route as AuthenticatedAutomationRouteImport } from './routes/_authenticated/automation'
@@ -346,6 +347,11 @@ const AuthenticatedCertificatesRoute =
     path: '/certificates',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedBridgeRoute = AuthenticatedBridgeRouteImport.update({
+  id: '/bridge',
+  path: '/bridge',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedBlogManagerRoute =
   AuthenticatedBlogManagerRouteImport.update({
     id: '/blog-manager',
@@ -619,6 +625,7 @@ export interface FileRoutesByFullPath {
   '/automation': typeof AuthenticatedAutomationRoute
   '/backups': typeof AuthenticatedBackupsRoute
   '/blog-manager': typeof AuthenticatedBlogManagerRoute
+  '/bridge': typeof AuthenticatedBridgeRoute
   '/certificates': typeof AuthenticatedCertificatesRoute
   '/clients': typeof AuthenticatedClientsRoute
   '/connect': typeof AuthenticatedConnectRoute
@@ -713,6 +720,7 @@ export interface FileRoutesByTo {
   '/automation': typeof AuthenticatedAutomationRoute
   '/backups': typeof AuthenticatedBackupsRoute
   '/blog-manager': typeof AuthenticatedBlogManagerRoute
+  '/bridge': typeof AuthenticatedBridgeRoute
   '/certificates': typeof AuthenticatedCertificatesRoute
   '/clients': typeof AuthenticatedClientsRoute
   '/connect': typeof AuthenticatedConnectRoute
@@ -808,6 +816,7 @@ export interface FileRoutesById {
   '/_authenticated/automation': typeof AuthenticatedAutomationRoute
   '/_authenticated/backups': typeof AuthenticatedBackupsRoute
   '/_authenticated/blog-manager': typeof AuthenticatedBlogManagerRoute
+  '/_authenticated/bridge': typeof AuthenticatedBridgeRoute
   '/_authenticated/certificates': typeof AuthenticatedCertificatesRoute
   '/_authenticated/clients': typeof AuthenticatedClientsRoute
   '/_authenticated/connect': typeof AuthenticatedConnectRoute
@@ -904,6 +913,7 @@ export interface FileRouteTypes {
     | '/automation'
     | '/backups'
     | '/blog-manager'
+    | '/bridge'
     | '/certificates'
     | '/clients'
     | '/connect'
@@ -998,6 +1008,7 @@ export interface FileRouteTypes {
     | '/automation'
     | '/backups'
     | '/blog-manager'
+    | '/bridge'
     | '/certificates'
     | '/clients'
     | '/connect'
@@ -1092,6 +1103,7 @@ export interface FileRouteTypes {
     | '/_authenticated/automation'
     | '/_authenticated/backups'
     | '/_authenticated/blog-manager'
+    | '/_authenticated/bridge'
     | '/_authenticated/certificates'
     | '/_authenticated/clients'
     | '/_authenticated/connect'
@@ -1529,6 +1541,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedCertificatesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/bridge': {
+      id: '/_authenticated/bridge'
+      path: '/bridge'
+      fullPath: '/bridge'
+      preLoaderRoute: typeof AuthenticatedBridgeRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/blog-manager': {
       id: '/_authenticated/blog-manager'
       path: '/blog-manager'
@@ -1916,6 +1935,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedAutomationRoute: typeof AuthenticatedAutomationRoute
   AuthenticatedBackupsRoute: typeof AuthenticatedBackupsRoute
   AuthenticatedBlogManagerRoute: typeof AuthenticatedBlogManagerRoute
+  AuthenticatedBridgeRoute: typeof AuthenticatedBridgeRoute
   AuthenticatedCertificatesRoute: typeof AuthenticatedCertificatesRoute
   AuthenticatedClientsRoute: typeof AuthenticatedClientsRoute
   AuthenticatedConnectRoute: typeof AuthenticatedConnectRoute
@@ -1970,6 +1990,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedAutomationRoute: AuthenticatedAutomationRoute,
   AuthenticatedBackupsRoute: AuthenticatedBackupsRoute,
   AuthenticatedBlogManagerRoute: AuthenticatedBlogManagerRoute,
+  AuthenticatedBridgeRoute: AuthenticatedBridgeRoute,
   AuthenticatedCertificatesRoute: AuthenticatedCertificatesRoute,
   AuthenticatedClientsRoute: AuthenticatedClientsRoute,
   AuthenticatedConnectRoute: AuthenticatedConnectRoute,

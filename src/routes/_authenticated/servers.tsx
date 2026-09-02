@@ -326,6 +326,9 @@ function ServersPage() {
                   </div>
 
                   <div className="flex gap-1 flex-wrap">
+                    <Button asChild size="sm">
+                      <Link to="/servers/$serverId" params={{ serverId: s.id }}>لوحة السيرفر</Link>
+                    </Button>
                     <Button size="sm" variant="outline" onClick={() => setDetailId(s.id)}>التفاصيل</Button>
                     <Button
                       size="sm"

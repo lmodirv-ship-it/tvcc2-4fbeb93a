@@ -97,7 +97,11 @@ function WebsitesPage() {
 
   const filtered = enriched.filter((w) => {
     const q = search.toLowerCase();
-    const matchQ = !q || w.name.toLowerCase().includes(q) || w.domain.toLowerCase().includes(q);
+    const matchQ =
+      !q ||
+      w.name.toLowerCase().includes(q) ||
+      w.domain.toLowerCase().includes(q) ||
+      String((w as any).site_code ?? "").toLowerCase().includes(q);
     const matchS = status === "all" || w.status === status;
     return matchQ && matchS;
   });

@@ -157,8 +157,11 @@ function ServerDetailPage() {
           <TabsTrigger value="services">الخدمات والحاويات</TabsTrigger>
           <TabsTrigger value="tasks">المهام والأوامر</TabsTrigger>
           <TabsTrigger value="access">الأدوار والصلاحيات</TabsTrigger>
+          <TabsTrigger value="mesh">الشبكة الخاصة والأتمتة</TabsTrigger>
           <TabsTrigger value="events">الأحداث</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="mesh"><MeshPanel serverId={serverId} /></TabsContent>
 
         {/* ------------------------------------------------ overview */}
         <TabsContent value="overview" className="space-y-4 pt-4">

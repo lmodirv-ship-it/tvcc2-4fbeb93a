@@ -17,6 +17,7 @@ import {
   getConnectHub, registerService, deleteService, linkDatabase, unlinkDatabase,
   testConnection, listConnectionEvents, attachAllSitesToTvcc,
 } from "@/lib/connect.functions";
+import { syncLovableProjects } from "@/lib/lovable-sync.functions";
 import { connectService, disconnectService } from "@/lib/mesh.functions";
 import { BulkLinkPanel } from "@/components/mesh/BulkLinkPanel";
 import { SecretsPanel } from "@/components/mesh/SecretsPanel";
@@ -96,6 +97,17 @@ function ConnectPage() {
     onError: (e: any) => toast.error(e?.message ?? "فشلت الإضافة"),
   });
 
+  const syncLovableFn = useServerFn(syncLovableProjects);
+  const mSyncLovable = useMutation({
+    mutationFn: () => syncLovableFn({ data: { attachToTvcc: true, pushToHnHub: true } }) as Promise<any>,
+    onSuccess: (r: any) => {
+      if (!r?.ok) toast.error(r?.errors?.[0] ?? "فشلت المزامنة");
+      else toast.success(`تم استيراد ${r.imported} موقع من Lovable وربط ${r.tvcc?.linked ?? 0} بـ TVCC`);
+      refresh();
+    },
+    onError: (e: any) => toast.error(e?.message ?? "فشلت المزامنة مع Lovable"),
+  });
+
   const websites = data?.websites ?? [];
   const services = data?.services ?? [];
   const servers = data?.servers ?? [];
@@ -162,6 +174,9 @@ function ConnectPage() {
           <div className="flex gap-2 flex-wrap">
             <Button size="sm" disabled={mAttachAll.isPending} onClick={() => mAttachAll.mutate()}>
               {mAttachAll.isPending ? "جارٍ الإضافة…" : "إضافة كل المواقع إلى TVCC"}
+            </Button>
+            <Button size="sm" variant="outline" disabled={mSyncLovable.isPending} onClick={() => mSyncLovable.mutate()}>
+              {mSyncLovable.isPending ? "جارٍ المزامنة…" : "مزامنة Lovable"}
             </Button>
             <Button asChild size="sm" variant="outline"><Link to="/import-sites">استيراد المواقع</Link></Button>
             <Button asChild size="sm" variant="secondary"><Link to="/publish-sync">مزامنة النشر</Link></Button>

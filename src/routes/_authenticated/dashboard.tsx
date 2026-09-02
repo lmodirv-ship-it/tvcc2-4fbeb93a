@@ -8,6 +8,7 @@ import {
   Globe, Users, Activity,
   CheckCircle2, AlertTriangle, XCircle, TrendingUp, Home,
   Layers, ArrowUpRight, Clock, Database, HardDrive, Server, Cpu, BrainCircuit,
+  Link2, DownloadCloud,
 } from "lucide-react";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { LiveBackdrop, Tilt3D, CountUp, Beacon, LivePulse } from "@/components/visual/LiveScene";

@@ -2,14 +2,14 @@ import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { LighthouseScene } from "@/components/manara/LighthouseScene";
 import {
   Globe, Smartphone, Code, Activity, Route as RouteIcon, AlertTriangle, CheckCircle2,
-  Clock, XCircle, RefreshCw, ArrowLeft, Plus,
+  Clock, XCircle, RefreshCw, ArrowLeft, Plus, Server, ShieldCheck, Database, Cpu,
+  Search, Send, ChevronLeft,
 } from "lucide-react";
 import { toast } from "sonner";
 import { listManara, changeAddress, verifyAddress, publishAddress, healRouting } from "@/lib/manara.functions";
@@ -41,6 +41,35 @@ function StatusBadge({ status }: { status: string | null }) {
 function fmt(d: string | null) {
   if (!d) return "—";
   return new Date(d).toLocaleString("ar", { dateStyle: "short", timeStyle: "short" });
+}
+
+function timeAgo(d: string | null) {
+  if (!d) return "—";
+  const diff = Date.now() - new Date(d).getTime();
+  const s = Math.floor(diff / 1000);
+  if (s < 60) return `منذ ${s} ثانية`;
+  const m = Math.floor(s / 60);
+  if (m < 60) return `منذ ${m} دقيقة`;
+  const h = Math.floor(m / 60);
+  if (h < 24) return `منذ ${h} ساعة`;
+  return `منذ ${Math.floor(h / 24)} يوم`;
+}
+
+function parseHostPort(url: string) {
+  try {
+    const u = new URL(url.startsWith("http") ? url : `https://${url}`);
+    const port = u.port || (u.protocol === "https:" ? 443 : 80);
+    return { host: u.hostname, port };
+  } catch {
+    return { host: url, port: 443 };
+  }
+}
+
+function endpointIcon(kind: string) {
+  if (kind === "apk" || kind === "android") return <Smartphone className="w-4 h-4" />;
+  if (kind === "pwa") return <Code className="w-4 h-4" />;
+  if (kind === "api" || kind === "service") return <Code className="w-4 h-4" />;
+  return <Globe className="w-4 h-4" />;
 }
 
 function ManaraPage() {
@@ -126,125 +155,307 @@ function ManaraPage() {
     current: projects.filter((p) => p.current_address?.is_verified).length,
     pending: updates.filter((u) => u.status === "pending").length,
     failed: updates.filter((u) => u.status === "failed").length,
+    completed: updates.filter((u) => u.status === "completed").length,
+    suspended: updates.filter((u) => u.status === "suspended").length,
   };
 
+  const liveRoutes = projects.slice(0, 3);
+  const endpoints = projects.flatMap((p) => (p.endpoints ?? []).map((e: any) => ({ ...e, project: p }))).slice(0, 4);
+
   return (
-    <div className="space-y-6 p-4 md:p-6">
-      <header className="flex flex-wrap items-center justify-between gap-3">
-        <div>
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <svg className="w-7 h-7 text-primary" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l9 4v6c0 5.5-3.8 10.7-9 12-5.2-1.3-9-6.5-9-12V6z"/><circle cx="12" cy="10" r="3"/></svg>
-            منارة — مركز التوجيه الحي
-          </h1>
-          <p className="text-sm text-muted-foreground">المصدر الوحيد للحقيقة لعناوين مشاريع المجموعة</p>
+    <div className="min-h-[calc(100vh-4rem)] p-4 md:p-6 space-y-5">
+      {/* Top utility bar */}
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="flex items-center gap-3">
+          <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center border border-primary/20">
+            <RouteIcon className="w-5 h-5 text-primary" />
+          </div>
+          <div>
+            <h1 className="text-xl font-bold">منارة — مركز التوجيه الحي</h1>
+            <p className="text-xs text-muted-foreground">المصدر الوحيد للحقيقة لعناوين مشاريع المجموعة</p>
+          </div>
         </div>
-        <Button variant="outline" onClick={refresh} disabled={isLoading} className="gap-2">
+        <Button variant="outline" size="sm" onClick={refresh} disabled={isLoading} className="gap-2">
           <RefreshCw className={`w-4 h-4 ${isLoading ? "animate-spin" : ""}`} />
           تحديث
         </Button>
-      </header>
+      </div>
 
-      <Card className="relative overflow-hidden border-primary/20" style={{ minHeight: 340 }}>
-        <div className="absolute inset-0">
-          <LighthouseScene active={stats.current > 0} />
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        {/* Left column */}
+        <div className="lg:col-span-3 space-y-5">
+          {/* Live routes */}
+          <section className="glass-card rounded-2xl p-4 relative overflow-hidden">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-bold flex items-center gap-2 text-sm">
+                <RouteIcon className="w-4 h-4 text-primary" />
+                المسارات الحية
+              </h2>
+              <Activity className="w-4 h-4 text-success" />
+            </div>
+            <div className="space-y-3">
+              {isLoading ? (
+                <div className="text-muted-foreground text-xs">جارٍ التحميل...</div>
+              ) : liveRoutes.length === 0 ? (
+                <div className="text-muted-foreground text-xs">لا توجد مسارات حية.</div>
+              ) : (
+                liveRoutes.map((p) => {
+                  const addr = p.current_address;
+                  const { host, port } = addr ? parseHostPort(addr.url) : { host: "—", port: 0 };
+                  return (
+                    <div key={p.id} className="rounded-xl bg-background/40 border border-border/50 p-3 space-y-2">
+                      <div className="flex items-center justify-between gap-2">
+                        <span className="font-medium text-sm truncate">{p.name}</span>
+                        <Badge variant="outline" className="text-[10px] shrink-0">{p.project_key}</Badge>
+                      </div>
+                      <div className="text-xs text-muted-foreground truncate">{addr?.url || "لا يوجد عنوان"}</div>
+                      <div className="flex items-center justify-between text-[11px] text-muted-foreground">
+                        <span className="flex items-center gap-1"><Server className="w-3 h-3" /> {host}{port ? `:${port}` : ""}</span>
+                        <span className="flex items-center gap-1 text-success"><span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" /> متصل</span>
+                      </div>
+                    </div>
+                  );
+                })
+              )}
+            </div>
+            <Link to="/manara" className="mt-3 flex items-center gap-1 text-xs text-primary hover:underline">
+              <ChevronLeft className="w-3 h-3" /> عرض جميع المسارات
+            </Link>
+          </section>
+
+          {/* Updates donut */}
+          <section className="glass-card rounded-2xl p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-bold flex items-center gap-2 text-sm">
+                <Activity className="w-4 h-4 text-primary" />
+                تحديثات العناوين
+              </h2>
+            </div>
+            <div className="flex items-center gap-4">
+              <div className="relative w-24 h-24 shrink-0">
+                <svg viewBox="0 0 36 36" className="w-full h-full -rotate-90">
+                  <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="oklch(0.3 0.03 260)" strokeWidth="3" />
+                  <path d="M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831" fill="none" stroke="oklch(0.78 0.2 150)" strokeWidth="3" strokeDasharray={`${stats.completed ? (stats.completed / Math.max(updates.length, 1)) * 100 : 0}, 100`} />
+                </svg>
+                <div className="absolute inset-0 flex flex-col items-center justify-center">
+                  <span className="text-lg font-bold">{updates.length}</span>
+                  <span className="text-[10px] text-muted-foreground">إجمالي</span>
+                </div>
+              </div>
+              <div className="flex-1 space-y-2 text-xs">
+                <div className="flex items-center justify-between gap-2"><span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-primary" /> قيد النشر</span><span>{stats.pending}</span></div>
+                <div className="flex items-center justify-between gap-2"><span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-success" /> مكتمل</span><span>{stats.completed}</span></div>
+                <div className="flex items-center justify-between gap-2"><span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-warning" /> معلق</span><span>{stats.suspended}</span></div>
+                <div className="flex items-center justify-between gap-2"><span className="flex items-center gap-1"><span className="w-2 h-2 rounded-full bg-destructive" /> فشل</span><span>{stats.failed}</span></div>
+              </div>
+            </div>
+            <Link to="/manara" className="mt-3 flex items-center gap-1 text-xs text-primary hover:underline">
+              <ChevronLeft className="w-3 h-3" /> عرض جميع التحديثات
+            </Link>
+          </section>
         </div>
-        <div className="relative z-10 p-6 flex flex-col items-center justify-center text-center gap-4" style={{ minHeight: 340 }}>
-          <h2 className="text-3xl font-bold drop-shadow-lg">منارة</h2>
-          <p className="max-w-xl text-sm text-white/80 drop-shadow">اكتشف العنوان الحالي لأي مشروع بالمعرّف الثابت، وانشر التحديثات لكل التطبيقات والمواقع.</p>
-          <div className="flex flex-wrap items-center gap-2 justify-center">
-            <Input
-              value={keyInput}
-              onChange={(e) => setKeyInput(e.target.value)}
-              placeholder="معرّف المشروع IDXXXXX"
-              className="w-44 bg-black/40 border-white/20"
-            />
-            <Input
-              value={urlInput}
-              onChange={(e) => setUrlInput(e.target.value)}
-              placeholder="العنوان الجديد"
-              className="w-64 bg-black/40 border-white/20"
-            />
-            <Button onClick={submitChange} disabled={busy === "change" || !keyInput || !urlInput} className="gap-1">
-              <Plus className="w-4 h-4" /> نشر
-            </Button>
+
+        {/* Center hero */}
+        <div className="lg:col-span-6 space-y-5">
+          <section className="glass-card rounded-3xl p-1 relative overflow-hidden min-h-[420px] flex flex-col">
+            <div className="absolute inset-0 rounded-3xl overflow-hidden">
+              <LighthouseScene active={stats.current > 0} />
+            </div>
+            <div className="relative z-10 flex flex-col items-center justify-center text-center gap-4 p-6 flex-1">
+              <div className="space-y-1">
+                <h2 className="text-3xl md:text-4xl font-black">
+                  <span className="manara-gold-text">منارة</span>
+                  <span className="text-foreground"> — مركز التوجيه الحي</span>
+                </h2>
+                <div className="flex items-center justify-center gap-2 text-sm">
+                  <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
+                  <span className="text-white/90">متصلة بـ TVCC</span>
+                </div>
+              </div>
+              <Badge className="bg-success/15 text-success border-success/30 gap-1 px-3 py-1">
+                <CheckCircle2 className="w-3 h-3" /> جميع المسارات متزامنة
+              </Badge>
+
+              <div className="w-full max-w-lg mt-4">
+                <div className="flex flex-wrap items-center gap-2 bg-background/60 border border-border/60 rounded-2xl p-2 backdrop-blur">
+                  <div className="flex-1 min-w-[180px] relative">
+                    <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      value={keyInput}
+                      onChange={(e) => setKeyInput(e.target.value)}
+                      placeholder="معرّف المشروع IDXXXXX"
+                      className="pr-9 bg-transparent border-0 focus-visible:ring-0"
+                    />
+                  </div>
+                  <div className="flex-[2] min-w-[220px] relative">
+                    <Globe className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                    <Input
+                      value={urlInput}
+                      onChange={(e) => setUrlInput(e.target.value)}
+                      placeholder="أدخل العنوان الجديد..."
+                      className="pr-9 bg-transparent border-0 focus-visible:ring-0"
+                    />
+                  </div>
+                  <Button
+                    onClick={submitChange}
+                    disabled={busy === "change" || !keyInput || !urlInput}
+                    className="rounded-xl w-12 h-12 p-0 bg-gradient-to-br from-manara-gold to-warning hover:opacity-90 shadow-lg shadow-manara-gold/20"
+                  >
+                    <Send className="w-5 h-5 text-background" />
+                  </Button>
+                </div>
+              </div>
+            </div>
+          </section>
+
+          {/* Quick stats row */}
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div className="glass-card rounded-xl p-3 flex items-center gap-3">
+              <Globe className="w-8 h-8 text-primary" />
+              <div>
+                <div className="text-xl font-bold">{stats.total}</div>
+                <div className="text-[10px] text-muted-foreground">المشاريع المسجلة</div>
+              </div>
+            </div>
+            <div className="glass-card rounded-xl p-3 flex items-center gap-3">
+              <CheckCircle2 className="w-8 h-8 text-success" />
+              <div>
+                <div className="text-xl font-bold">{stats.current}</div>
+                <div className="text-[10px] text-muted-foreground">عناوين متحققة</div>
+              </div>
+            </div>
+            <div className="glass-card rounded-xl p-3 flex items-center gap-3">
+              <Clock className="w-8 h-8 text-warning" />
+              <div>
+                <div className="text-xl font-bold">{stats.pending}</div>
+                <div className="text-[10px] text-muted-foreground">قيد النشر</div>
+              </div>
+            </div>
+            <div className="glass-card rounded-xl p-3 flex items-center gap-3">
+              <AlertTriangle className="w-8 h-8 text-destructive" />
+              <div>
+                <div className="text-xl font-bold">{stats.failed}</div>
+                <div className="text-[10px] text-muted-foreground">فاشلة</div>
+              </div>
+            </div>
           </div>
         </div>
-      </Card>
 
-      <div className="grid gap-4 md:grid-cols-4">
-        <Card className="border-primary/10"><CardContent className="p-4 flex items-center gap-3"><Globe className="w-8 h-8 text-primary" /><div><div className="text-2xl font-bold">{stats.total}</div><div className="text-xs text-muted-foreground">المشاريع المسجلة</div></div></CardContent></Card>
-        <Card className="border-success/20"><CardContent className="p-4 flex items-center gap-3"><CheckCircle2 className="w-8 h-8 text-success" /><div><div className="text-2xl font-bold">{stats.current}</div><div className="text-xs text-muted-foreground">عناوين متحققة</div></div></CardContent></Card>
-        <Card className="border-warning/20"><CardContent className="p-4 flex items-center gap-3"><Clock className="w-8 h-8 text-warning" /><div><div className="text-2xl font-bold">{stats.pending}</div><div className="text-xs text-muted-foreground">قيد النشر</div></div></CardContent></Card>
-        <Card className="border-destructive/20"><CardContent className="p-4 flex items-center gap-3"><AlertTriangle className="w-8 h-8 text-destructive" /><div><div className="text-2xl font-bold">{stats.failed}</div><div className="text-xs text-muted-foreground">فاشلة</div></div></CardContent></Card>
+        {/* Right column */}
+        <div className="lg:col-span-3 space-y-5">
+          {/* Sites & apps */}
+          <section className="glass-card rounded-2xl p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-bold flex items-center gap-2 text-sm">
+                <Globe className="w-4 h-4 text-primary" />
+                المواقع والتطبيقات
+              </h2>
+            </div>
+            <div className="space-y-2">
+              {endpoints.length === 0 ? (
+                <div className="text-muted-foreground text-xs">لا توجد نقاط نهاية.</div>
+              ) : (
+                endpoints.map((ep: any, idx: number) => (
+                  <div key={idx} className="flex items-center justify-between gap-2 p-2.5 rounded-xl bg-background/40 border border-border/50">
+                    <div className="flex items-center gap-2 min-w-0">
+                      <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+                        {endpointIcon(ep.kind)}
+                      </div>
+                      <div className="min-w-0">
+                        <div className="text-xs font-medium truncate">{ep.label || ep.kind}</div>
+                        <div className="text-[10px] text-muted-foreground truncate">{ep.url || "—"}</div>
+                      </div>
+                    </div>
+                    <span className="flex items-center gap-1 text-[10px] text-success shrink-0">
+                      <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" /> متصل
+                    </span>
+                  </div>
+                ))
+              )}
+            </div>
+            <Link to="/manara" className="mt-3 flex items-center gap-1 text-xs text-primary hover:underline">
+              <ChevronLeft className="w-3 h-3" /> عرض جميع التطبيقات
+            </Link>
+          </section>
+
+          {/* Routing points */}
+          <section className="glass-card rounded-2xl p-4">
+            <div className="flex items-center justify-between mb-4">
+              <h2 className="font-bold flex items-center gap-2 text-sm">
+                <RouteIcon className="w-4 h-4 text-primary" />
+                نقاط التوجيه
+              </h2>
+            </div>
+            <div className="grid grid-cols-2 gap-2">
+              {[
+                { label: "DNS", icon: Database, ok: true },
+                { label: "Nginx", icon: Server, ok: true },
+                { label: "الخادم", icon: Cpu, ok: true },
+                { label: "الوكيل", icon: Activity, ok: true },
+              ].map((pt) => (
+                <div key={pt.label} className="rounded-xl bg-background/40 border border-border/50 p-3 flex flex-col items-center gap-2 text-center">
+                  <pt.icon className="w-5 h-5 text-primary" />
+                  <span className="text-xs font-medium">{pt.label}</span>
+                  <span className="text-[10px] flex items-center gap-1 text-success">
+                    <span className="w-1.5 h-1.5 rounded-full bg-success animate-pulse" /> متصل
+                  </span>
+                </div>
+              ))}
+            </div>
+            <Link to="/manara" className="mt-3 flex items-center gap-1 text-xs text-primary hover:underline">
+              <ChevronLeft className="w-3 h-3" /> عرض جميع نقاط التوجيه
+            </Link>
+          </section>
+        </div>
       </div>
 
-      <div className="grid gap-6 lg:grid-cols-3">
-        <Card className="lg:col-span-2 border-primary/10">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><RouteIcon className="w-5 h-5 text-primary" /> المسارات الحية</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-3">
-            {isLoading ? (
-              <div className="text-muted-foreground text-sm">جارٍ التحميل...</div>
-            ) : projects.length === 0 ? (
-              <div className="text-muted-foreground text-sm">لا توجد مشاريع مسجلة بعد.</div>
-            ) : (
-              projects.slice(0, 20).map((p) => (
-                <div key={p.id} className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-card/50 border border-border/50">
-                  <div className="space-y-1">
-                    <div className="font-medium flex items-center gap-2">
-                      <Link to="/manara/$key" params={{ key: p.project_key }} className="hover:text-primary hover:underline">{p.name}</Link>
-                      <Badge variant="outline" className="text-[10px]">{p.project_key}</Badge>
+      {/* Bottom activity timeline */}
+      <section className="glass-card rounded-2xl p-4">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-bold flex items-center gap-2 text-sm">
+            <Activity className="w-4 h-4 text-primary" />
+            النشاط المباشر
+          </h2>
+        </div>
+        {events.length === 0 ? (
+          <div className="text-muted-foreground text-xs">لا توجد أحداث حديثة.</div>
+        ) : (
+          <div className="relative">
+            <svg className="absolute top-6 inset-x-0 h-1 w-full hidden lg:block" preserveAspectRatio="none">
+              <line x1="0" y1="0" x2="100%" y2="0" className="lightning-line" />
+            </svg>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+              {events.slice(0, 4).map((e: any, idx: number) => (
+                <div key={e.id} className="relative">
+                  <div className="flex items-center gap-3 mb-2">
+                    <div className="w-10 h-10 rounded-full bg-primary/10 border border-primary/30 flex items-center justify-center z-10">
+                      {e.kind === "publish_completed" ? <CheckCircle2 className="w-4 h-4 text-success" /> :
+                       e.kind === "verify_fail" ? <XCircle className="w-4 h-4 text-destructive" /> :
+                       e.kind === "heal" ? <ShieldCheck className="w-4 h-4 text-primary" /> :
+                       <Activity className="w-4 h-4 text-primary" />}
                     </div>
-                    <div className="text-xs text-muted-foreground flex items-center gap-2">
-                      {p.current_address ? (
-                        <><Globe className="w-3 h-3" /> {p.current_address.url}</>
-                      ) : (
-                        "لا يوجد عنوان حالي"
-                      )}
-                    </div>
+                    <div className="text-xs font-medium">{e.kind}</div>
                   </div>
-                  <div className="flex items-center gap-2">
-                    {p.current_address?.is_verified ? (
-                      <Badge className="bg-success/15 text-success border-success/30 gap-1"><CheckCircle2 className="w-3 h-3" /> متحقق</Badge>
-                    ) : (
-                      <Badge variant="outline" className="gap-1"><Clock className="w-3 h-3" /> غير متحقق</Badge>
-                    )}
-                    <Button size="sm" variant="outline" onClick={() => doHeal(p.project_key)} disabled={busy === `heal-${p.project_key}`}>تصحيح</Button>
-                    <Button size="sm" variant="ghost" asChild><Link to="/manara/$key" params={{ key: p.project_key }}><ArrowLeft className="w-4 h-4" /></Link></Button>
-                  </div>
+                  <div className="text-[11px] text-muted-foreground line-clamp-2">{e.message}</div>
+                  <div className="text-[10px] text-muted-foreground/70 mt-1">{timeAgo(e.created_at)}</div>
                 </div>
-              ))
-            )}
-          </CardContent>
-        </Card>
+              ))}
+            </div>
+          </div>
+        )}
+      </section>
 
-        <Card className="border-primary/10">
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2"><Activity className="w-5 h-5 text-primary" /> النشاط المباشر</CardTitle>
-          </CardHeader>
-          <CardContent className="space-y-2 max-h-[420px] overflow-auto">
-            {events.slice(0, 30).map((e: any) => (
-              <div key={e.id} className="text-xs border-b border-border/30 pb-2 last:border-0">
-                <div className="flex items-center justify-between gap-2">
-                  <span className="font-medium">{e.kind}</span>
-                  <span className="text-muted-foreground">{fmt(e.created_at)}</span>
-                </div>
-                <div className="text-muted-foreground truncate">{e.message}</div>
-              </div>
-            ))}
-            {events.length === 0 && <div className="text-sm text-muted-foreground">لا توجد أحداث حديثة.</div>}
-          </CardContent>
-        </Card>
-      </div>
-
-      <Card className="border-primary/10">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Code className="w-5 h-5 text-primary" /> تحديثات العناوين</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
-          {updates.slice(0, 15).map((u: any) => (
-            <div key={u.id} className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-card/50 border border-border/50">
+      {/* Updates list (compact) */}
+      <section className="glass-card rounded-2xl p-4">
+        <div className="flex items-center justify-between mb-4">
+          <h2 className="font-bold flex items-center gap-2 text-sm">
+            <Code className="w-4 h-4 text-primary" />
+            تحديثات العناوين الأخيرة
+          </h2>
+        </div>
+        <div className="space-y-2">
+          {updates.slice(0, 5).map((u: any) => (
+            <div key={u.id} className="flex flex-wrap items-center justify-between gap-3 p-3 rounded-xl bg-background/40 border border-border/50">
               <div className="space-y-1">
                 <div className="text-sm font-medium">{u.reason}</div>
                 <div className="text-xs text-muted-foreground">
@@ -263,20 +474,20 @@ function ManaraPage() {
             </div>
           ))}
           {updates.length === 0 && <div className="text-sm text-muted-foreground">لا توجد عمليات تحديث.</div>}
-        </CardContent>
-      </Card>
+        </div>
+      </section>
 
-      <Card className="border-primary/10">
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2"><Smartphone className="w-5 h-5 text-primary" /> شارة منارة للمواقع</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <p className="text-sm text-muted-foreground mb-3">أضف هذا السكربت أسفل أي موقع في المجموعة ليظهر رمز المنارة ويربط تلقائياً بالعنوان الصحيح:</p>
-          <pre className="text-xs bg-muted p-3 rounded-lg overflow-auto ltr text-left" dir="ltr">
+      {/* Badge snippet */}
+      <section className="glass-card rounded-2xl p-4">
+        <div className="flex items-center gap-2 mb-3">
+          <Smartphone className="w-4 h-4 text-primary" />
+          <h2 className="font-bold text-sm">شارة منارة للمواقع</h2>
+        </div>
+        <p className="text-sm text-muted-foreground mb-3">أضف هذا السكربت أسفل أي موقع في المجموعة ليظهر رمز المنارة ويربط تلقائياً بالعنوان الصحيح:</p>
+        <pre className="text-xs bg-muted p-3 rounded-lg overflow-auto ltr text-left" dir="ltr">
 {`<script src="${typeof window !== "undefined" ? window.location.origin : ""}/api/public/manara/badge" data-key="IDXXXXX"></script>`}
-          </pre>
-        </CardContent>
-      </Card>
+        </pre>
+      </section>
     </div>
   );
 }

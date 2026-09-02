@@ -85,16 +85,25 @@ export const getManaraProject = createServerFn({ method: "POST" })
     const manager = await isManager(sb, context.userId);
     const { data: project } = await sb
       .from("manara_projects")
-      .select("*, current_address:current_address_id(*), addresses:manara_addresses(*), endpoints:manara_endpoints(*)")
+      .select("*")
       .eq("project_key", data.key)
       .maybeSingle();
     if (!project) throw new Error("المشروع غير موجود");
     if (!manager && project.owner_id !== context.userId) throw new Error("غير مصرح");
-    const [{ data: updates }, { data: events }] = await Promise.all([
+    const [{ data: addresses }, { data: endpoints }, { data: updates }, { data: events }] = await Promise.all([
+      sb.from("manara_addresses").select("*").eq("project_id", project.id),
+      sb.from("manara_endpoints").select("*").eq("project_id", project.id),
       sb.from("manara_updates").select("*").eq("project_id", project.id).order("created_at", { ascending: false }).limit(100),
       sb.from("manara_events").select("*").eq("project_id", project.id).order("created_at", { ascending: false }).limit(100),
     ]);
-    return { project, updates: updates ?? [], events: events ?? [] };
+    const addrById = keyBy(addresses ?? [], "id");
+    const enriched = {
+      ...project,
+      current_address: project.current_address_id ? addrById[project.current_address_id] ?? null : null,
+      addresses: addresses ?? [],
+      endpoints: endpoints ?? [],
+    };
+    return clean({ project: enriched, updates: updates ?? [], events: events ?? [] });
   });
 
 export const changeAddress = createServerFn({ method: "POST" })

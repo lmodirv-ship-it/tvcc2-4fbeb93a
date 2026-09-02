@@ -18,6 +18,10 @@ function parseUrl(url: string) {
   }
 }
 
+function clean<T>(v: T): T {
+  return JSON.parse(JSON.stringify(v));
+}
+
 export const listManara = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
@@ -37,7 +41,7 @@ export const listManara = createServerFn({ method: "POST" })
         sb.from("manara_events").select("*").in("project_id", projectIds).order("created_at", { ascending: false }).limit(100),
       ]);
     }
-    return { projects: projects ?? [], updates: updates ?? [], events: events ?? [], manager };
+    return clean({ projects: projects ?? [], updates: updates ?? [], events: events ?? [], manager });
   });
 
 export const getManaraProject = createServerFn({ method: "POST" })

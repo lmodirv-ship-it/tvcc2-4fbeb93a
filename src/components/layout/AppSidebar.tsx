@@ -8,11 +8,13 @@ import {
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter,
+  useSidebar,
 } from "@/components/ui/sidebar";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { exportDashboardHtml } from "@/lib/html-export";
 import { useTranslation } from "react-i18next";
+import { LANGUAGES } from "@/i18n";
 import tvccLogo from "@/assets/tvcc-logo.asset.json";
 
 function ManaraIcon(props: { className?: string }) {
@@ -27,6 +29,7 @@ function ManaraIcon(props: { className?: string }) {
 const coreItems = [
   { titleKey: "sidebar.dashboard", url: "/dashboard", icon: LayoutDashboard },
   { titleKey: "sidebar.websites", url: "/websites", icon: Globe },
+  { titleKey: "sidebar.manara", url: "/manara", icon: ManaraIcon },
   { titleKey: "sidebar.import_sites", url: "/import-sites", icon: Download },
   { titleKey: "sidebar.groups", url: "/groups", icon: FolderOpen },
   { titleKey: "sidebar.templates", url: "/templates", icon: LayoutTemplate },
@@ -59,7 +62,6 @@ const opsItems = [
   { titleKey: "sidebar.failover", url: "/failover", icon: ShieldAlert },
   { titleKey: "sidebar.deploy", url: "/deploy", icon: GitBranch },
   { titleKey: "sidebar.publish_sync", url: "/publish-sync", icon: Rocket },
-  { titleKey: "sidebar.manara", url: "/manara", icon: ManaraIcon },
   { titleKey: "sidebar.automation", url: "/automation", icon: Zap },
   { titleKey: "sidebar.domains", url: "/domains", icon: Server },
   { titleKey: "sidebar.hn_domains", url: "/hn-domains", icon: Globe2 },
@@ -89,12 +91,40 @@ const adminItems = [
   { titleKey: "sidebar.settings", url: "/settings", icon: Settings },
 ];
 
+function SidebarLink({ item, active }: { item: typeof coreItems[number]; active: boolean }) {
+  const { t, i18n } = useTranslation();
+  const { setOpenMobile, isMobile } = useSidebar();
 
+  const handleClick = () => {
+    if (isMobile) setOpenMobile(false);
+  };
+
+  return (
+    <SidebarMenuItem>
+      <SidebarMenuButton
+        asChild
+        isActive={active}
+        className={
+          active
+            ? "bg-primary/15 text-primary border-r-2 border-primary rounded-md"
+            : "hover:bg-sidebar-accent"
+        }
+      >
+        <Link to={item.url} onClick={handleClick}>
+          <item.icon className="w-4 h-4" />
+          <span>{t(item.titleKey)}</span>
+        </Link>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
+}
 
 export function AppSidebar() {
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
+  const langDef = LANGUAGES.find((l) => l.code === i18n.language) ?? LANGUAGES[0];
+  const side = langDef.dir === "rtl" ? "right" : "left";
 
   const isActive = (path: string) => pathname === path || pathname.startsWith(path + "/");
 
@@ -113,15 +143,15 @@ export function AppSidebar() {
   };
 
   return (
-    <Sidebar collapsible="icon" side="right" className="border-l border-sidebar-border">
+    <Sidebar collapsible="icon" side={side} className="border-l border-sidebar-border" dir={langDef.dir}>
       <SidebarHeader className="border-b border-sidebar-border p-5">
         <Link to="/" className="flex flex-col items-center gap-2 text-center">
           <img
             src={tvccLogo.url}
             alt="TVCC"
-            className="w-14 h-14 rounded-xl object-cover shadow-md"
+            className="w-20 h-20 rounded-2xl object-cover shadow-lg"
           />
-          <div className="text-[11px] text-muted-foreground">{t("sidebar.tagline")}</div>
+          <div className="text-xs text-muted-foreground font-medium">{t("sidebar.tagline")}</div>
         </Link>
       </SidebarHeader>
 
@@ -131,7 +161,6 @@ export function AppSidebar() {
           { label: t("sidebar.ai"), items: aiItems },
           { label: t("sidebar.operations"), items: opsItems },
           { label: t("sidebar.admin"), items: adminItems },
-
         ].map((section) => (
           <SidebarGroup key={section.label}>
             <SidebarGroupLabel className="text-[10px] text-muted-foreground/70 px-2">
@@ -139,27 +168,9 @@ export function AppSidebar() {
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {section.items.map((item) => {
-                  const active = isActive(item.url);
-                  return (
-                    <SidebarMenuItem key={item.url}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={active}
-                        className={
-                          active
-                            ? "bg-primary/15 text-primary border-r-2 border-primary rounded-md"
-                            : "hover:bg-sidebar-accent"
-                        }
-                      >
-                        <Link to={item.url}>
-                          <item.icon className="w-4 h-4" />
-                          <span>{t(item.titleKey)}</span>
-                        </Link>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
+                {section.items.map((item) => (
+                  <SidebarLink key={item.url} item={item} active={isActive(item.url)} />
+                ))}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>

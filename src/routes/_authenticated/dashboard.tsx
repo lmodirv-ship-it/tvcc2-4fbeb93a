@@ -169,6 +169,19 @@ function DashboardPage() {
         })}
       </div>
 
+      {/* Quick actions: websites + connect */}
+      <div className="flex flex-wrap items-center gap-3">
+        <Button asChild size="lg" className="gap-2">
+          <Link to="/websites"><Globe className="w-4 h-4" /> المواقع</Link>
+        </Button>
+        <Button asChild size="lg" variant="secondary" className="gap-2 ring-1 ring-primary/40">
+          <Link to="/connect"><Link2 className="w-4 h-4" /> Connect — مركز الربط</Link>
+        </Button>
+        <Button asChild size="lg" variant="outline" className="gap-2">
+          <Link to="/import-sites"><DownloadCloud className="w-4 h-4" /> استيراد المواقع</Link>
+        </Button>
+      </div>
+
       {/* Banners */}
       <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
         <Card className={`ring-1 ${systemOk ? "ring-success/40" : "ring-warning/40"} bg-card/60 card-3d`}>

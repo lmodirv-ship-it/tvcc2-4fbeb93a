@@ -17,7 +17,9 @@ export const Route = createFileRoute("/pricing")({
       { property: "og:description", content: "استضافة، تخزين، قواعد بيانات معزولة ونطاقات .HN تبدأ من 2$ شهرياً." },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
+      { property: "og:url", content: "https://tvcc.hnpay.live/pricing" },
     ],
+    links: [{ rel: "canonical", href: "https://tvcc.hnpay.live/pricing" }],
   }),
 });
 

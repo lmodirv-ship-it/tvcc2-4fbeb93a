@@ -27,10 +27,12 @@ export const listManara = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     const sb = context.supabase as any;
     const manager = await isManager(sb, context.userId);
+    const { count, error: countErr } = await sb.from("manara_projects").select("*", { count: "exact", head: true });
     const base = manager ? sb.from("manara_projects") : sb.from("manara_projects").eq("owner_id", context.userId);
-    const { data: projects } = await base
-      .select("*, current_address:current_address_id(*), addresses:manara_addresses(*), endpoints:manara_endpoints(*)")
-      .order("updated_at", { ascending: false });
+    const { data: projects, error } = await base
+      .select("*")
+      .order("updated_at", { ascending: false })
+      .limit(50);
 
     const projectIds = (projects ?? []).map((p: any) => p.id);
     let updates: any[] = [];
@@ -41,7 +43,7 @@ export const listManara = createServerFn({ method: "POST" })
         sb.from("manara_events").select("*").in("project_id", projectIds).order("created_at", { ascending: false }).limit(100),
       ]);
     }
-    return clean({ projects: projects ?? [], updates: updates ?? [], events: events ?? [], manager });
+    return clean({ projects: projects ?? [], updates: updates ?? [], events: events ?? [], manager, count, countErr: countErr?.message, error: error?.message });
   });
 
 export const getManaraProject = createServerFn({ method: "POST" })

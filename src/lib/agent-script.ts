@@ -540,6 +540,129 @@ EOFV
       command -v supabase >/dev/null 2>&1 || (npm i -g supabase >/dev/null 2>&1 || true)
       (cd "$DIR" 2>/dev/null && supabase status 2>&1 | head -30) || echo "supabase project dir not found: $DIR"
       curl -s -o /dev/null -w "gateway :%{http_code}\\n" --max-time 5 "http://127.0.0.1:\${P:-8000}/rest/v1/" || true ;;
+    nginx_write_vhost)
+      D="$(GET domain)"
+      [ -z "$D" ] && { echo "domain required"; return 2; }
+      echo "$ARGS" | python3 -c 'import sys,json;d=json.load(sys.stdin);open("/etc/nginx/sites-available/%s"%d["domain"],"w").write(d.get("vhost",""))'
+      ln -sf "/etc/nginx/sites-available/$D" "/etc/nginx/sites-enabled/$D"
+      nginx -t 2>&1 && systemctl reload nginx && echo "nginx vhost applied for $D" ;;
+    ssl_issue_manual)
+      D="$(GET domain)"; MODE="$(GET mode)"
+      mkdir -p "/etc/tvcc/ssl/$D"
+      if [ "$MODE" = "letsencrypt" ]; then
+        command -v certbot >/dev/null 2>&1 || (apt-get install -y certbot python3-certbot-nginx >/dev/null 2>&1 || true)
+        certbot --nginx -d "$D" --non-interactive --agree-tos --register-unsafely-without-email 2>&1 | tail -8
+      else
+        echo "$ARGS" | python3 -c 'import sys,json;d=json.load(sys.stdin);p="/etc/tvcc/ssl/"+d["domain"];open(p+"/fullchain.pem","w").write(d.get("cert_pem",""));open(p+"/privkey.pem","w").write(d.get("key_pem",""))'
+        chmod 600 "/etc/tvcc/ssl/$D/privkey.pem"
+        nginx -t 2>&1 && systemctl reload nginx
+      fi
+      echo "ssl ready for $D ($(openssl x509 -enddate -noout -in "/etc/tvcc/ssl/$D/fullchain.pem" 2>/dev/null || echo managed))" ;;
+    firewall_apply)
+      A="$(GET action)"; P="$(GET port)"; PR="$(GET protocol)"; SRC="$(GET source)"
+      PR="\${PR:-tcp}"
+      command -v ufw >/dev/null 2>&1 || (apt-get install -y ufw >/dev/null 2>&1 || true)
+      if [ "$A" = "deny" ]; then RULE="deny"; elif [ "$A" = "delete" ]; then RULE="delete"; else RULE="allow"; fi
+      if [ "$RULE" = "delete" ]; then
+        ufw delete allow "\${P}/\${PR}" >/dev/null 2>&1 || true
+        ufw delete deny "\${P}/\${PR}" >/dev/null 2>&1 || true
+        echo "firewall rule removed for \${P}/\${PR}"
+      elif [ -n "$SRC" ] && [ "$SRC" != "any" ]; then
+        ufw "$RULE" from "$SRC" to any port "$P" proto "$PR" 2>&1 | tail -3
+      else
+        ufw "$RULE" "\${P}/\${PR}" 2>&1 | tail -3
+      fi
+      ufw --force enable >/dev/null 2>&1 || true
+      ufw status numbered 2>&1 | head -30 ;;
+    agent_update)
+      O="$(GET origin)"; S="$(GET server_id)"; T="$(GET token)"
+      [ -z "$O" ] && { echo "origin required"; return 2; }
+      curl -fsSL "\${O}/api/public/agent/install?server_id=\${S}&token=\${T}" -o /tmp/tvcc-agent-new.sh 2>/dev/null || { echo "download failed"; return 3; }
+      head -3 /tmp/tvcc-agent-new.sh | grep -q '#!/usr/bin/env bash' || { echo "invalid installer"; return 4; }
+      install -m 0755 /tmp/tvcc-agent-new.sh /usr/local/bin/tvcc-agent.sh
+      (systemctl restart tvcc-agent.service >/dev/null 2>&1 &) 
+      echo "agent updated, restarting" ;;
+    tunnel_setup)
+      N="$(GET name)"; LP="$(GET local_port)"; GH="$(GET gateway_host)"; GU="$(GET gateway_user)"; GP="$(GET gateway_port)"
+      [ -z "$N" ] || [ -z "$LP" ] || [ -z "$GH" ] && { echo "name, local_port and gateway_host required"; return 2; }
+      GU="\${GU:-tvcc}"; GP="\${GP:-\${LP}}"
+      command -v autossh >/dev/null 2>&1 || (apt-get update -y >/dev/null 2>&1 && apt-get install -y autossh >/dev/null 2>&1 || true)
+      [ -f /root/.ssh/id_ed25519 ] || ssh-keygen -q -t ed25519 -N "" -f /root/.ssh/id_ed25519
+      cat > "/etc/systemd/system/tvcc-tunnel-\${N}.service" <<EOFT
+[Unit]
+Description=TVCC reverse tunnel \${N} (local \${LP} -> \${GH}:\${GP})
+After=network-online.target
+
+[Service]
+Type=simple
+Environment="AUTOSSH_GATETIME=0"
+ExecStart=/usr/bin/autossh -M 0 -N -o ServerAliveInterval=30 -o ServerAliveCountMax=3 -o ExitOnForwardFailure=yes -o StrictHostKeyChecking=no -R 127.0.0.1:\${GP}:127.0.0.1:\${LP} \${GU}@\${GH}
+Restart=always
+RestartSec=10
+
+[Install]
+WantedBy=multi-user.target
+EOFT
+      systemctl daemon-reload && systemctl enable --now "tvcc-tunnel-\${N}.service" >/dev/null 2>&1
+      sleep 2
+      echo "tunnel \${N}: $(systemctl is-active "tvcc-tunnel-\${N}.service") | pubkey: $(cat /root/.ssh/id_ed25519.pub 2>/dev/null)" ;;
+    tunnel_status)
+      N="$(GET name)"
+      echo "state=$(systemctl is-active "tvcc-tunnel-\${N}.service" 2>/dev/null)"
+      journalctl -u "tvcc-tunnel-\${N}.service" -n 20 --no-pager 2>/dev/null | tail -20 ;;
+    tunnel_drop)
+      N="$(GET name)"
+      systemctl disable --now "tvcc-tunnel-\${N}.service" >/dev/null 2>&1 || true
+      rm -f "/etc/systemd/system/tvcc-tunnel-\${N}.service"; systemctl daemon-reload
+      echo "tunnel \${N} removed" ;;
+    gateway_publish)
+      D="$(GET domain)"; GP="$(GET gateway_port)"; SSL="$(GET ssl)"; PUB="$(GET pubkey)"
+      [ -z "$D" ] || [ -z "$GP" ] && { echo "domain and gateway_port required"; return 2; }
+      if [ -n "$PUB" ]; then
+        id -u tvcc >/dev/null 2>&1 || useradd -m -s /bin/bash tvcc
+        mkdir -p /home/tvcc/.ssh && touch /home/tvcc/.ssh/authorized_keys
+        grep -qF "$PUB" /home/tvcc/.ssh/authorized_keys || echo "$PUB" >> /home/tvcc/.ssh/authorized_keys
+        chown -R tvcc:tvcc /home/tvcc/.ssh; chmod 700 /home/tvcc/.ssh; chmod 600 /home/tvcc/.ssh/authorized_keys
+      fi
+      cat > "/etc/nginx/sites-available/$D" <<EOFG
+server {
+  listen 80;
+  server_name $D;
+  location / {
+    proxy_pass http://127.0.0.1:$GP;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade \\$http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header Host \\$host;
+    proxy_set_header X-Real-IP \\$remote_addr;
+    proxy_set_header X-Forwarded-For \\$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto \\$scheme;
+  }
+}
+EOFG
+      ln -sf "/etc/nginx/sites-available/$D" "/etc/nginx/sites-enabled/$D"
+      nginx -t 2>&1 && systemctl reload nginx
+      if [ "$SSL" = "true" ]; then
+        command -v certbot >/dev/null 2>&1 || (apt-get install -y certbot python3-certbot-nginx >/dev/null 2>&1 || true)
+        certbot --nginx -d "$D" --non-interactive --agree-tos --register-unsafely-without-email 2>&1 | tail -5 || true
+      fi
+      echo "gateway publishing $D -> 127.0.0.1:$GP" ;;
+    storage_sync)
+      SP="$(GET source_path)"; TP="$(GET storage_path)"; TH="$(GET target_host)"
+      [ -z "$TP" ] && { echo "storage_path required"; return 2; }
+      SP="\${SP:-/var/www/$(GET domain)}"
+      [ -d "$SP" ] || { echo "source missing: $SP"; return 3; }
+      if [ -n "$TH" ]; then
+        ssh -o StrictHostKeyChecking=no "$TH" "mkdir -p '$TP'" >/dev/null 2>&1 || true
+        rsync -az --delete -e "ssh -o StrictHostKeyChecking=no" "$SP/" "$TH:$TP/" 2>&1 | tail -5
+      else
+        mkdir -p "$TP"
+        rsync -az --delete "$SP/" "$TP/" 2>&1 | tail -5
+      fi
+      echo "synced $SP -> \${TH:+$TH:}$TP size_mb=$(du -sm "$SP" 2>/dev/null | cut -f1)" ;;
+    storage_prune)
+      TP="$(GET storage_path)"
+      case "$TP" in /srv/tvcc-storage/*) rm -rf "$TP" && echo "pruned $TP" ;; *) echo "refused: path outside /srv/tvcc-storage"; return 2 ;; esac ;;
     restore_all)   restore_services ;;
 
     *) echo "unsupported action: $ACTION"; return 127 ;;

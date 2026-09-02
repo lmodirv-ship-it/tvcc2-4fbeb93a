@@ -22,6 +22,21 @@ function clean<T>(v: T): T {
   return JSON.parse(JSON.stringify(v));
 }
 
+function groupBy<T>(arr: T[], key: keyof T): Record<string, T[]> {
+  return arr.reduce((acc, item) => {
+    const k = String(item[key]);
+    (acc[k] ??= []).push(item);
+    return acc;
+  }, {} as Record<string, T[]>);
+}
+
+function keyBy<T>(arr: T[], key: keyof T): Record<string, T> {
+  return arr.reduce((acc, item) => {
+    acc[String(item[key])] = item;
+    return acc;
+  }, {} as Record<string, T>);
+}
+
 export const listManara = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {

@@ -15,7 +15,7 @@ import { Link2, Database, Boxes, Trash2, Plug, Cloud, Server, Activity } from "l
 import { toast } from "sonner";
 import {
   getConnectHub, registerService, deleteService, linkDatabase, unlinkDatabase,
-  testConnection, listConnectionEvents,
+  testConnection, listConnectionEvents, attachAllSitesToTvcc,
 } from "@/lib/connect.functions";
 import { connectService, disconnectService } from "@/lib/mesh.functions";
 import { BulkLinkPanel } from "@/components/mesh/BulkLinkPanel";

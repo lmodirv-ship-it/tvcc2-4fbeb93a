@@ -503,7 +503,9 @@ EOF4
       ST=$(systemctl is-active "$SVC" 2>/dev/null)
       HC=""
       [ -n "$HU" ] && HC=$(curl -s -o /dev/null -m 8 -w '%{http_code}' "$HU" 2>/dev/null)
-      echo "published $DIR | service=$SVC state=$ST port=${PRT:-n/a} health=${HC:-skipped}"
+      [ -z "$PRT" ] && PRT="n/a"
+      [ -z "$HC" ] && HC="skipped"
+      echo "published $DIR | service=$SVC state=$ST port=$PRT health=$HC"
       [ "$ST" = "active" ] || return 4 ;;
     failover_switch)
       D="$(GET domain)"; T="$(GET target)"

@@ -273,7 +273,7 @@ function ManaraPage() {
         <CardContent>
           <p className="text-sm text-muted-foreground mb-3">أضف هذا السكربت أسفل أي موقع في المجموعة ليظهر رمز المنارة ويربط تلقائياً بالعنوان الصحيح:</p>
           <pre className="text-xs bg-muted p-3 rounded-lg overflow-auto ltr text-left" dir="ltr">
-{`<script src="${typeof window !== "undefined" ? window.location.origin : ""}/api/public/manara/badge.js" data-key="IDXXXXX"></script>`}
+{`<script src="${typeof window !== "undefined" ? window.location.origin : ""}/api/public/manara/badge" data-key="IDXXXXX"></script>`}
           </pre>
         </CardContent>
       </Card>

@@ -204,7 +204,7 @@ self_update() { # $1 = script url
   return 0
 }
 
-
+run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
   local ACTION="$1" ARGS="$2" DRY="$3"
   local GET; GET() { echo "$ARGS" | python3 -c "import sys,json;print(json.load(sys.stdin).get('\$1','') )" 2>/dev/null || echo ""; }
   if [ "$DRY" = "true" ]; then

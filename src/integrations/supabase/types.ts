@@ -44,6 +44,53 @@ export type Database = {
         }
         Relationships: []
       }
+      agent_capabilities: {
+        Row: {
+          action: string
+          allowed: boolean
+          created_at: string
+          id: string
+          max_per_hour: number
+          notes: string | null
+          owner_id: string
+          requires_confirm: boolean
+          server_id: string
+          updated_at: string
+        }
+        Insert: {
+          action: string
+          allowed?: boolean
+          created_at?: string
+          id?: string
+          max_per_hour?: number
+          notes?: string | null
+          owner_id: string
+          requires_confirm?: boolean
+          server_id: string
+          updated_at?: string
+        }
+        Update: {
+          action?: string
+          allowed?: boolean
+          created_at?: string
+          id?: string
+          max_per_hour?: number
+          notes?: string | null
+          owner_id?: string
+          requires_confirm?: boolean
+          server_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_capabilities_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_installers: {
         Row: {
           created_at: string
@@ -90,6 +137,258 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      agent_instances: {
+        Row: {
+          agent_id: string | null
+          agent_version: string | null
+          created_at: string
+          id: string
+          last_heartbeat_at: string | null
+          last_poll_at: string | null
+          meta: Json
+          os: string | null
+          owner_id: string
+          poll_latency_ms: number | null
+          running_commands: number
+          server_id: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          agent_id?: string | null
+          agent_version?: string | null
+          created_at?: string
+          id?: string
+          last_heartbeat_at?: string | null
+          last_poll_at?: string | null
+          meta?: Json
+          os?: string | null
+          owner_id: string
+          poll_latency_ms?: number | null
+          running_commands?: number
+          server_id: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          agent_id?: string | null
+          agent_version?: string | null
+          created_at?: string
+          id?: string
+          last_heartbeat_at?: string | null
+          last_poll_at?: string | null
+          meta?: Json
+          os?: string | null
+          owner_id?: string
+          poll_latency_ms?: number | null
+          running_commands?: number
+          server_id?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_instances_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: true
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_job_steps: {
+        Row: {
+          action: string
+          args: Json
+          command_id: string | null
+          created_at: string
+          exit_code: number | null
+          id: string
+          job_id: string
+          output: string | null
+          owner_id: string
+          status: string
+          step_no: number
+          updated_at: string
+        }
+        Insert: {
+          action: string
+          args?: Json
+          command_id?: string | null
+          created_at?: string
+          exit_code?: number | null
+          id?: string
+          job_id: string
+          output?: string | null
+          owner_id: string
+          status?: string
+          step_no?: number
+          updated_at?: string
+        }
+        Update: {
+          action?: string
+          args?: Json
+          command_id?: string | null
+          created_at?: string
+          exit_code?: number | null
+          id?: string
+          job_id?: string
+          output?: string | null
+          owner_id?: string
+          status?: string
+          step_no?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_job_steps_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "agent_jobs"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_jobs: {
+        Row: {
+          created_at: string
+          finished_at: string | null
+          id: string
+          kind: string
+          owner_id: string
+          payload: Json
+          progress: number
+          requested_by: string | null
+          result: string | null
+          server_id: string
+          started_at: string | null
+          status: string
+          title: string
+          updated_at: string
+          website_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          finished_at?: string | null
+          id?: string
+          kind?: string
+          owner_id: string
+          payload?: Json
+          progress?: number
+          requested_by?: string | null
+          result?: string | null
+          server_id: string
+          started_at?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          finished_at?: string | null
+          id?: string
+          kind?: string
+          owner_id?: string
+          payload?: Json
+          progress?: number
+          requested_by?: string | null
+          result?: string | null
+          server_id?: string
+          started_at?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_jobs_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_role_bindings: {
+        Row: {
+          granted_at: string
+          granted_by: string | null
+          id: string
+          owner_id: string
+          role_id: string
+          server_id: string
+        }
+        Insert: {
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          owner_id: string
+          role_id: string
+          server_id: string
+        }
+        Update: {
+          granted_at?: string
+          granted_by?: string | null
+          id?: string
+          owner_id?: string
+          role_id?: string
+          server_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_role_bindings_role_id_fkey"
+            columns: ["role_id"]
+            isOneToOne: false
+            referencedRelation: "agent_roles"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "agent_role_bindings_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      agent_roles: {
+        Row: {
+          actions: string[]
+          created_at: string
+          description: string | null
+          id: string
+          is_builtin: boolean
+          key: string
+          name: string
+          owner_id: string
+          updated_at: string
+        }
+        Insert: {
+          actions?: string[]
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_builtin?: boolean
+          key: string
+          name: string
+          owner_id: string
+          updated_at?: string
+        }
+        Update: {
+          actions?: string[]
+          created_at?: string
+          description?: string | null
+          id?: string
+          is_builtin?: boolean
+          key?: string
+          name?: string
+          owner_id?: string
+          updated_at?: string
+        }
+        Relationships: []
       }
       ai_conversations: {
         Row: {
@@ -3198,14 +3497,19 @@ export type Database = {
           created_at: string
           dispatched_at: string | null
           dry_run: boolean
+          duration_ms: number | null
           error_message: string | null
           exit_code: number | null
+          finished_at: string | null
           id: string
+          job_id: string | null
           output: string | null
           owner_id: string
           preview: Json
+          progress: string | null
           requested_by: string | null
           server_id: string
+          started_at: string | null
           status: string
           website_id: string | null
         }
@@ -3216,14 +3520,19 @@ export type Database = {
           created_at?: string
           dispatched_at?: string | null
           dry_run?: boolean
+          duration_ms?: number | null
           error_message?: string | null
           exit_code?: number | null
+          finished_at?: string | null
           id?: string
+          job_id?: string | null
           output?: string | null
           owner_id: string
           preview?: Json
+          progress?: string | null
           requested_by?: string | null
           server_id: string
+          started_at?: string | null
           status?: string
           website_id?: string | null
         }
@@ -3234,18 +3543,30 @@ export type Database = {
           created_at?: string
           dispatched_at?: string | null
           dry_run?: boolean
+          duration_ms?: number | null
           error_message?: string | null
           exit_code?: number | null
+          finished_at?: string | null
           id?: string
+          job_id?: string | null
           output?: string | null
           owner_id?: string
           preview?: Json
+          progress?: string | null
           requested_by?: string | null
           server_id?: string
+          started_at?: string | null
           status?: string
           website_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "server_commands_job_id_fkey"
+            columns: ["job_id"]
+            isOneToOne: false
+            referencedRelation: "agent_jobs"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "server_commands_server_id_fkey"
             columns: ["server_id"]

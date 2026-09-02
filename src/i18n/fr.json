@@ -92,7 +92,9 @@
     "my_hosting": "Mon hébergement",
     "hosting": "Gestion hébergement",
     "payment_accounts": "Comptes de paiement",
-    "group_ids": "Identifiants du groupe"
+    "group_ids": "Identifiants du groupe",
+    "bridge": "Pont & stockage",
+    "domain_settings": "Réglages du domaine"
   },
   "dashboard": {
     "title": "Tableau de bord",

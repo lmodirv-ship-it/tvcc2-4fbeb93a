@@ -92,7 +92,9 @@
     "my_hosting": "استضافتي",
     "hosting": "إدارة الاستضافة",
     "payment_accounts": "حسابات الدفع",
-    "group_ids": "هويات المجموعة"
+    "group_ids": "هويات المجموعة",
+    "bridge": "الجسر والتخزين",
+    "domain_settings": "إعدادات النطاق"
   },
   "dashboard": {
     "title": "لوحة التحكم",

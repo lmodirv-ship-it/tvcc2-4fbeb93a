@@ -34,7 +34,7 @@ export const getBridgeOverview = createServerFn({ method: "POST" })
     const [{ data: tunnels }, { data: syncs }, { data: servers }, { data: websites }] = await Promise.all([
       sb.from("server_tunnels").select("*").order("created_at", { ascending: false }),
       sb.from("site_storage_syncs").select("*").order("updated_at", { ascending: false }),
-      sb.from("servers").select("id, name, hostname, public_ip, private_ip, role, status, last_heartbeat_at, agent_version").order("name"),
+      sb.from("servers").select("id, name, hostname, public_ip, private_ip, role, status, last_seen_at, agent_version").order("name"),
       sb.from("websites").select("id, name, domain").order("domain").limit(500),
     ]);
     return { tunnels: tunnels ?? [], syncs: syncs ?? [], servers: servers ?? [], websites: websites ?? [] };
@@ -257,11 +257,9 @@ export const upgradeAgent = createServerFn({ method: "POST" })
   .inputValidator((input: { serverId: string; origin: string }) => input)
   .handler(async ({ data, context }) => {
     const sb = context.supabase as any;
-    const { data: srv } = await sb.from("servers").select("id, agent_token").eq("id", data.serverId).maybeSingle();
+    const { data: srv } = await sb.from("servers").select("id").eq("id", data.serverId).maybeSingle();
     if (!srv) throw new Error("السيرفر غير موجود");
     return enqueue(sb, context.userId, data.serverId, "agent_update", {
       origin: data.origin.replace(/\/$/, ""),
-      server_id: data.serverId,
-      token: srv.agent_token ?? "",
     });
   });

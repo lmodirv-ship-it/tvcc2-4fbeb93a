@@ -21,6 +21,8 @@ import {
   bindPortToDomain, unbindPortDomain, bindPortToSupabase, runServerAction, scheduleServerTask,
 } from "@/lib/server-detail.functions";
 import { MeshPanel } from "@/components/servers/MeshPanel";
+import { AgentPanel } from "@/components/servers/AgentPanel";
+import { LiveConsole } from "@/components/servers/LiveConsole";
 
 export const Route = createFileRoute("/_authenticated/servers/$serverId")({
   component: ServerDetailPage,
@@ -158,10 +160,12 @@ function ServerDetailPage() {
           <TabsTrigger value="services">الخدمات والحاويات</TabsTrigger>
           <TabsTrigger value="tasks">المهام والأوامر</TabsTrigger>
           <TabsTrigger value="access">الأدوار والصلاحيات</TabsTrigger>
+          <TabsTrigger value="agent">الوكيل والصلاحيات</TabsTrigger>
           <TabsTrigger value="mesh">الشبكة الخاصة والأتمتة</TabsTrigger>
           <TabsTrigger value="events">الأحداث</TabsTrigger>
         </TabsList>
 
+        <TabsContent value="agent"><AgentPanel serverId={serverId} /></TabsContent>
         <TabsContent value="mesh"><MeshPanel serverId={serverId} /></TabsContent>
 
         {/* ------------------------------------------------ overview */}

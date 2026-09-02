@@ -356,9 +356,9 @@ function WebsitesPage() {
               </TableHeader>
               <TableBody>
                 {isLoading ? (
-                  <TableRow><TableCell colSpan={9} className="text-center py-10"><Loader2 className="w-5 h-5 animate-spin inline" /></TableCell></TableRow>
+                  <TableRow><TableCell colSpan={10} className="text-center py-10"><Loader2 className="w-5 h-5 animate-spin inline" /></TableCell></TableRow>
                 ) : pageData.length === 0 ? (
-                  <TableRow><TableCell colSpan={9} className="text-center py-10 text-muted-foreground">لا توجد مواقع</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={10} className="text-center py-10 text-muted-foreground">لا توجد مواقع</TableCell></TableRow>
                 ) : (
                   pageData.map((w) => (
                     <TableRow key={w.id} className="border-border/40">

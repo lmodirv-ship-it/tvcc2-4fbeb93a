@@ -417,6 +417,8 @@ function ServerDetailPage() {
           </CardContent></Card>
         </TabsContent>
       </Tabs>
+
+      <LiveConsole serverId={serverId} />
     </div>
   );
 }

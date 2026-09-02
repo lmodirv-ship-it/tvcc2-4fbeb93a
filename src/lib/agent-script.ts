@@ -575,9 +575,9 @@ EOFV
       ufw --force enable >/dev/null 2>&1 || true
       ufw status numbered 2>&1 | head -30 ;;
     agent_update)
-      O="$(GET origin)"; S="$(GET server_id)"; T="$(GET token)"
-      [ -z "$O" ] && { echo "origin required"; return 2; }
-      curl -fsSL "\${O}/api/public/agent/install?server_id=\${S}&token=\${T}" -o /tmp/tvcc-agent-new.sh 2>/dev/null || { echo "download failed"; return 3; }
+      O="$(GET origin)"
+      [ -z "$O" ] && O=$(echo "$TVCC_ENDPOINT" | sed -E 's#(https?://[^/]+).*#\\1#')
+      curl -fsSL "\${O}/api/public/servers/agent?id=\${TVCC_SERVER_ID}&token=\${TVCC_TOKEN}" -o /tmp/tvcc-agent-new.sh 2>/dev/null || { echo "download failed"; return 3; }
       head -3 /tmp/tvcc-agent-new.sh | grep -q '#!/usr/bin/env bash' || { echo "invalid installer"; return 4; }
       install -m 0755 /tmp/tvcc-agent-new.sh /usr/local/bin/tvcc-agent.sh
       (systemctl restart tvcc-agent.service >/dev/null 2>&1 &) 

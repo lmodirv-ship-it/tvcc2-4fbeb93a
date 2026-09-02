@@ -51,6 +51,7 @@ const opsItems = [
   { titleKey: "sidebar.automation", url: "/automation", icon: Zap },
   { titleKey: "sidebar.domains", url: "/domains", icon: Server },
   { titleKey: "sidebar.hn_domains", url: "/hn-domains", icon: Globe2 },
+  { titleKey: "sidebar.bridge", url: "/bridge", icon: Network },
   { titleKey: "sidebar.my_hosting", url: "/my-hosting", icon: Cloud },
   { titleKey: "sidebar.ssl", url: "/ssl", icon: ShieldCheck },
   { titleKey: "sidebar.certificates", url: "/certificates", icon: BadgeCheck },

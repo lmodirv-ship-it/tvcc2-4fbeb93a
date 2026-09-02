@@ -823,7 +823,7 @@ task_loop() {
     # self-update when the platform ships a newer agent
     WANT=$(jget "$RESP" 'd.get("agent_version","")')
     if [ -n "$WANT" ] && [ "$WANT" != "$TVCC_AGENT_VERSION" ]; then
-      self_update "$(jget "$RESP" 'd.get("script_url",""))' )" >/dev/null 2>&1 || true
+      self_update "$(jget "$RESP" 'd.get("script_url","")')" >/dev/null 2>&1 || true
     fi
 
     CMDS=$(jget "$RESP" 'json.dumps(d.get("commands",[]))')

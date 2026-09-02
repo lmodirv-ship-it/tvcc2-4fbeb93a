@@ -34,6 +34,7 @@ import { verifyIssueRegister } from "@/lib/hn-rls.functions";
 import { verifyDomainCode } from "@/lib/dns.functions";
 import { runHealthCheckAll } from "@/lib/health-check.functions";
 import { importSupabaseProjects } from "@/lib/supabase-import.functions";
+import { syncLovableProjects } from "@/lib/lovable-sync.functions";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
 
@@ -48,8 +49,10 @@ function WebsitesPage() {
   const qc = useQueryClient();
   const runCheckFn = useServerFn(runHealthCheckAll);
   const importSbFn = useServerFn(importSupabaseProjects);
+  const syncLovableFn = useServerFn(syncLovableProjects);
   const verifyIssueRegisterFn = useServerFn(verifyIssueRegister);
   const [importing, setImporting] = useState(false);
+  const [syncing, setSyncing] = useState(false);
   const [checking, setChecking] = useState(false);
   const [lastCheck, setLastCheck] = useState<string | null>(null);
   const [selected, setSelected] = useState<Set<string>>(new Set());
@@ -328,6 +331,28 @@ function WebsitesPage() {
               >
                 {importing ? <Loader2 className="w-4 h-4 ml-1 animate-spin" /> : <DbIcon className="w-4 h-4 ml-1" />}
                 استيراد من Supabase
+              </Button>
+              <Button
+                variant="outline"
+                disabled={syncing}
+                onClick={async () => {
+                  setSyncing(true);
+                  try {
+                    const r = await syncLovableFn({ data: { attachToTvcc: true, pushToHnHub: true } });
+                    if (!r.ok) toast.error(r.errors?.[0] || "فشلت المزامنة");
+                    else {
+                      toast.success(`تم استيراد ${r.imported} موقع من Lovable وربط ${r.tvcc?.linked ?? 0} بـ TVCC`);
+                      qc.invalidateQueries({ queryKey: ["websites"] });
+                    }
+                  } catch (e) {
+                    toast.error(e instanceof Error ? e.message : "خطأ غير معروف");
+                  } finally {
+                    setSyncing(false);
+                  }
+                }}
+              >
+                {syncing ? <Loader2 className="w-4 h-4 ml-1 animate-spin" /> : <Link2 className="w-4 h-4 ml-1" />}
+                مزامنة Lovable
               </Button>
             </div>
           </div>

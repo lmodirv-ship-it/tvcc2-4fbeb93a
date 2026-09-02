@@ -6,9 +6,10 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
-import { DownloadCloud, Globe, Link2 } from "lucide-react";
+import { DownloadCloud, Globe, Link2, RefreshCw } from "lucide-react";
 import { toast } from "sonner";
 import { bulkImportWebsites } from "@/lib/supabase-import.functions";
+import { syncLovableProjects } from "@/lib/lovable-sync.functions";
 
 export const Route = createFileRoute("/_authenticated/import-sites")({
   component: ImportSitesPage,
@@ -37,7 +38,9 @@ type Result = {
 function ImportSitesPage() {
   const [raw, setRaw] = useState("");
   const [result, setResult] = useState<Result | null>(null);
+  const [syncing, setSyncing] = useState(false);
   const run = useServerFn(bulkImportWebsites);
+  const syncLovableFn = useServerFn(syncLovableProjects);
 
   const mut = useMutation({
     mutationFn: () => run({ data: { raw } }) as Promise<Result>,
@@ -48,6 +51,19 @@ function ImportSitesPage() {
     },
     onError: (e: any) => toast.error(e?.message ?? "فشل الاستيراد"),
   });
+
+  const runSync = async () => {
+    setSyncing(true);
+    try {
+      const r = await syncLovableFn({ data: { attachToTvcc: true, pushToHnHub: true } });
+      if (!r.ok) toast.error(r.errors?.[0] || "فشلت المزامنة");
+      else toast.success(`تم استيراد ${r.imported} موقع من Lovable وربط ${r.tvcc?.linked ?? 0} بـ TVCC`);
+    } catch (e: any) {
+      toast.error(e?.message ?? "خطأ غير معروف");
+    } finally {
+      setSyncing(false);
+    }
+  };
 
   const lines = raw.split(/[\r\n,]+/).filter((l) => l.trim()).length;
 
@@ -64,6 +80,10 @@ function ImportSitesPage() {
           </p>
         </div>
         <div className="flex gap-2">
+          <Button variant="outline" className="gap-2" disabled={syncing} onClick={runSync}>
+            {syncing ? <RefreshCw className="w-4 h-4 animate-spin" /> : <Link2 className="w-4 h-4" />}
+            مزامنة Lovable
+          </Button>
           <Button asChild variant="outline" className="gap-2">
             <Link to="/websites"><Globe className="w-4 h-4" /> المواقع</Link>
           </Button>

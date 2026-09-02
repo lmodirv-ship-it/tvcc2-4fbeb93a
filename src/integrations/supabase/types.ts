@@ -2601,6 +2601,149 @@ export type Database = {
           },
         ]
       }
+      lovable_sites: {
+        Row: {
+          created_at: string
+          domain: string | null
+          external_project_id: string | null
+          external_site_id: string | null
+          id: string
+          imported_website_id: string | null
+          is_remix: boolean | null
+          name: string | null
+          owner_email: string | null
+          primary_domain: string | null
+          raw_data: Json | null
+          remix_of: string | null
+          sync_status: string | null
+          updated_at: string
+          workspace_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          domain?: string | null
+          external_project_id?: string | null
+          external_site_id?: string | null
+          id?: string
+          imported_website_id?: string | null
+          is_remix?: boolean | null
+          name?: string | null
+          owner_email?: string | null
+          primary_domain?: string | null
+          raw_data?: Json | null
+          remix_of?: string | null
+          sync_status?: string | null
+          updated_at?: string
+          workspace_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          domain?: string | null
+          external_project_id?: string | null
+          external_site_id?: string | null
+          id?: string
+          imported_website_id?: string | null
+          is_remix?: boolean | null
+          name?: string | null
+          owner_email?: string | null
+          primary_domain?: string | null
+          raw_data?: Json | null
+          remix_of?: string | null
+          sync_status?: string | null
+          updated_at?: string
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lovable_sites_imported_website_id_fkey"
+            columns: ["imported_website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "lovable_sites_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "lovable_workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lovable_workspace_members: {
+        Row: {
+          created_at: string
+          id: string
+          role: string
+          updated_at: string
+          user_id: string
+          workspace_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          role?: string
+          updated_at?: string
+          user_id: string
+          workspace_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          role?: string
+          updated_at?: string
+          user_id?: string
+          workspace_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "lovable_workspace_members_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "lovable_workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      lovable_workspaces: {
+        Row: {
+          created_at: string
+          external_id: string | null
+          id: string
+          last_sync_at: string | null
+          name: string
+          owner_email: string | null
+          owner_id: string | null
+          source: string | null
+          sync_status: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          external_id?: string | null
+          id?: string
+          last_sync_at?: string | null
+          name: string
+          owner_email?: string | null
+          owner_id?: string | null
+          source?: string | null
+          sync_status?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          external_id?: string | null
+          id?: string
+          last_sync_at?: string | null
+          name?: string
+          owner_email?: string | null
+          owner_id?: string | null
+          source?: string | null
+          sync_status?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       notification_channels: {
         Row: {
           channel_type: string
@@ -5982,6 +6125,64 @@ export type Database = {
         }
         Relationships: []
       }
+      tvcc_service_links: {
+        Row: {
+          created_at: string
+          id: string
+          last_sync_at: string | null
+          link_kind: string
+          service_id: string | null
+          site_id: string | null
+          status: string | null
+          updated_at: string
+          workspace_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          last_sync_at?: string | null
+          link_kind: string
+          service_id?: string | null
+          site_id?: string | null
+          status?: string | null
+          updated_at?: string
+          workspace_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          last_sync_at?: string | null
+          link_kind?: string
+          service_id?: string | null
+          site_id?: string | null
+          status?: string | null
+          updated_at?: string
+          workspace_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tvcc_service_links_service_id_fkey"
+            columns: ["service_id"]
+            isOneToOne: false
+            referencedRelation: "site_services"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tvcc_service_links_site_id_fkey"
+            columns: ["site_id"]
+            isOneToOne: false
+            referencedRelation: "lovable_sites"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tvcc_service_links_workspace_id_fkey"
+            columns: ["workspace_id"]
+            isOneToOne: false
+            referencedRelation: "lovable_workspaces"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       uptime_checks: {
         Row: {
           checked_at: string
@@ -6608,12 +6809,16 @@ export type Database = {
           hn_project_id: string | null
           id: string
           is_active: boolean
+          is_remix: boolean | null
           last_checked_at: string | null
+          lovable_workspace_id: string | null
           name: string
+          owner_email: string | null
           owner_id: string | null
           payments_provider_url: string | null
           registered_at: string | null
           registration_status: string
+          remix_of: string | null
           server_id: string | null
           site_code: string | null
           site_id: string | null
@@ -6621,6 +6826,7 @@ export type Database = {
           updated_at: string
           verified: boolean
           verify_code: string
+          workspace_name: string | null
         }
         Insert: {
           android_aab_url?: string | null
@@ -6640,12 +6846,16 @@ export type Database = {
           hn_project_id?: string | null
           id?: string
           is_active?: boolean
+          is_remix?: boolean | null
           last_checked_at?: string | null
+          lovable_workspace_id?: string | null
           name: string
+          owner_email?: string | null
           owner_id?: string | null
           payments_provider_url?: string | null
           registered_at?: string | null
           registration_status?: string
+          remix_of?: string | null
           server_id?: string | null
           site_code?: string | null
           site_id?: string | null
@@ -6653,6 +6863,7 @@ export type Database = {
           updated_at?: string
           verified?: boolean
           verify_code?: string
+          workspace_name?: string | null
         }
         Update: {
           android_aab_url?: string | null
@@ -6672,12 +6883,16 @@ export type Database = {
           hn_project_id?: string | null
           id?: string
           is_active?: boolean
+          is_remix?: boolean | null
           last_checked_at?: string | null
+          lovable_workspace_id?: string | null
           name?: string
+          owner_email?: string | null
           owner_id?: string | null
           payments_provider_url?: string | null
           registered_at?: string | null
           registration_status?: string
+          remix_of?: string | null
           server_id?: string | null
           site_code?: string | null
           site_id?: string | null
@@ -6685,6 +6900,7 @@ export type Database = {
           updated_at?: string
           verified?: boolean
           verify_code?: string
+          workspace_name?: string | null
         }
         Relationships: [
           {

@@ -560,6 +560,24 @@ EOF
   echo "systemd service installed and started"
 }
 
+restore_services() { # bring every registered unit back up after a reboot
+  local REPORT="" OKC=0 FAILC=0
+  for U in nginx docker dnsmasq postgresql redis-server; do
+    systemctl list-unit-files 2>/dev/null | grep -q "^$U.service" || continue
+    if systemctl start "$U" 2>/dev/null; then OKC=$((OKC+1)); REPORT="$REPORT $U:ok"; else FAILC=$((FAILC+1)); REPORT="$REPORT $U:fail"; fi
+  done
+  for U in $(systemctl list-unit-files --no-legend 2>/dev/null | awk '{print $1}' | grep -E '^(tvcc-|wg-quick@)' || true); do
+    if systemctl start "$U" 2>/dev/null; then OKC=$((OKC+1)); REPORT="$REPORT $U:ok"; else FAILC=$((FAILC+1)); REPORT="$REPORT $U:fail"; fi
+  done
+  command -v docker >/dev/null 2>&1 && (docker start $(docker ps -aq --filter "status=exited") >/dev/null 2>&1 || true)
+  echo "restored ok=$OKC failed=$FAILC:$REPORT"
+}
+
+# ---- boot restoration: run once per agent start ----
+BOOT_MSG=$(restore_services 2>&1 | tail -c 4000)
+BOOT_J=$(printf '%s' "$BOOT_MSG" | json_escape)
+post "{\\"server_id\\":\\"\${TVCC_SERVER_ID}\\",\\"agent_id\\":\\"\${TVCC_AGENT_ID}\\",\\"agent_version\\":\\"\${TVCC_AGENT_VERSION}\\",\\"event\\":{\\"kind\\":\\"boot_restore\\",\\"severity\\":\\"info\\",\\"message\\":$BOOT_J}}" >/dev/null || true
+
 while true; do
   # ---- real OS metrics: /proc/stat, /proc/meminfo, df -B1 / ----
   CORE=$(python3 <<'PYEOF'

@@ -61,6 +61,8 @@ function WebsitesPage() {
   const [status, setStatus] = useState<StatusKey>("all");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
+  const [preview, setPreview] = useState<{ code: string; name: string; domain: string } | null>(null);
+
 
   const { data: websites, isLoading } = useQuery({
     queryKey: ["websites"],

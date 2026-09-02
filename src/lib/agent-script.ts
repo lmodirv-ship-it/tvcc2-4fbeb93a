@@ -7,7 +7,7 @@ TVCC_TOKEN="${token}"
 TVCC_ENDPOINT="${endpoint}"
 TVCC_AI_ENDPOINT="\${TVCC_AI_ENDPOINT:-http://127.0.0.1:11434}"
 TVCC_BACKUP_DIR="\${TVCC_BACKUP_DIR:-/var/backups/tvcc}"
-TVCC_AGENT_VERSION="3.4.0"
+TVCC_AGENT_VERSION="3.5.0"
 TVCC_HEARTBEAT_INTERVAL="\${TVCC_HEARTBEAT_INTERVAL:-60}"
 TVCC_STATE_DIR="\${TVCC_STATE_DIR:-/var/lib/tvcc}"
 TVCC_HN_DIR="\${TVCC_HN_DIR:-/home/ismail/hn}"
@@ -244,6 +244,10 @@ run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
       gateway_publish) echo "[dry-run] on gateway: vhost $(GET domain) -> 127.0.0.1:$(GET gateway_port) + certbot" ;;
       storage_sync)    echo "[dry-run] rsync -az --delete $(GET source_path)/ $(GET storage_path)/" ;;
       storage_prune)   echo "[dry-run] rm -rf $(GET storage_path)" ;;
+      vpn_setup)       echo "[dry-run] wg-quick up $(GET interface) address $(GET internal_ip)/24 port $(GET listen_port)" ;;
+      vpn_peer_add)    echo "[dry-run] wg set $(GET interface) peer $(GET public_key) allowed-ips $(GET allowed_ips)" ;;
+      vpn_peer_remove) echo "[dry-run] wg set $(GET interface) peer $(GET public_key) remove" ;;
+      vpn_status)      echo "[dry-run] wg show $(GET interface)" ;;
 
       *) echo "[dry-run] unsupported action: $ACTION"; return 127 ;;
 
@@ -664,6 +668,48 @@ EOFG
       TP="$(GET storage_path)"
       case "$TP" in /srv/tvcc-storage/*) rm -rf "$TP" && echo "pruned $TP" ;; *) echo "refused: path outside /srv/tvcc-storage"; return 2 ;; esac ;;
     restore_all)   restore_services ;;
+
+    vpn_setup)
+      command -v wg >/dev/null 2>&1 || { apt-get update -qq && apt-get install -y wireguard >/dev/null 2>&1; }
+      IF="$(GET interface)"; [ -n "$IF" ] || IF="wg0"
+      ADDR="$(GET internal_ip)"; PORT="$(GET listen_port)"; [ -n "$PORT" ] || PORT="51820"
+      [ -n "$ADDR" ] || { echo "internal_ip required"; return 2; }
+      mkdir -p /etc/wireguard && chmod 700 /etc/wireguard
+      [ -f "/etc/wireguard/$IF.key" ] || { wg genkey > "/etc/wireguard/$IF.key"; chmod 600 "/etc/wireguard/$IF.key"; }
+      wg pubkey < "/etc/wireguard/$IF.key" > "/etc/wireguard/$IF.pub"
+      cat > "/etc/wireguard/$IF.conf" <<EOF2
+[Interface]
+Address = $ADDR/24
+ListenPort = $PORT
+PrivateKey = $(cat /etc/wireguard/$IF.key)
+EOF2
+      chmod 600 "/etc/wireguard/$IF.conf"
+      ufw allow "$PORT"/udp >/dev/null 2>&1 || true
+      systemctl enable --now "wg-quick@$IF" >/dev/null 2>&1 || wg-quick up "$IF" >/dev/null 2>&1
+      echo "vpn ready iface=$IF address=$ADDR public_key=$(cat /etc/wireguard/$IF.pub)" ;;
+
+    vpn_peer_add)
+      IF="$(GET interface)"; [ -n "$IF" ] || IF="wg0"
+      PK="$(GET public_key)"; AIPS="$(GET allowed_ips)"; EP="$(GET endpoint)"; KA="$(GET keepalive)"
+      [ -n "$PK" ] && [ -n "$AIPS" ] || { echo "public_key and allowed_ips required"; return 2; }
+      [ -n "$KA" ] || KA="25"
+      if [ -n "$EP" ]; then
+        wg set "$IF" peer "$PK" allowed-ips "$AIPS" endpoint "$EP" persistent-keepalive "$KA"
+      else
+        wg set "$IF" peer "$PK" allowed-ips "$AIPS" persistent-keepalive "$KA"
+      fi
+      wg-quick save "$IF" >/dev/null 2>&1 || true
+      echo "peer added $PK -> $AIPS" ;;
+
+    vpn_peer_remove)
+      IF="$(GET interface)"; [ -n "$IF" ] || IF="wg0"
+      PK="$(GET public_key)"; [ -n "$PK" ] || { echo "public_key required"; return 2; }
+      wg set "$IF" peer "$PK" remove && wg-quick save "$IF" >/dev/null 2>&1
+      echo "peer removed $PK" ;;
+
+    vpn_status)
+      IF="$(GET interface)"; [ -n "$IF" ] || IF="wg0"
+      wg show "$IF" 2>&1 || echo "interface $IF is down" ;;
 
     *) echo "unsupported action: $ACTION"; return 127 ;;
   esac

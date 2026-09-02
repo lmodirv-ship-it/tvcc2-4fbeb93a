@@ -3075,6 +3075,121 @@ export type Database = {
           },
         ]
       }
+      server_automation_rules: {
+        Row: {
+          action: string
+          action_payload: Json
+          comparator: string
+          cooldown_minutes: number
+          created_at: string
+          enabled: boolean
+          id: string
+          last_triggered_at: string | null
+          metric: string
+          name: string
+          notify: boolean
+          owner_id: string
+          server_id: string
+          threshold: number
+          trigger_count: number
+          updated_at: string
+        }
+        Insert: {
+          action: string
+          action_payload?: Json
+          comparator?: string
+          cooldown_minutes?: number
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          last_triggered_at?: string | null
+          metric: string
+          name: string
+          notify?: boolean
+          owner_id?: string
+          server_id: string
+          threshold?: number
+          trigger_count?: number
+          updated_at?: string
+        }
+        Update: {
+          action?: string
+          action_payload?: Json
+          comparator?: string
+          cooldown_minutes?: number
+          created_at?: string
+          enabled?: boolean
+          id?: string
+          last_triggered_at?: string | null
+          metric?: string
+          name?: string
+          notify?: boolean
+          owner_id?: string
+          server_id?: string
+          threshold?: number
+          trigger_count?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "server_automation_rules_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      server_boot_reports: {
+        Row: {
+          agent_version: string | null
+          boot_at: string
+          created_at: string
+          current_ip: string | null
+          failed: Json
+          id: string
+          notes: string | null
+          owner_id: string
+          previous_ip: string | null
+          restored: Json
+          server_id: string
+        }
+        Insert: {
+          agent_version?: string | null
+          boot_at?: string
+          created_at?: string
+          current_ip?: string | null
+          failed?: Json
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          previous_ip?: string | null
+          restored?: Json
+          server_id: string
+        }
+        Update: {
+          agent_version?: string | null
+          boot_at?: string
+          created_at?: string
+          current_ip?: string | null
+          failed?: Json
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          previous_ip?: string | null
+          restored?: Json
+          server_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "server_boot_reports_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       server_commands: {
         Row: {
           action: string
@@ -3334,6 +3449,62 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "server_events_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      server_health_snapshots: {
+        Row: {
+          cpu_percent: number | null
+          created_at: string
+          disk_percent: number | null
+          heartbeat_age_seconds: number | null
+          id: string
+          level: string
+          memory_percent: number | null
+          owner_id: string
+          ports_down: number
+          reasons: Json
+          score: number
+          server_id: string
+          services_down: number
+        }
+        Insert: {
+          cpu_percent?: number | null
+          created_at?: string
+          disk_percent?: number | null
+          heartbeat_age_seconds?: number | null
+          id?: string
+          level?: string
+          memory_percent?: number | null
+          owner_id?: string
+          ports_down?: number
+          reasons?: Json
+          score?: number
+          server_id: string
+          services_down?: number
+        }
+        Update: {
+          cpu_percent?: number | null
+          created_at?: string
+          disk_percent?: number | null
+          heartbeat_age_seconds?: number | null
+          id?: string
+          level?: string
+          memory_percent?: number | null
+          owner_id?: string
+          ports_down?: number
+          reasons?: Json
+          score?: number
+          server_id?: string
+          services_down?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "server_health_snapshots_server_id_fkey"
             columns: ["server_id"]
             isOneToOne: false
             referencedRelation: "servers"
@@ -3944,6 +4115,88 @@ export type Database = {
           },
           {
             foreignKeyName: "server_tunnels_vault_secret_id_fkey"
+            columns: ["vault_secret_id"]
+            isOneToOne: false
+            referencedRelation: "vault_secrets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      server_vpn_peers: {
+        Row: {
+          allowed_ips: string
+          created_at: string
+          endpoint: string | null
+          id: string
+          interface: string
+          internal_ip: string
+          keepalive: number
+          last_error: string | null
+          last_handshake_at: string | null
+          listen_port: number
+          owner_id: string
+          peer_server_id: string | null
+          public_key: string | null
+          server_id: string
+          status: string
+          updated_at: string
+          vault_secret_id: string | null
+        }
+        Insert: {
+          allowed_ips?: string
+          created_at?: string
+          endpoint?: string | null
+          id?: string
+          interface?: string
+          internal_ip: string
+          keepalive?: number
+          last_error?: string | null
+          last_handshake_at?: string | null
+          listen_port?: number
+          owner_id?: string
+          peer_server_id?: string | null
+          public_key?: string | null
+          server_id: string
+          status?: string
+          updated_at?: string
+          vault_secret_id?: string | null
+        }
+        Update: {
+          allowed_ips?: string
+          created_at?: string
+          endpoint?: string | null
+          id?: string
+          interface?: string
+          internal_ip?: string
+          keepalive?: number
+          last_error?: string | null
+          last_handshake_at?: string | null
+          listen_port?: number
+          owner_id?: string
+          peer_server_id?: string | null
+          public_key?: string | null
+          server_id?: string
+          status?: string
+          updated_at?: string
+          vault_secret_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "server_vpn_peers_peer_server_id_fkey"
+            columns: ["peer_server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "server_vpn_peers_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "server_vpn_peers_vault_secret_id_fkey"
             columns: ["vault_secret_id"]
             isOneToOne: false
             referencedRelation: "vault_secrets"

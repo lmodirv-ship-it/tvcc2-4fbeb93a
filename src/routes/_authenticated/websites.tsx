@@ -61,6 +61,8 @@ function WebsitesPage() {
   const [status, setStatus] = useState<StatusKey>("all");
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
+  const [preview, setPreview] = useState<{ code: string; name: string; domain: string } | null>(null);
+
 
   const { data: websites, isLoading } = useQuery({
     queryKey: ["websites"],
@@ -372,18 +374,21 @@ function WebsitesPage() {
                   <TableHead className="text-right">الموقع</TableHead>
                   <TableHead className="text-right">النطاق</TableHead>
                   <TableHead className="text-right">الحالة</TableHead>
+                  <TableHead className="text-right">تاريخ الإضافة</TableHead>
+                  <TableHead className="text-right">آخر تعديل</TableHead>
                   <TableHead className="text-right">آخر فحص</TableHead>
                   <TableHead className="text-right">قاعدة البيانات</TableHead>
                   <TableHead className="text-right">التخزين</TableHead>
                   <TableHead className="text-right">العميل</TableHead>
                   <TableHead className="text-right">الإجراءات</TableHead>
+
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
-                  <TableRow><TableCell colSpan={10} className="text-center py-10"><Loader2 className="w-5 h-5 animate-spin inline" /></TableCell></TableRow>
+                  <TableRow><TableCell colSpan={12} className="text-center py-10"><Loader2 className="w-5 h-5 animate-spin inline" /></TableCell></TableRow>
                 ) : pageData.length === 0 ? (
-                  <TableRow><TableCell colSpan={10} className="text-center py-10 text-muted-foreground">لا توجد مواقع</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={12} className="text-center py-10 text-muted-foreground">لا توجد مواقع</TableCell></TableRow>
                 ) : (
                   pageData.map((w) => (
                     <TableRow key={w.id} className="border-border/40">
@@ -393,13 +398,8 @@ function WebsitesPage() {
                       <TableCell>
                         <button
                           type="button"
-                          title="نسخ المعرّف"
-                          onClick={() => {
-                            const code = String((w as any).site_code ?? "");
-                            if (!code) return;
-                            navigator.clipboard?.writeText(code);
-                            toast.success(`تم نسخ ${code}`);
-                          }}
+                          title="عرض معاينة الموقع"
+                          onClick={() => setPreview({ code: String((w as any).site_code ?? ""), name: w.name, domain: w.domain })}
                           className="font-mono text-xs px-2 py-1 rounded bg-primary/10 text-primary hover:bg-primary/20 transition"
                         >
                           {(w as any).site_code ?? "—"}
@@ -420,8 +420,11 @@ function WebsitesPage() {
                           {statusBadge(w)}
                         </div>
                       </TableCell>
+                      <TableCell className="text-muted-foreground text-xs" dir="ltr">{fmtDate(w.created_at)}</TableCell>
+                      <TableCell className="text-muted-foreground text-xs" dir="ltr">{fmtDate(w.updated_at)}</TableCell>
                       <TableCell className="text-muted-foreground text-sm">{timeAgo(w.last_checked_at)}</TableCell>
                       <TableCell className="text-sm">{w.db?.name || <span className="text-muted-foreground">—</span>}</TableCell>
+
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 rounded-full border-2 border-primary/40 border-t-primary animate-none" />
@@ -581,9 +584,69 @@ function WebsitesPage() {
           </CardContent>
         </Card>
       </div>
+
+      <SitePreviewDialog data={preview} onClose={() => setPreview(null)} />
     </div>
   );
 }
+
+function fmtDate(v?: string | null) {
+  if (!v) return "—";
+  const d = new Date(v);
+  return `${d.toLocaleDateString("fr-FR")} ${d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`;
+}
+
+function SitePreviewDialog({
+  data,
+  onClose,
+}: {
+  data: { code: string; name: string; domain: string } | null;
+  onClose: () => void;
+}) {
+  const url = data ? `https://${data.domain.replace(/^https?:\/\//, "")}` : "";
+  const shot = data ? `https://s.wordpress.com/mshots/v1/${encodeURIComponent(url)}?w=1000&h=650` : "";
+  return (
+    <Dialog open={!!data} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="text-right flex items-center gap-2 justify-end">
+            <span className="font-mono text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">{data?.code || "—"}</span>
+            {data?.name}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="rounded-lg overflow-hidden border border-border/60 bg-muted/30 aspect-[10/6.5]">
+            {data && (
+              <img
+                src={shot}
+                alt={`معاينة واجهة ${data.domain}`}
+                loading="lazy"
+                className="w-full h-full object-cover object-top"
+              />
+            )}
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <a href={url} target="_blank" rel="noreferrer" className="text-xs text-primary underline" dir="ltr">
+              {url}
+            </a>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                if (!data?.code) return;
+                navigator.clipboard?.writeText(data.code);
+                toast.success(`تم نسخ ${data.code}`);
+              }}
+            >
+              <Copy className="w-3.5 h-3.5 ml-1" /> نسخ المعرّف
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 
 function LegendDot({ color, label, value, pct }: { color: string; label: string; value: number; pct: number }) {
   return (

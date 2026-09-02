@@ -148,6 +148,21 @@ export const COMMAND_LABELS: Record<string, string> = {
   fs_delete: "حذف ملف أو مجلد",
   fs_move: "نقل أو إعادة تسمية",
 
+  port_bind_domain: "ربط منفذ بنطاق",
+  port_unbind_domain: "إلغاء ربط النطاق",
+  supabase_bind: "ربط منفذ بـ Supabase CLI",
+  restore_all: "استعادة كل الخدمات",
+  nginx_write_vhost: "كتابة إعداد Nginx للنطاق",
+  ssl_issue_manual: "تركيب شهادة SSL يدوية",
+  firewall_apply: "تطبيق قاعدة جدار ناري",
+  agent_update: "تحديث الوكيل",
+  tunnel_setup: "إنشاء نفق نحو البوابة",
+  tunnel_status: "حالة النفق",
+  tunnel_drop: "إزالة النفق",
+  gateway_publish: "نشر موقع محلي عبر البوابة",
+  storage_sync: "مزامنة نسخة الموقع للتخزين",
+  storage_prune: "حذف نسخة التخزين",
+
 };
 
 /** Actions that take a free-text argument, with the arg key + placeholder. */

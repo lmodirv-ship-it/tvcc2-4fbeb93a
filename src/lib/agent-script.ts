@@ -244,6 +244,10 @@ run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
       gateway_publish) echo "[dry-run] on gateway: vhost $(GET domain) -> 127.0.0.1:$(GET gateway_port) + certbot" ;;
       storage_sync)    echo "[dry-run] rsync -az --delete $(GET source_path)/ $(GET storage_path)/" ;;
       storage_prune)   echo "[dry-run] rm -rf $(GET storage_path)" ;;
+      vpn_setup)       echo "[dry-run] wg-quick up $(GET interface) address $(GET internal_ip)/24 port $(GET listen_port)" ;;
+      vpn_peer_add)    echo "[dry-run] wg set $(GET interface) peer $(GET public_key) allowed-ips $(GET allowed_ips)" ;;
+      vpn_peer_remove) echo "[dry-run] wg set $(GET interface) peer $(GET public_key) remove" ;;
+      vpn_status)      echo "[dry-run] wg show $(GET interface)" ;;
 
       *) echo "[dry-run] unsupported action: $ACTION"; return 127 ;;
 

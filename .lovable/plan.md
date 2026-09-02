@@ -39,7 +39,7 @@
 - `manara_updates` — عمليات التحديث: من عنوان → إلى عنوان، الحالة (`publishing|completed|pending|failed`)، السبب، التوقيتات.
 - `manara_events` — سجل النشاط المباشر للبطاقة السفلية.
 
-RLS: قراءة/كتابة لمالك السجل و`system_owner`/`admin` عبر `can_manage`. لا وصول `anon` مباشر للجداول؛ القراءة العامة تمر عبر نقطة API عامة بحقول آمنة فقط.
+RLS: الكتابة لمالك السجل و`system_owner`/`admin` عبر `can_manage`. أما القراءة فتُمنح لـ `anon` مباشرة على جداول التوجيه (`manara_projects`, `manara_addresses`, `manara_endpoints`) للسجلات النشطة فقط وبأعمدة توجيه آمنة (المعرّف، العنوان الحالي، النوع، روابط APK/PWA، حالة التحقق) بدون أي بيانات مالك أو أسرار — حتى يستطيع أي تطبيق أو موقع في المجموعة حلّ عنوانه فوراً دون عرض واجهة مشروع خاطئ. جداول `manara_updates` و`manara_events` تبقى مغلقة على المالك/الإدارة.
 
 ### نقاط API
 - `GET /api/public/manara/resolve?key=IDXXXXX` (CORS مفتوح، بدون PII): يعيد العنوان الحالي + روابط APK/PWA + إصدارها + `etag`.

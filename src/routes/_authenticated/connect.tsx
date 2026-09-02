@@ -159,9 +159,12 @@ function ConnectPage() {
               <div className="text-xs text-muted-foreground" dir="ltr">tvcc.hnpay.live — {websites.length} موقع مُدار</div>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <Button size="sm" disabled={mAttachAll.isPending} onClick={() => mAttachAll.mutate()}>
+              {mAttachAll.isPending ? "جارٍ الإضافة…" : "إضافة كل المواقع إلى TVCC"}
+            </Button>
             <Button asChild size="sm" variant="outline"><Link to="/import-sites">استيراد المواقع</Link></Button>
-            <Button asChild size="sm"><Link to="/publish-sync">مزامنة النشر</Link></Button>
+            <Button asChild size="sm" variant="secondary"><Link to="/publish-sync">مزامنة النشر</Link></Button>
           </div>
         </CardContent>
       </Card>

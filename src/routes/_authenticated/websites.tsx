@@ -372,11 +372,14 @@ function WebsitesPage() {
                   <TableHead className="text-right">الموقع</TableHead>
                   <TableHead className="text-right">النطاق</TableHead>
                   <TableHead className="text-right">الحالة</TableHead>
+                  <TableHead className="text-right">تاريخ الإضافة</TableHead>
+                  <TableHead className="text-right">آخر تعديل</TableHead>
                   <TableHead className="text-right">آخر فحص</TableHead>
                   <TableHead className="text-right">قاعدة البيانات</TableHead>
                   <TableHead className="text-right">التخزين</TableHead>
                   <TableHead className="text-right">العميل</TableHead>
                   <TableHead className="text-right">الإجراءات</TableHead>
+
                 </TableRow>
               </TableHeader>
               <TableBody>

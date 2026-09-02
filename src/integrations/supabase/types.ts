@@ -1176,6 +1176,111 @@ export type Database = {
           },
         ]
       }
+      domain_settings: {
+        Row: {
+          auto_renew: boolean
+          backend_port: number | null
+          client_max_body_mb: number
+          created_at: string
+          domain: string
+          extra_directives: string | null
+          force_https: boolean
+          http2: boolean
+          id: string
+          last_applied_at: string | null
+          last_test_output: string | null
+          nginx_template: string | null
+          owner_id: string
+          proxy_read_timeout: number
+          redirect_www: boolean
+          security_headers: boolean
+          server_id: string | null
+          ssl_cert_path: string | null
+          ssl_expires_at: string | null
+          ssl_issuer: string | null
+          ssl_key_path: string | null
+          ssl_mode: string
+          status: string
+          updated_at: string
+          upstream_host: string
+          website_id: string | null
+          websockets: boolean
+        }
+        Insert: {
+          auto_renew?: boolean
+          backend_port?: number | null
+          client_max_body_mb?: number
+          created_at?: string
+          domain: string
+          extra_directives?: string | null
+          force_https?: boolean
+          http2?: boolean
+          id?: string
+          last_applied_at?: string | null
+          last_test_output?: string | null
+          nginx_template?: string | null
+          owner_id?: string
+          proxy_read_timeout?: number
+          redirect_www?: boolean
+          security_headers?: boolean
+          server_id?: string | null
+          ssl_cert_path?: string | null
+          ssl_expires_at?: string | null
+          ssl_issuer?: string | null
+          ssl_key_path?: string | null
+          ssl_mode?: string
+          status?: string
+          updated_at?: string
+          upstream_host?: string
+          website_id?: string | null
+          websockets?: boolean
+        }
+        Update: {
+          auto_renew?: boolean
+          backend_port?: number | null
+          client_max_body_mb?: number
+          created_at?: string
+          domain?: string
+          extra_directives?: string | null
+          force_https?: boolean
+          http2?: boolean
+          id?: string
+          last_applied_at?: string | null
+          last_test_output?: string | null
+          nginx_template?: string | null
+          owner_id?: string
+          proxy_read_timeout?: number
+          redirect_www?: boolean
+          security_headers?: boolean
+          server_id?: string | null
+          ssl_cert_path?: string | null
+          ssl_expires_at?: string | null
+          ssl_issuer?: string | null
+          ssl_key_path?: string | null
+          ssl_mode?: string
+          status?: string
+          updated_at?: string
+          upstream_host?: string
+          website_id?: string | null
+          websockets?: boolean
+        }
+        Relationships: [
+          {
+            foreignKeyName: "domain_settings_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "domain_settings_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       domains: {
         Row: {
           auto_renew: boolean
@@ -1571,6 +1676,68 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "file_transfers_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      firewall_rules: {
+        Row: {
+          action: string
+          applied_at: string | null
+          created_at: string
+          domain: string | null
+          id: string
+          last_output: string | null
+          owner_id: string
+          port: number
+          protocol: string
+          reason: string | null
+          requested_by: string | null
+          server_id: string
+          source_cidr: string
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          action?: string
+          applied_at?: string | null
+          created_at?: string
+          domain?: string | null
+          id?: string
+          last_output?: string | null
+          owner_id?: string
+          port: number
+          protocol?: string
+          reason?: string | null
+          requested_by?: string | null
+          server_id: string
+          source_cidr?: string
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          action?: string
+          applied_at?: string | null
+          created_at?: string
+          domain?: string | null
+          id?: string
+          last_output?: string | null
+          owner_id?: string
+          port?: number
+          protocol?: string
+          reason?: string | null
+          requested_by?: string | null
+          server_id?: string
+          source_cidr?: string
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "firewall_rules_server_id_fkey"
             columns: ["server_id"]
             isOneToOne: false
             referencedRelation: "servers"
@@ -3473,6 +3640,36 @@ export type Database = {
           },
         ]
       }
+      server_role_capabilities: {
+        Row: {
+          action: string
+          created_at: string
+          description: string | null
+          id: string
+          min_level: string
+          role: Database["public"]["Enums"]["server_role"]
+          updated_at: string
+        }
+        Insert: {
+          action: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          min_level?: string
+          role: Database["public"]["Enums"]["server_role"]
+          updated_at?: string
+        }
+        Update: {
+          action?: string
+          created_at?: string
+          description?: string | null
+          id?: string
+          min_level?: string
+          role?: Database["public"]["Enums"]["server_role"]
+          updated_at?: string
+        }
+        Relationships: []
+      }
       server_security: {
         Row: {
           active_users: number | null
@@ -3605,6 +3802,151 @@ export type Database = {
             columns: ["website_id"]
             isOneToOne: false
             referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      server_task_assignments: {
+        Row: {
+          created_at: string
+          id: string
+          is_active: boolean
+          last_run_at: string | null
+          last_status: string | null
+          min_level: string
+          owner_id: string
+          required_role: Database["public"]["Enums"]["server_role"] | null
+          server_id: string
+          task_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_run_at?: string | null
+          last_status?: string | null
+          min_level?: string
+          owner_id?: string
+          required_role?: Database["public"]["Enums"]["server_role"] | null
+          server_id: string
+          task_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          is_active?: boolean
+          last_run_at?: string | null
+          last_status?: string | null
+          min_level?: string
+          owner_id?: string
+          required_role?: Database["public"]["Enums"]["server_role"] | null
+          server_id?: string
+          task_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "server_task_assignments_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "server_task_assignments_task_id_fkey"
+            columns: ["task_id"]
+            isOneToOne: false
+            referencedRelation: "scheduled_tasks"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      server_tunnels: {
+        Row: {
+          auto_reconnect: boolean
+          created_at: string
+          gateway_address: unknown
+          gateway_port: number | null
+          gateway_server_id: string
+          id: string
+          kind: string
+          last_check_at: string | null
+          last_output: string | null
+          latency_ms: number | null
+          local_address: unknown
+          local_port: number | null
+          local_server_id: string
+          name: string
+          owner_id: string
+          public_domain: string | null
+          status: string
+          updated_at: string
+          vault_secret_id: string | null
+        }
+        Insert: {
+          auto_reconnect?: boolean
+          created_at?: string
+          gateway_address?: unknown
+          gateway_port?: number | null
+          gateway_server_id: string
+          id?: string
+          kind?: string
+          last_check_at?: string | null
+          last_output?: string | null
+          latency_ms?: number | null
+          local_address?: unknown
+          local_port?: number | null
+          local_server_id: string
+          name: string
+          owner_id?: string
+          public_domain?: string | null
+          status?: string
+          updated_at?: string
+          vault_secret_id?: string | null
+        }
+        Update: {
+          auto_reconnect?: boolean
+          created_at?: string
+          gateway_address?: unknown
+          gateway_port?: number | null
+          gateway_server_id?: string
+          id?: string
+          kind?: string
+          last_check_at?: string | null
+          last_output?: string | null
+          latency_ms?: number | null
+          local_address?: unknown
+          local_port?: number | null
+          local_server_id?: string
+          name?: string
+          owner_id?: string
+          public_domain?: string | null
+          status?: string
+          updated_at?: string
+          vault_secret_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "server_tunnels_gateway_server_id_fkey"
+            columns: ["gateway_server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "server_tunnels_local_server_id_fkey"
+            columns: ["local_server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "server_tunnels_vault_secret_id_fkey"
+            columns: ["vault_secret_id"]
+            isOneToOne: false
+            referencedRelation: "vault_secrets"
             referencedColumns: ["id"]
           },
         ]
@@ -4310,6 +4652,88 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "site_services_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_storage_syncs: {
+        Row: {
+          auto_sync: boolean
+          created_at: string
+          domain: string
+          file_count: number
+          id: string
+          interval_minutes: number
+          last_output: string | null
+          last_synced_at: string | null
+          owner_id: string
+          size_bytes: number
+          source_path: string
+          source_server_id: string | null
+          status: string
+          storage_path: string
+          storage_server_id: string
+          updated_at: string
+          website_id: string
+        }
+        Insert: {
+          auto_sync?: boolean
+          created_at?: string
+          domain: string
+          file_count?: number
+          id?: string
+          interval_minutes?: number
+          last_output?: string | null
+          last_synced_at?: string | null
+          owner_id?: string
+          size_bytes?: number
+          source_path: string
+          source_server_id?: string | null
+          status?: string
+          storage_path: string
+          storage_server_id: string
+          updated_at?: string
+          website_id: string
+        }
+        Update: {
+          auto_sync?: boolean
+          created_at?: string
+          domain?: string
+          file_count?: number
+          id?: string
+          interval_minutes?: number
+          last_output?: string | null
+          last_synced_at?: string | null
+          owner_id?: string
+          size_bytes?: number
+          source_path?: string
+          source_server_id?: string | null
+          status?: string
+          storage_path?: string
+          storage_server_id?: string
+          updated_at?: string
+          website_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_storage_syncs_source_server_id_fkey"
+            columns: ["source_server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_storage_syncs_storage_server_id_fkey"
+            columns: ["storage_server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_storage_syncs_website_id_fkey"
             columns: ["website_id"]
             isOneToOne: false
             referencedRelation: "websites"

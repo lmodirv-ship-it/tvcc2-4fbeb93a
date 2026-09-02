@@ -62,3 +62,4 @@ websites           1---* service_dependencies         (عبر TVCC service)
 
 ## التحقق
 - typecheck + build، ثم اختبار متصفح: زر المزامنة، عدد المواقع قبل/بعد، ظهور المجموعات في `/websites`.
+- بعد الانتهاء من كل المراحل، كتابة تقرير مسجّل (`PROJECT_STATUS_AR.md` + `ROADMAP_AR.md`) يوثّق ما تم بناؤه بنجاح قبل الانتقال للمرحلة التالية.

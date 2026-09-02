@@ -92,6 +92,7 @@ import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as ApiPublicVideoIngestRouteImport } from './routes/api/public/video.ingest'
 import { Route as ApiPublicServersHeartbeatRouteImport } from './routes/api/public/servers.heartbeat'
+import { Route as ApiPublicServersCommandsRouteImport } from './routes/api/public/servers.commands'
 import { Route as ApiPublicServersCheckAlertsRouteImport } from './routes/api/public/servers/check-alerts'
 import { Route as ApiPublicServersAgentRouteImport } from './routes/api/public/servers.agent'
 import { Route as ApiPublicPaymentsIngestRouteImport } from './routes/api/public/payments.ingest'
@@ -546,6 +547,12 @@ const ApiPublicServersHeartbeatRoute =
     path: '/api/public/servers/heartbeat',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicServersCommandsRoute =
+  ApiPublicServersCommandsRouteImport.update({
+    id: '/api/public/servers/commands',
+    path: '/api/public/servers/commands',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicServersCheckAlertsRoute =
   ApiPublicServersCheckAlertsRouteImport.update({
     id: '/api/public/servers/check-alerts',
@@ -697,6 +704,7 @@ export interface FileRoutesByFullPath {
   '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
   '/api/public/servers/agent': typeof ApiPublicServersAgentRoute
   '/api/public/servers/check-alerts': typeof ApiPublicServersCheckAlertsRoute
+  '/api/public/servers/commands': typeof ApiPublicServersCommandsRoute
   '/api/public/servers/heartbeat': typeof ApiPublicServersHeartbeatRoute
   '/api/public/video/ingest': typeof ApiPublicVideoIngestRoute
   '/api/public/hn/identity/$code': typeof ApiPublicHnIdentityCodeRoute
@@ -791,6 +799,7 @@ export interface FileRoutesByTo {
   '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
   '/api/public/servers/agent': typeof ApiPublicServersAgentRoute
   '/api/public/servers/check-alerts': typeof ApiPublicServersCheckAlertsRoute
+  '/api/public/servers/commands': typeof ApiPublicServersCommandsRoute
   '/api/public/servers/heartbeat': typeof ApiPublicServersHeartbeatRoute
   '/api/public/video/ingest': typeof ApiPublicVideoIngestRoute
   '/api/public/hn/identity/$code': typeof ApiPublicHnIdentityCodeRoute
@@ -888,6 +897,7 @@ export interface FileRoutesById {
   '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
   '/api/public/servers/agent': typeof ApiPublicServersAgentRoute
   '/api/public/servers/check-alerts': typeof ApiPublicServersCheckAlertsRoute
+  '/api/public/servers/commands': typeof ApiPublicServersCommandsRoute
   '/api/public/servers/heartbeat': typeof ApiPublicServersHeartbeatRoute
   '/api/public/video/ingest': typeof ApiPublicVideoIngestRoute
   '/api/public/hn/identity/$code': typeof ApiPublicHnIdentityCodeRoute
@@ -985,6 +995,7 @@ export interface FileRouteTypes {
     | '/api/public/payments/ingest'
     | '/api/public/servers/agent'
     | '/api/public/servers/check-alerts'
+    | '/api/public/servers/commands'
     | '/api/public/servers/heartbeat'
     | '/api/public/video/ingest'
     | '/api/public/hn/identity/$code'
@@ -1079,6 +1090,7 @@ export interface FileRouteTypes {
     | '/api/public/payments/ingest'
     | '/api/public/servers/agent'
     | '/api/public/servers/check-alerts'
+    | '/api/public/servers/commands'
     | '/api/public/servers/heartbeat'
     | '/api/public/video/ingest'
     | '/api/public/hn/identity/$code'
@@ -1175,6 +1187,7 @@ export interface FileRouteTypes {
     | '/api/public/payments/ingest'
     | '/api/public/servers/agent'
     | '/api/public/servers/check-alerts'
+    | '/api/public/servers/commands'
     | '/api/public/servers/heartbeat'
     | '/api/public/video/ingest'
     | '/api/public/hn/identity/$code'
@@ -1205,6 +1218,7 @@ export interface RootRouteChildren {
   ApiPublicPaymentsIngestRoute: typeof ApiPublicPaymentsIngestRoute
   ApiPublicServersAgentRoute: typeof ApiPublicServersAgentRoute
   ApiPublicServersCheckAlertsRoute: typeof ApiPublicServersCheckAlertsRoute
+  ApiPublicServersCommandsRoute: typeof ApiPublicServersCommandsRoute
   ApiPublicServersHeartbeatRoute: typeof ApiPublicServersHeartbeatRoute
   ApiPublicVideoIngestRoute: typeof ApiPublicVideoIngestRoute
   ApiPublicHnIdentityCodeRoute: typeof ApiPublicHnIdentityCodeRoute
@@ -1793,6 +1807,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicServersHeartbeatRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/servers/commands': {
+      id: '/api/public/servers/commands'
+      path: '/api/public/servers/commands'
+      fullPath: '/api/public/servers/commands'
+      preLoaderRoute: typeof ApiPublicServersCommandsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/servers/check-alerts': {
       id: '/api/public/servers/check-alerts'
       path: '/api/public/servers/check-alerts'
@@ -2065,6 +2086,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicPaymentsIngestRoute: ApiPublicPaymentsIngestRoute,
   ApiPublicServersAgentRoute: ApiPublicServersAgentRoute,
   ApiPublicServersCheckAlertsRoute: ApiPublicServersCheckAlertsRoute,
+  ApiPublicServersCommandsRoute: ApiPublicServersCommandsRoute,
   ApiPublicServersHeartbeatRoute: ApiPublicServersHeartbeatRoute,
   ApiPublicVideoIngestRoute: ApiPublicVideoIngestRoute,
   ApiPublicHnIdentityCodeRoute: ApiPublicHnIdentityCodeRoute,

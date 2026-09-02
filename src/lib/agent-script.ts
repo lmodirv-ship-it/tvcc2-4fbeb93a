@@ -1,13 +1,17 @@
+import { AGENT_VERSION } from "./agent-version";
+
 export function buildAgentScript(serverId: string, token: string, endpoint: string): string {
   return `#!/usr/bin/env bash
-# TVCC agent — resources + AI models + open ports + configs, and runs whitelisted commands
+# TVCC agent — metrics heartbeat + fast task channel (long-poll) + self-update
 set -euo pipefail
 TVCC_SERVER_ID="${serverId}"
 TVCC_TOKEN="${token}"
 TVCC_ENDPOINT="${endpoint}"
+TVCC_TASK_ENDPOINT="\${TVCC_TASK_ENDPOINT:-${endpoint.replace(/\/heartbeat$/, "/commands")}}"
+TVCC_TASK_WAIT="\${TVCC_TASK_WAIT:-15000}"
 TVCC_AI_ENDPOINT="\${TVCC_AI_ENDPOINT:-http://127.0.0.1:11434}"
 TVCC_BACKUP_DIR="\${TVCC_BACKUP_DIR:-/var/backups/tvcc}"
-TVCC_AGENT_VERSION="3.5.0"
+TVCC_AGENT_VERSION="${AGENT_VERSION}"
 TVCC_HEARTBEAT_INTERVAL="\${TVCC_HEARTBEAT_INTERVAL:-60}"
 TVCC_STATE_DIR="\${TVCC_STATE_DIR:-/var/lib/tvcc}"
 TVCC_HN_DIR="\${TVCC_HN_DIR:-/home/ismail/hn}"
@@ -156,6 +160,48 @@ post() { # $1 = body -> echoes response
     -H "x-tvcc-server: $TVCC_SERVER_ID" \\
     -H "x-tvcc-signature: sha256=$SIG" \\
     --data "$BODY" || echo '{}'
+}
+
+post_tasks() { # $1 = body -> echoes response of the fast task channel
+  local BODY="$1"
+  local SIG
+  SIG=$(printf '%s' "$BODY" | openssl dgst -sha256 -hmac "$TVCC_TOKEN" -hex | awk '{print $NF}')
+  curl -s --max-time 60 -X POST "$TVCC_TASK_ENDPOINT" \\
+    -H "content-type: application/json" \\
+    -H "x-tvcc-server: $TVCC_SERVER_ID" \\
+    -H "x-tvcc-signature: sha256=$SIG" \\
+    --data "$BODY" || echo '{}'
+}
+
+jget() { # $1 = json, $2 = python expression on variable d
+  printf '%s' "$1" | python3 -c "import sys,json;d=json.load(sys.stdin);print($2)" 2>/dev/null || echo ""
+}
+
+cap_allows() { # $1 = action -> 0 when allowed
+  local F="$TVCC_STATE_DIR/caps.json"
+  [ -s "$F" ] || return 0
+  python3 - "$F" "$1" <<'PYCAP' 2>/dev/null || return 0
+import json,sys
+try:
+    caps=json.load(open(sys.argv[1]))
+except Exception:
+    sys.exit(0)
+if not caps: sys.exit(0)
+row=[c for c in caps if c.get("action")==sys.argv[2]]
+sys.exit(0 if (not row or row[0].get("allowed")) else 3)
+PYCAP
+}
+
+self_update() { # $1 = script url
+  local URL="$1" TMP="/tmp/tvcc-agent.new"
+  [ -n "$URL" ] || return 1
+  curl -fsSL --max-time 60 -o "$TMP" "$URL" || { echo "download failed"; return 2; }
+  bash -n "$TMP" || { echo "syntax check failed"; rm -f "$TMP"; return 3; }
+  local SELF; SELF="$(readlink -f "$0" 2>/dev/null || echo /usr/local/bin/tvcc-agent.sh)"
+  cp -f "$TMP" "$SELF" && chmod +x "$SELF" && rm -f "$TMP"
+  echo "agent updated -> restarting"
+  (systemctl restart tvcc-agent 2>/dev/null || kill -TERM $$) &
+  return 0
 }
 
 run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
@@ -316,7 +362,15 @@ run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
       fi
       R=$?; SZ=$(du -m "$TMP" | cut -f1); rm -f "$TMP"
       if [ "$R" -eq 0 ]; then echo "synced $SD -> $TD ($SZ MB)"; else echo "sync into $TD failed"; exit 1; fi ;;
-    db_import)       gunzip -c "$(GET storage_path)" | mysql "$(GET database)" && echo "imported" ;;
+    db_import)
+      SP_FILE="$(GET storage_path)"; DBN="$(GET database)"; ENG="$(GET engine)"
+      [ -s "$SP_FILE" ] || { echo "backup file not found: $SP_FILE"; exit 1; }
+      case "$SP_FILE" in *.gz) CAT="gunzip -c" ;; *) CAT="cat" ;; esac
+      if [ "$ENG" = "postgres" ] || [ "$ENG" = "postgresql" ] || ! command -v mysql >/dev/null 2>&1; then
+        su - postgres -c "psql -d '$DBN'" < <($CAT "$SP_FILE") 2>&1 | tail -20 && echo "imported (postgres) $DBN"
+      else
+        $CAT "$SP_FILE" | mysql "$DBN" && echo "imported (mysql) $DBN"
+      fi ;;
     backup_delete)   rm -f "$(GET storage_path)" && echo "deleted $(GET storage_path)" ;;
     platform_deploy) bash -lc "$(GET script)" ;;
     link_check)      H="$(GET host)"; P="$(GET port)"; S=$(date +%s%3N); if nc -z -w5 "$H" "\${P:-22}" 2>/dev/null; then E=$(date +%s%3N); echo "reachable $H:\${P:-22} latency_ms=$((E-S))"; else echo "unreachable $H:\${P:-22}"; exit 1; fi ;;
@@ -756,6 +810,72 @@ restore_services() { # bring every registered unit back up after a reboot
 BOOT_MSG=$(restore_services 2>&1 | tail -c 4000)
 BOOT_J=$(printf '%s' "$BOOT_MSG" | json_escape)
 post "{\\"server_id\\":\\"\${TVCC_SERVER_ID}\\",\\"agent_id\\":\\"\${TVCC_AGENT_ID}\\",\\"agent_version\\":\\"\${TVCC_AGENT_VERSION}\\",\\"event\\":{\\"kind\\":\\"boot_restore\\",\\"severity\\":\\"info\\",\\"message\\":$BOOT_J}}" >/dev/null || true
+
+# ---- fast task channel: long-poll, execute, report back in seconds ----
+task_loop() {
+  local BACKOFF=1
+  while true; do
+    PUB=$(curl -s --max-time 6 https://api.ipify.org 2>/dev/null || echo "")
+    REQ="{\\"agent_id\\":\\"\${TVCC_AGENT_ID}\\",\\"agent_version\\":\\"\${TVCC_AGENT_VERSION}\\",\\"public_ip\\":\\"\${PUB}\\",\\"os\\":\\"$(. /etc/os-release 2>/dev/null && echo "\${PRETTY_NAME:-linux}" || echo linux)\\",\\"wait\\":\${TVCC_TASK_WAIT},\\"results\\":\${TVCC_PENDING_RESULTS:-[]}}"
+    RESP=$(post_tasks "$REQ")
+    TVCC_PENDING_RESULTS="[]"
+
+    if [ -z "$RESP" ] || [ "$RESP" = "{}" ]; then
+      sleep "$BACKOFF"; BACKOFF=$(( BACKOFF < 30 ? BACKOFF*2 : 30 )); continue
+    fi
+    BACKOFF=1
+
+    # store capability map locally (second line of defence)
+    jget "$RESP" 'json.dumps(d.get("capabilities",[]))' > "$TVCC_STATE_DIR/caps.json" 2>/dev/null || true
+
+    # self-update when the platform ships a newer agent
+    WANT=$(jget "$RESP" 'd.get("agent_version","")')
+    if [ -n "$WANT" ] && [ "$WANT" != "$TVCC_AGENT_VERSION" ]; then
+      self_update "$(jget "$RESP" 'd.get("script_url","")')" >/dev/null 2>&1 || true
+    fi
+
+    CMDS=$(jget "$RESP" 'json.dumps(d.get("commands",[]))')
+    [ -n "$CMDS" ] || CMDS="[]"
+    COUNT=$(jget "$CMDS" 'len(d)')
+    [ -n "$COUNT" ] || COUNT=0
+    if [ "$COUNT" -eq 0 ]; then sleep 0.5; continue; fi
+
+    RESULTS="["
+    for i in $(seq 0 $((COUNT-1))); do
+      ID=$(jget "$CMDS" "d[$i]['id']"); [ -n "$ID" ] || continue
+      ACTION=$(jget "$CMDS" "d[$i]['action']"); [ -n "$ACTION" ] || continue
+      ARGS=$(jget "$CMDS" "json.dumps(d[$i].get('args',{}))")
+      DRY=$(jget "$CMDS" "'true' if d[$i].get('dry_run') else 'false'")
+      S0=$(date +%s%3N)
+      set +e
+      case "$ACTION" in
+        agent_self_update)
+          OUT=$(self_update "$(jget "$RESP" 'd.get("script_url","")')" 2>&1); CODE=$? ;;
+        agent_diag)
+          OUT=$(printf 'version=%s\\nstate=%s\\ncaps=%s\\nuptime=%s\\n' "$TVCC_AGENT_VERSION" "$TVCC_STATE_DIR" "$(cat "$TVCC_STATE_DIR/caps.json" 2>/dev/null | head -c 2000)" "$(uptime -p 2>/dev/null)"); CODE=0 ;;
+        job_cancel)
+          OUT="cancelled"; CODE=0 ;;
+        *)
+          if ! cap_allows "$ACTION"; then
+            OUT="rejected: الأمر $ACTION غير مسموح لهذا السيرفر حسب الصلاحيات"; CODE=13
+          else
+            OUT=$(run_command "$ACTION" "$ARGS" "$DRY" 2>&1 | tail -c 20000); CODE=$?
+          fi ;;
+      esac
+      set -e
+      S1=$(date +%s%3N)
+      OUT_J=$(printf '%s' "$OUT" | json_escape)
+      [ "$RESULTS" != "[" ] && RESULTS="$RESULTS,"
+      RESULTS="$RESULTS{\\"id\\":\\"$ID\\",\\"exit_code\\":$CODE,\\"output\\":$OUT_J,\\"duration_ms\\":$((S1-S0))}"
+    done
+    RESULTS="$RESULTS]"
+    TVCC_PENDING_RESULTS="$RESULTS"
+  done
+}
+
+task_loop &
+TVCC_TASK_PID=$!
+trap 'kill $TVCC_TASK_PID 2>/dev/null || true' EXIT
 
 while true; do
   # ---- real OS metrics: /proc/stat, /proc/meminfo, df -B1 / ----

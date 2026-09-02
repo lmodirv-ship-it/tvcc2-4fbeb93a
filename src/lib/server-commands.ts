@@ -80,6 +80,9 @@ export const COMMAND_WHITELIST = [
   "vpn_peer_add",
   "vpn_peer_remove",
   "vpn_status",
+  "agent_self_update",
+  "agent_diag",
+  "job_cancel",
 ] as const;
 
 
@@ -170,6 +173,9 @@ export const COMMAND_LABELS: Record<string, string> = {
   vpn_peer_add: "إضافة قرين VPN",
   vpn_peer_remove: "إزالة قرين VPN",
   vpn_status: "حالة شبكة VPN",
+  agent_self_update: "تحديث الوكيل ذاتياً",
+  agent_diag: "تشخيص الوكيل",
+  job_cancel: "إلغاء مهمة",
 
 };
 

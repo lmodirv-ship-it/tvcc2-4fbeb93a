@@ -85,6 +85,17 @@ function ConnectPage() {
     onError: (e: any) => toast.error(e?.message ?? "فشل الاختبار"),
   });
 
+  const attachAllFn = useServerFn(attachAllSitesToTvcc);
+  const mAttachAll = useMutation({
+    mutationFn: () => attachAllFn() as Promise<any>,
+    onSuccess: (r: any) => {
+      if (!r?.ok && r?.error) toast.error(r.error);
+      else toast.success(`تمت إضافة ${r.linked} موقعاً إلى لائحة TVCC (${r.skipped} مرتبط مسبقاً)`);
+      refresh();
+    },
+    onError: (e: any) => toast.error(e?.message ?? "فشلت الإضافة"),
+  });
+
   const websites = data?.websites ?? [];
   const services = data?.services ?? [];
   const servers = data?.servers ?? [];

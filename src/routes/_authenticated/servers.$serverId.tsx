@@ -74,7 +74,6 @@ function ServerDetailPage() {
   });
 
   const refresh = () => qc.invalidateQueries({ queryKey: ["server-detail", serverId] });
-  const call = <T,>(fn: any) => useServerFn(fn) as T;
 
   const roleFn = useServerFn(setServerRole);
   const grantFn = useServerFn(grantServerAccess);

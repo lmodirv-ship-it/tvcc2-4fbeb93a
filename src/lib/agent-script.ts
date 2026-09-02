@@ -477,6 +477,34 @@ EOF4
       fi || { echo "git failed"; return 3; }
       if [ -n "$BUILD" ]; then ( cd "$DIR" && sh -c "$BUILD" 2>&1 | tail -n 60 ); fi
       echo "deployed $(git -C "$DIR" rev-parse --short HEAD 2>/dev/null) to $DIR" ;;
+    site_publish)
+      SRC="$(GET source)"; DIR="$(GET path)"; SVC="$(GET service)"; PRT="$(GET port)"; HU="$(GET health_url)"
+      BUILD="$(GET build)"; BR="$(GET branch)"
+      [ -z "$DIR" ] && DIR="/opt/tvcc"
+      [ -z "$SVC" ] && SVC="tvcc"
+      [ -z "$BR" ] && BR="main"
+      mkdir -p "$DIR"
+      if [ -n "$SRC" ]; then
+        case "$SRC" in
+          *.zip)
+            curl -fsSL -o /tmp/tvcc-publish.zip "$SRC" || { echo "download failed"; return 3; }
+            command -v unzip >/dev/null || (apt-get update -y >/dev/null 2>&1 && apt-get install -y unzip >/dev/null 2>&1)
+            unzip -oq /tmp/tvcc-publish.zip -d "$DIR" && rm -f /tmp/tvcc-publish.zip ;;
+          *)
+            if [ -d "$DIR/.git" ]; then git -C "$DIR" fetch --all -q && git -C "$DIR" reset --hard "origin/$BR" >/dev/null 2>&1
+            else git clone -q -b "$BR" "$SRC" "$DIR" >/dev/null 2>&1; fi || { echo "git failed"; return 3; } ;;
+        esac
+      fi
+      if [ -n "$BUILD" ]; then ( cd "$DIR" && sh -c "$BUILD" 2>&1 | tail -n 40 )
+      elif [ -f "$DIR/package.json" ]; then ( cd "$DIR" && (bun install >/dev/null 2>&1 || npm install --legacy-peer-deps >/dev/null 2>&1) && (bun run build 2>&1 | tail -n 20 || npm run build 2>&1 | tail -n 20) ); fi
+      systemctl restart "$SVC" >/dev/null 2>&1 || systemctl start "$SVC" >/dev/null 2>&1
+      [ -n "$PRT" ] && ufw allow "$PRT/tcp" >/dev/null 2>&1
+      sleep 3
+      ST=$(systemctl is-active "$SVC" 2>/dev/null)
+      HC=""
+      [ -n "$HU" ] && HC=$(curl -s -o /dev/null -m 8 -w '%{http_code}' "$HU" 2>/dev/null)
+      echo "published $DIR | service=$SVC state=$ST port=${PRT:-n/a} health=${HC:-skipped}"
+      [ "$ST" = "active" ] || return 4 ;;
     failover_switch)
       D="$(GET domain)"; T="$(GET target)"
       [ -z "$D" ] || [ -z "$T" ] && { echo "missing domain/target"; return 2; }

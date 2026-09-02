@@ -493,6 +493,44 @@ EOF5
       rm -f "/etc/nginx/sites-enabled/$D" "/etc/nginx/sites-available/$D" "/etc/dnsmasq.d/$D.conf"
       nginx -t >/dev/null 2>&1 && systemctl reload nginx; systemctl restart dnsmasq 2>/dev/null
       echo "removed $D" ;;
+    port_bind_domain)
+      D="$(GET domain)"; P="$(GET port)"; SSL="$(GET ssl)"
+      [ -z "$D" ] || [ -z "$P" ] && { echo "domain and port required"; return 2; }
+      cat > "/etc/nginx/sites-available/$D" <<EOFV
+server {
+  listen 80;
+  server_name $D;
+  location / {
+    proxy_pass http://127.0.0.1:$P;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade \\$http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header Host \\$host;
+    proxy_set_header X-Real-IP \\$remote_addr;
+    proxy_set_header X-Forwarded-For \\$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto \\$scheme;
+  }
+}
+EOFV
+      ln -sf "/etc/nginx/sites-available/$D" "/etc/nginx/sites-enabled/$D"
+      nginx -t 2>&1 && systemctl reload nginx && echo "bound $D -> 127.0.0.1:$P"
+      if [ "$SSL" = "true" ]; then
+        command -v certbot >/dev/null 2>&1 || (apt-get install -y certbot python3-certbot-nginx >/dev/null 2>&1 || true)
+        certbot --nginx -d "$D" --non-interactive --agree-tos --register-unsafely-without-email 2>&1 | tail -5 || true
+      fi
+      echo "$D $P" >> "$TVCC_STATE_DIR/bindings" ;;
+    port_unbind_domain)
+      D="$(GET domain)"
+      rm -f "/etc/nginx/sites-enabled/$D" "/etc/nginx/sites-available/$D"
+      grep -v "^$D " "$TVCC_STATE_DIR/bindings" 2>/dev/null > "$TVCC_STATE_DIR/bindings.tmp" || true
+      mv "$TVCC_STATE_DIR/bindings.tmp" "$TVCC_STATE_DIR/bindings" 2>/dev/null || true
+      nginx -t >/dev/null 2>&1 && systemctl reload nginx; echo "unbound $D" ;;
+    supabase_bind)
+      P="$(GET port)"; DIR="$(GET project_dir)"; DIR="\${DIR:-/opt/supabase}"
+      command -v supabase >/dev/null 2>&1 || (npm i -g supabase >/dev/null 2>&1 || true)
+      (cd "$DIR" 2>/dev/null && supabase status 2>&1 | head -30) || echo "supabase project dir not found: $DIR"
+      curl -s -o /dev/null -w "gateway :%{http_code}\\n" --max-time 5 "http://127.0.0.1:\${P:-8000}/rest/v1/" || true ;;
+    restore_all)   restore_services ;;
 
     *) echo "unsupported action: $ACTION"; return 127 ;;
   esac

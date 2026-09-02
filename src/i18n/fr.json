@@ -96,7 +96,8 @@
     "group_ids": "Identifiants du groupe",
     "bridge": "Pont & stockage",
     "domain_settings": "Réglages du domaine",
-    "publish_sync": "Publication unifiée"
+    "publish_sync": "Publication unifiée",
+    "manara": "Manara"
   },
   "dashboard": {
     "title": "Tableau de bord",

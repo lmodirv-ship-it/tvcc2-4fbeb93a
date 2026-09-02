@@ -39,6 +39,7 @@ import { Route as AuthenticatedNotificationsRouteImport } from './routes/_authen
 import { Route as AuthenticatedNetworkRouteImport } from './routes/_authenticated/network'
 import { Route as AuthenticatedMyHostingRouteImport } from './routes/_authenticated/my-hosting'
 import { Route as AuthenticatedMonitoringRouteImport } from './routes/_authenticated/monitoring'
+import { Route as AuthenticatedManaraRouteImport } from './routes/_authenticated/manara'
 import { Route as AuthenticatedLogsRouteImport } from './routes/_authenticated/logs'
 import { Route as AuthenticatedJobsRouteImport } from './routes/_authenticated/jobs'
 import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authenticated/integrations'
@@ -76,6 +77,7 @@ import { Route as AuthenticatedEditorIndexRouteImport } from './routes/_authenti
 import { Route as ApiPublicSiteConfigRouteImport } from './routes/api/public/site-config'
 import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes/_authenticated/settings.notifications'
 import { Route as AuthenticatedServersServerIdRouteImport } from './routes/_authenticated/servers.$serverId'
+import { Route as AuthenticatedManaraKeyRouteImport } from './routes/_authenticated/manara.$key'
 import { Route as AuthenticatedEditorUsersRouteImport } from './routes/_authenticated/editor.users'
 import { Route as AuthenticatedEditorSubscriptionsRouteImport } from './routes/_authenticated/editor.subscriptions'
 import { Route as AuthenticatedEditorSocialRouteImport } from './routes/_authenticated/editor.social'
@@ -100,6 +102,9 @@ import { Route as ApiPublicServersAgentRouteImport } from './routes/api/public/s
 import { Route as ApiPublicPublishStatusRouteImport } from './routes/api/public/publish/status'
 import { Route as ApiPublicPaymentsIngestRouteImport } from './routes/api/public/payments.ingest'
 import { Route as ApiPublicNotificationsIngestRouteImport } from './routes/api/public/notifications.ingest'
+import { Route as ApiPublicManaraResolveRouteImport } from './routes/api/public/manara/resolve'
+import { Route as ApiPublicManaraBadgeRouteImport } from './routes/api/public/manara/badge'
+import { Route as ApiPublicManaraAnnounceRouteImport } from './routes/api/public/manara/announce'
 import { Route as ApiPublicHooksHealthCheckRouteImport } from './routes/api/public/hooks/health-check'
 import { Route as ApiPublicHnAnnounceRouteImport } from './routes/api/public/hn/announce'
 import { Route as ApiPublicHnServiceCatalogRouteImport } from './routes/api/public/hn-service/catalog'
@@ -262,6 +267,11 @@ const AuthenticatedMyHostingRoute = AuthenticatedMyHostingRouteImport.update({
 const AuthenticatedMonitoringRoute = AuthenticatedMonitoringRouteImport.update({
   id: '/monitoring',
   path: '/monitoring',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
+const AuthenticatedManaraRoute = AuthenticatedManaraRouteImport.update({
+  id: '/manara',
+  path: '/manara',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
 const AuthenticatedLogsRoute = AuthenticatedLogsRouteImport.update({
@@ -460,6 +470,11 @@ const AuthenticatedServersServerIdRoute =
     path: '/servers/$serverId',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedManaraKeyRoute = AuthenticatedManaraKeyRouteImport.update({
+  id: '/$key',
+  path: '/$key',
+  getParentRoute: () => AuthenticatedManaraRoute,
+} as any)
 const AuthenticatedEditorUsersRoute =
   AuthenticatedEditorUsersRouteImport.update({
     id: '/users',
@@ -595,6 +610,21 @@ const ApiPublicNotificationsIngestRoute =
     path: '/api/public/notifications/ingest',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicManaraResolveRoute = ApiPublicManaraResolveRouteImport.update({
+  id: '/api/public/manara/resolve',
+  path: '/api/public/manara/resolve',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicManaraBadgeRoute = ApiPublicManaraBadgeRouteImport.update({
+  id: '/api/public/manara/badge',
+  path: '/api/public/manara/badge',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicManaraAnnounceRoute = ApiPublicManaraAnnounceRouteImport.update({
+  id: '/api/public/manara/announce',
+  path: '/api/public/manara/announce',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksHealthCheckRoute =
   ApiPublicHooksHealthCheckRouteImport.update({
     id: '/api/public/hooks/health-check',
@@ -672,6 +702,7 @@ export interface FileRoutesByFullPath {
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/jobs': typeof AuthenticatedJobsRoute
   '/logs': typeof AuthenticatedLogsRoute
+  '/manara': typeof AuthenticatedManaraRouteWithChildren
   '/monitoring': typeof AuthenticatedMonitoringRoute
   '/my-hosting': typeof AuthenticatedMyHostingRoute
   '/network': typeof AuthenticatedNetworkRoute
@@ -711,6 +742,7 @@ export interface FileRoutesByFullPath {
   '/editor/social': typeof AuthenticatedEditorSocialRoute
   '/editor/subscriptions': typeof AuthenticatedEditorSubscriptionsRoute
   '/editor/users': typeof AuthenticatedEditorUsersRoute
+  '/manara/$key': typeof AuthenticatedManaraKeyRoute
   '/servers/$serverId': typeof AuthenticatedServersServerIdRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
@@ -722,6 +754,9 @@ export interface FileRoutesByFullPath {
   '/api/public/hn-service/catalog': typeof ApiPublicHnServiceCatalogRoute
   '/api/public/hn/announce': typeof ApiPublicHnAnnounceRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
+  '/api/public/manara/announce': typeof ApiPublicManaraAnnounceRoute
+  '/api/public/manara/badge': typeof ApiPublicManaraBadgeRoute
+  '/api/public/manara/resolve': typeof ApiPublicManaraResolveRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
   '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
   '/api/public/publish/status': typeof ApiPublicPublishStatusRoute
@@ -770,6 +805,7 @@ export interface FileRoutesByTo {
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/jobs': typeof AuthenticatedJobsRoute
   '/logs': typeof AuthenticatedLogsRoute
+  '/manara': typeof AuthenticatedManaraRouteWithChildren
   '/monitoring': typeof AuthenticatedMonitoringRoute
   '/my-hosting': typeof AuthenticatedMyHostingRoute
   '/network': typeof AuthenticatedNetworkRoute
@@ -809,6 +845,7 @@ export interface FileRoutesByTo {
   '/editor/social': typeof AuthenticatedEditorSocialRoute
   '/editor/subscriptions': typeof AuthenticatedEditorSubscriptionsRoute
   '/editor/users': typeof AuthenticatedEditorUsersRoute
+  '/manara/$key': typeof AuthenticatedManaraKeyRoute
   '/servers/$serverId': typeof AuthenticatedServersServerIdRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
@@ -820,6 +857,9 @@ export interface FileRoutesByTo {
   '/api/public/hn-service/catalog': typeof ApiPublicHnServiceCatalogRoute
   '/api/public/hn/announce': typeof ApiPublicHnAnnounceRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
+  '/api/public/manara/announce': typeof ApiPublicManaraAnnounceRoute
+  '/api/public/manara/badge': typeof ApiPublicManaraBadgeRoute
+  '/api/public/manara/resolve': typeof ApiPublicManaraResolveRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
   '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
   '/api/public/publish/status': typeof ApiPublicPublishStatusRoute
@@ -871,6 +911,7 @@ export interface FileRoutesById {
   '/_authenticated/integrations': typeof AuthenticatedIntegrationsRoute
   '/_authenticated/jobs': typeof AuthenticatedJobsRoute
   '/_authenticated/logs': typeof AuthenticatedLogsRoute
+  '/_authenticated/manara': typeof AuthenticatedManaraRouteWithChildren
   '/_authenticated/monitoring': typeof AuthenticatedMonitoringRoute
   '/_authenticated/my-hosting': typeof AuthenticatedMyHostingRoute
   '/_authenticated/network': typeof AuthenticatedNetworkRoute
@@ -910,6 +951,7 @@ export interface FileRoutesById {
   '/_authenticated/editor/social': typeof AuthenticatedEditorSocialRoute
   '/_authenticated/editor/subscriptions': typeof AuthenticatedEditorSubscriptionsRoute
   '/_authenticated/editor/users': typeof AuthenticatedEditorUsersRoute
+  '/_authenticated/manara/$key': typeof AuthenticatedManaraKeyRoute
   '/_authenticated/servers/$serverId': typeof AuthenticatedServersServerIdRoute
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
@@ -921,6 +963,9 @@ export interface FileRoutesById {
   '/api/public/hn-service/catalog': typeof ApiPublicHnServiceCatalogRoute
   '/api/public/hn/announce': typeof ApiPublicHnAnnounceRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
+  '/api/public/manara/announce': typeof ApiPublicManaraAnnounceRoute
+  '/api/public/manara/badge': typeof ApiPublicManaraBadgeRoute
+  '/api/public/manara/resolve': typeof ApiPublicManaraResolveRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
   '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
   '/api/public/publish/status': typeof ApiPublicPublishStatusRoute
@@ -972,6 +1017,7 @@ export interface FileRouteTypes {
     | '/integrations'
     | '/jobs'
     | '/logs'
+    | '/manara'
     | '/monitoring'
     | '/my-hosting'
     | '/network'
@@ -1011,6 +1057,7 @@ export interface FileRouteTypes {
     | '/editor/social'
     | '/editor/subscriptions'
     | '/editor/users'
+    | '/manara/$key'
     | '/servers/$serverId'
     | '/settings/notifications'
     | '/api/public/site-config'
@@ -1022,6 +1069,9 @@ export interface FileRouteTypes {
     | '/api/public/hn-service/catalog'
     | '/api/public/hn/announce'
     | '/api/public/hooks/health-check'
+    | '/api/public/manara/announce'
+    | '/api/public/manara/badge'
+    | '/api/public/manara/resolve'
     | '/api/public/notifications/ingest'
     | '/api/public/payments/ingest'
     | '/api/public/publish/status'
@@ -1070,6 +1120,7 @@ export interface FileRouteTypes {
     | '/integrations'
     | '/jobs'
     | '/logs'
+    | '/manara'
     | '/monitoring'
     | '/my-hosting'
     | '/network'
@@ -1109,6 +1160,7 @@ export interface FileRouteTypes {
     | '/editor/social'
     | '/editor/subscriptions'
     | '/editor/users'
+    | '/manara/$key'
     | '/servers/$serverId'
     | '/settings/notifications'
     | '/api/public/site-config'
@@ -1120,6 +1172,9 @@ export interface FileRouteTypes {
     | '/api/public/hn-service/catalog'
     | '/api/public/hn/announce'
     | '/api/public/hooks/health-check'
+    | '/api/public/manara/announce'
+    | '/api/public/manara/badge'
+    | '/api/public/manara/resolve'
     | '/api/public/notifications/ingest'
     | '/api/public/payments/ingest'
     | '/api/public/publish/status'
@@ -1170,6 +1225,7 @@ export interface FileRouteTypes {
     | '/_authenticated/integrations'
     | '/_authenticated/jobs'
     | '/_authenticated/logs'
+    | '/_authenticated/manara'
     | '/_authenticated/monitoring'
     | '/_authenticated/my-hosting'
     | '/_authenticated/network'
@@ -1209,6 +1265,7 @@ export interface FileRouteTypes {
     | '/_authenticated/editor/social'
     | '/_authenticated/editor/subscriptions'
     | '/_authenticated/editor/users'
+    | '/_authenticated/manara/$key'
     | '/_authenticated/servers/$serverId'
     | '/_authenticated/settings/notifications'
     | '/api/public/site-config'
@@ -1220,6 +1277,9 @@ export interface FileRouteTypes {
     | '/api/public/hn-service/catalog'
     | '/api/public/hn/announce'
     | '/api/public/hooks/health-check'
+    | '/api/public/manara/announce'
+    | '/api/public/manara/badge'
+    | '/api/public/manara/resolve'
     | '/api/public/notifications/ingest'
     | '/api/public/payments/ingest'
     | '/api/public/publish/status'
@@ -1252,6 +1312,9 @@ export interface RootRouteChildren {
   ApiPublicHnServiceCatalogRoute: typeof ApiPublicHnServiceCatalogRoute
   ApiPublicHnAnnounceRoute: typeof ApiPublicHnAnnounceRoute
   ApiPublicHooksHealthCheckRoute: typeof ApiPublicHooksHealthCheckRoute
+  ApiPublicManaraAnnounceRoute: typeof ApiPublicManaraAnnounceRoute
+  ApiPublicManaraBadgeRoute: typeof ApiPublicManaraBadgeRoute
+  ApiPublicManaraResolveRoute: typeof ApiPublicManaraResolveRoute
   ApiPublicNotificationsIngestRoute: typeof ApiPublicNotificationsIngestRoute
   ApiPublicPaymentsIngestRoute: typeof ApiPublicPaymentsIngestRoute
   ApiPublicPublishStatusRoute: typeof ApiPublicPublishStatusRoute
@@ -1473,6 +1536,13 @@ declare module '@tanstack/react-router' {
       path: '/monitoring'
       fullPath: '/monitoring'
       preLoaderRoute: typeof AuthenticatedMonitoringRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/manara': {
+      id: '/_authenticated/manara'
+      path: '/manara'
+      fullPath: '/manara'
+      preLoaderRoute: typeof AuthenticatedManaraRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/logs': {
@@ -1734,6 +1804,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedServersServerIdRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/manara/$key': {
+      id: '/_authenticated/manara/$key'
+      path: '/$key'
+      fullPath: '/manara/$key'
+      preLoaderRoute: typeof AuthenticatedManaraKeyRouteImport
+      parentRoute: typeof AuthenticatedManaraRoute
+    }
     '/_authenticated/editor/users': {
       id: '/_authenticated/editor/users'
       path: '/users'
@@ -1902,6 +1979,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicNotificationsIngestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/manara/resolve': {
+      id: '/api/public/manara/resolve'
+      path: '/api/public/manara/resolve'
+      fullPath: '/api/public/manara/resolve'
+      preLoaderRoute: typeof ApiPublicManaraResolveRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/manara/badge': {
+      id: '/api/public/manara/badge'
+      path: '/api/public/manara/badge'
+      fullPath: '/api/public/manara/badge'
+      preLoaderRoute: typeof ApiPublicManaraBadgeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/manara/announce': {
+      id: '/api/public/manara/announce'
+      path: '/api/public/manara/announce'
+      fullPath: '/api/public/manara/announce'
+      preLoaderRoute: typeof ApiPublicManaraAnnounceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/health-check': {
       id: '/api/public/hooks/health-check'
       path: '/api/public/hooks/health-check'
@@ -1991,6 +2089,17 @@ const AuthenticatedEditorRouteChildren: AuthenticatedEditorRouteChildren = {
 const AuthenticatedEditorRouteWithChildren =
   AuthenticatedEditorRoute._addFileChildren(AuthenticatedEditorRouteChildren)
 
+interface AuthenticatedManaraRouteChildren {
+  AuthenticatedManaraKeyRoute: typeof AuthenticatedManaraKeyRoute
+}
+
+const AuthenticatedManaraRouteChildren: AuthenticatedManaraRouteChildren = {
+  AuthenticatedManaraKeyRoute: AuthenticatedManaraKeyRoute,
+}
+
+const AuthenticatedManaraRouteWithChildren =
+  AuthenticatedManaraRoute._addFileChildren(AuthenticatedManaraRouteChildren)
+
 interface AuthenticatedSettingsRouteChildren {
   AuthenticatedSettingsNotificationsRoute: typeof AuthenticatedSettingsNotificationsRoute
 }
@@ -2036,6 +2145,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedIntegrationsRoute: typeof AuthenticatedIntegrationsRoute
   AuthenticatedJobsRoute: typeof AuthenticatedJobsRoute
   AuthenticatedLogsRoute: typeof AuthenticatedLogsRoute
+  AuthenticatedManaraRoute: typeof AuthenticatedManaraRouteWithChildren
   AuthenticatedMonitoringRoute: typeof AuthenticatedMonitoringRoute
   AuthenticatedMyHostingRoute: typeof AuthenticatedMyHostingRoute
   AuthenticatedNetworkRoute: typeof AuthenticatedNetworkRoute
@@ -2093,6 +2203,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedIntegrationsRoute: AuthenticatedIntegrationsRoute,
   AuthenticatedJobsRoute: AuthenticatedJobsRoute,
   AuthenticatedLogsRoute: AuthenticatedLogsRoute,
+  AuthenticatedManaraRoute: AuthenticatedManaraRouteWithChildren,
   AuthenticatedMonitoringRoute: AuthenticatedMonitoringRoute,
   AuthenticatedMyHostingRoute: AuthenticatedMyHostingRoute,
   AuthenticatedNetworkRoute: AuthenticatedNetworkRoute,
@@ -2146,6 +2257,9 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHnServiceCatalogRoute: ApiPublicHnServiceCatalogRoute,
   ApiPublicHnAnnounceRoute: ApiPublicHnAnnounceRoute,
   ApiPublicHooksHealthCheckRoute: ApiPublicHooksHealthCheckRoute,
+  ApiPublicManaraAnnounceRoute: ApiPublicManaraAnnounceRoute,
+  ApiPublicManaraBadgeRoute: ApiPublicManaraBadgeRoute,
+  ApiPublicManaraResolveRoute: ApiPublicManaraResolveRoute,
   ApiPublicNotificationsIngestRoute: ApiPublicNotificationsIngestRoute,
   ApiPublicPaymentsIngestRoute: ApiPublicPaymentsIngestRoute,
   ApiPublicPublishStatusRoute: ApiPublicPublishStatusRoute,

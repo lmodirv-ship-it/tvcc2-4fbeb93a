@@ -2744,6 +2744,279 @@ export type Database = {
         }
         Relationships: []
       }
+      manara_addresses: {
+        Row: {
+          created_at: string
+          fingerprint: string | null
+          host: string | null
+          id: string
+          is_current: boolean
+          is_verified: boolean
+          kind: string
+          port: number | null
+          project_id: string
+          retired_at: string | null
+          server_id: string | null
+          updated_at: string
+          url: string
+          verified_at: string | null
+        }
+        Insert: {
+          created_at?: string
+          fingerprint?: string | null
+          host?: string | null
+          id?: string
+          is_current?: boolean
+          is_verified?: boolean
+          kind?: string
+          port?: number | null
+          project_id: string
+          retired_at?: string | null
+          server_id?: string | null
+          updated_at?: string
+          url: string
+          verified_at?: string | null
+        }
+        Update: {
+          created_at?: string
+          fingerprint?: string | null
+          host?: string | null
+          id?: string
+          is_current?: boolean
+          is_verified?: boolean
+          kind?: string
+          port?: number | null
+          project_id?: string
+          retired_at?: string | null
+          server_id?: string | null
+          updated_at?: string
+          url?: string
+          verified_at?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manara_addresses_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "manara_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manara_addresses_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      manara_endpoints: {
+        Row: {
+          created_at: string
+          id: string
+          kind: string
+          label: string | null
+          last_seen_at: string | null
+          project_id: string
+          status: string
+          updated_at: string
+          url: string | null
+          version: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          kind: string
+          label?: string | null
+          last_seen_at?: string | null
+          project_id: string
+          status?: string
+          updated_at?: string
+          url?: string | null
+          version?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          kind?: string
+          label?: string | null
+          last_seen_at?: string | null
+          project_id?: string
+          status?: string
+          updated_at?: string
+          url?: string | null
+          version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manara_endpoints_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "manara_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      manara_events: {
+        Row: {
+          address_id: string | null
+          created_at: string
+          id: string
+          kind: string
+          message: string
+          metadata: Json | null
+          project_id: string | null
+        }
+        Insert: {
+          address_id?: string | null
+          created_at?: string
+          id?: string
+          kind: string
+          message: string
+          metadata?: Json | null
+          project_id?: string | null
+        }
+        Update: {
+          address_id?: string | null
+          created_at?: string
+          id?: string
+          kind?: string
+          message?: string
+          metadata?: Json | null
+          project_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manara_events_address_id_fkey"
+            columns: ["address_id"]
+            isOneToOne: false
+            referencedRelation: "manara_addresses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manara_events_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "manara_projects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      manara_projects: {
+        Row: {
+          created_at: string
+          current_address_id: string | null
+          group_tag: string | null
+          id: string
+          name: string
+          owner_id: string | null
+          project_key: string
+          status: string
+          updated_at: string
+          website_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          current_address_id?: string | null
+          group_tag?: string | null
+          id?: string
+          name: string
+          owner_id?: string | null
+          project_key: string
+          status?: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          current_address_id?: string | null
+          group_tag?: string | null
+          id?: string
+          name?: string
+          owner_id?: string | null
+          project_key?: string
+          status?: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "fk_current_address"
+            columns: ["current_address_id"]
+            isOneToOne: false
+            referencedRelation: "manara_addresses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manara_projects_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      manara_updates: {
+        Row: {
+          created_at: string
+          error: string | null
+          from_address_id: string | null
+          id: string
+          project_id: string
+          published_at: string | null
+          reason: string | null
+          status: string
+          to_address_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          from_address_id?: string | null
+          id?: string
+          project_id: string
+          published_at?: string | null
+          reason?: string | null
+          status?: string
+          to_address_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          from_address_id?: string | null
+          id?: string
+          project_id?: string
+          published_at?: string | null
+          reason?: string | null
+          status?: string
+          to_address_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "manara_updates_from_address_id_fkey"
+            columns: ["from_address_id"]
+            isOneToOne: false
+            referencedRelation: "manara_addresses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manara_updates_project_id_fkey"
+            columns: ["project_id"]
+            isOneToOne: false
+            referencedRelation: "manara_projects"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "manara_updates_to_address_id_fkey"
+            columns: ["to_address_id"]
+            isOneToOne: false
+            referencedRelation: "manara_addresses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       notification_channels: {
         Row: {
           channel_type: string

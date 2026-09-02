@@ -42,6 +42,7 @@ import { Route as AuthenticatedMonitoringRouteImport } from './routes/_authentic
 import { Route as AuthenticatedLogsRouteImport } from './routes/_authenticated/logs'
 import { Route as AuthenticatedJobsRouteImport } from './routes/_authenticated/jobs'
 import { Route as AuthenticatedIntegrationsRouteImport } from './routes/_authenticated/integrations'
+import { Route as AuthenticatedImportSitesRouteImport } from './routes/_authenticated/import-sites'
 import { Route as AuthenticatedHostingRouteImport } from './routes/_authenticated/hosting'
 import { Route as AuthenticatedHnDomainsRouteImport } from './routes/_authenticated/hn-domains'
 import { Route as AuthenticatedGroupsRouteImport } from './routes/_authenticated/groups'
@@ -277,6 +278,12 @@ const AuthenticatedIntegrationsRoute =
   AuthenticatedIntegrationsRouteImport.update({
     id: '/integrations',
     path: '/integrations',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
+const AuthenticatedImportSitesRoute =
+  AuthenticatedImportSitesRouteImport.update({
+    id: '/import-sites',
+    path: '/import-sites',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
 const AuthenticatedHostingRoute = AuthenticatedHostingRouteImport.update({
@@ -661,6 +668,7 @@ export interface FileRoutesByFullPath {
   '/groups': typeof AuthenticatedGroupsRoute
   '/hn-domains': typeof AuthenticatedHnDomainsRoute
   '/hosting': typeof AuthenticatedHostingRoute
+  '/import-sites': typeof AuthenticatedImportSitesRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/jobs': typeof AuthenticatedJobsRoute
   '/logs': typeof AuthenticatedLogsRoute
@@ -758,6 +766,7 @@ export interface FileRoutesByTo {
   '/groups': typeof AuthenticatedGroupsRoute
   '/hn-domains': typeof AuthenticatedHnDomainsRoute
   '/hosting': typeof AuthenticatedHostingRoute
+  '/import-sites': typeof AuthenticatedImportSitesRoute
   '/integrations': typeof AuthenticatedIntegrationsRoute
   '/jobs': typeof AuthenticatedJobsRoute
   '/logs': typeof AuthenticatedLogsRoute
@@ -858,6 +867,7 @@ export interface FileRoutesById {
   '/_authenticated/groups': typeof AuthenticatedGroupsRoute
   '/_authenticated/hn-domains': typeof AuthenticatedHnDomainsRoute
   '/_authenticated/hosting': typeof AuthenticatedHostingRoute
+  '/_authenticated/import-sites': typeof AuthenticatedImportSitesRoute
   '/_authenticated/integrations': typeof AuthenticatedIntegrationsRoute
   '/_authenticated/jobs': typeof AuthenticatedJobsRoute
   '/_authenticated/logs': typeof AuthenticatedLogsRoute
@@ -958,6 +968,7 @@ export interface FileRouteTypes {
     | '/groups'
     | '/hn-domains'
     | '/hosting'
+    | '/import-sites'
     | '/integrations'
     | '/jobs'
     | '/logs'
@@ -1055,6 +1066,7 @@ export interface FileRouteTypes {
     | '/groups'
     | '/hn-domains'
     | '/hosting'
+    | '/import-sites'
     | '/integrations'
     | '/jobs'
     | '/logs'
@@ -1154,6 +1166,7 @@ export interface FileRouteTypes {
     | '/_authenticated/groups'
     | '/_authenticated/hn-domains'
     | '/_authenticated/hosting'
+    | '/_authenticated/import-sites'
     | '/_authenticated/integrations'
     | '/_authenticated/jobs'
     | '/_authenticated/logs'
@@ -1481,6 +1494,13 @@ declare module '@tanstack/react-router' {
       path: '/integrations'
       fullPath: '/integrations'
       preLoaderRoute: typeof AuthenticatedIntegrationsRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
+    '/_authenticated/import-sites': {
+      id: '/_authenticated/import-sites'
+      path: '/import-sites'
+      fullPath: '/import-sites'
+      preLoaderRoute: typeof AuthenticatedImportSitesRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/hosting': {
@@ -2012,6 +2032,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedGroupsRoute: typeof AuthenticatedGroupsRoute
   AuthenticatedHnDomainsRoute: typeof AuthenticatedHnDomainsRoute
   AuthenticatedHostingRoute: typeof AuthenticatedHostingRoute
+  AuthenticatedImportSitesRoute: typeof AuthenticatedImportSitesRoute
   AuthenticatedIntegrationsRoute: typeof AuthenticatedIntegrationsRoute
   AuthenticatedJobsRoute: typeof AuthenticatedJobsRoute
   AuthenticatedLogsRoute: typeof AuthenticatedLogsRoute
@@ -2068,6 +2089,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedGroupsRoute: AuthenticatedGroupsRoute,
   AuthenticatedHnDomainsRoute: AuthenticatedHnDomainsRoute,
   AuthenticatedHostingRoute: AuthenticatedHostingRoute,
+  AuthenticatedImportSitesRoute: AuthenticatedImportSitesRoute,
   AuthenticatedIntegrationsRoute: AuthenticatedIntegrationsRoute,
   AuthenticatedJobsRoute: AuthenticatedJobsRoute,
   AuthenticatedLogsRoute: AuthenticatedLogsRoute,

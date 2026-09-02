@@ -19,13 +19,32 @@
   - حلقة المهام: long‑poll متواصل → تنفيذ → إرجاع النتيجة فوراً → متابعة. زمن الاستجابة الفعلي 1–3 ثوانٍ.
 - إعداد جديد `TVCC_TASK_POLL=25` مع تراجع تدريجي عند فشل الشبكة.
 
-## المرحلة 2 — الوكيل كمنفّذ مهام بصلاحيات
+## المرحلة 2 — الوكيل كمنفّذ مهام بجداول وعلاقات وأدوار وصلاحيات
 
-- جدول `server_capabilities` (لكل سيرفر): مفتاح الأمر، مسموح/ممنوع، يحتاج تأكيد، حد أقصى للتنفيذ في الساعة.
-- الوكيل يستقبل خريطة الصلاحيات مع كل رد ويحفظها في `/var/lib/tvcc/caps.json`؛ ويرفض أي أمر خارجها محلياً (دفاع مزدوج: المنصة + الوكيل).
-- `server_commands` يحصل على: `started_at`, `finished_at`, `duration_ms`, `progress` (تحديث جزئي أثناء التنفيذ للأوامر الطويلة مثل البناء والنسخ).
-- أوامر جديدة: `agent_self_update`, `agent_diag`, `job_cancel`.
+جداول جديدة خاصة بالوكيل (مع GRANT وRLS عبر `can_manage` في نفس الهجرة):
+
+- `agent_instances`: سجل الوكيل نفسه لكل سيرفر (agent_id، النسخة، آخر long‑poll، نظام التشغيل، الحالة، عدد الأوامر الجارية) — علاقة 1‑إلى‑1 مع `servers`.
+- `agent_capabilities`: صلاحيات كل وكيل لكل أمر (`action`، مسموح/ممنوع، يحتاج تأكيد، حد أقصى للتنفيذ بالساعة).
+- `agent_roles`: أدوار جاهزة للوكيل (`observer` قراءة فقط، `operator` تشغيل/إيقاف، `deployer` نشر وبناء، `full`) وكل دور يحمل مجموعة الأوامر المسموحة.
+- `agent_role_bindings`: ربط سيرفر ← دور، مع من منح الدور ومتى (علاقة عبر `servers` و`profiles`).
+- `agent_jobs`: طابور المهام عالي المستوى (مهمة واحدة = عدة أوامر) بحالة وتقدّم ونتيجة، مرتبط بـ`server_commands` عبر `job_id`.
+- `agent_job_steps`: خطوات كل مهمة بالترتيب مع مخرجات كل خطوة.
+- توسيع `server_commands`: `started_at`, `finished_at`, `duration_ms`, `progress`, `job_id`.
+
+منطق الصلاحيات:
+
+- المنصة تتحقق من الدور والصلاحية قبل إدخال الأمر في الطابور.
+- الوكيل يستقبل خريطة الصلاحيات مع كل رد ويحفظها في `/var/lib/tvcc/caps.json`، ويرفض أي أمر خارجها محلياً (دفاع مزدوج).
 - كل تنفيذ يُسجَّل في `operation_log` مع من طلبه ونتيجته.
+- أوامر جديدة: `agent_self_update`, `agent_diag`, `job_cancel`.
+
+## المرحلة 2ب — تأكيد وإكمال قدرات التشغيل
+
+- **نشر Node عبر systemd**: مراجعة `write_site_unit` / `deploy_upload` والتأكد من اكتمال دورة (تثبيت ← بناء ← وحدة systemd ← تشغيل ← تقرير) وإصلاح أي نقص.
+- **تحديث DNS تلقائياً عند تغيّر IP**: الوكيل يرسل العنوان العام في كل long‑poll؛ عند اختلافه عن `servers.ip_address` تسجّل TVCC التغيير في `server_ip_history` وتحدّث سجلات `hn_domains` وقواعد Nginx وvhost المرتبطة بهذا السيرفر تلقائياً، مع إشعار.
+- **لوحة عرض شاملة لكل سيرفر**: مراجعة تبويبات `/servers/{id}` والتأكد من ظهور المساحة والمنافذ والمواقع ونماذج الذكاء في مكان واحد، وسدّ أي فجوة.
+- **نقل Supabase/Postgres بين السيرفرات**: التأكد من أن `db_dump`/`db_import`/`db_sync` تدعم Postgres فعلياً (`pg_dump`/`psql`) وليس MySQL فقط، مع مسار نقل مباشر سيرفر ← سيرفر.
+
 
 ## المرحلة 3 — التحديث الذاتي الفوري
 
@@ -48,6 +67,6 @@
 
 ## تفاصيل تقنية
 
-- ملفات ستُعدَّل: `src/lib/agent-script.ts` (v3.6.0)، `src/routes/api/public/servers.heartbeat.ts`، ملف جديد `src/routes/api/public/servers.commands.ts`، `src/lib/server-detail.functions.ts`، `src/routes/_authenticated/servers.$serverId.tsx`، مكوّن جديد `src/components/servers/LiveConsole.tsx`، `src/lib/server-commands.ts`.
-- الهجرة: `server_capabilities` (+GRANT +RLS عبر `can_manage`)، وأعمدة التوقيت/التقدّم على `server_commands`، وتفعيل Realtime لهذا الجدول.
+- ملفات ستُعدَّل: `src/lib/agent-script.ts` (v3.6.0)، `src/routes/api/public/servers.heartbeat.ts`، ملف جديد `src/routes/api/public/servers.commands.ts`، `src/lib/server-detail.functions.ts`، ملف جديد `src/lib/agent-roles.functions.ts`، `src/routes/_authenticated/servers.$serverId.tsx`، مكوّن جديد `src/components/servers/LiveConsole.tsx`، `src/lib/server-commands.ts`.
+- الهجرة: `agent_instances`, `agent_capabilities`, `agent_roles`, `agent_role_bindings`, `agent_jobs`, `agent_job_steps` (+GRANT +RLS عبر `can_manage`)، وأعمدة التوقيت/التقدّم/`job_id` على `server_commands`، وتفعيل Realtime لهذا الجدول.
 - المصادقة تبقى HMAC بمفتاح الوكيل المشتق من `SERVERS_INGEST_SECRET` — لا أسرار جديدة.

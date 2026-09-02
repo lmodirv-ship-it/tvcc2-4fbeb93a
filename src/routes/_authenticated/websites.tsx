@@ -366,6 +366,21 @@ function WebsitesPage() {
                         <Checkbox checked={selected.has(w.id)} onCheckedChange={() => toggleOne(w.id)} />
                       </TableCell>
                       <TableCell>
+                        <button
+                          type="button"
+                          title="نسخ المعرّف"
+                          onClick={() => {
+                            const code = String((w as any).site_code ?? "");
+                            if (!code) return;
+                            navigator.clipboard?.writeText(code);
+                            toast.success(`تم نسخ ${code}`);
+                          }}
+                          className="font-mono text-xs px-2 py-1 rounded bg-primary/10 text-primary hover:bg-primary/20 transition"
+                        >
+                          {(w as any).site_code ?? "—"}
+                        </button>
+                      </TableCell>
+                      <TableCell>
                         <div className="flex items-center gap-2">
                           <Globe className={`w-4 h-4 ${w.status === "online" ? "text-success" : w.status === "offline" ? "text-warning" : "text-destructive"}`} />
                           <span className={`font-medium ${w.status === "online" ? "text-success" : w.status === "offline" ? "text-warning" : "text-destructive"}`}>

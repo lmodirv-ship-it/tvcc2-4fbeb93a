@@ -62,6 +62,20 @@ export const COMMAND_WHITELIST = [
   "hn_dns_install",
   "hn_domain_publish",
   "hn_domain_remove",
+  "port_bind_domain",
+  "port_unbind_domain",
+  "supabase_bind",
+  "restore_all",
+  "nginx_write_vhost",
+  "ssl_issue_manual",
+  "firewall_apply",
+  "agent_update",
+  "tunnel_setup",
+  "tunnel_status",
+  "tunnel_drop",
+  "gateway_publish",
+  "storage_sync",
+  "storage_prune",
 ] as const;
 
 

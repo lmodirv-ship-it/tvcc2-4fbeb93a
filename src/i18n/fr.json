@@ -94,7 +94,8 @@
     "payment_accounts": "Comptes de paiement",
     "group_ids": "Identifiants du groupe",
     "bridge": "Pont & stockage",
-    "domain_settings": "Réglages du domaine"
+    "domain_settings": "Réglages du domaine",
+    "publish_sync": "Publication unifiée"
   },
   "dashboard": {
     "title": "Tableau de bord",

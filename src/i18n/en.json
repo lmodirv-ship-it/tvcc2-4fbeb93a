@@ -94,7 +94,8 @@
     "payment_accounts": "Payment Accounts",
     "group_ids": "Group IDs",
     "bridge": "Bridge & Storage",
-    "domain_settings": "Domain settings"
+    "domain_settings": "Domain settings",
+    "publish_sync": "Unified publishing"
   },
   "dashboard": {
     "title": "Dashboard",

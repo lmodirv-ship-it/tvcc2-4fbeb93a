@@ -94,7 +94,8 @@
     "payment_accounts": "حسابات الدفع",
     "group_ids": "هويات المجموعة",
     "bridge": "الجسر والتخزين",
-    "domain_settings": "إعدادات النطاق"
+    "domain_settings": "إعدادات النطاق",
+    "publish_sync": "توحيد النشر"
   },
   "dashboard": {
     "title": "لوحة التحكم",

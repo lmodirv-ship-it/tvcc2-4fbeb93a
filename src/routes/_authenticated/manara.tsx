@@ -144,7 +144,7 @@ function ManaraPage() {
         </Button>
       </header>
 
-      <Card className="overflow-hidden border-primary/20" style={{ minHeight: 340 }}>
+      <Card className="relative overflow-hidden border-primary/20" style={{ minHeight: 340 }}>
         <div className="absolute inset-0">
           <LighthouseScene active={stats.current > 0} />
         </div>

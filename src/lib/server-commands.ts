@@ -83,6 +83,7 @@ export const COMMAND_WHITELIST = [
   "agent_self_update",
   "agent_diag",
   "job_cancel",
+  "site_publish",
 ] as const;
 
 
@@ -99,6 +100,7 @@ export const COMMAND_LABELS: Record<string, string> = {
   hn_domain_remove: "إزالة نطاق .HN",
   git_deploy: "نشر من Git",
   deploy_upload: "رفع ملفات وبناء وتشغيل موقع",
+  site_publish: "نشر نسخة المنصة على العقدة",
   build_run: "تنفيذ أمر البناء",
   serve_start: "تشغيل خدمة الموقع",
   serve_stop: "إيقاف خدمة الموقع",

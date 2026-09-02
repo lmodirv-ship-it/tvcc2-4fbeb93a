@@ -27,7 +27,6 @@ export const listManara = createServerFn({ method: "POST" })
   .handler(async ({ context }) => {
     const sb = context.supabase as any;
     const manager = await isManager(sb, context.userId);
-    const { count, error: countErr } = await sb.from("manara_projects").select("*", { count: "exact", head: true });
     const base = manager ? sb.from("manara_projects") : sb.from("manara_projects").eq("owner_id", context.userId);
     const { data: projects, error } = await base
       .select("*")
@@ -37,13 +36,30 @@ export const listManara = createServerFn({ method: "POST" })
     const projectIds = (projects ?? []).map((p: any) => p.id);
     let updates: any[] = [];
     let events: any[] = [];
+    let addresses: any[] = [];
+    let endpoints: any[] = [];
     if (projectIds.length) {
-      [{ data: updates }, { data: events }] = await Promise.all([
+      [{ data: updates }, { data: events }, { data: addresses }, { data: endpoints }] = await Promise.all([
         sb.from("manara_updates").select("*").in("project_id", projectIds).order("created_at", { ascending: false }).limit(200),
         sb.from("manara_events").select("*").in("project_id", projectIds).order("created_at", { ascending: false }).limit(100),
+        sb.from("manara_addresses").select("*").in("project_id", projectIds),
+        sb.from("manara_endpoints").select("*").in("project_id", projectIds),
       ]);
     }
-    return clean({ projects: projects ?? [], updates: updates ?? [], events: events ?? [], manager, count, countErr: countErr?.message, error: error?.message });
+
+    const addrByProject = groupBy(addresses ?? [], "project_id");
+    const epByProject = groupBy(endpoints ?? [], "project_id");
+    const addrById = keyBy(addresses ?? [], "id");
+
+    const enriched = (projects ?? []).map((p: any) => ({
+      ...p,
+      current_address: p.current_address_id ? addrById[p.current_address_id] ?? null : null,
+      addresses: addrByProject[p.id] ?? [],
+      endpoints: epByProject[p.id] ?? [],
+    }));
+
+    if (error) throw new Error(error.message);
+    return clean({ projects: enriched, updates: updates ?? [], events: events ?? [], manager });
   });
 
 export const getManaraProject = createServerFn({ method: "POST" })

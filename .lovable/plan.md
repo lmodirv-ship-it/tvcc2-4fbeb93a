@@ -28,8 +28,14 @@
 4. (اختياري لاحقاً) جدولة دورية عبر `scheduled_tasks` لتشغيل المزامنة يومياً.
 
 ## التقنية
-- مصدر البيانات: Pay Hub MCP (متصل ومفعّل — الحساب `info@hnchat.net` بصلاحية owner).
-- الجداول المستخدمة: `websites`, `site_groups`, `website_group_members`, `activity_log` (كلها موجودة؛ تُضاف أعمدة فقط).
+- مصادر البيانات: (أ) مساحة العمل التي تم منها الربط عبر زر Connect، (ب) مساحات العمل المرتبطة بكل بريد إلكتروني مُدرج في صفحة المستخدمين (`profiles` + `user_roles`) — تُجمع مواقعها كلها عبر Pay Hub MCP (الحساب `info@hnchat.net` بصلاحية owner).
+- جداول جديدة تُنشأ لحفظ العلاقات وتفعيل خدمات الربط عبر TVCC:
+  - `lovable_workspaces` — مساحة العمل: المعرّف، الاسم، بريد المالك، مصدر الربط، حالة المزامنة.
+  - `lovable_workspace_members` — ربط مساحة العمل بمستخدمي المنصة ودورهم (owner/admin/editor/viewer).
+  - `lovable_sites` — مواقع لوفابل الخام (slug, domain, project_id, workspace_id) وربطها بصف `websites` المقابل.
+  - `tvcc_service_links` — تفعيل خدمة الربط عبر TVCC لكل موقع/مساحة عمل مع الحالة وآخر مزامنة.
+  جميعها بـ RLS + GRANT، والقراءة/الكتابة للمالك أو owner/admin.
+- الجداول القائمة المستخدمة: `websites`, `site_groups`, `website_group_members`, `site_services`, `service_dependencies`, `activity_log`.
 - لا فحوص HTTP/SSL أثناء الاستيراد — إدراج فقط كما طلبت.
 - الصلاحيات: المزامنة والاستيراد متاحان للمالك الدائم ولأي مستخدم أُضيف في صفحة المستخدمين ومُنح دور **owner أو admin** من صفحة إدارة المستخدمين (تحقق عبر `has_role`).
 

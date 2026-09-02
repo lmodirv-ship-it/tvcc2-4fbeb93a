@@ -1,6 +1,6 @@
 # TVCC — سجل المراحل والحالة الحالية
 
-آخر تحديث: 21 أغسطس 2026
+آخر تحديث: 2 سبتمبر 2026
 النطاق الرسمي: https://tvcc.hnpay.live · معاينة: `*.lovable.app`
 التقنية: TanStack Start v1 + React 19 + Tailwind v4 + Lovable Cloud (Supabase)
 

@@ -31,6 +31,24 @@
 6. إرسال المواقع المزامَنة تلقائياً إلى منصة خدمات المجموعة **cour.hnapps.store** (HN Service Hub) باعتبارها المنصة المركزية لإدارة وتوزيع وتبادل الخدمات بين مواقع المجموعة — عبر `src/lib/hn-service.server.ts` مع تسجيل كل موقع وخدمته وتخصصه.
 
 ## التقنية
+
+### عدد الجداول الجديدة وعلاقاتها
+- **4 جداول جديدة** تُنشأ في قاعدة البيانات:
+  1. `lovable_workspaces` — مساحات العمل في لوفابل.
+  2. `lovable_workspace_members` — ربط مستخدمي TVCC بمساحات العمل وأدوارهم.
+  3. `lovable_sites` — مواقع لوفابل الخام (مشاريع + مواقع + نطاقات).
+  4. `tvcc_service_links` — تفعيل خدمة الربط عبر TVCC لكل موقع/مساحة عمل.
+
+### العلاقات بين الجداول
+```text
+lovable_workspaces 1---* lovable_workspace_members (user_id → auth.users)
+lovable_workspaces 1---* lovable_sites               (project_id / site_id)
+lovable_sites      1---1 websites                    (domain) — عندما يُستورد الموقع
+lovable_sites      1---* tvcc_service_links         (link_kind: workspace | site)
+websites           1---* site_groups (website_group_members)
+websites           1---* service_dependencies         (عبر TVCC service)
+```
+
 - مصادر البيانات: (أ) مساحة العمل التي تم منها الربط عبر زر Connect، (ب) مساحات العمل المرتبطة بكل بريد إلكتروني مُدرج في صفحة المستخدمين (`profiles` + `user_roles`) — تُجمع مواقعها كلها عبر Pay Hub MCP (الحساب `info@hnchat.net` بصلاحية owner).
 - جداول جديدة تُنشأ لحفظ العلاقات وتفعيل خدمات الربط عبر TVCC:
   - `lovable_workspaces` — مساحة العمل: المعرّف، الاسم، بريد المالك، مصدر الربط، حالة المزامنة.

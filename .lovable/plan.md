@@ -37,7 +37,9 @@
 - ترحيل (migration) بسيط: أعمدة ربط النطاق وSupabase على `port_links` (`link_kind`, `domain`, `target_url`, `vault_secret_id`) مع GRANT وسياسات RLS عبر `can_manage(owner_id)`.
 - أوامر وكيل جديدة في القائمة البيضاء: `domain_bind`, `supabase_link`, `bridge_create`, `bridge_drop`, `net_report`.
 - كل الاستدعاءات عبر `createServerFn` مع `requireSupabaseAuth`.
+- **VPN بين السيرفرات (ضمن النطاق)**: نفق WireGuard مُدار من اللوحة — توليد مفاتيح لكل سيرفر وتخزينها مشفّرة في الخزنة، تركيب الواجهة عبر الوكيل (`vpn_setup`, `vpn_peer_add`, `vpn_status`)، وعناوين داخلية ثابتة تصبح الوجهة الافتراضية لجسور المنافذ بدل الإنترنت.
 
 ## خارج النطاق الآن
 
-VPN بين السيرفرات، وموازنة الأحمال التلقائية.
+موازنة الأحمال التلقائية.
+

@@ -582,9 +582,69 @@ function WebsitesPage() {
           </CardContent>
         </Card>
       </div>
+
+      <SitePreviewDialog data={preview} onClose={() => setPreview(null)} />
     </div>
   );
 }
+
+function fmtDate(v?: string | null) {
+  if (!v) return "—";
+  const d = new Date(v);
+  return `${d.toLocaleDateString("fr-FR")} ${d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`;
+}
+
+function SitePreviewDialog({
+  data,
+  onClose,
+}: {
+  data: { code: string; name: string; domain: string } | null;
+  onClose: () => void;
+}) {
+  const url = data ? `https://${data.domain.replace(/^https?:\/\//, "")}` : "";
+  const shot = data ? `https://s.wordpress.com/mshots/v1/${encodeURIComponent(url)}?w=1000&h=650` : "";
+  return (
+    <Dialog open={!!data} onOpenChange={(o) => !o && onClose()}>
+      <DialogContent className="max-w-2xl">
+        <DialogHeader>
+          <DialogTitle className="text-right flex items-center gap-2 justify-end">
+            <span className="font-mono text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">{data?.code || "—"}</span>
+            {data?.name}
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-3">
+          <div className="rounded-lg overflow-hidden border border-border/60 bg-muted/30 aspect-[10/6.5]">
+            {data && (
+              <img
+                src={shot}
+                alt={`معاينة واجهة ${data.domain}`}
+                loading="lazy"
+                className="w-full h-full object-cover object-top"
+              />
+            )}
+          </div>
+          <div className="flex items-center justify-between gap-2">
+            <a href={url} target="_blank" rel="noreferrer" className="text-xs text-primary underline" dir="ltr">
+              {url}
+            </a>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                if (!data?.code) return;
+                navigator.clipboard?.writeText(data.code);
+                toast.success(`تم نسخ ${data.code}`);
+              }}
+            >
+              <Copy className="w-3.5 h-3.5 ml-1" /> نسخ المعرّف
+            </Button>
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 
 function LegendDot({ color, label, value, pct }: { color: string; label: string; value: number; pct: number }) {
   return (

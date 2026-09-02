@@ -384,9 +384,9 @@ function WebsitesPage() {
               </TableHeader>
               <TableBody>
                 {isLoading ? (
-                  <TableRow><TableCell colSpan={10} className="text-center py-10"><Loader2 className="w-5 h-5 animate-spin inline" /></TableCell></TableRow>
+                  <TableRow><TableCell colSpan={12} className="text-center py-10"><Loader2 className="w-5 h-5 animate-spin inline" /></TableCell></TableRow>
                 ) : pageData.length === 0 ? (
-                  <TableRow><TableCell colSpan={10} className="text-center py-10 text-muted-foreground">لا توجد مواقع</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={12} className="text-center py-10 text-muted-foreground">لا توجد مواقع</TableCell></TableRow>
                 ) : (
                   pageData.map((w) => (
                     <TableRow key={w.id} className="border-border/40">
@@ -396,13 +396,8 @@ function WebsitesPage() {
                       <TableCell>
                         <button
                           type="button"
-                          title="نسخ المعرّف"
-                          onClick={() => {
-                            const code = String((w as any).site_code ?? "");
-                            if (!code) return;
-                            navigator.clipboard?.writeText(code);
-                            toast.success(`تم نسخ ${code}`);
-                          }}
+                          title="عرض معاينة الموقع"
+                          onClick={() => setPreview({ code: String((w as any).site_code ?? ""), name: w.name, domain: w.domain })}
                           className="font-mono text-xs px-2 py-1 rounded bg-primary/10 text-primary hover:bg-primary/20 transition"
                         >
                           {(w as any).site_code ?? "—"}
@@ -423,8 +418,11 @@ function WebsitesPage() {
                           {statusBadge(w)}
                         </div>
                       </TableCell>
+                      <TableCell className="text-muted-foreground text-xs" dir="ltr">{fmtDate(w.created_at)}</TableCell>
+                      <TableCell className="text-muted-foreground text-xs" dir="ltr">{fmtDate(w.updated_at)}</TableCell>
                       <TableCell className="text-muted-foreground text-sm">{timeAgo(w.last_checked_at)}</TableCell>
                       <TableCell className="text-sm">{w.db?.name || <span className="text-muted-foreground">—</span>}</TableCell>
+
                       <TableCell>
                         <div className="flex items-center gap-2">
                           <div className="w-6 h-6 rounded-full border-2 border-primary/40 border-t-primary animate-none" />

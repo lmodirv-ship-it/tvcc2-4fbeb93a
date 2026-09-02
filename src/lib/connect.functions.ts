@@ -412,3 +412,104 @@ export const listConnectionEvents = createServerFn({ method: "GET" })
       .limit(50);
     return data ?? [];
   });
+
+/**
+ * Attach every managed website to the TVCC platform service in one click.
+ * Creates the TVCC provider site + service if missing, then links all sites.
+ */
+export const attachAllSitesToTvcc = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const sb = context.supabase as any;
+    const owner = context.userId;
+    const TVCC_DOMAIN = "tvcc.hnpay.live";
+
+    // 1. provider website
+    let { data: provider } = await sb
+      .from("websites")
+      .select("id, domain")
+      .eq("domain", TVCC_DOMAIN)
+      .maybeSingle();
+    if (!provider) {
+      const { data: created, error } = await sb
+        .from("websites")
+        .insert({ owner_id: owner, name: "TVCC", domain: TVCC_DOMAIN, is_active: true, status: "online" })
+        .select("id, domain")
+        .single();
+      if (error) return { ok: false, error: error.message, linked: 0, skipped: 0, total: 0 };
+      provider = created;
+    }
+
+    // 2. TVCC service
+    let { data: service } = await sb
+      .from("site_services")
+      .select("id")
+      .eq("website_id", provider.id)
+      .eq("service_type", "api")
+      .eq("name", "TVCC")
+      .maybeSingle();
+    if (!service) {
+      const { data: created, error } = await sb
+        .from("site_services")
+        .insert({
+          owner_id: owner,
+          website_id: provider.id,
+          name: "TVCC",
+          service_type: "api",
+          endpoint_url: `https://${TVCC_DOMAIN}`,
+          description: "المنصة الأساسية — سجل المواقع والخدمات",
+          link_method: "api",
+          auth_type: "token",
+          health_path: "/api/public/publish/status",
+          is_public: true,
+        })
+        .select("id")
+        .single();
+      if (error) return { ok: false, error: error.message, linked: 0, skipped: 0, total: 0 };
+      service = created;
+    }
+
+    // 3. link every site
+    const { data: sites } = await sb.from("websites").select("id, domain").limit(1000);
+    const { data: existing } = await sb
+      .from("service_dependencies")
+      .select("consumer_website_id")
+      .eq("service_id", service.id);
+    const have = new Set((existing ?? []).map((r: any) => r.consumer_website_id));
+
+    const rows = (sites ?? [])
+      .filter((s: any) => s.id !== provider.id && !have.has(s.id))
+      .map((s: any) => ({
+        owner_id: owner,
+        service_id: service.id,
+        provider_website_id: provider.id,
+        consumer_website_id: s.id,
+        link_method: "api",
+        status: "active",
+        env_prefix: "TVCC",
+      }));
+
+    const errors: string[] = [];
+    let linked = 0;
+    for (let i = 0; i < rows.length; i += 100) {
+      const chunk = rows.slice(i, i + 100);
+      const { error } = await sb.from("service_dependencies").insert(chunk);
+      if (error) errors.push(error.message);
+      else linked += chunk.length;
+    }
+
+    await sb.from("activity_log").insert({
+      user_id: owner,
+      action: "connect.tvcc_attach_all",
+      details: { linked, total: (sites ?? []).length, skipped: have.size },
+    });
+
+    return {
+      ok: errors.length === 0,
+      total: (sites ?? []).length,
+      linked,
+      skipped: have.size,
+      serviceId: service.id,
+      errors: errors.slice(0, 3),
+    };
+  });

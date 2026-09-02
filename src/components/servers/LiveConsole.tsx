@@ -5,7 +5,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { Terminal, Loader2, CircleСheckPlaceholder } from "lucide-react";
+import { Terminal, Loader2 } from "lucide-react";
 import { getCommandFeed, cancelAgentCommand } from "@/lib/agent-roles.functions";
 import { COMMAND_LABELS } from "@/lib/server-commands";
 import { toast } from "sonner";

@@ -95,6 +95,7 @@ import { Route as ApiPublicServersHeartbeatRouteImport } from './routes/api/publ
 import { Route as ApiPublicServersCommandsRouteImport } from './routes/api/public/servers.commands'
 import { Route as ApiPublicServersCheckAlertsRouteImport } from './routes/api/public/servers/check-alerts'
 import { Route as ApiPublicServersAgentRouteImport } from './routes/api/public/servers.agent'
+import { Route as ApiPublicPublishStatusRouteImport } from './routes/api/public/publish/status'
 import { Route as ApiPublicPaymentsIngestRouteImport } from './routes/api/public/payments.ingest'
 import { Route as ApiPublicNotificationsIngestRouteImport } from './routes/api/public/notifications.ingest'
 import { Route as ApiPublicHooksHealthCheckRouteImport } from './routes/api/public/hooks/health-check'
@@ -564,6 +565,11 @@ const ApiPublicServersAgentRoute = ApiPublicServersAgentRouteImport.update({
   path: '/api/public/servers/agent',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicPublishStatusRoute = ApiPublicPublishStatusRouteImport.update({
+  id: '/api/public/publish/status',
+  path: '/api/public/publish/status',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicPaymentsIngestRoute = ApiPublicPaymentsIngestRouteImport.update({
   id: '/api/public/payments/ingest',
   path: '/api/public/payments/ingest',
@@ -702,6 +708,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
   '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
+  '/api/public/publish/status': typeof ApiPublicPublishStatusRoute
   '/api/public/servers/agent': typeof ApiPublicServersAgentRoute
   '/api/public/servers/check-alerts': typeof ApiPublicServersCheckAlertsRoute
   '/api/public/servers/commands': typeof ApiPublicServersCommandsRoute
@@ -797,6 +804,7 @@ export interface FileRoutesByTo {
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
   '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
+  '/api/public/publish/status': typeof ApiPublicPublishStatusRoute
   '/api/public/servers/agent': typeof ApiPublicServersAgentRoute
   '/api/public/servers/check-alerts': typeof ApiPublicServersCheckAlertsRoute
   '/api/public/servers/commands': typeof ApiPublicServersCommandsRoute
@@ -895,6 +903,7 @@ export interface FileRoutesById {
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/notifications/ingest': typeof ApiPublicNotificationsIngestRoute
   '/api/public/payments/ingest': typeof ApiPublicPaymentsIngestRoute
+  '/api/public/publish/status': typeof ApiPublicPublishStatusRoute
   '/api/public/servers/agent': typeof ApiPublicServersAgentRoute
   '/api/public/servers/check-alerts': typeof ApiPublicServersCheckAlertsRoute
   '/api/public/servers/commands': typeof ApiPublicServersCommandsRoute
@@ -993,6 +1002,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
     | '/api/public/payments/ingest'
+    | '/api/public/publish/status'
     | '/api/public/servers/agent'
     | '/api/public/servers/check-alerts'
     | '/api/public/servers/commands'
@@ -1088,6 +1098,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
     | '/api/public/payments/ingest'
+    | '/api/public/publish/status'
     | '/api/public/servers/agent'
     | '/api/public/servers/check-alerts'
     | '/api/public/servers/commands'
@@ -1185,6 +1196,7 @@ export interface FileRouteTypes {
     | '/api/public/hooks/health-check'
     | '/api/public/notifications/ingest'
     | '/api/public/payments/ingest'
+    | '/api/public/publish/status'
     | '/api/public/servers/agent'
     | '/api/public/servers/check-alerts'
     | '/api/public/servers/commands'
@@ -1216,6 +1228,7 @@ export interface RootRouteChildren {
   ApiPublicHooksHealthCheckRoute: typeof ApiPublicHooksHealthCheckRoute
   ApiPublicNotificationsIngestRoute: typeof ApiPublicNotificationsIngestRoute
   ApiPublicPaymentsIngestRoute: typeof ApiPublicPaymentsIngestRoute
+  ApiPublicPublishStatusRoute: typeof ApiPublicPublishStatusRoute
   ApiPublicServersAgentRoute: typeof ApiPublicServersAgentRoute
   ApiPublicServersCheckAlertsRoute: typeof ApiPublicServersCheckAlertsRoute
   ApiPublicServersCommandsRoute: typeof ApiPublicServersCommandsRoute
@@ -1828,6 +1841,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicServersAgentRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/publish/status': {
+      id: '/api/public/publish/status'
+      path: '/api/public/publish/status'
+      fullPath: '/api/public/publish/status'
+      preLoaderRoute: typeof ApiPublicPublishStatusRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/payments/ingest': {
       id: '/api/public/payments/ingest'
       path: '/api/public/payments/ingest'
@@ -2084,6 +2104,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHooksHealthCheckRoute: ApiPublicHooksHealthCheckRoute,
   ApiPublicNotificationsIngestRoute: ApiPublicNotificationsIngestRoute,
   ApiPublicPaymentsIngestRoute: ApiPublicPaymentsIngestRoute,
+  ApiPublicPublishStatusRoute: ApiPublicPublishStatusRoute,
   ApiPublicServersAgentRoute: ApiPublicServersAgentRoute,
   ApiPublicServersCheckAlertsRoute: ApiPublicServersCheckAlertsRoute,
   ApiPublicServersCommandsRoute: ApiPublicServersCommandsRoute,

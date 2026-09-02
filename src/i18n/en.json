@@ -92,7 +92,9 @@
     "my_hosting": "My Hosting",
     "hosting": "Hosting Admin",
     "payment_accounts": "Payment Accounts",
-    "group_ids": "Group IDs"
+    "group_ids": "Group IDs",
+    "bridge": "Bridge & Storage",
+    "domain_settings": "Domain settings"
   },
   "dashboard": {
     "title": "Dashboard",

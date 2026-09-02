@@ -62,6 +62,20 @@ export const COMMAND_WHITELIST = [
   "hn_dns_install",
   "hn_domain_publish",
   "hn_domain_remove",
+  "port_bind_domain",
+  "port_unbind_domain",
+  "supabase_bind",
+  "restore_all",
+  "nginx_write_vhost",
+  "ssl_issue_manual",
+  "firewall_apply",
+  "agent_update",
+  "tunnel_setup",
+  "tunnel_status",
+  "tunnel_drop",
+  "gateway_publish",
+  "storage_sync",
+  "storage_prune",
 ] as const;
 
 
@@ -133,6 +147,21 @@ export const COMMAND_LABELS: Record<string, string> = {
   fs_write: "كتابة/تعديل ملف",
   fs_delete: "حذف ملف أو مجلد",
   fs_move: "نقل أو إعادة تسمية",
+
+  port_bind_domain: "ربط منفذ بنطاق",
+  port_unbind_domain: "إلغاء ربط النطاق",
+  supabase_bind: "ربط منفذ بـ Supabase CLI",
+  restore_all: "استعادة كل الخدمات",
+  nginx_write_vhost: "كتابة إعداد Nginx للنطاق",
+  ssl_issue_manual: "تركيب شهادة SSL يدوية",
+  firewall_apply: "تطبيق قاعدة جدار ناري",
+  agent_update: "تحديث الوكيل",
+  tunnel_setup: "إنشاء نفق نحو البوابة",
+  tunnel_status: "حالة النفق",
+  tunnel_drop: "إزالة النفق",
+  gateway_publish: "نشر موقع محلي عبر البوابة",
+  storage_sync: "مزامنة نسخة الموقع للتخزين",
+  storage_prune: "حذف نسخة التخزين",
 
 };
 

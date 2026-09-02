@@ -15,7 +15,7 @@ import { Link2, Database, Boxes, Trash2, Plug, Cloud, Server, Activity } from "l
 import { toast } from "sonner";
 import {
   getConnectHub, registerService, deleteService, linkDatabase, unlinkDatabase,
-  testConnection, listConnectionEvents,
+  testConnection, listConnectionEvents, attachAllSitesToTvcc,
 } from "@/lib/connect.functions";
 import { connectService, disconnectService } from "@/lib/mesh.functions";
 import { BulkLinkPanel } from "@/components/mesh/BulkLinkPanel";
@@ -85,6 +85,17 @@ function ConnectPage() {
     onError: (e: any) => toast.error(e?.message ?? "فشل الاختبار"),
   });
 
+  const attachAllFn = useServerFn(attachAllSitesToTvcc);
+  const mAttachAll = useMutation({
+    mutationFn: () => attachAllFn() as Promise<any>,
+    onSuccess: (r: any) => {
+      if (!r?.ok && r?.error) toast.error(r.error);
+      else toast.success(`تمت إضافة ${r.linked} موقعاً إلى لائحة TVCC (${r.skipped} مرتبط مسبقاً)`);
+      refresh();
+    },
+    onError: (e: any) => toast.error(e?.message ?? "فشلت الإضافة"),
+  });
+
   const websites = data?.websites ?? [];
   const services = data?.services ?? [];
   const servers = data?.servers ?? [];
@@ -148,9 +159,12 @@ function ConnectPage() {
               <div className="text-xs text-muted-foreground" dir="ltr">tvcc.hnpay.live — {websites.length} موقع مُدار</div>
             </div>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 flex-wrap">
+            <Button size="sm" disabled={mAttachAll.isPending} onClick={() => mAttachAll.mutate()}>
+              {mAttachAll.isPending ? "جارٍ الإضافة…" : "إضافة كل المواقع إلى TVCC"}
+            </Button>
             <Button asChild size="sm" variant="outline"><Link to="/import-sites">استيراد المواقع</Link></Button>
-            <Button asChild size="sm"><Link to="/publish-sync">مزامنة النشر</Link></Button>
+            <Button asChild size="sm" variant="secondary"><Link to="/publish-sync">مزامنة النشر</Link></Button>
           </div>
         </CardContent>
       </Card>

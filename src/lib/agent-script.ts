@@ -13,6 +13,7 @@ TVCC_STATE_DIR="\${TVCC_STATE_DIR:-/var/lib/tvcc}"
 TVCC_HN_DIR="\${TVCC_HN_DIR:-/home/ismail/hn}"
 mkdir -p "$TVCC_BACKUP_DIR"
 mkdir -p "$TVCC_HN_DIR" 2>/dev/null || true
+mkdir -p "$TVCC_STATE_DIR" 2>/dev/null || true
 # stable agent id per machine
 TVCC_AGENT_ID=$(cat /etc/tvcc-agent-id 2>/dev/null || true)
 if [ -z "\${TVCC_AGENT_ID:-}" ]; then

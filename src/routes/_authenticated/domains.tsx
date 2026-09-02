@@ -284,7 +284,12 @@ function DomainsPage() {
                       <TableCell className="text-xs" dir="ltr">{d.expires_at ? new Date(d.expires_at).toLocaleDateString("ar") : "—"}</TableCell>
                       <TableCell>{dl === null ? "—" : <Badge variant={dl < 15 ? "destructive" : dl < 30 ? "outline" : "secondary"}>{dl} يوم</Badge>}</TableCell>
                       <TableCell>{d.auto_renew ? <Badge className="bg-success/20 text-success border-success/40">نعم</Badge> : <Badge variant="outline">لا</Badge>}</TableCell>
-                      <TableCell><Button variant="ghost" size="icon" onClick={() => del(d.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button></TableCell>
+                      <TableCell className="flex items-center gap-1">
+                        <Button asChild variant="outline" size="sm">
+                          <Link to="/domain-settings/$domain" params={{ domain: d.domain }}>إعدادات</Link>
+                        </Button>
+                        <Button variant="ghost" size="icon" onClick={() => del(d.id)}><Trash2 className="w-4 h-4 text-destructive" /></Button>
+                      </TableCell>
                     </TableRow>
                   );
                 })}

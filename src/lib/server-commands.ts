@@ -80,6 +80,9 @@ export const COMMAND_WHITELIST = [
   "vpn_peer_add",
   "vpn_peer_remove",
   "vpn_status",
+  "agent_self_update",
+  "agent_diag",
+  "job_cancel",
 ] as const;
 
 

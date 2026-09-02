@@ -67,6 +67,6 @@
 
 ## تفاصيل تقنية
 
-- ملفات ستُعدَّل: `src/lib/agent-script.ts` (v3.6.0)، `src/routes/api/public/servers.heartbeat.ts`، ملف جديد `src/routes/api/public/servers.commands.ts`، `src/lib/server-detail.functions.ts`، `src/routes/_authenticated/servers.$serverId.tsx`، مكوّن جديد `src/components/servers/LiveConsole.tsx`، `src/lib/server-commands.ts`.
-- الهجرة: `server_capabilities` (+GRANT +RLS عبر `can_manage`)، وأعمدة التوقيت/التقدّم على `server_commands`، وتفعيل Realtime لهذا الجدول.
+- ملفات ستُعدَّل: `src/lib/agent-script.ts` (v3.6.0)، `src/routes/api/public/servers.heartbeat.ts`، ملف جديد `src/routes/api/public/servers.commands.ts`، `src/lib/server-detail.functions.ts`، ملف جديد `src/lib/agent-roles.functions.ts`، `src/routes/_authenticated/servers.$serverId.tsx`، مكوّن جديد `src/components/servers/LiveConsole.tsx`، `src/lib/server-commands.ts`.
+- الهجرة: `agent_instances`, `agent_capabilities`, `agent_roles`, `agent_role_bindings`, `agent_jobs`, `agent_job_steps` (+GRANT +RLS عبر `can_manage`)، وأعمدة التوقيت/التقدّم/`job_id` على `server_commands`، وتفعيل Realtime لهذا الجدول.
 - المصادقة تبقى HMAC بمفتاح الوكيل المشتق من `SERVERS_INGEST_SECRET` — لا أسرار جديدة.

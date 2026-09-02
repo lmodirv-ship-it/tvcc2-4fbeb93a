@@ -44,6 +44,8 @@
   --font-sans: "Cairo", "Tajawal", system-ui, sans-serif;
   --shadow-neon-primary: var(--neon-glow-primary);
   --shadow-neon-accent: var(--neon-glow-accent);
+  --color-manara-gold: var(--manara-gold);
+  --color-manara-gold-glow: var(--manara-gold-glow);
 }
 
 :root {

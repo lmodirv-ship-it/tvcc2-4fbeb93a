@@ -186,7 +186,7 @@ async function publishOne(sb: any, userId: string, target: any, trigger: string)
             note: `sync to ${target.url}`,
           }
         : {
-            source: target.source_url ?? "",
+            source: "",
             path: `/opt/${target.service_name || "tvcc"}`,
             service: target.service_name || "tvcc",
             port: target.port ?? 3005,

@@ -343,6 +343,7 @@ function WebsitesPage() {
                       onCheckedChange={toggleAll}
                     />
                   </TableHead>
+                  <TableHead className="text-right">المعرّف</TableHead>
                   <TableHead className="text-right">الموقع</TableHead>
                   <TableHead className="text-right">النطاق</TableHead>
                   <TableHead className="text-right">الحالة</TableHead>

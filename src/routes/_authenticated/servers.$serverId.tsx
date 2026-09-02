@@ -20,6 +20,7 @@ import {
   getServerDetail, setServerRole, grantServerAccess, revokeServerAccess,
   bindPortToDomain, unbindPortDomain, bindPortToSupabase, runServerAction, scheduleServerTask,
 } from "@/lib/server-detail.functions";
+import { MeshPanel } from "@/components/servers/MeshPanel";
 
 export const Route = createFileRoute("/_authenticated/servers/$serverId")({
   component: ServerDetailPage,

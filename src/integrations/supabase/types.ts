@@ -2536,12 +2536,15 @@ export type Database = {
       }
       port_links: {
         Row: {
+          auto_start: boolean
           bridge_kind: string
           created_at: string
+          domain: string | null
           id: string
           last_checked_at: string | null
           last_result: string | null
           latency_ms: number | null
+          link_kind: string
           name: string | null
           owner_id: string
           source_port: number
@@ -2550,15 +2553,21 @@ export type Database = {
           target_host: string | null
           target_port: number
           target_server_id: string | null
+          target_url: string | null
           updated_at: string
+          vault_secret_id: string | null
+          website_id: string | null
         }
         Insert: {
+          auto_start?: boolean
           bridge_kind?: string
           created_at?: string
+          domain?: string | null
           id?: string
           last_checked_at?: string | null
           last_result?: string | null
           latency_ms?: number | null
+          link_kind?: string
           name?: string | null
           owner_id?: string
           source_port: number
@@ -2567,15 +2576,21 @@ export type Database = {
           target_host?: string | null
           target_port: number
           target_server_id?: string | null
+          target_url?: string | null
           updated_at?: string
+          vault_secret_id?: string | null
+          website_id?: string | null
         }
         Update: {
+          auto_start?: boolean
           bridge_kind?: string
           created_at?: string
+          domain?: string | null
           id?: string
           last_checked_at?: string | null
           last_result?: string | null
           latency_ms?: number | null
+          link_kind?: string
           name?: string | null
           owner_id?: string
           source_port?: number
@@ -2584,7 +2599,10 @@ export type Database = {
           target_host?: string | null
           target_port?: number
           target_server_id?: string | null
+          target_url?: string | null
           updated_at?: string
+          vault_secret_id?: string | null
+          website_id?: string | null
         }
         Relationships: [
           {
@@ -2734,6 +2752,41 @@ export type Database = {
             columns: ["website_id"]
             isOneToOne: false
             referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      server_access: {
+        Row: {
+          created_at: string
+          id: string
+          level: string
+          owner_id: string
+          server_id: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          level?: string
+          owner_id: string
+          server_id: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          level?: string
+          owner_id?: string
+          server_id?: string
+          user_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "server_access_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
             referencedColumns: ["id"]
           },
         ]
@@ -4123,6 +4176,7 @@ export type Database = {
       }
       site_runtimes: {
         Row: {
+          auto_start: boolean
           created_at: string
           domain: string
           exec_start: string | null
@@ -4141,6 +4195,7 @@ export type Database = {
           website_id: string | null
         }
         Insert: {
+          auto_start?: boolean
           created_at?: string
           domain: string
           exec_start?: string | null
@@ -4159,6 +4214,7 @@ export type Database = {
           website_id?: string | null
         }
         Update: {
+          auto_start?: boolean
           created_at?: string
           domain?: string
           exec_start?: string | null

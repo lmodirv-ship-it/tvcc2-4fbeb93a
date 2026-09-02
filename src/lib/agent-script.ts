@@ -7,11 +7,13 @@ TVCC_TOKEN="${token}"
 TVCC_ENDPOINT="${endpoint}"
 TVCC_AI_ENDPOINT="\${TVCC_AI_ENDPOINT:-http://127.0.0.1:11434}"
 TVCC_BACKUP_DIR="\${TVCC_BACKUP_DIR:-/var/backups/tvcc}"
-TVCC_AGENT_VERSION="3.2.0"
-TVCC_HEARTBEAT_INTERVAL="\${TVCC_HEARTBEAT_INTERVAL:-180}"
+TVCC_AGENT_VERSION="3.3.0"
+TVCC_HEARTBEAT_INTERVAL="\${TVCC_HEARTBEAT_INTERVAL:-60}"
+TVCC_STATE_DIR="\${TVCC_STATE_DIR:-/var/lib/tvcc}"
 TVCC_HN_DIR="\${TVCC_HN_DIR:-/home/ismail/hn}"
 mkdir -p "$TVCC_BACKUP_DIR"
 mkdir -p "$TVCC_HN_DIR" 2>/dev/null || true
+mkdir -p "$TVCC_STATE_DIR" 2>/dev/null || true
 # stable agent id per machine
 TVCC_AGENT_ID=$(cat /etc/tvcc-agent-id 2>/dev/null || true)
 if [ -z "\${TVCC_AGENT_ID:-}" ]; then
@@ -491,6 +493,44 @@ EOF5
       rm -f "/etc/nginx/sites-enabled/$D" "/etc/nginx/sites-available/$D" "/etc/dnsmasq.d/$D.conf"
       nginx -t >/dev/null 2>&1 && systemctl reload nginx; systemctl restart dnsmasq 2>/dev/null
       echo "removed $D" ;;
+    port_bind_domain)
+      D="$(GET domain)"; P="$(GET port)"; SSL="$(GET ssl)"
+      [ -z "$D" ] || [ -z "$P" ] && { echo "domain and port required"; return 2; }
+      cat > "/etc/nginx/sites-available/$D" <<EOFV
+server {
+  listen 80;
+  server_name $D;
+  location / {
+    proxy_pass http://127.0.0.1:$P;
+    proxy_http_version 1.1;
+    proxy_set_header Upgrade \\$http_upgrade;
+    proxy_set_header Connection "upgrade";
+    proxy_set_header Host \\$host;
+    proxy_set_header X-Real-IP \\$remote_addr;
+    proxy_set_header X-Forwarded-For \\$proxy_add_x_forwarded_for;
+    proxy_set_header X-Forwarded-Proto \\$scheme;
+  }
+}
+EOFV
+      ln -sf "/etc/nginx/sites-available/$D" "/etc/nginx/sites-enabled/$D"
+      nginx -t 2>&1 && systemctl reload nginx && echo "bound $D -> 127.0.0.1:$P"
+      if [ "$SSL" = "true" ]; then
+        command -v certbot >/dev/null 2>&1 || (apt-get install -y certbot python3-certbot-nginx >/dev/null 2>&1 || true)
+        certbot --nginx -d "$D" --non-interactive --agree-tos --register-unsafely-without-email 2>&1 | tail -5 || true
+      fi
+      echo "$D $P" >> "$TVCC_STATE_DIR/bindings" ;;
+    port_unbind_domain)
+      D="$(GET domain)"
+      rm -f "/etc/nginx/sites-enabled/$D" "/etc/nginx/sites-available/$D"
+      grep -v "^$D " "$TVCC_STATE_DIR/bindings" 2>/dev/null > "$TVCC_STATE_DIR/bindings.tmp" || true
+      mv "$TVCC_STATE_DIR/bindings.tmp" "$TVCC_STATE_DIR/bindings" 2>/dev/null || true
+      nginx -t >/dev/null 2>&1 && systemctl reload nginx; echo "unbound $D" ;;
+    supabase_bind)
+      P="$(GET port)"; DIR="$(GET project_dir)"; DIR="\${DIR:-/opt/supabase}"
+      command -v supabase >/dev/null 2>&1 || (npm i -g supabase >/dev/null 2>&1 || true)
+      (cd "$DIR" 2>/dev/null && supabase status 2>&1 | head -30) || echo "supabase project dir not found: $DIR"
+      curl -s -o /dev/null -w "gateway :%{http_code}\\n" --max-time 5 "http://127.0.0.1:\${P:-8000}/rest/v1/" || true ;;
+    restore_all)   restore_services ;;
 
     *) echo "unsupported action: $ACTION"; return 127 ;;
   esac
@@ -519,6 +559,24 @@ EOF
   systemctl start tvcc-agent.service
   echo "systemd service installed and started"
 }
+
+restore_services() { # bring every registered unit back up after a reboot
+  local REPORT="" OKC=0 FAILC=0
+  for U in nginx docker dnsmasq postgresql redis-server; do
+    systemctl list-unit-files 2>/dev/null | grep -q "^$U.service" || continue
+    if systemctl start "$U" 2>/dev/null; then OKC=$((OKC+1)); REPORT="$REPORT $U:ok"; else FAILC=$((FAILC+1)); REPORT="$REPORT $U:fail"; fi
+  done
+  for U in $(systemctl list-unit-files --no-legend 2>/dev/null | awk '{print $1}' | grep -E '^(tvcc-|wg-quick@)' || true); do
+    if systemctl start "$U" 2>/dev/null; then OKC=$((OKC+1)); REPORT="$REPORT $U:ok"; else FAILC=$((FAILC+1)); REPORT="$REPORT $U:fail"; fi
+  done
+  command -v docker >/dev/null 2>&1 && (docker start $(docker ps -aq --filter "status=exited") >/dev/null 2>&1 || true)
+  echo "restored ok=$OKC failed=$FAILC:$REPORT"
+}
+
+# ---- boot restoration: run once per agent start ----
+BOOT_MSG=$(restore_services 2>&1 | tail -c 4000)
+BOOT_J=$(printf '%s' "$BOOT_MSG" | json_escape)
+post "{\\"server_id\\":\\"\${TVCC_SERVER_ID}\\",\\"agent_id\\":\\"\${TVCC_AGENT_ID}\\",\\"agent_version\\":\\"\${TVCC_AGENT_VERSION}\\",\\"event\\":{\\"kind\\":\\"boot_restore\\",\\"severity\\":\\"info\\",\\"message\\":$BOOT_J}}" >/dev/null || true
 
 while true; do
   # ---- real OS metrics: /proc/stat, /proc/meminfo, df -B1 / ----
@@ -587,6 +645,16 @@ PYEOF
   OS=$(. /etc/os-release 2>/dev/null && echo "$PRETTY_NAME" || uname -s)
   PUBLIC_IP=$( (curl -s --max-time 5 https://api.ipify.org || curl -s --max-time 5 https://ifconfig.me || echo "") | head -1 | tr -d '\\n')
   PRIVATE_IP=$(hostname -I 2>/dev/null | awk '{print $1}' | tr -d '\\n')
+
+  # ---- immediate signal when the machine's IP changed ----
+  IP_NOW="\${PUBLIC_IP}|\${PRIVATE_IP}"
+  IP_PREV=$(cat "$TVCC_STATE_DIR/last_ip" 2>/dev/null || echo "")
+  if [ "$IP_NOW" != "$IP_PREV" ]; then
+    echo "$IP_NOW" > "$TVCC_STATE_DIR/last_ip" 2>/dev/null || true
+    if [ -n "$IP_PREV" ]; then
+      post "{\\"server_id\\":\\"\${TVCC_SERVER_ID}\\",\\"agent_id\\":\\"\${TVCC_AGENT_ID}\\",\\"agent_version\\":\\"\${TVCC_AGENT_VERSION}\\",\\"public_ip\\":\\"\${PUBLIC_IP}\\",\\"private_ip\\":\\"\${PRIVATE_IP}\\",\\"event\\":{\\"kind\\":\\"ip_changed\\",\\"severity\\":\\"warning\\",\\"message\\":\\"IP changed \${IP_PREV} -> \${IP_NOW}\\"}}" >/dev/null || true
+    fi
+  fi
   KERNEL=$(uname -r 2>/dev/null || echo "")
   ARCH=$(uname -m 2>/dev/null || echo "")
 

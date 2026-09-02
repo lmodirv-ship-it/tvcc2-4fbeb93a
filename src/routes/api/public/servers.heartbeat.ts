@@ -257,6 +257,19 @@ export const Route = createFileRoute("/api/public/servers/heartbeat")({
           }
         }
 
+        // Agent-reported events (ip_changed, boot_restore, ...)
+        if (body.event && typeof body.event === "object") {
+          const ev = body.event as Record<string, unknown>;
+          await admin.from("server_events").insert({
+            owner_id: server.owner_id,
+            server_id: serverId,
+            kind: typeof ev.kind === "string" ? ev.kind.slice(0, 40) : "agent",
+            severity: typeof ev.severity === "string" ? ev.severity.slice(0, 20) : "info",
+            message: typeof ev.message === "string" ? ev.message.slice(0, 4000) : "",
+            meta: (ev.meta && typeof ev.meta === "object" ? ev.meta : {}) as any,
+          });
+        }
+
         const privateIp = typeof body.private_ip === "string" ? body.private_ip.slice(0, 64) : null;
         const isTvccNode = body.is_tvcc_node === true;
         const tvccVersion = typeof body.tvcc_version === "string" ? body.tvcc_version.slice(0, 32) : null;

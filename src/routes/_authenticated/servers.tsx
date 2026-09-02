@@ -1,4 +1,4 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient, useMutation } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useState } from "react";
@@ -326,6 +326,9 @@ function ServersPage() {
                   </div>
 
                   <div className="flex gap-1 flex-wrap">
+                    <Button asChild size="sm">
+                      <Link to="/servers/$serverId" params={{ serverId: s.id }}>لوحة السيرفر</Link>
+                    </Button>
                     <Button size="sm" variant="outline" onClick={() => setDetailId(s.id)}>التفاصيل</Button>
                     <Button
                       size="sm"

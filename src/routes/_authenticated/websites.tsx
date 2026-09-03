@@ -445,11 +445,6 @@ function WebsitesPage() {
                   </TableHead>
                   <TableHead className="text-right">المعرّف</TableHead>
                   <TableHead className="text-right">الموقع</TableHead>
-                  <TableHead className="text-right">الارتباطات</TableHead>
-                  <TableHead className="text-right">Slug</TableHead>
-                  <TableHead className="text-right">API</TableHead>
-                  <TableHead className="text-right">URL</TableHead>
-                  <TableHead className="text-right">نسخ</TableHead>
                   <TableHead className="text-right">النطاق</TableHead>
                   <TableHead className="text-right">الحالة</TableHead>
                   <TableHead className="text-right">تاريخ الإضافة</TableHead>
@@ -458,9 +453,8 @@ function WebsitesPage() {
                   <TableHead className="text-right">قاعدة البيانات</TableHead>
                   <TableHead className="text-right">التخزين</TableHead>
                   <TableHead className="text-right">العميل</TableHead>
+                  <TableHead className="text-right">نسخ البيانات</TableHead>
                   <TableHead className="text-right">الإجراءات</TableHead>
-
-
                 </TableRow>
               </TableHeader>
               <TableBody>

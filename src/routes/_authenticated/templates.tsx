@@ -181,6 +181,8 @@ function TemplatesPage() {
           ))}
         </div>
       )}
+        </TabsContent>
+      </Tabs>
 
       {linkOpen && (
         <LinkSitesToTemplate template={linkOpen} onClose={() => { setLinkOpen(null); qc.invalidateQueries({ queryKey: ["wtl"] }); }} />

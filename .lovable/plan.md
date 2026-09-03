@@ -39,6 +39,10 @@ LOGO TVCC | الرئيسية | المنصة ▼ | منارة | الأسعار | 
   2. **أزرق تقني** — منارة زرقاء منخفضة الأضلاع (الصورة 23).
   3. **معكوس** — منارة يسار والنص يمين (الصورة 24).
 - مُبدّل ثيمات على الصفحة الرئيسية فقط، مع حفظ الاختيار محلياً، والاتجاه يتبع اللغة.
+- اختيار النموذج (الثيم) يتم من صفحة **النماذج** في لوحة التحكم، وتُعرض النماذج الثلاثة كبطاقات معاينة مع أزرارها.
+- كل زر في الشريط العلوي يفتح صفحة مستقلة (`/pricing`، `/docs`، `/blog`، `/manara`، `/status`) وليس تمريراً داخل صفحة واحدة.
+- رمز/شكل المنارة يظهر في الجانب الأيمن للعربية والأيسر للفرنسية/الإنجليزية.
+- ألوان النموذج المختار تُطبَّق أيضاً على لوحة التحكم (توكنات موحّدة في `src/styles.css`).
 
 ## تفاصيل تقنية
 - ملفات: `src/components/site/PublicNav.tsx`، `src/routes/index.tsx`، `src/routes/_authenticated/manara.tsx`، `src/components/manara/LighthouseScene.tsx`، `src/components/layout/AppSidebar.tsx`، `src/components/layout/AppHeader.tsx`، `src/i18n/{ar,fr,en}.json`، `src/routes/docs.tsx` (جديد)، `src/routes/api/public/visits.ts` (جديد).

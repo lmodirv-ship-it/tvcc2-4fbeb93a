@@ -506,6 +506,18 @@ function WebsitesPage() {
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">{w.client?.full_name || "—"}</TableCell>
                       <TableCell>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 px-2 text-xs border-primary/40 text-primary hover:bg-primary/10 gap-1"
+                          title="نسخ المعرف + Slug + API + URL + عدد الارتباطات"
+                          onClick={() => copyBundle(w)}
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>نسخ</span>
+                        </Button>
+                      </TableCell>
+                      <TableCell>
                         <div className="flex items-center gap-1">
                           <Button size="icon" variant="ghost" className="w-8 h-8" title="ربط">
                             <Link2 className="w-3.5 h-3.5" />

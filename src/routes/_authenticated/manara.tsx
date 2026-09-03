@@ -257,56 +257,42 @@ function ManaraPage() {
 
         {/* Center hero */}
         <div className="lg:col-span-6 space-y-5">
-          <section className="glass-card rounded-3xl p-1 relative overflow-hidden min-h-[420px] flex flex-col">
-            <div className="absolute inset-0 rounded-3xl overflow-hidden">
-              <LighthouseScene active={stats.current > 0} />
-            </div>
-            <div className="relative z-10 flex flex-col items-center justify-center text-center gap-4 p-6 flex-1">
-              <div className="space-y-1">
-                <h2 className="text-3xl md:text-4xl font-black">
-                  <span className="manara-gold-text">منارة</span>
-                  <span className="text-foreground"> — مركز التوجيه الحي</span>
-                </h2>
-                <div className="flex items-center justify-center gap-2 text-sm">
-                  <span className="w-2 h-2 rounded-full bg-success animate-pulse" />
-                  <span className="text-white/90">متصلة بـ TVCC</span>
-                </div>
-              </div>
-              <Badge className="bg-success/15 text-success border-success/30 gap-1 px-3 py-1">
-                <CheckCircle2 className="w-3 h-3" /> جميع المسارات متزامنة
-              </Badge>
+          {/* المشهد المركزي — بدون أي كتابة */}
+          <section className="glass-card rounded-3xl p-1 relative overflow-hidden min-h-[420px]">
+            <LighthouseScene active={stats.current > 0} />
+          </section>
 
-              <div className="w-full max-w-lg mt-4">
-                <div className="flex flex-wrap items-center gap-2 bg-background/60 border border-border/60 rounded-2xl p-2 backdrop-blur">
-                  <div className="flex-1 min-w-[180px] relative">
-                    <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      value={keyInput}
-                      onChange={(e) => setKeyInput(e.target.value)}
-                      placeholder="معرّف المشروع IDXXXXX"
-                      className="pr-9 bg-transparent border-0 focus-visible:ring-0"
-                    />
-                  </div>
-                  <div className="flex-[2] min-w-[220px] relative">
-                    <Globe className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
-                    <Input
-                      value={urlInput}
-                      onChange={(e) => setUrlInput(e.target.value)}
-                      placeholder="أدخل العنوان الجديد..."
-                      className="pr-9 bg-transparent border-0 focus-visible:ring-0"
-                    />
-                  </div>
-                  <Button
-                    onClick={submitChange}
-                    disabled={busy === "change" || !keyInput || !urlInput}
-                    className="rounded-xl w-12 h-12 p-0 bg-gradient-to-br from-manara-gold to-warning hover:opacity-90 shadow-lg shadow-manara-gold/20"
-                  >
-                    <Send className="w-5 h-5 text-background" />
-                  </Button>
-                </div>
+          {/* تسجيل عنوان جديد — بطاقة أسفل المشهد */}
+          <section className="glass-card rounded-2xl p-3">
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex-1 min-w-[180px] relative">
+                <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={keyInput}
+                  onChange={(e) => setKeyInput(e.target.value)}
+                  placeholder="معرّف المشروع IDXXXXX"
+                  className="pr-9"
+                />
               </div>
+              <div className="flex-[2] min-w-[220px] relative">
+                <Globe className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+                <Input
+                  value={urlInput}
+                  onChange={(e) => setUrlInput(e.target.value)}
+                  placeholder="أدخل العنوان الجديد..."
+                  className="pr-9"
+                />
+              </div>
+              <Button
+                onClick={submitChange}
+                disabled={busy === "change" || !keyInput || !urlInput}
+                className="rounded-xl w-12 h-12 p-0 bg-gradient-to-br from-manara-gold to-warning hover:opacity-90 shadow-lg shadow-manara-gold/20"
+              >
+                <Send className="w-5 h-5 text-background" />
+              </Button>
             </div>
           </section>
+
 
           {/* Quick stats row */}
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">

@@ -36,7 +36,9 @@
     "admin": "مدير النظام",
     "search_placeholder": "بحث...",
     "notifications": "الإشعارات",
-    "language": "اللغة"
+    "language": "اللغة",
+    "home": "الرئيسية",
+    "settings": "الإعدادات"
   },
   "sidebar": {
     "tagline": "مركز قيادة المواقع",

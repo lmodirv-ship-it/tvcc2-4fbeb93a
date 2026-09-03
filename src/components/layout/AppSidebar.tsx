@@ -14,8 +14,10 @@ import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { exportDashboardHtml } from "@/lib/html-export";
 import { useTranslation } from "react-i18next";
-import { LANGUAGES } from "@/i18n";
+import { LANGUAGES, type AppLang } from "@/i18n";
+import { useEffect, useState } from "react";
 import tvccLogo from "@/assets/tvcc-logo.asset.json";
+import i18n from "@/i18n";
 
 function ManaraIcon(props: { className?: string }) {
   return (

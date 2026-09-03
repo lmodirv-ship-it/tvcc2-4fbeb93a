@@ -74,6 +74,7 @@ import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } fr
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as AuthenticatedServersIndexRouteImport } from './routes/_authenticated/servers.index'
 import { Route as AuthenticatedEditorIndexRouteImport } from './routes/_authenticated/editor.index'
+import { Route as ApiPublicVisitsRouteImport } from './routes/api/public/visits'
 import { Route as ApiPublicSiteConfigRouteImport } from './routes/api/public/site-config'
 import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes/_authenticated/settings.notifications'
 import { Route as AuthenticatedServersServerIdRouteImport } from './routes/_authenticated/servers.$serverId'
@@ -453,6 +454,11 @@ const AuthenticatedEditorIndexRoute =
     path: '/',
     getParentRoute: () => AuthenticatedEditorRoute,
   } as any)
+const ApiPublicVisitsRoute = ApiPublicVisitsRouteImport.update({
+  id: '/api/public/visits',
+  path: '/api/public/visits',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicSiteConfigRoute = ApiPublicSiteConfigRouteImport.update({
   id: '/api/public/site-config',
   path: '/api/public/site-config',
@@ -746,6 +752,7 @@ export interface FileRoutesByFullPath {
   '/servers/$serverId': typeof AuthenticatedServersServerIdRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
+  '/api/public/visits': typeof ApiPublicVisitsRoute
   '/editor/': typeof AuthenticatedEditorIndexRoute
   '/servers/': typeof AuthenticatedServersIndexRoute
   '/api/public/backups/run-due': typeof ApiPublicBackupsRunDueRoute
@@ -849,6 +856,7 @@ export interface FileRoutesByTo {
   '/servers/$serverId': typeof AuthenticatedServersServerIdRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
+  '/api/public/visits': typeof ApiPublicVisitsRoute
   '/editor': typeof AuthenticatedEditorIndexRoute
   '/servers': typeof AuthenticatedServersIndexRoute
   '/api/public/backups/run-due': typeof ApiPublicBackupsRunDueRoute
@@ -955,6 +963,7 @@ export interface FileRoutesById {
   '/_authenticated/servers/$serverId': typeof AuthenticatedServersServerIdRoute
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
+  '/api/public/visits': typeof ApiPublicVisitsRoute
   '/_authenticated/editor/': typeof AuthenticatedEditorIndexRoute
   '/_authenticated/servers/': typeof AuthenticatedServersIndexRoute
   '/api/public/backups/run-due': typeof ApiPublicBackupsRunDueRoute
@@ -1061,6 +1070,7 @@ export interface FileRouteTypes {
     | '/servers/$serverId'
     | '/settings/notifications'
     | '/api/public/site-config'
+    | '/api/public/visits'
     | '/editor/'
     | '/servers/'
     | '/api/public/backups/run-due'
@@ -1164,6 +1174,7 @@ export interface FileRouteTypes {
     | '/servers/$serverId'
     | '/settings/notifications'
     | '/api/public/site-config'
+    | '/api/public/visits'
     | '/editor'
     | '/servers'
     | '/api/public/backups/run-due'
@@ -1269,6 +1280,7 @@ export interface FileRouteTypes {
     | '/_authenticated/servers/$serverId'
     | '/_authenticated/settings/notifications'
     | '/api/public/site-config'
+    | '/api/public/visits'
     | '/_authenticated/editor/'
     | '/_authenticated/servers/'
     | '/api/public/backups/run-due'
@@ -1306,6 +1318,7 @@ export interface RootRouteChildren {
   DotlovableOauthConsentRoute: typeof DotlovableOauthConsentRoute
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicSiteConfigRoute: typeof ApiPublicSiteConfigRoute
+  ApiPublicVisitsRoute: typeof ApiPublicVisitsRoute
   ApiPublicBackupsRunDueRoute: typeof ApiPublicBackupsRunDueRoute
   ApiPublicCoreIngestRoute: typeof ApiPublicCoreIngestRoute
   ApiPublicHnRlsVerifyRoute: typeof ApiPublicHnRlsVerifyRoute
@@ -1783,6 +1796,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedEditorIndexRouteImport
       parentRoute: typeof AuthenticatedEditorRoute
     }
+    '/api/public/visits': {
+      id: '/api/public/visits'
+      path: '/api/public/visits'
+      fullPath: '/api/public/visits'
+      preLoaderRoute: typeof ApiPublicVisitsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/site-config': {
       id: '/api/public/site-config'
       path: '/api/public/site-config'
@@ -2251,6 +2271,7 @@ const rootRouteChildren: RootRouteChildren = {
   DotlovableOauthConsentRoute: DotlovableOauthConsentRoute,
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicSiteConfigRoute: ApiPublicSiteConfigRoute,
+  ApiPublicVisitsRoute: ApiPublicVisitsRoute,
   ApiPublicBackupsRunDueRoute: ApiPublicBackupsRunDueRoute,
   ApiPublicCoreIngestRoute: ApiPublicCoreIngestRoute,
   ApiPublicHnRlsVerifyRoute: ApiPublicHnRlsVerifyRoute,

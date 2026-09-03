@@ -251,9 +251,9 @@
   text-shadow: 0 0 16px oklch(0.78 0.16 85 / 0.45);
 }
 
-/* ============ Theme presets ============ */
-@layer base {
-  [data-theme] { color-scheme: dark; }
+/* ============ Theme presets (unlayered so they override :root) ============ */
+[data-theme] { color-scheme: dark; }
+
 
   [data-theme="midnight"] {
     --background: oklch(0.14 0.015 265); --foreground: oklch(0.95 0.008 250);

@@ -697,25 +697,51 @@ function fmtDate(v?: string | null) {
   return `${d.toLocaleDateString("fr-FR")} ${d.toLocaleTimeString("fr-FR", { hour: "2-digit", minute: "2-digit" })}`;
 }
 
+export function siteHost(w: any) {
+  return String(w?.domain ?? "").replace(/^https?:\/\//, "").replace(/\/.*$/, "").trim().toLowerCase();
+}
+export function siteSlug(w: any) {
+  return w?.slug || siteHost(w).replace(/[^a-z0-9]+/g, "-") || "—";
+}
+export function siteUrl(w: any) {
+  return w?.site_url || (siteHost(w) ? `https://${siteHost(w)}` : "—");
+}
+export function siteApi(w: any) {
+  return w?.api_url || w?.api_config_url || (siteHost(w) ? `https://${siteHost(w)}/api` : "—");
+}
+
+function InfoRow({ label, value, ltr }: { label: string; value: any; ltr?: boolean }) {
+  return (
+    <div className="flex items-center justify-between gap-3 py-1.5 border-b border-border/40 text-xs">
+      <span className="text-muted-foreground">{label}</span>
+      <span className={`font-medium truncate max-w-[60%] ${ltr ? "font-mono" : ""}`} dir={ltr ? "ltr" : undefined}>
+        {value ?? "—"}
+      </span>
+    </div>
+  );
+}
+
 function SitePreviewDialog({
   data,
   onClose,
+  links = 0,
 }: {
-  data: { code: string; name: string; domain: string } | null;
+  data: any | null;
   onClose: () => void;
+  links?: number;
 }) {
-  const url = data ? `https://${data.domain.replace(/^https?:\/\//, "")}` : "";
+  const url = data ? siteUrl(data) : "";
   const shot = data ? `https://s.wordpress.com/mshots/v1/${encodeURIComponent(url)}?w=1000&h=650` : "";
   return (
     <Dialog open={!!data} onOpenChange={(o) => !o && onClose()}>
-      <DialogContent className="max-w-2xl">
+      <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto" dir="rtl">
         <DialogHeader>
           <DialogTitle className="text-right flex items-center gap-2 justify-end">
-            <span className="font-mono text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">{data?.code || "—"}</span>
+            <span className="font-mono text-xs px-2 py-0.5 rounded bg-primary/10 text-primary">{data?.site_code || "—"}</span>
             {data?.name}
           </DialogTitle>
         </DialogHeader>
-        <div className="space-y-3">
+        <div className="grid md:grid-cols-2 gap-4">
           <div className="rounded-lg overflow-hidden border border-border/60 bg-muted/30 aspect-[10/6.5]">
             {data && (
               <img
@@ -726,17 +752,50 @@ function SitePreviewDialog({
               />
             )}
           </div>
-          <div className="flex items-center justify-between gap-2">
-            <a href={url} target="_blank" rel="noreferrer" className="text-xs text-primary underline" dir="ltr">
-              {url}
-            </a>
+          <div className="space-y-1">
+            <InfoRow label="Slug" value={data && siteSlug(data)} ltr />
+            <InfoRow label="URL" value={url} ltr />
+            <InfoRow label="API" value={data && siteApi(data)} ltr />
+            <InfoRow label="النطاق" value={data?.domain} ltr />
+            <InfoRow label="واجهة أمامية" value={data?.frontend_domain} ltr />
+            <InfoRow label="الحالة" value={data?.status} />
+            <InfoRow label="مفعّل" value={data?.is_active ? "نعم" : "لا"} />
+            <InfoRow label="تحقق الملكية" value={data?.verified ? "موثّق" : "غير موثّق"} />
+            <InfoRow label="المعرّف العام (منارة)" value={data?.manara_code || "—"} ltr />
+            <InfoRow label="عدد الارتباطات" value={links} />
+            <InfoRow label="قاعدة البيانات" value={data?.db?.name} />
+            <InfoRow label="التخزين" value={data?.storage?.name} />
+            <InfoRow label="العميل" value={data?.client?.full_name} />
+            <InfoRow label="تطبيق أندرويد" value={data?.android_enabled ? (data?.android_latest_version || "مفعّل") : "غير مفعّل"} />
+            <InfoRow label="آخر فحص" value={fmtDate(data?.last_checked_at)} ltr />
+            <InfoRow label="تاريخ الإضافة" value={fmtDate(data?.created_at)} ltr />
+          </div>
+        </div>
+        <div className="flex items-center justify-between gap-2 pt-2">
+          <a href={url} target="_blank" rel="noreferrer" className="text-xs text-primary underline" dir="ltr">
+            {url}
+          </a>
+          <div className="flex gap-2">
             <Button
               size="sm"
               variant="outline"
               onClick={() => {
-                if (!data?.code) return;
-                navigator.clipboard?.writeText(data.code);
-                toast.success(`تم نسخ ${data.code}`);
+                if (!data) return;
+                navigator.clipboard?.writeText(
+                  `slug: ${siteSlug(data)}\napi: ${siteApi(data)}\nurl: ${siteUrl(data)}\nالارتباطات: ${links}`,
+                );
+                toast.success("تم نسخ بيانات الموقع");
+              }}
+            >
+              <Copy className="w-3.5 h-3.5 ml-1" /> نسخ Slug + API + URL
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                if (!data?.site_code) return;
+                navigator.clipboard?.writeText(data.site_code);
+                toast.success(`تم نسخ ${data.site_code}`);
               }}
             >
               <Copy className="w-3.5 h-3.5 ml-1" /> نسخ المعرّف

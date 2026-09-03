@@ -141,6 +141,22 @@ function AuthPage() {
                     {loading && <Loader2 className="w-4 h-4 animate-spin ml-2" />}
                     دخول
                   </Button>
+                  <button
+                    type="button"
+                    className="w-full text-xs text-muted-foreground hover:text-primary"
+                    onClick={async () => {
+                      if (!email) return toast.error("أدخل بريدك الإلكتروني أولاً");
+                      setLoading(true);
+                      const { error } = await supabase.auth.resetPasswordForEmail(email, {
+                        redirectTo: `${window.location.origin}/reset-password`,
+                      });
+                      setLoading(false);
+                      if (error) return toast.error(error.message);
+                      toast.success("تم إرسال رابط استعادة كلمة السر إلى بريدك");
+                    }}
+                  >
+                    نسيت كلمة المرور؟
+                  </button>
                 </form>
               </TabsContent>
 

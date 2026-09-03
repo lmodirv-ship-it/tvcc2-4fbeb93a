@@ -6,13 +6,20 @@ import {
   readCachedDesignTokens,
   type DesignTokens,
 } from "@/lib/design-studio";
-import { applyTheme, type ThemeId } from "@/lib/themes";
+import { applyTheme, readStoredTheme, type ThemeId } from "@/lib/themes";
 
-/** Applies the globally saved design identity (colors, font, radius, shadow) on every page. */
+/**
+ * Applies the saved design identity (font, radius, shadow, colors) globally.
+ * A theme explicitly chosen by the user always wins over the brand colors,
+ * so the theme switcher visibly changes background / buttons / text.
+ */
 export function DesignProvider() {
   useEffect(() => {
+    const userTheme = readStoredTheme();
+    if (userTheme) applyTheme(userTheme);
+
     const cached = readCachedDesignTokens();
-    if (cached) applyDesignTokens(cached);
+    if (cached) applyDesignTokens(cached, { skipColors: !!userTheme });
 
     let cancelled = false;
     (async () => {
@@ -23,7 +30,15 @@ export function DesignProvider() {
       if (cancelled || !data) return;
       const tokens = data as DesignTokens;
       cacheDesignTokens(tokens);
-      if (tokens.theme_id) applyTheme(tokens.theme_id as ThemeId);
+
+      if (userTheme) {
+        // keep the user's choice; only typography/shape come from brand settings
+        applyTheme(userTheme);
+        applyDesignTokens(tokens, { skipColors: true });
+        return;
+      }
+
+      if (tokens.theme_id) applyTheme(tokens.theme_id as ThemeId, { persist: false });
       applyDesignTokens(tokens);
     })();
 

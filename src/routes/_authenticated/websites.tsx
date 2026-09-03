@@ -117,6 +117,32 @@ function WebsitesPage() {
     }));
   }, [websites, databases, storages, clients]);
 
+  const codeCounts = useMemo(() => {
+    const m: Record<string, number> = {};
+    (websites || []).forEach((w: any) => {
+      const c = (w.manara_code || "").trim();
+      if (c) m[c] = (m[c] || 0) + 1;
+    });
+    return m;
+  }, [websites]);
+
+  const linkCount = (w: any) => {
+    const c = (w.manara_code || "").trim();
+    if (!c) return 0;
+    return Math.max(0, (codeCounts[c] || 1) - 1);
+  };
+
+  const copyBundle = (w: any) => {
+    const txt = [
+      `slug: ${siteSlug(w)}`,
+      `api: ${siteApi(w)}`,
+      `url: ${siteUrl(w)}`,
+      `الارتباطات: ${linkCount(w)}`,
+    ].join("\n");
+    navigator.clipboard?.writeText(txt);
+    toast.success("تم نسخ Slug + API + URL + عدد الارتباطات");
+  };
+
   const filtered = enriched.filter((w) => {
     const q = search.toLowerCase();
     const matchQ =

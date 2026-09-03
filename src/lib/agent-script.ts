@@ -796,6 +796,44 @@ EOF2
       IF="$(GET interface)"; [ -n "$IF" ] || IF="wg0"
       wg show "$IF" 2>&1 || echo "interface $IF is down" ;;
 
+    site_autostore)
+      D="$(GET domain)"; TP="$(GET storage_path)"; TH="$(GET target_host)"
+      [ -n "$D" ] || { echo "domain required"; return 2; }
+      SP="/var/www/$D"
+      mkdir -p "$SP" && chown -R www-data:www-data "$SP" 2>/dev/null || true
+      mkdir -p "$TVCC_BACKUP_DIR/sites"
+      SNAP="$TVCC_BACKUP_DIR/sites/\${D}-$(date +%Y%m%d%H%M).tar.gz"
+      tar czf "$SNAP" -C "/var/www" "$D" 2>/dev/null || true
+      ls -1t "$TVCC_BACKUP_DIR/sites/\${D}-"*.tar.gz 2>/dev/null | tail -n +4 | xargs -r rm -f
+      if [ -n "$TP" ]; then
+        if [ -n "$TH" ]; then
+          ssh -o StrictHostKeyChecking=no "$TH" "mkdir -p '$TP'" >/dev/null 2>&1 || true
+          rsync -az --delete -e "ssh -o StrictHostKeyChecking=no" "$SP/" "$TH:$TP/" >/dev/null 2>&1 || true
+        else
+          mkdir -p "$TP"; rsync -az --delete "$SP/" "$TP/" >/dev/null 2>&1 || true
+        fi
+      fi
+      echo "autostore $D path=$SP size_mb=$(du -sm "$SP" 2>/dev/null | cut -f1) snapshot=$SNAP copies=$(ls -1 "$TVCC_BACKUP_DIR/sites/\${D}-"*.tar.gz 2>/dev/null | wc -l)" ;;
+    autostore_scan)
+      mkdir -p "$TVCC_BACKUP_DIR/sites"
+      OUTL=""
+      for DIR in /var/www/*/; do
+        [ -d "$DIR" ] || continue
+        DN=$(basename "$DIR")
+        LAST=$(ls -1t "$TVCC_BACKUP_DIR/sites/\${DN}-"*.tar.gz 2>/dev/null | head -1)
+        AGE="never"
+        if [ -n "$LAST" ]; then AGE=$(( ( $(date +%s) - $(stat -c %Y "$LAST") ) / 3600 ))h; fi
+        OUTL="$OUTL\\n$DN size_mb=$(du -sm "$DIR" 2>/dev/null | cut -f1) last_snapshot=$AGE"
+      done
+      printf 'autostore inventory:%b\\n' "$OUTL" ;;
+    agent_sync_all)
+      printf 'version=%s\\nsites=%s\\nunits=%s\\nports=%s\\ndisk=%s\\n' \\
+        "$TVCC_AGENT_VERSION" \\
+        "$(ls -1 /var/www 2>/dev/null | tr '\\n' ',')" \\
+        "$(systemctl list-units --type=service --state=running --no-legend 2>/dev/null | awk '{print $1}' | tr '\\n' ',' | head -c 3000)" \\
+        "$(ss -tulpn 2>/dev/null | awk 'NR>1{print $5}' | tr '\\n' ',' | head -c 2000)" \\
+        "$(df -h / | tail -1)" ;;
+
     *) echo "unsupported action: $ACTION"; return 127 ;;
   esac
 

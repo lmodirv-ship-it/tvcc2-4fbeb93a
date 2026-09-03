@@ -187,6 +187,19 @@ export function AppSidebar() {
                 {section.items.map((item) => (
                   <SidebarLink key={item.url} item={item} active={isActive(item.url)} />
                 ))}
+                {section.items === coreItems && (
+                  <SidebarMenuItem>
+                    <SidebarMenuButton
+                      onClick={handleExport}
+                      tooltip={t("sidebar.export_html")}
+                      title={t("sidebar.export_html")}
+                      className="text-primary"
+                    >
+                      <Code2 className="w-4 h-4" />
+                      <span>{t("sidebar.export_html")}</span>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                )}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
@@ -194,14 +207,7 @@ export function AppSidebar() {
       </SidebarContent>
 
       <SidebarFooter className="border-t border-sidebar-border p-3 space-y-2">
-        <button
-          onClick={handleExport}
-          className="w-full text-right rounded-lg p-3 border border-primary/30 hover:bg-primary/10 transition flex items-center gap-2"
-          style={{ background: "linear-gradient(135deg, oklch(0.28 0.06 280 / 0.4), transparent)" }}
-        >
-          <Code2 className="w-4 h-4 text-primary" />
-          <span className="text-xs font-medium">{t("sidebar.export_html")}</span>
-        </button>
+
         <SidebarMenu>
           <SidebarMenuItem>
             <SidebarMenuButton onClick={handleLogout} className="text-muted-foreground">

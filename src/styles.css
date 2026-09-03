@@ -424,7 +424,7 @@
     --gradient-card: linear-gradient(180deg, oklch(1 0 0), oklch(0.975 0.01 85));
     --shadow-card: 0 4px 18px -8px oklch(0.4 0.04 60 / 0.25);
   }
-}
+
 
 /* ===== HN CTA buttons ===== */
 @keyframes hn-hue { 0% { filter: hue-rotate(0deg); } 100% { filter: hue-rotate(360deg); } }

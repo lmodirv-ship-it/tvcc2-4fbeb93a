@@ -122,10 +122,21 @@ function SidebarLink({ item, active }: { item: typeof coreItems[number]; active:
 }
 
 export function AppSidebar() {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
-  const langDef = LANGUAGES.find((l) => l.code === i18n.language) ?? LANGUAGES[0];
+  const [lang, setLang] = useState<AppLang>(i18n.language as AppLang);
+
+  useEffect(() => {
+    const onLangChanged = (lng: string) => setLang(lng as AppLang);
+    i18n.on("languageChanged", onLangChanged);
+    setLang(i18n.language as AppLang);
+    return () => {
+      i18n.off("languageChanged", onLangChanged);
+    };
+  }, []);
+
+  const langDef = LANGUAGES.find((l) => l.code === lang) ?? LANGUAGES[0];
   const side = langDef.dir === "rtl" ? "right" : "left";
 
   const isActive = (path: string) => pathname === path || pathname.startsWith(path + "/");

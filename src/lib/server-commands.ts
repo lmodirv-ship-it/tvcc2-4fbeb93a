@@ -84,6 +84,9 @@ export const COMMAND_WHITELIST = [
   "agent_diag",
   "job_cancel",
   "site_publish",
+  "site_autostore",
+  "autostore_scan",
+  "agent_sync_all",
 ] as const;
 
 
@@ -91,6 +94,9 @@ export const COMMAND_WHITELIST = [
 export type CommandAction = (typeof COMMAND_WHITELIST)[number];
 
 export const COMMAND_LABELS: Record<string, string> = {
+  site_autostore: "تخزين تلقائي للموقع",
+  autostore_scan: "فحص التخزين التلقائي",
+  agent_sync_all: "مزامنة شاملة للوكيل",
   hosting_provision: "تجهيز مساحة استضافة",
   hosting_quota_set: "ضبط حصة التخزين",
   hosting_usage_report: "تقرير استهلاك التخزين",

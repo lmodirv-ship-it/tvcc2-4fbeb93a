@@ -34,6 +34,7 @@ export const BUILTIN_AGENT_ROLES = [
       "deploy_upload", "build_run", "serve_start", "serve_stop", "git_deploy", "unit_write",
       "site_dir", "write_config", "nginx_write_vhost", "issue_ssl", "ssl_issue_manual",
       "site_backup", "site_restore", "db_dump", "db_import", "db_sync", "storage_sync",
+      "site_autostore", "autostore_scan", "agent_sync_all",
       "sync_site", "fs_write", "fs_mkdir", "fs_move", "agent_self_update",
     ],
   },

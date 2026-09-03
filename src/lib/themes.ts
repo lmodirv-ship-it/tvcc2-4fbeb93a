@@ -39,11 +39,62 @@ export const THEMES: ThemeDef[] = [
 export const THEME_STORAGE_KEY = "tvcc-theme";
 export const DEFAULT_THEME: ThemeId = "neon";
 
-export function applyTheme(id: ThemeId) {
+/** Color variables that the design studio may pin inline — they must be cleared
+ *  so the selected theme's CSS values win. Font/radius/shadow stay untouched. */
+export const THEME_COLOR_VARS = [
+  "--background",
+  "--foreground",
+  "--card",
+  "--card-foreground",
+  "--popover",
+  "--popover-foreground",
+  "--primary",
+  "--primary-foreground",
+  "--secondary",
+  "--secondary-foreground",
+  "--muted",
+  "--muted-foreground",
+  "--accent",
+  "--accent-foreground",
+  "--border",
+  "--input",
+  "--ring",
+  "--sidebar",
+  "--sidebar-foreground",
+  "--sidebar-primary",
+  "--sidebar-primary-foreground",
+  "--sidebar-accent",
+  "--sidebar-accent-foreground",
+  "--sidebar-border",
+  "--gradient-primary",
+  "--gradient-card",
+];
+
+export function clearThemeColorOverrides() {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
+  THEME_COLOR_VARS.forEach((v) => root.style.removeProperty(v));
+}
+
+export function readStoredTheme(): ThemeId | null {
+  try {
+    const saved = window.localStorage.getItem(THEME_STORAGE_KEY);
+    return THEMES.some((t) => t.id === saved) ? (saved as ThemeId) : null;
+  } catch {
+    return null;
+  }
+}
+
+export function applyTheme(id: ThemeId, opts: { persist?: boolean } = {}) {
+  if (typeof document === "undefined") return;
+  const root = document.documentElement;
+
+  clearThemeColorOverrides();
+
   if (id === DEFAULT_THEME) root.removeAttribute("data-theme");
   else root.setAttribute("data-theme", id);
+
+  if (opts.persist === false) return;
   try {
     window.localStorage.setItem(THEME_STORAGE_KEY, id);
   } catch {

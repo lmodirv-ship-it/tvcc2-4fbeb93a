@@ -2737,6 +2737,42 @@ export type Database = {
           },
         ]
       }
+      hub_exports: {
+        Row: {
+          created_at: string
+          error_message: string | null
+          hub_key: string
+          hub_url: string
+          id: string
+          owner_id: string
+          response: Json | null
+          sites_count: number
+          status: string
+        }
+        Insert: {
+          created_at?: string
+          error_message?: string | null
+          hub_key: string
+          hub_url: string
+          id?: string
+          owner_id: string
+          response?: Json | null
+          sites_count?: number
+          status?: string
+        }
+        Update: {
+          created_at?: string
+          error_message?: string | null
+          hub_key?: string
+          hub_url?: string
+          id?: string
+          owner_id?: string
+          response?: Json | null
+          sites_count?: number
+          status?: string
+        }
+        Relationships: []
+      }
       lovable_sites: {
         Row: {
           created_at: string
@@ -5342,6 +5378,78 @@ export type Database = {
             columns: ["service_id"]
             isOneToOne: false
             referencedRelation: "site_services"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      service_requests: {
+        Row: {
+          callback_url: string | null
+          created_at: string
+          error_message: string | null
+          id: string
+          owner_id: string
+          payload: Json
+          provider_domain: string | null
+          provider_website_id: string | null
+          requester_domain: string | null
+          requester_website_id: string | null
+          result: Json | null
+          routed_by: string | null
+          service_key: string
+          service_type: string | null
+          status: string
+          updated_at: string
+        }
+        Insert: {
+          callback_url?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          owner_id: string
+          payload?: Json
+          provider_domain?: string | null
+          provider_website_id?: string | null
+          requester_domain?: string | null
+          requester_website_id?: string | null
+          result?: Json | null
+          routed_by?: string | null
+          service_key: string
+          service_type?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Update: {
+          callback_url?: string | null
+          created_at?: string
+          error_message?: string | null
+          id?: string
+          owner_id?: string
+          payload?: Json
+          provider_domain?: string | null
+          provider_website_id?: string | null
+          requester_domain?: string | null
+          requester_website_id?: string | null
+          result?: Json | null
+          routed_by?: string | null
+          service_key?: string
+          service_type?: string | null
+          status?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "service_requests_provider_website_id_fkey"
+            columns: ["provider_website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "service_requests_requester_website_id_fkey"
+            columns: ["requester_website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
             referencedColumns: ["id"]
           },
         ]

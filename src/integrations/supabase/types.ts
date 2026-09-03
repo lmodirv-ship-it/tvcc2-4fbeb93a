@@ -7112,6 +7112,7 @@ export type Database = {
           android_updated_at: string | null
           android_version_code: number | null
           api_config_url: string | null
+          api_url: string | null
           created_at: string
           description: string | null
           domain: string
@@ -7124,6 +7125,7 @@ export type Database = {
           is_remix: boolean | null
           last_checked_at: string | null
           lovable_workspace_id: string | null
+          manara_code: string | null
           name: string
           owner_email: string | null
           owner_id: string | null
@@ -7134,6 +7136,8 @@ export type Database = {
           server_id: string | null
           site_code: string | null
           site_id: string | null
+          site_url: string | null
+          slug: string | null
           status: Database["public"]["Enums"]["site_status"]
           updated_at: string
           verified: boolean
@@ -7149,6 +7153,7 @@ export type Database = {
           android_updated_at?: string | null
           android_version_code?: number | null
           api_config_url?: string | null
+          api_url?: string | null
           created_at?: string
           description?: string | null
           domain: string
@@ -7161,6 +7166,7 @@ export type Database = {
           is_remix?: boolean | null
           last_checked_at?: string | null
           lovable_workspace_id?: string | null
+          manara_code?: string | null
           name: string
           owner_email?: string | null
           owner_id?: string | null
@@ -7171,6 +7177,8 @@ export type Database = {
           server_id?: string | null
           site_code?: string | null
           site_id?: string | null
+          site_url?: string | null
+          slug?: string | null
           status?: Database["public"]["Enums"]["site_status"]
           updated_at?: string
           verified?: boolean
@@ -7186,6 +7194,7 @@ export type Database = {
           android_updated_at?: string | null
           android_version_code?: number | null
           api_config_url?: string | null
+          api_url?: string | null
           created_at?: string
           description?: string | null
           domain?: string
@@ -7198,6 +7207,7 @@ export type Database = {
           is_remix?: boolean | null
           last_checked_at?: string | null
           lovable_workspace_id?: string | null
+          manara_code?: string | null
           name?: string
           owner_email?: string | null
           owner_id?: string | null
@@ -7208,6 +7218,8 @@ export type Database = {
           server_id?: string | null
           site_code?: string | null
           site_id?: string | null
+          site_url?: string | null
+          slug?: string | null
           status?: Database["public"]["Enums"]["site_status"]
           updated_at?: string
           verified?: boolean

@@ -62,6 +62,23 @@ function WebsitesPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [preview, setPreview] = useState<{ code: string; name: string; domain: string } | null>(null);
+  const [autoCheck, setAutoCheck] = useState(false);
+
+  useEffect(() => {
+    if (!autoCheck) return;
+    const tick = async () => {
+      try {
+        const res = await runCheckFn();
+        setLastCheck(res.checked_at);
+        qc.invalidateQueries({ queryKey: ["websites"] });
+      } catch {
+        /* silent */
+      }
+    };
+    void tick();
+    const id = window.setInterval(tick, 180_000);
+    return () => window.clearInterval(id);
+  }, [autoCheck, runCheckFn, qc]);
 
 
   const { data: websites, isLoading } = useQuery({

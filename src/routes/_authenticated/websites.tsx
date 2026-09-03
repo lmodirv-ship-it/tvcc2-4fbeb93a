@@ -134,13 +134,14 @@ function WebsitesPage() {
 
   const copyBundle = (w: any) => {
     const txt = [
+      `المعرف: ${(w as any).site_code ?? "—"}`,
       `slug: ${siteSlug(w)}`,
       `api: ${siteApi(w)}`,
       `url: ${siteUrl(w)}`,
-      `الارتباطات: ${linkCount(w)}`,
+      `عدد الارتباطات: ${linkCount(w)}`,
     ].join("\n");
     navigator.clipboard?.writeText(txt);
-    toast.success("تم نسخ Slug + API + URL + عدد الارتباطات");
+    toast.success("تم نسخ المعرف + Slug + API + URL + عدد الارتباطات");
   };
 
   const filtered = enriched.filter((w) => {

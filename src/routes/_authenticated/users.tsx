@@ -17,7 +17,7 @@ import { useServerFn } from "@tanstack/react-start";
 import { adminSetPassword } from "@/lib/account.functions";
 import { useRoles, PERMANENT_OWNER_EMAILS, isPermanentOwnerEmail } from "@/hooks/use-roles";
 import { usePermissions } from "@/hooks/use-permissions";
-import { PERMISSIONS, ROLE_ORDER, ROLE_LABELS, ROLE_DESCRIPTIONS, ROLE_PERMISSIONS, roleHas } from "@/lib/permissions";
+import { PERMISSIONS as PERMISSION_MATRIX, ROLE_ORDER, ROLE_LABELS, ROLE_DESCRIPTIONS, ROLE_PERMISSIONS as PERMISSION_MATRIX, roleHas } from "@/lib/permissions";
 
 export const Route = createFileRoute("/_authenticated/users")({
   component: Page,
@@ -74,7 +74,7 @@ function Page() {
 
 function PermissionsTab() {
   const { primaryRole } = usePermissions();
-  const groups = Array.from(new Set(PERMISSIONS.map((p) => p.group)));
+  const groups = Array.from(new Set(PERMISSION_MATRIX.map((p) => p.group)));
 
   return (
     <div className="space-y-4">
@@ -111,7 +111,7 @@ function PermissionsTab() {
                   <TableRow className="bg-muted/40">
                     <TableCell colSpan={5} className="font-semibold text-xs">{group}</TableCell>
                   </TableRow>
-                  {PERMISSIONS.filter((p) => p.group === group).map((p) => (
+                  {PERMISSION_MATRIX.filter((p) => p.group === group).map((p) => (
                     <TableRow key={p.key}>
                       <TableCell className="text-sm">{p.label}</TableCell>
                       {ROLE_ORDER.map((r) => (

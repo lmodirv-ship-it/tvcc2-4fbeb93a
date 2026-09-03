@@ -162,11 +162,13 @@ function ServerDetailPage() {
           <TabsTrigger value="access">الأدوار والصلاحيات</TabsTrigger>
           <TabsTrigger value="agent">الوكيل والصلاحيات</TabsTrigger>
           <TabsTrigger value="mesh">الشبكة الخاصة والأتمتة</TabsTrigger>
+          <TabsTrigger value="autostore">التخزين التلقائي</TabsTrigger>
           <TabsTrigger value="events">الأحداث</TabsTrigger>
         </TabsList>
 
         <TabsContent value="agent"><AgentPanel serverId={serverId} /></TabsContent>
         <TabsContent value="mesh"><MeshPanel serverId={serverId} /></TabsContent>
+        <TabsContent value="autostore" className="pt-4"><AutostorePanel serverId={serverId} /></TabsContent>
 
         {/* ------------------------------------------------ overview */}
         <TabsContent value="overview" className="space-y-4 pt-4">

@@ -1251,6 +1251,82 @@ export type Database = {
         }
         Relationships: []
       }
+      dashboard_tasks: {
+        Row: {
+          agent_job_id: string | null
+          assigned_to: string | null
+          category: string
+          completed_at: string | null
+          created_at: string
+          description: string
+          due_at: string | null
+          id: string
+          owner_id: string
+          priority: number
+          server_id: string | null
+          status: string
+          title: string
+          updated_at: string
+          website_id: string | null
+        }
+        Insert: {
+          agent_job_id?: string | null
+          assigned_to?: string | null
+          category?: string
+          completed_at?: string | null
+          created_at?: string
+          description?: string
+          due_at?: string | null
+          id?: string
+          owner_id: string
+          priority?: number
+          server_id?: string | null
+          status?: string
+          title: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Update: {
+          agent_job_id?: string | null
+          assigned_to?: string | null
+          category?: string
+          completed_at?: string | null
+          created_at?: string
+          description?: string
+          due_at?: string | null
+          id?: string
+          owner_id?: string
+          priority?: number
+          server_id?: string | null
+          status?: string
+          title?: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "dashboard_tasks_agent_job_id_fkey"
+            columns: ["agent_job_id"]
+            isOneToOne: false
+            referencedRelation: "agent_jobs"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dashboard_tasks_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "dashboard_tasks_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       databases: {
         Row: {
           connection_url: string | null
@@ -1649,6 +1725,45 @@ export type Database = {
           ssl_status?: string
           updated_at?: string
           website_id?: string | null
+        }
+        Relationships: []
+      }
+      entity_relations: {
+        Row: {
+          created_at: string
+          id: string
+          metadata: Json
+          owner_id: string
+          relation: string
+          source_id: string
+          source_type: string
+          target_id: string
+          target_type: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          metadata?: Json
+          owner_id: string
+          relation?: string
+          source_id: string
+          source_type: string
+          target_id: string
+          target_type: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          metadata?: Json
+          owner_id?: string
+          relation?: string
+          source_id?: string
+          source_type?: string
+          target_id?: string
+          target_type?: string
+          updated_at?: string
         }
         Relationships: []
       }
@@ -6666,6 +6781,39 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      user_preferences: {
+        Row: {
+          created_at: string
+          extras: Json
+          id: string
+          language: string
+          sidebar_collapsed: boolean
+          theme_id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          extras?: Json
+          id?: string
+          language?: string
+          sidebar_collapsed?: boolean
+          theme_id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          extras?: Json
+          id?: string
+          language?: string
+          sidebar_collapsed?: boolean
+          theme_id?: string
+          updated_at?: string
+          user_id?: string
+        }
+        Relationships: []
       }
       user_roles: {
         Row: {

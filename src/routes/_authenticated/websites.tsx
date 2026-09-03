@@ -134,13 +134,14 @@ function WebsitesPage() {
 
   const copyBundle = (w: any) => {
     const txt = [
+      `المعرف: ${(w as any).site_code ?? "—"}`,
       `slug: ${siteSlug(w)}`,
       `api: ${siteApi(w)}`,
       `url: ${siteUrl(w)}`,
-      `الارتباطات: ${linkCount(w)}`,
+      `عدد الارتباطات: ${linkCount(w)}`,
     ].join("\n");
     navigator.clipboard?.writeText(txt);
-    toast.success("تم نسخ Slug + API + URL + عدد الارتباطات");
+    toast.success("تم نسخ المعرف + Slug + API + URL + عدد الارتباطات");
   };
 
   const filtered = enriched.filter((w) => {
@@ -444,11 +445,6 @@ function WebsitesPage() {
                   </TableHead>
                   <TableHead className="text-right">المعرّف</TableHead>
                   <TableHead className="text-right">الموقع</TableHead>
-                  <TableHead className="text-right">الارتباطات</TableHead>
-                  <TableHead className="text-right">Slug</TableHead>
-                  <TableHead className="text-right">API</TableHead>
-                  <TableHead className="text-right">URL</TableHead>
-                  <TableHead className="text-right">نسخ</TableHead>
                   <TableHead className="text-right">النطاق</TableHead>
                   <TableHead className="text-right">الحالة</TableHead>
                   <TableHead className="text-right">تاريخ الإضافة</TableHead>
@@ -457,16 +453,15 @@ function WebsitesPage() {
                   <TableHead className="text-right">قاعدة البيانات</TableHead>
                   <TableHead className="text-right">التخزين</TableHead>
                   <TableHead className="text-right">العميل</TableHead>
+                  <TableHead className="text-right">نسخ البيانات</TableHead>
                   <TableHead className="text-right">الإجراءات</TableHead>
-
-
                 </TableRow>
               </TableHeader>
               <TableBody>
                 {isLoading ? (
-                  <TableRow><TableCell colSpan={17} className="text-center py-10"><Loader2 className="w-5 h-5 animate-spin inline" /></TableCell></TableRow>
+                  <TableRow><TableCell colSpan={13} className="text-center py-10"><Loader2 className="w-5 h-5 animate-spin inline" /></TableCell></TableRow>
                 ) : pageData.length === 0 ? (
-                  <TableRow><TableCell colSpan={17} className="text-center py-10 text-muted-foreground">لا توجد مواقع</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={13} className="text-center py-10 text-muted-foreground">لا توجد مواقع</TableCell></TableRow>
                 ) : (
                   pageData.map((w) => (
                     <TableRow key={w.id} className="border-border/40">
@@ -491,29 +486,6 @@ function WebsitesPage() {
                           </span>
                         </div>
                       </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="outline"
-                          className={linkCount(w) > 0 ? "border-primary/40 text-primary gap-1" : "text-muted-foreground gap-1"}
-                          title={(w as any).manara_code ? `المعرّف العام: ${(w as any).manara_code}` : "غير مرتبط بمعرّف عام"}
-                        >
-                          <Link2 className="w-3 h-3" /> {linkCount(w)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-xs font-mono text-muted-foreground" dir="ltr">{siteSlug(w)}</TableCell>
-                      <TableCell className="text-xs font-mono text-muted-foreground max-w-[180px] truncate" dir="ltr">{siteApi(w)}</TableCell>
-                      <TableCell className="text-xs font-mono text-muted-foreground max-w-[180px] truncate" dir="ltr">{siteUrl(w)}</TableCell>
-                      <TableCell>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="w-8 h-8"
-                          title="نسخ Slug + API + URL + عدد الارتباطات"
-                          onClick={() => copyBundle(w)}
-                        >
-                          <Copy className="w-3.5 h-3.5" />
-                        </Button>
-                      </TableCell>
                       <TableCell className="text-muted-foreground text-sm">{w.domain}</TableCell>
                       <TableCell>
                         <div className="flex items-center gap-2">
@@ -533,6 +505,18 @@ function WebsitesPage() {
                         </div>
                       </TableCell>
                       <TableCell className="text-sm text-muted-foreground">{w.client?.full_name || "—"}</TableCell>
+                      <TableCell>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          className="h-7 px-2 text-xs border-primary/40 text-primary hover:bg-primary/10 gap-1"
+                          title="نسخ المعرف + Slug + API + URL + عدد الارتباطات"
+                          onClick={() => copyBundle(w)}
+                        >
+                          <Copy className="w-3.5 h-3.5" />
+                          <span>نسخ</span>
+                        </Button>
+                      </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
                           <Button size="icon" variant="ghost" className="w-8 h-8" title="ربط">

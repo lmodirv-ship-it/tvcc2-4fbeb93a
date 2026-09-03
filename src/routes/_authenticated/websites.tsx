@@ -686,7 +686,7 @@ function WebsitesPage() {
         </Card>
       </div>
 
-      <SitePreviewDialog data={preview} onClose={() => setPreview(null)} />
+      <SitePreviewDialog data={preview} links={preview ? linkCount(preview) : 0} onClose={() => setPreview(null)} />
     </div>
   );
 }

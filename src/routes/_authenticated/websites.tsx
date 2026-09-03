@@ -459,9 +459,9 @@ function WebsitesPage() {
               </TableHeader>
               <TableBody>
                 {isLoading ? (
-                  <TableRow><TableCell colSpan={17} className="text-center py-10"><Loader2 className="w-5 h-5 animate-spin inline" /></TableCell></TableRow>
+                  <TableRow><TableCell colSpan={13} className="text-center py-10"><Loader2 className="w-5 h-5 animate-spin inline" /></TableCell></TableRow>
                 ) : pageData.length === 0 ? (
-                  <TableRow><TableCell colSpan={17} className="text-center py-10 text-muted-foreground">لا توجد مواقع</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={13} className="text-center py-10 text-muted-foreground">لا توجد مواقع</TableCell></TableRow>
                 ) : (
                   pageData.map((w) => (
                     <TableRow key={w.id} className="border-border/40">
@@ -485,29 +485,6 @@ function WebsitesPage() {
                             {w.name}
                           </span>
                         </div>
-                      </TableCell>
-                      <TableCell>
-                        <Badge
-                          variant="outline"
-                          className={linkCount(w) > 0 ? "border-primary/40 text-primary gap-1" : "text-muted-foreground gap-1"}
-                          title={(w as any).manara_code ? `المعرّف العام: ${(w as any).manara_code}` : "غير مرتبط بمعرّف عام"}
-                        >
-                          <Link2 className="w-3 h-3" /> {linkCount(w)}
-                        </Badge>
-                      </TableCell>
-                      <TableCell className="text-xs font-mono text-muted-foreground" dir="ltr">{siteSlug(w)}</TableCell>
-                      <TableCell className="text-xs font-mono text-muted-foreground max-w-[180px] truncate" dir="ltr">{siteApi(w)}</TableCell>
-                      <TableCell className="text-xs font-mono text-muted-foreground max-w-[180px] truncate" dir="ltr">{siteUrl(w)}</TableCell>
-                      <TableCell>
-                        <Button
-                          size="icon"
-                          variant="ghost"
-                          className="w-8 h-8"
-                          title="نسخ Slug + API + URL + عدد الارتباطات"
-                          onClick={() => copyBundle(w)}
-                        >
-                          <Copy className="w-3.5 h-3.5" />
-                        </Button>
                       </TableCell>
                       <TableCell className="text-muted-foreground text-sm">{w.domain}</TableCell>
                       <TableCell>

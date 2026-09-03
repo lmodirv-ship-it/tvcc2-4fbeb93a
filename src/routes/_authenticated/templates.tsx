@@ -19,6 +19,8 @@ import { Plus, Trash2, Loader2, LayoutTemplate, Globe, Settings2, Send } from "l
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { applyTemplate, seedStarterTemplates } from "@/lib/templates.functions";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DesignStudio } from "@/components/design/DesignStudio";
 
 export const Route = createFileRoute("/_authenticated/templates")({
   component: TemplatesPage,

@@ -98,6 +98,8 @@ import { Route as AuthenticatedDomainSettingsDomainRouteImport } from './routes/
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as ApiPublicVideoIngestRouteImport } from './routes/api/public/video.ingest'
+import { Route as ApiPublicServicesResultRouteImport } from './routes/api/public/services/result'
+import { Route as ApiPublicServicesRequestRouteImport } from './routes/api/public/services/request'
 import { Route as ApiPublicServersHeartbeatRouteImport } from './routes/api/public/servers.heartbeat'
 import { Route as ApiPublicServersCommandsRouteImport } from './routes/api/public/servers.commands'
 import { Route as ApiPublicServersCheckAlertsRouteImport } from './routes/api/public/servers/check-alerts'
@@ -108,6 +110,7 @@ import { Route as ApiPublicNotificationsIngestRouteImport } from './routes/api/p
 import { Route as ApiPublicManaraResolveRouteImport } from './routes/api/public/manara/resolve'
 import { Route as ApiPublicManaraBadgeRouteImport } from './routes/api/public/manara/badge'
 import { Route as ApiPublicManaraAnnounceRouteImport } from './routes/api/public/manara/announce'
+import { Route as ApiPublicHubExportRouteImport } from './routes/api/public/hub/export'
 import { Route as ApiPublicHooksHealthCheckRouteImport } from './routes/api/public/hooks/health-check'
 import { Route as ApiPublicHnAnnounceRouteImport } from './routes/api/public/hn/announce'
 import { Route as ApiPublicHnServiceCatalogRouteImport } from './routes/api/public/hn-service/catalog'
@@ -589,6 +592,17 @@ const ApiPublicVideoIngestRoute = ApiPublicVideoIngestRouteImport.update({
   path: '/api/public/video/ingest',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicServicesResultRoute = ApiPublicServicesResultRouteImport.update({
+  id: '/api/public/services/result',
+  path: '/api/public/services/result',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicServicesRequestRoute =
+  ApiPublicServicesRequestRouteImport.update({
+    id: '/api/public/services/request',
+    path: '/api/public/services/request',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicServersHeartbeatRoute =
   ApiPublicServersHeartbeatRouteImport.update({
     id: '/api/public/servers/heartbeat',
@@ -641,6 +655,11 @@ const ApiPublicManaraBadgeRoute = ApiPublicManaraBadgeRouteImport.update({
 const ApiPublicManaraAnnounceRoute = ApiPublicManaraAnnounceRouteImport.update({
   id: '/api/public/manara/announce',
   path: '/api/public/manara/announce',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicHubExportRoute = ApiPublicHubExportRouteImport.update({
+  id: '/api/public/hub/export',
+  path: '/api/public/hub/export',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicHooksHealthCheckRoute =
@@ -775,6 +794,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hn-service/catalog': typeof ApiPublicHnServiceCatalogRoute
   '/api/public/hn/announce': typeof ApiPublicHnAnnounceRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
+  '/api/public/hub/export': typeof ApiPublicHubExportRoute
   '/api/public/manara/announce': typeof ApiPublicManaraAnnounceRoute
   '/api/public/manara/badge': typeof ApiPublicManaraBadgeRoute
   '/api/public/manara/resolve': typeof ApiPublicManaraResolveRoute
@@ -785,6 +805,8 @@ export interface FileRoutesByFullPath {
   '/api/public/servers/check-alerts': typeof ApiPublicServersCheckAlertsRoute
   '/api/public/servers/commands': typeof ApiPublicServersCommandsRoute
   '/api/public/servers/heartbeat': typeof ApiPublicServersHeartbeatRoute
+  '/api/public/services/request': typeof ApiPublicServicesRequestRoute
+  '/api/public/services/result': typeof ApiPublicServicesResultRoute
   '/api/public/video/ingest': typeof ApiPublicVideoIngestRoute
   '/api/public/hn/identity/$code': typeof ApiPublicHnIdentityCodeRoute
 }
@@ -881,6 +903,7 @@ export interface FileRoutesByTo {
   '/api/public/hn-service/catalog': typeof ApiPublicHnServiceCatalogRoute
   '/api/public/hn/announce': typeof ApiPublicHnAnnounceRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
+  '/api/public/hub/export': typeof ApiPublicHubExportRoute
   '/api/public/manara/announce': typeof ApiPublicManaraAnnounceRoute
   '/api/public/manara/badge': typeof ApiPublicManaraBadgeRoute
   '/api/public/manara/resolve': typeof ApiPublicManaraResolveRoute
@@ -891,6 +914,8 @@ export interface FileRoutesByTo {
   '/api/public/servers/check-alerts': typeof ApiPublicServersCheckAlertsRoute
   '/api/public/servers/commands': typeof ApiPublicServersCommandsRoute
   '/api/public/servers/heartbeat': typeof ApiPublicServersHeartbeatRoute
+  '/api/public/services/request': typeof ApiPublicServicesRequestRoute
+  '/api/public/services/result': typeof ApiPublicServicesResultRoute
   '/api/public/video/ingest': typeof ApiPublicVideoIngestRoute
   '/api/public/hn/identity/$code': typeof ApiPublicHnIdentityCodeRoute
 }
@@ -990,6 +1015,7 @@ export interface FileRoutesById {
   '/api/public/hn-service/catalog': typeof ApiPublicHnServiceCatalogRoute
   '/api/public/hn/announce': typeof ApiPublicHnAnnounceRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
+  '/api/public/hub/export': typeof ApiPublicHubExportRoute
   '/api/public/manara/announce': typeof ApiPublicManaraAnnounceRoute
   '/api/public/manara/badge': typeof ApiPublicManaraBadgeRoute
   '/api/public/manara/resolve': typeof ApiPublicManaraResolveRoute
@@ -1000,6 +1026,8 @@ export interface FileRoutesById {
   '/api/public/servers/check-alerts': typeof ApiPublicServersCheckAlertsRoute
   '/api/public/servers/commands': typeof ApiPublicServersCommandsRoute
   '/api/public/servers/heartbeat': typeof ApiPublicServersHeartbeatRoute
+  '/api/public/services/request': typeof ApiPublicServicesRequestRoute
+  '/api/public/services/result': typeof ApiPublicServicesResultRoute
   '/api/public/video/ingest': typeof ApiPublicVideoIngestRoute
   '/api/public/hn/identity/$code': typeof ApiPublicHnIdentityCodeRoute
 }
@@ -1099,6 +1127,7 @@ export interface FileRouteTypes {
     | '/api/public/hn-service/catalog'
     | '/api/public/hn/announce'
     | '/api/public/hooks/health-check'
+    | '/api/public/hub/export'
     | '/api/public/manara/announce'
     | '/api/public/manara/badge'
     | '/api/public/manara/resolve'
@@ -1109,6 +1138,8 @@ export interface FileRouteTypes {
     | '/api/public/servers/check-alerts'
     | '/api/public/servers/commands'
     | '/api/public/servers/heartbeat'
+    | '/api/public/services/request'
+    | '/api/public/services/result'
     | '/api/public/video/ingest'
     | '/api/public/hn/identity/$code'
   fileRoutesByTo: FileRoutesByTo
@@ -1205,6 +1236,7 @@ export interface FileRouteTypes {
     | '/api/public/hn-service/catalog'
     | '/api/public/hn/announce'
     | '/api/public/hooks/health-check'
+    | '/api/public/hub/export'
     | '/api/public/manara/announce'
     | '/api/public/manara/badge'
     | '/api/public/manara/resolve'
@@ -1215,6 +1247,8 @@ export interface FileRouteTypes {
     | '/api/public/servers/check-alerts'
     | '/api/public/servers/commands'
     | '/api/public/servers/heartbeat'
+    | '/api/public/services/request'
+    | '/api/public/services/result'
     | '/api/public/video/ingest'
     | '/api/public/hn/identity/$code'
   id:
@@ -1313,6 +1347,7 @@ export interface FileRouteTypes {
     | '/api/public/hn-service/catalog'
     | '/api/public/hn/announce'
     | '/api/public/hooks/health-check'
+    | '/api/public/hub/export'
     | '/api/public/manara/announce'
     | '/api/public/manara/badge'
     | '/api/public/manara/resolve'
@@ -1323,6 +1358,8 @@ export interface FileRouteTypes {
     | '/api/public/servers/check-alerts'
     | '/api/public/servers/commands'
     | '/api/public/servers/heartbeat'
+    | '/api/public/services/request'
+    | '/api/public/services/result'
     | '/api/public/video/ingest'
     | '/api/public/hn/identity/$code'
   fileRoutesById: FileRoutesById
@@ -1351,6 +1388,7 @@ export interface RootRouteChildren {
   ApiPublicHnServiceCatalogRoute: typeof ApiPublicHnServiceCatalogRoute
   ApiPublicHnAnnounceRoute: typeof ApiPublicHnAnnounceRoute
   ApiPublicHooksHealthCheckRoute: typeof ApiPublicHooksHealthCheckRoute
+  ApiPublicHubExportRoute: typeof ApiPublicHubExportRoute
   ApiPublicManaraAnnounceRoute: typeof ApiPublicManaraAnnounceRoute
   ApiPublicManaraBadgeRoute: typeof ApiPublicManaraBadgeRoute
   ApiPublicManaraResolveRoute: typeof ApiPublicManaraResolveRoute
@@ -1361,6 +1399,8 @@ export interface RootRouteChildren {
   ApiPublicServersCheckAlertsRoute: typeof ApiPublicServersCheckAlertsRoute
   ApiPublicServersCommandsRoute: typeof ApiPublicServersCommandsRoute
   ApiPublicServersHeartbeatRoute: typeof ApiPublicServersHeartbeatRoute
+  ApiPublicServicesRequestRoute: typeof ApiPublicServicesRequestRoute
+  ApiPublicServicesResultRoute: typeof ApiPublicServicesResultRoute
   ApiPublicVideoIngestRoute: typeof ApiPublicVideoIngestRoute
   ApiPublicHnIdentityCodeRoute: typeof ApiPublicHnIdentityCodeRoute
 }
@@ -1990,6 +2030,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicVideoIngestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/services/result': {
+      id: '/api/public/services/result'
+      path: '/api/public/services/result'
+      fullPath: '/api/public/services/result'
+      preLoaderRoute: typeof ApiPublicServicesResultRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/services/request': {
+      id: '/api/public/services/request'
+      path: '/api/public/services/request'
+      fullPath: '/api/public/services/request'
+      preLoaderRoute: typeof ApiPublicServicesRequestRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/servers/heartbeat': {
       id: '/api/public/servers/heartbeat'
       path: '/api/public/servers/heartbeat'
@@ -2058,6 +2112,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/manara/announce'
       fullPath: '/api/public/manara/announce'
       preLoaderRoute: typeof ApiPublicManaraAnnounceRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/hub/export': {
+      id: '/api/public/hub/export'
+      path: '/api/public/hub/export'
+      fullPath: '/api/public/hub/export'
+      preLoaderRoute: typeof ApiPublicHubExportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/hooks/health-check': {
@@ -2320,6 +2381,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHnServiceCatalogRoute: ApiPublicHnServiceCatalogRoute,
   ApiPublicHnAnnounceRoute: ApiPublicHnAnnounceRoute,
   ApiPublicHooksHealthCheckRoute: ApiPublicHooksHealthCheckRoute,
+  ApiPublicHubExportRoute: ApiPublicHubExportRoute,
   ApiPublicManaraAnnounceRoute: ApiPublicManaraAnnounceRoute,
   ApiPublicManaraBadgeRoute: ApiPublicManaraBadgeRoute,
   ApiPublicManaraResolveRoute: ApiPublicManaraResolveRoute,
@@ -2330,6 +2392,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicServersCheckAlertsRoute: ApiPublicServersCheckAlertsRoute,
   ApiPublicServersCommandsRoute: ApiPublicServersCommandsRoute,
   ApiPublicServersHeartbeatRoute: ApiPublicServersHeartbeatRoute,
+  ApiPublicServicesRequestRoute: ApiPublicServicesRequestRoute,
+  ApiPublicServicesResultRoute: ApiPublicServicesResultRoute,
   ApiPublicVideoIngestRoute: ApiPublicVideoIngestRoute,
   ApiPublicHnIdentityCodeRoute: ApiPublicHnIdentityCodeRoute,
 }

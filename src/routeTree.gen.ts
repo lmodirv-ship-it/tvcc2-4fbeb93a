@@ -11,6 +11,7 @@
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as PricingRouteImport } from './routes/pricing'
 import { Route as McpRouteImport } from './routes/mcp'
+import { Route as DocsRouteImport } from './routes/docs'
 import { Route as CheckoutRouteImport } from './routes/checkout'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as AppLinkRouteImport } from './routes/app-link'
@@ -122,6 +123,11 @@ const PricingRoute = PricingRouteImport.update({
 const McpRoute = McpRouteImport.update({
   id: '/mcp',
   path: '/mcp',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const DocsRoute = DocsRouteImport.update({
+  id: '/docs',
+  path: '/docs',
   getParentRoute: () => rootRouteImport,
 } as any)
 const CheckoutRoute = CheckoutRouteImport.update({
@@ -674,6 +680,7 @@ export interface FileRoutesByFullPath {
   '/app-link': typeof AppLinkRoute
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
+  '/docs': typeof DocsRoute
   '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -779,6 +786,7 @@ export interface FileRoutesByTo {
   '/app-link': typeof AppLinkRoute
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
+  '/docs': typeof DocsRoute
   '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -885,6 +893,7 @@ export interface FileRoutesById {
   '/app-link': typeof AppLinkRoute
   '/auth': typeof AuthRoute
   '/checkout': typeof CheckoutRoute
+  '/docs': typeof DocsRoute
   '/mcp': typeof McpRoute
   '/pricing': typeof PricingRoute
   '/.mcp/list-tools': typeof Char91DotmcpChar93ListToolsRoute
@@ -992,6 +1001,7 @@ export interface FileRouteTypes {
     | '/app-link'
     | '/auth'
     | '/checkout'
+    | '/docs'
     | '/mcp'
     | '/pricing'
     | '/.mcp/list-tools'
@@ -1097,6 +1107,7 @@ export interface FileRouteTypes {
     | '/app-link'
     | '/auth'
     | '/checkout'
+    | '/docs'
     | '/mcp'
     | '/pricing'
     | '/.mcp/list-tools'
@@ -1202,6 +1213,7 @@ export interface FileRouteTypes {
     | '/app-link'
     | '/auth'
     | '/checkout'
+    | '/docs'
     | '/mcp'
     | '/pricing'
     | '/.mcp/list-tools'
@@ -1309,6 +1321,7 @@ export interface RootRouteChildren {
   AppLinkRoute: typeof AppLinkRoute
   AuthRoute: typeof AuthRoute
   CheckoutRoute: typeof CheckoutRoute
+  DocsRoute: typeof DocsRoute
   McpRoute: typeof McpRoute
   PricingRoute: typeof PricingRoute
   Char91DotmcpChar93ListToolsRoute: typeof Char91DotmcpChar93ListToolsRoute
@@ -1353,6 +1366,13 @@ declare module '@tanstack/react-router' {
       path: '/mcp'
       fullPath: '/mcp'
       preLoaderRoute: typeof McpRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/docs': {
+      id: '/docs'
+      path: '/docs'
+      fullPath: '/docs'
+      preLoaderRoute: typeof DocsRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/checkout': {
@@ -2261,6 +2281,7 @@ const rootRouteChildren: RootRouteChildren = {
   AppLinkRoute: AppLinkRoute,
   AuthRoute: AuthRoute,
   CheckoutRoute: CheckoutRoute,
+  DocsRoute: DocsRoute,
   McpRoute: McpRoute,
   PricingRoute: PricingRoute,
   Char91DotmcpChar93ListToolsRoute: Char91DotmcpChar93ListToolsRoute,

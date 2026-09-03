@@ -23,6 +23,7 @@ import {
 import { MeshPanel } from "@/components/servers/MeshPanel";
 import { AgentPanel } from "@/components/servers/AgentPanel";
 import { LiveConsole } from "@/components/servers/LiveConsole";
+import { AutostorePanel } from "@/components/servers/AutostorePanel";
 
 export const Route = createFileRoute("/_authenticated/servers/$serverId")({
   component: ServerDetailPage,

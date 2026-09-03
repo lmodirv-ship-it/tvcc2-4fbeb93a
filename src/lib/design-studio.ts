@@ -68,23 +68,29 @@ function setColor(root: HTMLElement, cssVar: string, value?: string | null) {
   root.style.setProperty(cssVar, triplet ? `color(${triplet})` : value);
 }
 
-export function applyDesignTokens(tokens: DesignTokens | null | undefined) {
+export function applyDesignTokens(
+  tokens: DesignTokens | null | undefined,
+  opts: { skipColors?: boolean } = {},
+) {
   if (typeof document === "undefined") return;
   const root = document.documentElement;
   if (!tokens) return;
 
-  setColor(root, "--primary", tokens.primary_color);
-  setColor(root, "--ring", tokens.primary_color);
-  setColor(root, "--sidebar-primary", tokens.primary_color);
-  setColor(root, "--accent", tokens.accent_color);
-  setColor(root, "--background", tokens.background_color);
+  if (!opts.skipColors) {
+    setColor(root, "--primary", tokens.primary_color);
+    setColor(root, "--ring", tokens.primary_color);
+    setColor(root, "--sidebar-primary", tokens.primary_color);
+    setColor(root, "--accent", tokens.accent_color);
+    setColor(root, "--background", tokens.background_color);
 
-  if (tokens.primary_color && tokens.accent_color) {
-    root.style.setProperty(
-      "--gradient-primary",
-      `linear-gradient(135deg, ${tokens.primary_color}, ${tokens.accent_color})`,
-    );
+    if (tokens.primary_color && tokens.accent_color) {
+      root.style.setProperty(
+        "--gradient-primary",
+        `linear-gradient(135deg, ${tokens.primary_color}, ${tokens.accent_color})`,
+      );
+    }
   }
+
   if (tokens.font_family) root.style.setProperty("--font-sans", `${tokens.font_family}, system-ui, sans-serif`);
   else root.style.removeProperty("--font-sans");
 

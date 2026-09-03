@@ -1,6 +1,6 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState } from "react";
+import { Fragment, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -107,8 +107,8 @@ function PermissionsTab() {
             </TableHeader>
             <TableBody>
               {groups.map((group) => (
-                <>
-                  <TableRow key={group} className="bg-muted/40">
+                <Fragment key={group}>
+                  <TableRow className="bg-muted/40">
                     <TableCell colSpan={5} className="font-semibold text-xs">{group}</TableCell>
                   </TableRow>
                   {PERMISSIONS.filter((p) => p.group === group).map((p) => (
@@ -125,7 +125,7 @@ function PermissionsTab() {
                       ))}
                     </TableRow>
                   ))}
-                </>
+                </Fragment>
               ))}
             </TableBody>
           </Table>

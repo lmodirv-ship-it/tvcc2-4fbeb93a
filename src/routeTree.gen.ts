@@ -98,6 +98,7 @@ import { Route as AuthenticatedDomainSettingsDomainRouteImport } from './routes/
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as ApiPublicVideoIngestRouteImport } from './routes/api/public/video.ingest'
+import { Route as ApiPublicServicesResultRouteImport } from './routes/api/public/services/result'
 import { Route as ApiPublicServicesRequestRouteImport } from './routes/api/public/services/request'
 import { Route as ApiPublicServersHeartbeatRouteImport } from './routes/api/public/servers.heartbeat'
 import { Route as ApiPublicServersCommandsRouteImport } from './routes/api/public/servers.commands'
@@ -591,6 +592,11 @@ const ApiPublicVideoIngestRoute = ApiPublicVideoIngestRouteImport.update({
   path: '/api/public/video/ingest',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicServicesResultRoute = ApiPublicServicesResultRouteImport.update({
+  id: '/api/public/services/result',
+  path: '/api/public/services/result',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicServicesRequestRoute =
   ApiPublicServicesRequestRouteImport.update({
     id: '/api/public/services/request',
@@ -800,6 +806,7 @@ export interface FileRoutesByFullPath {
   '/api/public/servers/commands': typeof ApiPublicServersCommandsRoute
   '/api/public/servers/heartbeat': typeof ApiPublicServersHeartbeatRoute
   '/api/public/services/request': typeof ApiPublicServicesRequestRoute
+  '/api/public/services/result': typeof ApiPublicServicesResultRoute
   '/api/public/video/ingest': typeof ApiPublicVideoIngestRoute
   '/api/public/hn/identity/$code': typeof ApiPublicHnIdentityCodeRoute
 }
@@ -908,6 +915,7 @@ export interface FileRoutesByTo {
   '/api/public/servers/commands': typeof ApiPublicServersCommandsRoute
   '/api/public/servers/heartbeat': typeof ApiPublicServersHeartbeatRoute
   '/api/public/services/request': typeof ApiPublicServicesRequestRoute
+  '/api/public/services/result': typeof ApiPublicServicesResultRoute
   '/api/public/video/ingest': typeof ApiPublicVideoIngestRoute
   '/api/public/hn/identity/$code': typeof ApiPublicHnIdentityCodeRoute
 }
@@ -1019,6 +1027,7 @@ export interface FileRoutesById {
   '/api/public/servers/commands': typeof ApiPublicServersCommandsRoute
   '/api/public/servers/heartbeat': typeof ApiPublicServersHeartbeatRoute
   '/api/public/services/request': typeof ApiPublicServicesRequestRoute
+  '/api/public/services/result': typeof ApiPublicServicesResultRoute
   '/api/public/video/ingest': typeof ApiPublicVideoIngestRoute
   '/api/public/hn/identity/$code': typeof ApiPublicHnIdentityCodeRoute
 }
@@ -1130,6 +1139,7 @@ export interface FileRouteTypes {
     | '/api/public/servers/commands'
     | '/api/public/servers/heartbeat'
     | '/api/public/services/request'
+    | '/api/public/services/result'
     | '/api/public/video/ingest'
     | '/api/public/hn/identity/$code'
   fileRoutesByTo: FileRoutesByTo
@@ -1238,6 +1248,7 @@ export interface FileRouteTypes {
     | '/api/public/servers/commands'
     | '/api/public/servers/heartbeat'
     | '/api/public/services/request'
+    | '/api/public/services/result'
     | '/api/public/video/ingest'
     | '/api/public/hn/identity/$code'
   id:
@@ -1348,6 +1359,7 @@ export interface FileRouteTypes {
     | '/api/public/servers/commands'
     | '/api/public/servers/heartbeat'
     | '/api/public/services/request'
+    | '/api/public/services/result'
     | '/api/public/video/ingest'
     | '/api/public/hn/identity/$code'
   fileRoutesById: FileRoutesById
@@ -1388,6 +1400,7 @@ export interface RootRouteChildren {
   ApiPublicServersCommandsRoute: typeof ApiPublicServersCommandsRoute
   ApiPublicServersHeartbeatRoute: typeof ApiPublicServersHeartbeatRoute
   ApiPublicServicesRequestRoute: typeof ApiPublicServicesRequestRoute
+  ApiPublicServicesResultRoute: typeof ApiPublicServicesResultRoute
   ApiPublicVideoIngestRoute: typeof ApiPublicVideoIngestRoute
   ApiPublicHnIdentityCodeRoute: typeof ApiPublicHnIdentityCodeRoute
 }
@@ -2017,6 +2030,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicVideoIngestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/services/result': {
+      id: '/api/public/services/result'
+      path: '/api/public/services/result'
+      fullPath: '/api/public/services/result'
+      preLoaderRoute: typeof ApiPublicServicesResultRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/services/request': {
       id: '/api/public/services/request'
       path: '/api/public/services/request'
@@ -2373,6 +2393,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicServersCommandsRoute: ApiPublicServersCommandsRoute,
   ApiPublicServersHeartbeatRoute: ApiPublicServersHeartbeatRoute,
   ApiPublicServicesRequestRoute: ApiPublicServicesRequestRoute,
+  ApiPublicServicesResultRoute: ApiPublicServicesResultRoute,
   ApiPublicVideoIngestRoute: ApiPublicVideoIngestRoute,
   ApiPublicHnIdentityCodeRoute: ApiPublicHnIdentityCodeRoute,
 }

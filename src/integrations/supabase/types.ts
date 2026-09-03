@@ -5954,6 +5954,24 @@ export type Database = {
         }
         Relationships: []
       }
+      site_visits: {
+        Row: {
+          counter: number
+          id: string
+          updated_at: string
+        }
+        Insert: {
+          counter?: number
+          id?: string
+          updated_at?: string
+        }
+        Update: {
+          counter?: number
+          id?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       ssl_certificates: {
         Row: {
           auto_renew: boolean
@@ -7203,6 +7221,7 @@ export type Database = {
       }
     }
     Functions: {
+      bump_site_visits: { Args: never; Returns: number }
       can_manage: { Args: { _owner: string }; Returns: boolean }
       has_role: {
         Args: {

@@ -9,6 +9,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { THEMES, DEFAULT_THEME, applyTheme, readStoredTheme, type ThemeId } from "@/lib/themes";
+import { loadUserPreferences, saveUserPreferences } from "@/lib/user-preferences";
 
 export function ThemeSwitcher() {
   const [theme, setTheme] = useState<ThemeId>(DEFAULT_THEME);
@@ -19,11 +20,22 @@ export function ThemeSwitcher() {
       setTheme(saved);
       applyTheme(saved);
     }
+    // الحساب هو المصدر النهائي: يستعيد نفس المظهر على أي جهاز
+    loadUserPreferences()
+      .then((prefs) => {
+        const id = prefs?.theme_id as ThemeId | undefined;
+        if (id && THEMES.some((t) => t.id === id) && id !== saved) {
+          setTheme(id);
+          applyTheme(id);
+        }
+      })
+      .catch(() => undefined);
   }, []);
 
   const pick = (id: ThemeId) => {
     setTheme(id);
     applyTheme(id);
+    void saveUserPreferences({ theme_id: id }).catch(() => undefined);
   };
 
   return (

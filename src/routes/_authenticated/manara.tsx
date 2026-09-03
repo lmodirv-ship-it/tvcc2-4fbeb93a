@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { LighthouseScene } from "@/components/manara/LighthouseScene";
+import { GroupCodePanel } from "@/components/manara/GroupCodePanel";
 import {
   Globe, Smartphone, Code, Activity, Route as RouteIcon, AlertTriangle, CheckCircle2,
   Clock, XCircle, RefreshCw, ArrowLeft, Plus, Server, ShieldCheck, Database, Cpu,
@@ -462,6 +463,8 @@ function ManaraPage() {
           {updates.length === 0 && <div className="text-sm text-muted-foreground">لا توجد عمليات تحديث.</div>}
         </div>
       </section>
+
+      <GroupCodePanel />
 
       {/* Badge snippet */}
       <section className="glass-card rounded-2xl p-4">

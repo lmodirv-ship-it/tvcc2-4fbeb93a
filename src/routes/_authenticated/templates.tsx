@@ -121,6 +121,15 @@ function TemplatesPage() {
         </Dialog>
       </div>
 
+      <Tabs defaultValue="templates" dir="rtl">
+        <TabsList>
+          <TabsTrigger value="templates">القوالب</TabsTrigger>
+          <TabsTrigger value="design">استوديو التصميم</TabsTrigger>
+        </TabsList>
+        <TabsContent value="design" className="mt-4">
+          <DesignStudio />
+        </TabsContent>
+        <TabsContent value="templates" className="mt-4 space-y-4">
       {isLoading ? (
         <div className="text-center py-16"><Loader2 className="w-6 h-6 animate-spin inline text-primary" /></div>
       ) : !templates?.length ? (

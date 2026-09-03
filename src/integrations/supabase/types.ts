@@ -7187,7 +7187,20 @@ export type Database = {
       }
     }
     Views: {
-      [_ in never]: never
+      manara_public_routes: {
+        Row: {
+          group_tag: string | null
+          is_current: boolean | null
+          is_verified: boolean | null
+          kind: string | null
+          project_key: string | null
+          project_name: string | null
+          project_status: string | null
+          updated_at: string | null
+          url: string | null
+        }
+        Relationships: []
+      }
     }
     Functions: {
       can_manage: { Args: { _owner: string }; Returns: boolean }

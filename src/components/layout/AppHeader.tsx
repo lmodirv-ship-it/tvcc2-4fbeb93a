@@ -8,19 +8,22 @@ import { useTranslation } from "react-i18next";
 import { LanguageSwitcher } from "./LanguageSwitcher";
 import { NotificationBell } from "./NotificationBell";
 import { ThemeSwitcher } from "./ThemeSwitcher";
+import { LANGUAGES } from "@/i18n";
 
 export function AppHeader() {
   const [email, setEmail] = useState<string>("");
-  const { t } = useTranslation();
+  const { t, i18n } = useTranslation();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email || ""));
   }, []);
 
   const initial = (email || "A").charAt(0).toUpperCase();
+  const dir = (LANGUAGES.find((l) => l.code === i18n.language)?.dir ?? "rtl") as "rtl" | "ltr";
+  const isLtr = dir === "ltr";
 
   return (
-    <header dir="rtl" className="h-16 flex items-center gap-4 border-b border-border bg-card/95 backdrop-blur px-5 sticky top-0 z-30">
+    <header dir={dir} className="h-16 flex items-center gap-4 border-b border-border bg-card/95 backdrop-blur px-5 sticky top-0 z-30">
       <div className="flex items-center gap-3">
         <div
           className="w-10 h-10 rounded-full flex items-center justify-center text-white font-bold"
@@ -36,12 +39,12 @@ export function AppHeader() {
 
       <Link
         to="/dashboard"
-        aria-label="العودة للصفحة الرئيسية"
-        title="العودة للصفحة الرئيسية"
+        aria-label={t("header.home") as string}
+        title={t("header.home") as string}
         className="flex items-center gap-2 h-9 px-3 rounded-lg bg-success text-success-foreground hover:bg-success/90 text-sm font-medium transition shadow-sm"
       >
         <Home className="w-4 h-4" />
-        <span className="hidden sm:inline">الرئيسية</span>
+        <span className="hidden sm:inline">{t("header.home")}</span>
       </Link>
 
       <ThemeSwitcher />
@@ -54,10 +57,10 @@ export function AppHeader() {
       <NotificationBell />
 
       <div className="flex-1 max-w-xl mx-auto relative">
-        <Search className="w-4 h-4 absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
+        <Search className={`w-4 h-4 absolute ${isLtr ? "left-3" : "right-3"} top-1/2 -translate-y-1/2 text-muted-foreground`} />
         <Input
           placeholder={t("header.search_placeholder")}
-          className="pr-9 bg-secondary/40 border-border/50 h-10"
+          className={`bg-secondary/40 border-border/50 h-10 ${isLtr ? "pl-9" : "pr-9"}`}
         />
       </div>
 

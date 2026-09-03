@@ -45,7 +45,15 @@ LOGO TVCC | الرئيسية | المنصة ▼ | منارة | الأسعار | 
 - رمز/شكل المنارة يظهر في الجانب الأيمن للعربية والأيسر للفرنسية/الإنجليزية.
 - ألوان النموذج المختار تُطبَّق أيضاً على لوحة التحكم (توكنات موحّدة في `src/styles.css`).
 
+## 5. ربط مهام المنصة والوكيل بقاعدة البيانات
+- اعتماد الجداول الموجودة (`agent_instances`، `agent_jobs`، `agent_job_steps`، `agent_roles`، `agent_role_bindings`، `agent_capabilities`، `server_commands`، `scheduled_tasks`، `operation_log`) كأساس، وإضافة العلاقات/الحقول الناقصة فقط لربط كل مهمة بالموقع والخادم والمنفذ والمستخدم والدور والنتيجة، مع RLS وGRANT وتدقيق كامل.
+- TVCC تصبح مركز التحكم المباشر بالخوادم عبر الوكيل: أوامر Nginx والخدمات والمنافذ والملفات والنشر والصيانة والنسخ والاستعادة، مع قوائم بيضاء وصلاحيات حسب الدور وDry Run وسجل تدقيق؛ لا تُمنح أوامر غير مقيّدة أو وصولاً يتجاوز الدور.
+- تحديث الوكيل ليستقبل فوراً المهام والأدوار والصلاحيات من الجداول، ينفذها، ويرسل تقدم كل خطوة والنتيجة والسجلات للوحة؛ الإبقاء على Docker كخيار تشغيل وعدم حذفه قسراً، مع تمكين TVCC من إدارته عند الحاجة.
+- إجراءات كل موقع: فتح الموقع، اختبار الهوية والتوجيه، عرض المسار `Domain → DNS → TVCC → Server:Port → Project`، تغيير العنوان ونشره بمنارة، إعادة النشر والربط بالنطاق، السجلات، إعادة التشغيل، الصيانة، الرجوع لإصدار/عنوان سابق، النسخ والاستعادة.
+- إجراءات جماعية: فحص هوية الجميع، مزامنة جميع العناوين مع منارة، فحص دوري كل 3 دقائق، تجديد SSL القريب، إعادة تشغيل المتوقف، نقل المواقع المحددة لخادم آخر، وتصدير CSV/PDF.
+- واجهة مهام موحّدة تعرض: قيد الانتظار/يعمل/نجح/فشل، التقدم، خطوات التنفيذ، الخادم المستهدف، المستخدم المنفذ، وزر إلغاء أو إعادة تشغيل آمن.
+
 ## تفاصيل تقنية
-- ملفات: `src/components/site/PublicNav.tsx`، `src/routes/index.tsx`، `src/routes/_authenticated/manara.tsx`، `src/components/manara/LighthouseScene.tsx`، `src/components/layout/AppSidebar.tsx`، `src/components/layout/AppHeader.tsx`، `src/i18n/{ar,fr,en}.json`، `src/routes/docs.tsx` (جديد)، `src/routes/api/public/visits.ts` (جديد).
+- ملفات: `src/components/site/PublicNav.tsx`، `src/routes/index.tsx`، `src/routes/_authenticated/manara.tsx`، `src/components/manara/LighthouseScene.tsx`، `src/components/layout/AppSidebar.tsx`، `src/components/layout/AppHeader.tsx`، `src/components/servers/AgentPanel.tsx`، `src/lib/agent-roles.functions.ts`، `src/lib/server-commands.ts`، `src/i18n/{ar,fr,en}.json`، `src/routes/docs.tsx` (جديد)، `src/routes/api/public/visits.ts` (جديد).
 - قاعدة البيانات: جدول `site_visits(id, counter bigint default 10000, updated_at)` مع GRANT و RLS للقراءة العامة، والزيادة عبر دالة آمنة.
 - صور الثيمات الثلاث تُولَّد كأصول وتُستورد عبر ES import.

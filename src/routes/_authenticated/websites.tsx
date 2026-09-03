@@ -1,6 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,7 +28,7 @@ import {
   Plus, Trash2, RefreshCw, Loader2, Globe, CheckCircle2, WifiOff, XCircle,
   ChevronDown, Filter, Link2, MoreHorizontal, Activity, ChevronLeft, ChevronRight,
   ChevronsLeft, ChevronsRight, CheckCircle, AlertCircle, Database as DbIcon,
-  KeyRound, ShieldCheck, Copy,
+  KeyRound, ShieldCheck, Copy, Download, Timer,
 } from "lucide-react";
 import { verifyIssueRegister } from "@/lib/hn-rls.functions";
 import { verifyDomainCode } from "@/lib/dns.functions";
@@ -62,6 +62,23 @@ function WebsitesPage() {
   const [page, setPage] = useState(1);
   const [pageSize, setPageSize] = useState(5);
   const [preview, setPreview] = useState<{ code: string; name: string; domain: string } | null>(null);
+  const [autoCheck, setAutoCheck] = useState(false);
+
+  useEffect(() => {
+    if (!autoCheck) return;
+    const tick = async () => {
+      try {
+        const res = await runCheckFn();
+        setLastCheck(res.checked_at);
+        qc.invalidateQueries({ queryKey: ["websites"] });
+      } catch {
+        /* silent */
+      }
+    };
+    void tick();
+    const id = window.setInterval(tick, 180_000);
+    return () => window.clearInterval(id);
+  }, [autoCheck, runCheckFn, qc]);
 
 
   const { data: websites, isLoading } = useQuery({
@@ -148,6 +165,22 @@ function WebsitesPage() {
     toast.success(`تم ${active ? "تفعيل" : "تعطيل"} ${ids.length} موقع`);
     setSelected(new Set());
     qc.invalidateQueries({ queryKey: ["websites"] });
+  };
+
+  const exportCsv = () => {
+    const rows = (selected.size ? filtered.filter((w) => selected.has(w.id)) : filtered) as any[];
+    if (!rows.length) return toast.error("لا توجد بيانات للتصدير");
+    const head = ["site_code", "name", "domain", "status", "is_active", "ssl_expires_at", "last_checked_at"];
+    const esc = (v: any) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const csv = [head.join(","), ...rows.map((r) => head.map((h) => esc(r[h])).join(","))].join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `tvcc-sites-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`تم تصدير ${rows.length} موقع إلى CSV`);
   };
 
   const verifyWebsite = async (id: string, domain: string) => {
@@ -279,6 +312,19 @@ function WebsitesPage() {
             <div className="flex items-center gap-2">
               <Button variant="outline" size="icon" onClick={() => qc.invalidateQueries({ queryKey: ["websites"] })}>
                 <RefreshCw className="w-4 h-4" />
+              </Button>
+              <Button variant="outline" onClick={exportCsv} title="تصدير CSV">
+                <Download className="w-4 h-4 ml-1" /> تصدير CSV
+              </Button>
+              <Button
+                variant={autoCheck ? "default" : "outline"}
+                onClick={() => {
+                  setAutoCheck((v) => !v);
+                  toast.info(autoCheck ? "تم إيقاف الفحص التلقائي" : "تم تفعيل الفحص التلقائي كل 3 دقائق");
+                }}
+                title="فحص المواقع كل 3 دقائق"
+              >
+                <Timer className="w-4 h-4 ml-1" /> فحص كل 3 دقائق
               </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>

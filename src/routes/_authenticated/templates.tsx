@@ -19,6 +19,8 @@ import { Plus, Trash2, Loader2, LayoutTemplate, Globe, Settings2, Send } from "l
 import { toast } from "sonner";
 import { useServerFn } from "@tanstack/react-start";
 import { applyTemplate, seedStarterTemplates } from "@/lib/templates.functions";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { DesignStudio } from "@/components/design/DesignStudio";
 
 export const Route = createFileRoute("/_authenticated/templates")({
   component: TemplatesPage,
@@ -121,6 +123,15 @@ function TemplatesPage() {
         </Dialog>
       </div>
 
+      <Tabs defaultValue="templates" dir="rtl">
+        <TabsList>
+          <TabsTrigger value="templates">القوالب</TabsTrigger>
+          <TabsTrigger value="design">استوديو التصميم</TabsTrigger>
+        </TabsList>
+        <TabsContent value="design" className="mt-4">
+          <DesignStudio />
+        </TabsContent>
+        <TabsContent value="templates" className="mt-4 space-y-4">
       {isLoading ? (
         <div className="text-center py-16"><Loader2 className="w-6 h-6 animate-spin inline text-primary" /></div>
       ) : !templates?.length ? (
@@ -172,6 +183,8 @@ function TemplatesPage() {
           ))}
         </div>
       )}
+        </TabsContent>
+      </Tabs>
 
       {linkOpen && (
         <LinkSitesToTemplate template={linkOpen} onClose={() => { setLinkOpen(null); qc.invalidateQueries({ queryKey: ["wtl"] }); }} />

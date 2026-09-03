@@ -12,6 +12,7 @@ import { useEffect, type ReactNode } from "react";
 import appCss from "../styles.css?url";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
+import { DesignProvider } from "@/components/design/DesignProvider";
 import "@/i18n";
 
 function NotFoundComponent() {
@@ -140,6 +141,7 @@ function RootComponent() {
           © 2026 جميع الحقوق محفوظة El Hassani Moulay Ismail · Groupe HN
         </footer>
       </div>
+      <DesignProvider />
       <Toaster richColors position="top-center" />
     </QueryClientProvider>
   );

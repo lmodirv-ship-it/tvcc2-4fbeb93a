@@ -1002,33 +1002,54 @@ export type Database = {
       }
       brand_settings: {
         Row: {
+          accent_color: string | null
+          background_color: string | null
           created_at: string
           favicon_url: string | null
+          font_family: string | null
           id: string
           logo_url: string
           name: string
+          primary_color: string | null
+          radius: string | null
+          shadow: string | null
           singleton: boolean
           tagline: string
+          theme_id: string | null
           updated_at: string
         }
         Insert: {
+          accent_color?: string | null
+          background_color?: string | null
           created_at?: string
           favicon_url?: string | null
+          font_family?: string | null
           id?: string
           logo_url: string
           name?: string
+          primary_color?: string | null
+          radius?: string | null
+          shadow?: string | null
           singleton?: boolean
           tagline?: string
+          theme_id?: string | null
           updated_at?: string
         }
         Update: {
+          accent_color?: string | null
+          background_color?: string | null
           created_at?: string
           favicon_url?: string | null
+          font_family?: string | null
           id?: string
           logo_url?: string
           name?: string
+          primary_color?: string | null
+          radius?: string | null
+          shadow?: string | null
           singleton?: boolean
           tagline?: string
+          theme_id?: string | null
           updated_at?: string
         }
         Relationships: []

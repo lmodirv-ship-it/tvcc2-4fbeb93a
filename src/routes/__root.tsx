@@ -140,6 +140,7 @@ function RootComponent() {
           © 2026 جميع الحقوق محفوظة El Hassani Moulay Ismail · Groupe HN
         </footer>
       </div>
+      <DesignProvider />
       <Toaster richColors position="top-center" />
     </QueryClientProvider>
   );

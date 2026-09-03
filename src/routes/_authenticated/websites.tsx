@@ -313,6 +313,19 @@ function WebsitesPage() {
               <Button variant="outline" size="icon" onClick={() => qc.invalidateQueries({ queryKey: ["websites"] })}>
                 <RefreshCw className="w-4 h-4" />
               </Button>
+              <Button variant="outline" onClick={exportCsv} title="تصدير CSV">
+                <Download className="w-4 h-4 ml-1" /> تصدير CSV
+              </Button>
+              <Button
+                variant={autoCheck ? "default" : "outline"}
+                onClick={() => {
+                  setAutoCheck((v) => !v);
+                  toast.info(autoCheck ? "تم إيقاف الفحص التلقائي" : "تم تفعيل الفحص التلقائي كل 3 دقائق");
+                }}
+                title="فحص المواقع كل 3 دقائق"
+              >
+                <Timer className="w-4 h-4 ml-1" /> فحص كل 3 دقائق
+              </Button>
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
                   <Button variant="outline" disabled={selected.size === 0}>

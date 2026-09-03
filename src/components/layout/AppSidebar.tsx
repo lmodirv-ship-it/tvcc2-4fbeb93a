@@ -106,6 +106,8 @@ function SidebarLink({ item, active }: { item: typeof coreItems[number]; active:
       <SidebarMenuButton
         asChild
         isActive={active}
+        tooltip={t(item.titleKey)}
+        title={t(item.titleKey)}
         className={
           active
             ? "bg-primary/15 text-primary border-r-2 border-primary rounded-md"
@@ -120,6 +122,7 @@ function SidebarLink({ item, active }: { item: typeof coreItems[number]; active:
     </SidebarMenuItem>
   );
 }
+
 
 export function AppSidebar() {
   const { t } = useTranslation();

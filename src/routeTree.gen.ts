@@ -108,6 +108,7 @@ import { Route as ApiPublicNotificationsIngestRouteImport } from './routes/api/p
 import { Route as ApiPublicManaraResolveRouteImport } from './routes/api/public/manara/resolve'
 import { Route as ApiPublicManaraBadgeRouteImport } from './routes/api/public/manara/badge'
 import { Route as ApiPublicManaraAnnounceRouteImport } from './routes/api/public/manara/announce'
+import { Route as ApiPublicHubExportRouteImport } from './routes/api/public/hub/export'
 import { Route as ApiPublicHooksHealthCheckRouteImport } from './routes/api/public/hooks/health-check'
 import { Route as ApiPublicHnAnnounceRouteImport } from './routes/api/public/hn/announce'
 import { Route as ApiPublicHnServiceCatalogRouteImport } from './routes/api/public/hn-service/catalog'
@@ -643,6 +644,11 @@ const ApiPublicManaraAnnounceRoute = ApiPublicManaraAnnounceRouteImport.update({
   path: '/api/public/manara/announce',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicHubExportRoute = ApiPublicHubExportRouteImport.update({
+  id: '/api/public/hub/export',
+  path: '/api/public/hub/export',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHooksHealthCheckRoute =
   ApiPublicHooksHealthCheckRouteImport.update({
     id: '/api/public/hooks/health-check',
@@ -775,6 +781,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hn-service/catalog': typeof ApiPublicHnServiceCatalogRoute
   '/api/public/hn/announce': typeof ApiPublicHnAnnounceRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
+  '/api/public/hub/export': typeof ApiPublicHubExportRoute
   '/api/public/manara/announce': typeof ApiPublicManaraAnnounceRoute
   '/api/public/manara/badge': typeof ApiPublicManaraBadgeRoute
   '/api/public/manara/resolve': typeof ApiPublicManaraResolveRoute
@@ -881,6 +888,7 @@ export interface FileRoutesByTo {
   '/api/public/hn-service/catalog': typeof ApiPublicHnServiceCatalogRoute
   '/api/public/hn/announce': typeof ApiPublicHnAnnounceRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
+  '/api/public/hub/export': typeof ApiPublicHubExportRoute
   '/api/public/manara/announce': typeof ApiPublicManaraAnnounceRoute
   '/api/public/manara/badge': typeof ApiPublicManaraBadgeRoute
   '/api/public/manara/resolve': typeof ApiPublicManaraResolveRoute
@@ -990,6 +998,7 @@ export interface FileRoutesById {
   '/api/public/hn-service/catalog': typeof ApiPublicHnServiceCatalogRoute
   '/api/public/hn/announce': typeof ApiPublicHnAnnounceRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
+  '/api/public/hub/export': typeof ApiPublicHubExportRoute
   '/api/public/manara/announce': typeof ApiPublicManaraAnnounceRoute
   '/api/public/manara/badge': typeof ApiPublicManaraBadgeRoute
   '/api/public/manara/resolve': typeof ApiPublicManaraResolveRoute
@@ -1099,6 +1108,7 @@ export interface FileRouteTypes {
     | '/api/public/hn-service/catalog'
     | '/api/public/hn/announce'
     | '/api/public/hooks/health-check'
+    | '/api/public/hub/export'
     | '/api/public/manara/announce'
     | '/api/public/manara/badge'
     | '/api/public/manara/resolve'
@@ -1205,6 +1215,7 @@ export interface FileRouteTypes {
     | '/api/public/hn-service/catalog'
     | '/api/public/hn/announce'
     | '/api/public/hooks/health-check'
+    | '/api/public/hub/export'
     | '/api/public/manara/announce'
     | '/api/public/manara/badge'
     | '/api/public/manara/resolve'
@@ -1313,6 +1324,7 @@ export interface FileRouteTypes {
     | '/api/public/hn-service/catalog'
     | '/api/public/hn/announce'
     | '/api/public/hooks/health-check'
+    | '/api/public/hub/export'
     | '/api/public/manara/announce'
     | '/api/public/manara/badge'
     | '/api/public/manara/resolve'
@@ -1351,6 +1363,7 @@ export interface RootRouteChildren {
   ApiPublicHnServiceCatalogRoute: typeof ApiPublicHnServiceCatalogRoute
   ApiPublicHnAnnounceRoute: typeof ApiPublicHnAnnounceRoute
   ApiPublicHooksHealthCheckRoute: typeof ApiPublicHooksHealthCheckRoute
+  ApiPublicHubExportRoute: typeof ApiPublicHubExportRoute
   ApiPublicManaraAnnounceRoute: typeof ApiPublicManaraAnnounceRoute
   ApiPublicManaraBadgeRoute: typeof ApiPublicManaraBadgeRoute
   ApiPublicManaraResolveRoute: typeof ApiPublicManaraResolveRoute
@@ -2060,6 +2073,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicManaraAnnounceRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hub/export': {
+      id: '/api/public/hub/export'
+      path: '/api/public/hub/export'
+      fullPath: '/api/public/hub/export'
+      preLoaderRoute: typeof ApiPublicHubExportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hooks/health-check': {
       id: '/api/public/hooks/health-check'
       path: '/api/public/hooks/health-check'
@@ -2320,6 +2340,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHnServiceCatalogRoute: ApiPublicHnServiceCatalogRoute,
   ApiPublicHnAnnounceRoute: ApiPublicHnAnnounceRoute,
   ApiPublicHooksHealthCheckRoute: ApiPublicHooksHealthCheckRoute,
+  ApiPublicHubExportRoute: ApiPublicHubExportRoute,
   ApiPublicManaraAnnounceRoute: ApiPublicManaraAnnounceRoute,
   ApiPublicManaraBadgeRoute: ApiPublicManaraBadgeRoute,
   ApiPublicManaraResolveRoute: ApiPublicManaraResolveRoute,

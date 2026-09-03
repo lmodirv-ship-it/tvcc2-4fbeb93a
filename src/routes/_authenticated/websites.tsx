@@ -150,6 +150,22 @@ function WebsitesPage() {
     qc.invalidateQueries({ queryKey: ["websites"] });
   };
 
+  const exportCsv = () => {
+    const rows = (selected.size ? filtered.filter((w) => selected.has(w.id)) : filtered) as any[];
+    if (!rows.length) return toast.error("لا توجد بيانات للتصدير");
+    const head = ["site_code", "name", "domain", "status", "is_active", "ssl_expires_at", "last_checked_at"];
+    const esc = (v: any) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const csv = [head.join(","), ...rows.map((r) => head.map((h) => esc(r[h])).join(","))].join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url;
+    a.download = `tvcc-sites-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(`تم تصدير ${rows.length} موقع إلى CSV`);
+  };
+
   const verifyWebsite = async (id: string, domain: string) => {
     toast.loading("جاري التحقق من ملكية النطاق...", { id: `verify-${id}` });
     try {

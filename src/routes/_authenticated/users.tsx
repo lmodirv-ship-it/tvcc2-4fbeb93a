@@ -35,25 +35,100 @@ const ROLE_LABEL: Record<string, string> = {
 };
 
 function Page() {
+  const { primaryRoleLabel, granted } = usePermissions();
   return (
     <div className="space-y-6">
-      <div>
-        <h1 className="text-3xl font-bold">المستخدمون والفريق</h1>
-        <p className="text-muted-foreground mt-1">امنح فريقك دور Admin أو Editor ليروا كل ما تراه في المنصة</p>
+      <div className="flex flex-wrap items-start justify-between gap-3">
+        <div>
+          <h1 className="text-3xl font-bold">المستخدمون والفريق</h1>
+          <p className="text-muted-foreground mt-1">امنح فريقك دور Admin أو Editor ليروا كل ما تراه في المنصة</p>
+        </div>
+        <Badge variant="secondary" className="gap-1">
+          <ShieldCheck className="w-3 h-3" /> دورك: {primaryRoleLabel} — {granted.size} صلاحية
+        </Badge>
       </div>
 
       <Tabs defaultValue="team">
         <TabsList>
           <TabsTrigger value="team">فريق المنصة</TabsTrigger>
+          <TabsTrigger value="permissions">الأدوار والصلاحيات</TabsTrigger>
           <TabsTrigger value="site-users">المستخدمون الموحدون</TabsTrigger>
         </TabsList>
         <TabsContent value="team" className="mt-4">
           <TeamTab />
         </TabsContent>
+        <TabsContent value="permissions" className="mt-4">
+          <PermissionsTab />
+        </TabsContent>
         <TabsContent value="site-users" className="mt-4">
           <SiteUsersTab />
         </TabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+/* ---------------- Permissions matrix ---------------- */
+
+function PermissionsTab() {
+  const { primaryRole } = usePermissions();
+  const groups = Array.from(new Set(PERMISSIONS.map((p) => p.group)));
+
+  return (
+    <div className="space-y-4">
+      <div className="grid gap-3 md:grid-cols-4">
+        {ROLE_ORDER.map((role) => (
+          <Card key={role} className={role === primaryRole ? "border-primary/60" : ""}>
+            <CardContent className="p-4 space-y-1">
+              <div className="font-semibold text-sm flex items-center gap-2">
+                {ROLE_LABELS[role]}
+                {role === primaryRole && <Badge className="text-[10px]">دورك</Badge>}
+              </div>
+              <p className="text-xs text-muted-foreground">{ROLE_DESCRIPTIONS[role]}</p>
+              <div className="text-xs text-primary pt-1">{ROLE_PERMISSIONS[role].length} صلاحية</div>
+            </CardContent>
+          </Card>
+        ))}
+      </div>
+
+      <Card>
+        <CardContent className="p-4">
+          <div className="font-semibold mb-3">مصفوفة الصلاحيات</div>
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>الصلاحية</TableHead>
+                {ROLE_ORDER.map((r) => (
+                  <TableHead key={r} className="text-center">{ROLE_LABELS[r]}</TableHead>
+                ))}
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              {groups.map((group) => (
+                <>
+                  <TableRow key={group} className="bg-muted/40">
+                    <TableCell colSpan={5} className="font-semibold text-xs">{group}</TableCell>
+                  </TableRow>
+                  {PERMISSIONS.filter((p) => p.group === group).map((p) => (
+                    <TableRow key={p.key}>
+                      <TableCell className="text-sm">{p.label}</TableCell>
+                      {ROLE_ORDER.map((r) => (
+                        <TableCell key={r} className="text-center">
+                          {roleHas(r, p.key) ? (
+                            <Check className="w-4 h-4 text-success inline" />
+                          ) : (
+                            <X className="w-4 h-4 text-muted-foreground/50 inline" />
+                          )}
+                        </TableCell>
+                      ))}
+                    </TableRow>
+                  ))}
+                </>
+              ))}
+            </TableBody>
+          </Table>
+        </CardContent>
+      </Card>
     </div>
   );
 }

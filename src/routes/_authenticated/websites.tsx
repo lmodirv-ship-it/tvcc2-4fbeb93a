@@ -28,7 +28,7 @@ import {
   Plus, Trash2, RefreshCw, Loader2, Globe, CheckCircle2, WifiOff, XCircle,
   ChevronDown, Filter, Link2, MoreHorizontal, Activity, ChevronLeft, ChevronRight,
   ChevronsLeft, ChevronsRight, CheckCircle, AlertCircle, Database as DbIcon,
-  KeyRound, ShieldCheck, Copy,
+  KeyRound, ShieldCheck, Copy, Download, Timer,
 } from "lucide-react";
 import { verifyIssueRegister } from "@/lib/hn-rls.functions";
 import { verifyDomainCode } from "@/lib/dns.functions";

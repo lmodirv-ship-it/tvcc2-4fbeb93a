@@ -7,11 +7,11 @@ import {
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
-import { usePermissions } from "@/hooks/use-permissions";
-import { usePlatformPageRules } from "@/hooks/use-platform-pages";
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { usePermissions } from "@/hooks/use-permissions";
+import { usePlatformPageRules } from "@/hooks/use-platform-pages";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { exportDashboardHtml } from "@/lib/html-export";

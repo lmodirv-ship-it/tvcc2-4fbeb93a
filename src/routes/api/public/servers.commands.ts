@@ -145,13 +145,13 @@ export const Route = createFileRoute("/api/public/servers/commands")({
               pairing_expires_at: discovery ? null : undefined,
             }).eq("database_id", databaseId);
           }
-          if (cmd.action === "site_identity_provision" && cmd.website_id) {
+          if (cmd.action === "site_identity_provision" && websiteId && databaseId) {
             await admin.from("site_databases").update({
               provisioning_status: code === 0 ? "ready" : "failed",
               provisioned_at: code === 0 ? now : null,
               provisioning_error: code === 0 ? null : output?.slice(0, 2000),
               status: code === 0 ? "active" : "error",
-            }).eq("website_id", cmd.website_id).eq("database_id", databaseId);
+            }).eq("website_id", websiteId).eq("database_id", databaseId);
           }
 
           await admin.from("operation_log").insert({

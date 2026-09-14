@@ -54,7 +54,8 @@ export function NightlyDestinations() {
   const copies = (data?.copies ?? []) as any[];
 
   const bySite = useMemo(() => {
-    const map = new Map<string, { domain: string; first?: any; current?: any }>();
+    type Row = { domain: string; first?: any; current?: any };
+    const map = new Map<string, Row>();
     for (const c of copies) {
       const entry: { domain: string; first?: any; current?: any } =
         map.get(c.domain) ?? { domain: c.domain };

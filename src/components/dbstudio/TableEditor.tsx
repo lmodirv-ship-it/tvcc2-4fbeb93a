@@ -37,13 +37,12 @@ const OPS: [string, string][] = [
 ];
 type FilterRow = { column: string; op: string; value: string };
 
-/** معرّف ثابت لكل جدول: حرف + ستة أرقام (مثل D222222) مشتق من اسم المخطط والجدول. */
-function tableCode(schema: string, name: string) {
-  const key = `${schema}.${name}`;
-  let hash = 0;
-  for (let i = 0; i < key.length; i += 1) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
-  return `D${String(hash % 1000000).padStart(6, "0")}`;
+/** معرّف الجدول مبني على معرّف الموقع: S222222 للموقع + رقم تسلسلي لكل جدول (مثل S222222-T001). */
+const SITE_CODE = "S222222";
+function tableCode(index: number) {
+  return `${SITE_CODE}-T${String(index + 1).padStart(3, "0")}`;
 }
+
 
 export function TableEditor({ databaseId, hasAgent = true }: { databaseId: string; hasAgent?: boolean }) {
   const fetchCommands = useServerFn(getEditorCommands);

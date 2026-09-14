@@ -323,10 +323,10 @@ export function TableEditor({ databaseId, hasAgent = true }: { databaseId: strin
                   </table>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3 border-t px-3 py-2 text-xs text-muted-foreground">
-                  <Select value={String(pageSize)} onValueChange={(value) => { setPageSize(Number(value)); setPage(1); }}><SelectTrigger className="h-8 w-24"><SelectValue /></SelectTrigger><SelectContent>{[25, 50, 100, 200, 500].map((n) => <SelectItem key={n} value={String(n)}>{n} صف</SelectItem>)}</SelectContent></Select>
+                <div className="flex flex-wrap items-center gap-2 border-t px-2 py-1 text-[11px] text-muted-foreground">
+                  <Select value={String(pageSize)} onValueChange={(value) => { setPageSize(Number(value)); setPage(1); }}><SelectTrigger className="h-7 w-20 text-[11px]"><SelectValue /></SelectTrigger><SelectContent>{[25, 50, 100, 200, 500].map((n) => <SelectItem key={n} value={String(n)}>{n} صف</SelectItem>)}</SelectContent></Select>
                   <span>صفحة {page}{total !== null ? ` من ${Math.max(1, Math.ceil(total / pageSize))}` : ""}</span><span>{total !== null ? `${total} سجل` : `${filteredRows.length} ظاهر`}</span>
-                  <div className="mr-auto flex gap-1"><Button size="icon" variant="outline" className="size-8" disabled={page <= 1} onClick={() => { const next = page - 1; setPage(next); refreshRows.mutate({ page: next }); }}><ChevronRight className="size-4" /></Button><Button size="icon" variant="outline" className="size-8" disabled={rows.length < pageSize} onClick={() => { const next = page + 1; setPage(next); refreshRows.mutate({ page: next }); }}><ChevronLeft className="size-4" /></Button></div>
+                  <div className="mr-auto flex gap-1"><Button size="icon" variant="outline" className="size-7" disabled={page <= 1} onClick={() => { const next = page - 1; setPage(next); refreshRows.mutate({ page: next }); }}><ChevronRight className="size-3.5" /></Button><Button size="icon" variant="outline" className="size-7" disabled={rows.length < pageSize} onClick={() => { const next = page + 1; setPage(next); refreshRows.mutate({ page: next }); }}><ChevronLeft className="size-3.5" /></Button></div>
                 </div>
               </TabsContent>
 

@@ -47,7 +47,7 @@ type AgentCommandResult = {
   action: string;
   args: Record<string, any> | null;
   status: string;
-  output: unknown;
+  output: any;
   exit_code: number | null;
   created_at: string;
   completed_at: string | null;

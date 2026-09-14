@@ -9,7 +9,7 @@ export const listBackupDestinations = createServerFn({ method: "POST" })
     const [{ data: destinations }, { data: copies }] = await Promise.all([
       sb
         .from("backup_destinations")
-        .select("id, name, host, username, port, base_path, is_enabled, last_run_at, last_run_status, last_run_summary, notes, created_at, secret_id")
+        .select("id, name, host, username, port, base_path, is_enabled, last_run_at, last_run_status, last_run_summary, notes, created_at, secret_id, storage_server_id, scope")
         .order("created_at", { ascending: false }),
       sb
         .from("site_backup_copies")

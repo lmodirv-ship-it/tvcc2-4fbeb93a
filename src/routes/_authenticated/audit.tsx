@@ -115,7 +115,7 @@ function AuditPage() {
               </div>
               <div>
                 <p className="text-sm text-muted-foreground">جاهزية النشر</p>
-                <p className="text-2xl font-bold mt-0.5">
+                <div className="text-2xl font-bold mt-0.5">
                   <Badge className={
                     readiness.color === "success" ? "bg-success/20 text-success border-success/40 text-base px-3 py-1" :
                     readiness.color === "warning" ? "bg-warning/20 text-warning border-warning/40 text-base px-3 py-1" :

@@ -95,22 +95,6 @@ function DbStudioPage() {
   return (
     <TooltipProvider>
       <div dir="rtl" className="min-h-screen bg-background text-foreground">
-        <header className="border-b border-border bg-card/70 px-4 py-3 backdrop-blur-xl">
-          <div className="mx-auto flex max-w-[1600px] flex-wrap items-center gap-3">
-            <div className="flex items-center gap-2"><Database className="size-6 text-primary" /><h1 className="text-xl font-bold">مركز قواعد البيانات</h1></div>
-            <Select value={selectedId} onValueChange={setDatabaseId}>
-              <SelectTrigger className="mr-auto w-[290px]"><SelectValue placeholder="اختر قاعدة" /></SelectTrigger>
-              <SelectContent>{data?.databases.map((db: any) => <SelectItem key={db.id} value={db.id}>{db.name} · {db.db_kind === "internal" ? "داخلية TVCC" : db.db_kind === "local" ? "محلية" : "سحابية"}</SelectItem>)}</SelectContent>
-            </Select>
-            <Badge variant={statusTone(connection?.status ?? selected?.status)}>{connection?.status ?? selected?.status ?? "غير معروف"}</Badge>
-            {selected?.db_kind === "internal" && <Badge variant="default">داخلية TVCC</Badge>}
-            <Button variant="outline" size="icon" onClick={() => query.refetch()} aria-label="تحديث"><RefreshCw className="size-4" /></Button>
-            <Button disabled={!selectedId || selected?.db_kind === "internal" || connectMutation.isPending || connection?.status === "connected"} onClick={() => connectMutation.mutate()}>
-              {connectMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <Cable className="size-4" />}
-              {selected?.db_kind === "internal" ? "بدون وكيل" : connection?.status === "connected" ? "CONNECTED" : "ربط الوكيل"}
-            </Button>
-          </div>
-        </header>
 
         <div className="mx-auto flex max-w-[1600px] items-start">
           <aside className={cn("sticky top-0 shrink-0 border-border bg-card/35 p-2 transition-all duration-300", navOpen ? "w-56 border-l" : "w-14 border-l")}>

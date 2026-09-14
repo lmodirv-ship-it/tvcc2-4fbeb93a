@@ -271,14 +271,14 @@ export function TableEditor({ databaseId, hasAgent = true }: { databaseId: strin
         </aside>
 
         <section className="flex min-w-0 flex-col overflow-hidden">
-          <div className="flex h-11 items-end overflow-x-auto border-b bg-muted/20 px-1 pt-1" dir="ltr">
+          <div className="flex h-9 items-end overflow-x-auto border-b bg-muted/20 px-1 pt-1" dir="ltr">
             {openTables.map((name) => (
-              <button key={name} onClick={() => openTable(name)} className={`group flex h-10 min-w-36 max-w-56 items-center gap-2 border-l px-3 text-xs ${table === name ? "border-t-2 border-t-primary bg-card text-foreground" : "bg-muted/20 text-muted-foreground hover:bg-muted/50"}`}>
-                <Table2 className="size-3.5 shrink-0" /><span className="flex-1 truncate text-left font-mono">{name}</span>
-                <X className="size-3.5 opacity-50 hover:text-destructive hover:opacity-100" onClick={(e) => { e.stopPropagation(); closeTable(name); }} />
+              <button key={name} onClick={() => openTable(name)} className={`group flex h-8 min-w-28 max-w-48 items-center gap-1.5 border-l px-2 text-[11px] ${table === name ? "border-t-2 border-t-primary bg-card text-foreground" : "bg-muted/20 text-muted-foreground hover:bg-muted/50"}`}>
+                <Table2 className="size-3 shrink-0" /><span className="flex-1 truncate text-left font-mono">{name}</span>
+                <X className="size-3 opacity-50 hover:text-destructive hover:opacity-100" onClick={(e) => { e.stopPropagation(); closeTable(name); }} />
               </button>
             ))}
-            <Button size="icon" variant="ghost" className="mb-1 ml-1 size-8 shrink-0" title="فتح جدول" onClick={() => setCatalogCollapsed(false)}><Plus className="size-4" /></Button>
+            <Button size="icon" variant="ghost" className="mb-0.5 ml-1 size-7 shrink-0" title="فتح جدول" onClick={() => setCatalogCollapsed(false)}><Plus className="size-3.5" /></Button>
           </div>
 
           {!table ? (

@@ -8595,7 +8595,6 @@ export type Database = {
       is_permanent_owner_email: { Args: { _email: string }; Returns: boolean }
       rollup_server_metrics: { Args: { retain_days?: number }; Returns: number }
       tvcc_exec_sql: { Args: { sql: string }; Returns: Json[] }
-      tvcc_exec_sql_scalar: { Args: { sql: string }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "editor" | "viewer" | "system_owner"

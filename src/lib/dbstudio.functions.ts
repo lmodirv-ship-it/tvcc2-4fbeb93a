@@ -687,6 +687,11 @@ export const inspectTemplateDiff = createServerFn({ method: "POST" })
                  from pg_class c join pg_namespace n on n.oid = c.relnamespace
                  left join pg_stat_user_tables s on s.relid = c.oid
                  where n.nspname = '${schema}' and c.relkind in ('r','p') order by 1`;
+    if (isInternalDb(db)) {
+      const rows = await runInternalSql(sql);
+      const command = internalCommand("pg_meta", { database_id: db.id, mode: "tables", schema, template_id: template.id, sql, read_only: true }, { rows });
+      return { command, expected, schema };
+    }
     const command = await queueCommand(supabase, userId, db.server_id, "pg_meta", {
       ...baseArgs(db), mode: "tables", schema, template_id: template.id, sql, read_only: true,
     });

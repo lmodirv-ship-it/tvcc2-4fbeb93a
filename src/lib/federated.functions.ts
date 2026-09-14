@@ -489,3 +489,72 @@ export const rollbackSiteSnapshot = createServerFn({ method: "POST" })
     });
     return { ok: true };
   });
+
+/** خريطة العلاقات لسيرفر/موقع/قاعدة بيانات: من يرتبط بمن، مع اكتشاف الروابط الناقصة. */
+export const getEntityRelations = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { serverId?: string | null; websiteId?: string | null; databaseId?: string | null }) => input)
+  .handler(async ({ data, context }) => {
+    const sb = context.supabase as any;
+    const { userCan } = await import("./roles.server");
+    if (!(await userCan(sb, context.userId, "agent.read"))) throw new Error("صلاحيات غير كافية لعرض العلاقات");
+
+    let serverId = data.serverId ?? null;
+    let websiteId = data.websiteId ?? null;
+
+    if (!serverId && data.databaseId) {
+      const { data: db } = await sb.from("databases").select("server_id,website_id").eq("id", data.databaseId).maybeSingle();
+      serverId = db?.server_id ?? serverId;
+      websiteId = websiteId ?? db?.website_id ?? null;
+    }
+    if (!serverId && websiteId) {
+      const { data: w } = await sb.from("websites").select("server_id").eq("id", websiteId).maybeSingle();
+      serverId = w?.server_id ?? null;
+    }
+
+    const byServer = (q: any) => (serverId ? q.eq("server_id", serverId) : q.limit(0));
+
+    const [server, agents, sites, dbs, containers, nginx, domains, certs, backups, alerts] = await Promise.all([
+      serverId ? sb.from("servers").select("id,name,hostname,status,role,last_seen_at,agent_version").eq("id", serverId).maybeSingle() : Promise.resolve({ data: null }),
+      byServer(sb.from("agent_instances").select("id,agent_key,role,status,last_heartbeat_at,link_quality")),
+      byServer(sb.from("websites").select("id,name,domain,site_code,status")),
+      byServer(sb.from("databases").select("id,name,db_kind,is_primary,status,website_id")),
+      byServer(sb.from("server_containers").select("id,name,status")),
+      byServer(sb.from("nginx_configs").select("id,website_id,status")),
+      byServer(sb.from("hn_domains").select("id,name,status,website_id")),
+      websiteId ? sb.from("ssl_certificates").select("id,domain,status").eq("website_id", websiteId) : sb.from("ssl_certificates").select("id,domain,status").limit(0),
+      byServer(sb.from("site_backups").select("id,website_id,status,created_at").order("created_at", { ascending: false }).limit(10)),
+      byServer(sb.from("alert_rules").select("id,name")),
+    ]);
+
+    const siteRows = (sites.data ?? []) as any[];
+    const dbRows = (dbs.data ?? []) as any[];
+    const agentRows = (agents.data ?? []) as any[];
+    const backupRows = (backups.data ?? []) as any[];
+
+    const gaps: Array<{ key: string; label: string }> = [];
+    if (serverId && !agentRows.length) gaps.push({ key: "agent", label: "لا يوجد وكيل مثبّت على هذا السيرفر" });
+    if (serverId && !dbRows.length) gaps.push({ key: "db", label: "لا توجد قاعدة بيانات مرتبطة بهذا السيرفر" });
+    const sitesWithoutDb = siteRows.filter((s) => !dbRows.some((d) => d.website_id === s.id));
+    if (sitesWithoutDb.length) gaps.push({ key: "site_db", label: `${sitesWithoutDb.length} موقع بلا قاعدة بيانات مرتبطة` });
+    const sitesWithoutNginx = siteRows.filter((s) => !((nginx.data ?? []) as any[]).some((n) => n.website_id === s.id));
+    if (siteRows.length && sitesWithoutNginx.length) gaps.push({ key: "site_nginx", label: `${sitesWithoutNginx.length} موقع بلا إعداد توجيه (Nginx)` });
+    if (siteRows.length && !backupRows.length) gaps.push({ key: "backup", label: "لا توجد نسخ احتياطية حديثة لمواقع هذا السيرفر" });
+    if (serverId && !((alerts.data ?? []) as any[]).length) gaps.push({ key: "alerts", label: "لا توجد قواعد تنبيه على هذا السيرفر" });
+
+    return {
+      serverId,
+      websiteId,
+      server: (server as any).data ?? null,
+      agents: agentRows,
+      sites: siteRows,
+      databases: dbRows,
+      containers: (containers.data ?? []) as any[],
+      nginx: (nginx.data ?? []) as any[],
+      domains: (domains.data ?? []) as any[],
+      certificates: (certs.data ?? []) as any[],
+      backups: backupRows,
+      alerts: (alerts.data ?? []) as any[],
+      gaps,
+    };
+  });

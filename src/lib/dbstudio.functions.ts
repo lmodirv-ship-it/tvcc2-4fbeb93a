@@ -175,6 +175,7 @@ export const queueDbStudioAction = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertAdmin(supabase, userId);
+    { const { assertCan } = await import("./roles.server"); await assertCan(supabase, userId, "db.write"); }
     if (!DB_ACTIONS.includes(data.action)) throw new Error("أمر قاعدة البيانات غير مسموح");
     const { data: db } = await supabase.from("databases").select("*").eq("id", data.databaseId).single();
     if (isInternalDb(db)) throw new Error("قاعدة TVCC الأساسية لا تحتاج إلى أوامر وكيل — استخدم محرّر الجداول أو SQL");
@@ -345,6 +346,7 @@ export const readCatalog = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertAdmin(supabase, userId);
+    { const { assertCan } = await import("./roles.server"); await assertCan(supabase, userId, "db.read"); }
     const db = await dbOrThrow(supabase, data.databaseId);
     const schema = data.schema ? ident(data.schema, "المخطط") : undefined;
     const table = data.table ? ident(data.table, "الجدول") : undefined;
@@ -405,6 +407,7 @@ export const readTableRows = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertAdmin(supabase, userId);
+    { const { assertCan } = await import("./roles.server"); await assertCan(supabase, userId, "db.read"); }
     const db = await dbOrThrow(supabase, data.databaseId);
     const schema = ident(data.schema, "المخطط");
     const table = ident(data.table, "الجدول");
@@ -448,6 +451,7 @@ export const writeTableRows = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertAdmin(supabase, userId);
+    { const { assertCan } = await import("./roles.server"); await assertCan(supabase, userId, "db.write"); }
     if (!data.confirm) throw new Error("التغييرات تحتاج تأكيداً صريحاً قبل الحفظ");
     const db = await dbOrThrow(supabase, data.databaseId);
     const schema = ident(data.schema, "المخطط");
@@ -513,6 +517,7 @@ export const applyTableDdl = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertAdmin(supabase, userId);
+    { const { assertCan } = await import("./roles.server"); await assertCan(supabase, userId, "db.ddl"); }
     if (!data.confirm) throw new Error("تغييرات البنية تحتاج تأكيداً صريحاً");
     const db = await dbOrThrow(supabase, data.databaseId);
     const schema = ident(data.schema, "المخطط");
@@ -584,6 +589,7 @@ export const importTableCsv = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertAdmin(supabase, userId);
+    { const { assertCan } = await import("./roles.server"); await assertCan(supabase, userId, "db.ddl"); }
     if (!data.confirm) throw new Error("الاستيراد يحتاج تأكيداً صريحاً");
     const db = await dbOrThrow(supabase, data.databaseId);
     const schema = ident(data.schema, "المخطط");
@@ -665,6 +671,7 @@ export const applyTemplate = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertAdmin(supabase, userId);
+    { const { assertCan } = await import("./roles.server"); await assertCan(supabase, userId, "db.ddl"); }
     if (!data.confirm) throw new Error("تطبيق النموذج يحتاج تأكيداً صريحاً");
     const db = await dbOrThrow(supabase, data.databaseId);
     const { buildTemplateSql, getTemplate } = await import("./db-templates");
@@ -729,6 +736,7 @@ export const extractTemplate = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertAdmin(supabase, userId);
+    { const { assertCan } = await import("./roles.server"); await assertCan(supabase, userId, "db.read"); }
     const db = await dbOrThrow(supabase, data.databaseId);
     const schema = ident(data.schema ?? "public", "المخطط");
     const sql = `select c.relname as table_name, a.attname as column_name,

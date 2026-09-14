@@ -369,3 +369,81 @@ export function commandCategory(action: string): CommandCategory {
   if (action.startsWith("ollama_") || action.startsWith("ai_") || action.startsWith("edge_functions")) return "ذكاء اصطناعي";
   return "نظام";
 }
+
+/* ============================================================
+ * أدوار الوكيل على السيرفر — أي وكيل يحق له تنفيذ أي مهمة
+ * ============================================================ */
+
+export const AGENT_ROLE_KEYS = ["main", "web", "db", "backup", "monitor", "healer", "security"] as const;
+export type AgentRoleKey = (typeof AGENT_ROLE_KEYS)[number];
+
+export const AGENT_ROLE_LABELS: Record<AgentRoleKey, string> = {
+  main: "وكيل رئيسي",
+  web: "المواقع و Nginx",
+  db: "قواعد البيانات",
+  backup: "النسخ الاحتياطية",
+  monitor: "المراقبة",
+  healer: "الإحياء الذاتي",
+  security: "الأمان",
+};
+
+const CATEGORY_ROLES: Record<CommandCategory, AgentRoleKey[]> = {
+  "مراقبة": ["main", "web", "db", "backup", "monitor", "healer", "security"],
+  "خدمات": ["main", "web", "healer"],
+  "مواقع": ["main", "web"],
+  "قواعد بيانات": ["main", "db"],
+  "شبكة": ["main", "web", "security"],
+  "حاويات": ["main", "web"],
+  "نسخ احتياطي": ["main", "backup"],
+  "ملفات": ["main", "web", "backup"],
+  "ذكاء اصطناعي": ["main"],
+  "نظام": ["main", "healer", "security"],
+};
+
+/** أدوار الوكيل المخوّلة بتنفيذ هذه المهمة. */
+export function rolesForAction(action: string): AgentRoleKey[] {
+  if (action.startsWith("agent_") || action === "job_cancel") return ["main", "healer"];
+  if (action.startsWith("heal_")) return ["main", "healer"];
+  if (action.startsWith("firewall_")) return ["main", "security"];
+  return CATEGORY_ROLES[commandCategory(action)] ?? ["main"];
+}
+
+export function agentRoleAllows(role: string | null | undefined, action: string): boolean {
+  const r = (role ?? "main").toLowerCase();
+  if (r === "main" || r === "full") return true;
+  return (rolesForAction(action) as string[]).includes(r);
+}
+
+/* ============================================================
+ * صلاحية المستخدم المطلوبة لكل مهمة
+ * ============================================================ */
+
+const READ_ONLY_COMMANDS: readonly string[] = [
+  "scan_ports", "read_configs", "service_status", "service_logs", "disk_usage",
+  "storage_usage", "port_check", "link_check", "proc_list", "agent_diag",
+  "fs_list", "fs_tree", "fs_read", "fs_search", "site_logs", "db_ping",
+  "tunnel_status", "vpn_status", "ai_models_list", "ollama_ps", "firewall_list",
+  "nginx_test", "nginx_read", "nginx_vhost_list", "nginx_vhost_read", "nginx_cert_list",
+  "nginx_access_log", "nginx_error_log", "nginx_stats", "docker_ps", "docker_images",
+  "docker_logs", "docker_networks", "docker_volumes", "docker_stats", "docker_compose_read",
+  "pg_meta", "pg_rows", "db_discover", "storage_list", "edge_functions_list",
+  "realtime_inspect", "advisor_scan", "auth_users", "backup_verify", "hosting_usage_report",
+];
+
+export function isReadOnlyCommand(action: string): boolean {
+  return READ_ONLY_COMMANDS.includes(action);
+}
+
+/** مفتاح الصلاحية في مصفوفة أدوار المستخدم المطلوب لتشغيل هذه المهمة. */
+export function permissionForAction(action: string):
+  | "agent.read" | "agent.run" | "docker.manage" | "nginx.manage" | "db.read" | "db.write" | "db.ddl" {
+  if (action.startsWith("docker_")) return isReadOnlyCommand(action) ? "agent.read" : "docker.manage";
+  if (action.startsWith("nginx_")) return isReadOnlyCommand(action) ? "agent.read" : "nginx.manage";
+  if (commandCategory(action) === "قواعد بيانات") {
+    if (isReadOnlyCommand(action)) return "db.read";
+    if (["db_migrate", "db_provision", "db_import", "db_import_full", "db_create", "db_user_grant", "pooler_config"].includes(action)) return "db.ddl";
+    return "db.write";
+  }
+  return isReadOnlyCommand(action) ? "agent.read" : "agent.run";
+}
+

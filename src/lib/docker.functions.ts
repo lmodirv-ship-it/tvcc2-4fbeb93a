@@ -17,9 +17,16 @@ const RISKY: readonly string[] = [
 ];
 
 async function assertAdmin(supabase: any, userId: string) {
-  const ok = await isAdminOrOwner(supabase, userId);
-  if (!ok) throw new Error("إدارة الحاويات متاحة للمالك والمدير فقط");
+  const { userCan } = await import("./roles.server");
+  const ok = (await isAdminOrOwner(supabase, userId)) || (await userCan(supabase, userId, "docker.manage"));
+  if (!ok) throw new Error("صلاحيات غير كافية — إدارة الحاويات تتطلب صلاحية «إدارة الحاويات (Docker)»");
 }
+
+async function assertRead(supabase: any, userId: string) {
+  const { userCan } = await import("./roles.server");
+  if (!(await userCan(supabase, userId, "agent.read"))) throw new Error("صلاحيات غير كافية لعرض الحاويات");
+}
+
 
 async function audit(
   supabase: any,
@@ -52,7 +59,7 @@ export const getDockerServers = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
-    await assertAdmin(supabase, userId);
+    await assertRead(supabase, userId);
     const [servers, agents] = await Promise.all([
       supabase
         .from("servers")
@@ -69,7 +76,7 @@ export const getDockerCommands = createServerFn({ method: "GET" })
   .inputValidator((input: { serverId: string }) => input)
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await assertAdmin(supabase, userId);
+    await assertRead(supabase, userId);
     const { data: rows } = await supabase
       .from("server_commands")
       .select("id,action,args,status,output,exit_code,created_at,completed_at,dry_run")

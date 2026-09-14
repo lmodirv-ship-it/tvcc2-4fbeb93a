@@ -1,6 +1,7 @@
 import { createHash, randomBytes } from "crypto";
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { hasAnyRole, isAdminOrOwner } from "./roles.server";
 
 const DB_ACTIONS = [
   "db_discover", "pg_meta", "pg_rows", "pg_write", "db_query", "db_policy",
@@ -13,11 +14,8 @@ const DB_ACTIONS = [
 type DbAction = (typeof DB_ACTIONS)[number];
 
 async function assertAdmin(supabase: any, userId: string) {
-  const [{ data: admin }, { data: owner }] = await Promise.all([
-    supabase.rpc("has_role", { _user_id: userId, _role: "admin" }),
-    supabase.rpc("has_role", { _user_id: userId, _role: "system_owner" }),
-  ]);
-  if (!admin && !owner) throw new Error("إدارة قواعد البيانات متاحة للمالك والمدير فقط");
+  const ok = await isAdminOrOwner(supabase, userId);
+  if (!ok) throw new Error("إدارة قواعد البيانات متاحة للمالك والمدير فقط");
 }
 
 async function queueCommand(supabase: any, userId: string, serverId: string, action: DbAction, args: Record<string, unknown>) {

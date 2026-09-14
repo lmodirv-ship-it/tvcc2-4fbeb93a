@@ -91,6 +91,50 @@ export type Database = {
           },
         ]
       }
+      agent_configs: {
+        Row: {
+          allowed_commands: string[]
+          autostart: boolean
+          created_at: string
+          extra: Json
+          heartbeat_interval_sec: number
+          id: string
+          resource_limits: Json
+          server_id: string
+          updated_at: string
+        }
+        Insert: {
+          allowed_commands?: string[]
+          autostart?: boolean
+          created_at?: string
+          extra?: Json
+          heartbeat_interval_sec?: number
+          id?: string
+          resource_limits?: Json
+          server_id: string
+          updated_at?: string
+        }
+        Update: {
+          allowed_commands?: string[]
+          autostart?: boolean
+          created_at?: string
+          extra?: Json
+          heartbeat_interval_sec?: number
+          id?: string
+          resource_limits?: Json
+          server_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "agent_configs_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: true
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       agent_installers: {
         Row: {
           created_at: string
@@ -999,6 +1043,61 @@ export type Database = {
           views?: number
         }
         Relationships: []
+      }
+      blueprint_deployments: {
+        Row: {
+          blueprint_id: string
+          created_at: string
+          id: string
+          result: Json | null
+          server_id: string | null
+          status: string
+          updated_at: string
+          website_id: string | null
+        }
+        Insert: {
+          blueprint_id: string
+          created_at?: string
+          id?: string
+          result?: Json | null
+          server_id?: string | null
+          status?: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Update: {
+          blueprint_id?: string
+          created_at?: string
+          id?: string
+          result?: Json | null
+          server_id?: string | null
+          status?: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "blueprint_deployments_blueprint_id_fkey"
+            columns: ["blueprint_id"]
+            isOneToOne: false
+            referencedRelation: "fleet_blueprints"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blueprint_deployments_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "blueprint_deployments_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       brand_settings: {
         Row: {
@@ -1952,6 +2051,81 @@ export type Database = {
           },
         ]
       }
+      federated_alerts: {
+        Row: {
+          body: string | null
+          created_at: string
+          id: string
+          resolved_at: string | null
+          severity: string
+          source_id: string | null
+          source_kind: string | null
+          title: string
+        }
+        Insert: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          resolved_at?: string | null
+          severity?: string
+          source_id?: string | null
+          source_kind?: string | null
+          title: string
+        }
+        Update: {
+          body?: string | null
+          created_at?: string
+          id?: string
+          resolved_at?: string | null
+          severity?: string
+          source_id?: string | null
+          source_kind?: string | null
+          title?: string
+        }
+        Relationships: []
+      }
+      federated_queries: {
+        Row: {
+          confirmed: boolean
+          created_at: string
+          created_by: string | null
+          destructive: boolean
+          id: string
+          results: Json | null
+          sql_text: string
+          status: string
+          target_ids: string[]
+          target_kind: string
+          updated_at: string
+        }
+        Insert: {
+          confirmed?: boolean
+          created_at?: string
+          created_by?: string | null
+          destructive?: boolean
+          id?: string
+          results?: Json | null
+          sql_text: string
+          status?: string
+          target_ids?: string[]
+          target_kind?: string
+          updated_at?: string
+        }
+        Update: {
+          confirmed?: boolean
+          created_at?: string
+          created_by?: string | null
+          destructive?: boolean
+          id?: string
+          results?: Json | null
+          sql_text?: string
+          status?: string
+          target_ids?: string[]
+          target_kind?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       file_replicas: {
         Row: {
           backup_server_id: string | null
@@ -2179,6 +2353,42 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      fleet_blueprints: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          description: string | null
+          id: string
+          is_active: boolean
+          name: string
+          schema_sql: string
+          updated_at: string
+          version: number
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name: string
+          schema_sql?: string
+          updated_at?: string
+          version?: number
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          description?: string | null
+          id?: string
+          is_active?: boolean
+          name?: string
+          schema_sql?: string
+          updated_at?: string
+          version?: number
+        }
+        Relationships: []
       }
       git_deployments: {
         Row: {
@@ -3185,6 +3395,57 @@ export type Database = {
             columns: ["to_address_id"]
             isOneToOne: false
             referencedRelation: "manara_addresses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      nginx_configs: {
+        Row: {
+          content: string
+          created_at: string
+          file_path: string
+          id: string
+          server_id: string
+          status: string
+          updated_at: string
+          version: number
+          website_id: string | null
+        }
+        Insert: {
+          content?: string
+          created_at?: string
+          file_path: string
+          id?: string
+          server_id: string
+          status?: string
+          updated_at?: string
+          version?: number
+          website_id?: string | null
+        }
+        Update: {
+          content?: string
+          created_at?: string
+          file_path?: string
+          id?: string
+          server_id?: string
+          status?: string
+          updated_at?: string
+          version?: number
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "nginx_configs_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "nginx_configs_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
             referencedColumns: ["id"]
           },
         ]
@@ -5689,6 +5950,60 @@ export type Database = {
           },
         ]
       }
+      site_clones: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          id: string
+          new_domain: string | null
+          result: Json | null
+          snapshot_path: string | null
+          source_website_id: string | null
+          status: string
+          target_server_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          new_domain?: string | null
+          result?: Json | null
+          snapshot_path?: string | null
+          source_website_id?: string | null
+          status?: string
+          target_server_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          id?: string
+          new_domain?: string | null
+          result?: Json | null
+          snapshot_path?: string | null
+          source_website_id?: string | null
+          status?: string
+          target_server_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_clones_source_website_id_fkey"
+            columns: ["source_website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_clones_target_server_id_fkey"
+            columns: ["target_server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_cluster_members: {
         Row: {
           cluster_id: string
@@ -6160,6 +6475,54 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "site_services_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      site_snapshots: {
+        Row: {
+          created_at: string
+          id: string
+          note: string | null
+          path: string | null
+          server_id: string | null
+          size_bytes: number | null
+          slot: string
+          website_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          path?: string | null
+          server_id?: string | null
+          size_bytes?: number | null
+          slot?: string
+          website_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          path?: string | null
+          server_id?: string | null
+          size_bytes?: number | null
+          slot?: string
+          website_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_snapshots_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_snapshots_website_id_fkey"
             columns: ["website_id"]
             isOneToOne: false
             referencedRelation: "websites"

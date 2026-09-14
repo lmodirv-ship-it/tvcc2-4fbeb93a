@@ -50,6 +50,7 @@ import { Route as AuthenticatedHostingRouteImport } from './routes/_authenticate
 import { Route as AuthenticatedHnDomainsRouteImport } from './routes/_authenticated/hn-domains'
 import { Route as AuthenticatedGroupsRouteImport } from './routes/_authenticated/groups'
 import { Route as AuthenticatedGroupIdsRouteImport } from './routes/_authenticated/group-ids'
+import { Route as AuthenticatedFederatedRouteImport } from './routes/_authenticated/federated'
 import { Route as AuthenticatedFailoverRouteImport } from './routes/_authenticated/failover'
 import { Route as AuthenticatedEnvironmentRouteImport } from './routes/_authenticated/environment'
 import { Route as AuthenticatedEditorRouteImport } from './routes/_authenticated/editor'
@@ -81,6 +82,9 @@ import { Route as ApiPublicSiteConfigRouteImport } from './routes/api/public/sit
 import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes/_authenticated/settings.notifications'
 import { Route as AuthenticatedServersServerIdRouteImport } from './routes/_authenticated/servers.$serverId'
 import { Route as AuthenticatedManaraKeyRouteImport } from './routes/_authenticated/manara.$key'
+import { Route as AuthenticatedFederatedSqlRouteImport } from './routes/_authenticated/federated.sql'
+import { Route as AuthenticatedFederatedMeshRouteImport } from './routes/_authenticated/federated.mesh'
+import { Route as AuthenticatedFederatedFleetRouteImport } from './routes/_authenticated/federated.fleet'
 import { Route as AuthenticatedEditorUsersRouteImport } from './routes/_authenticated/editor.users'
 import { Route as AuthenticatedEditorSubscriptionsRouteImport } from './routes/_authenticated/editor.subscriptions'
 import { Route as AuthenticatedEditorSocialRouteImport } from './routes/_authenticated/editor.social'
@@ -332,6 +336,11 @@ const AuthenticatedGroupIdsRoute = AuthenticatedGroupIdsRouteImport.update({
   path: '/group-ids',
   getParentRoute: () => AuthenticatedRoute,
 } as any)
+const AuthenticatedFederatedRoute = AuthenticatedFederatedRouteImport.update({
+  id: '/federated',
+  path: '/federated',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedFailoverRoute = AuthenticatedFailoverRouteImport.update({
   id: '/failover',
   path: '/failover',
@@ -496,6 +505,24 @@ const AuthenticatedManaraKeyRoute = AuthenticatedManaraKeyRouteImport.update({
   path: '/$key',
   getParentRoute: () => AuthenticatedManaraRoute,
 } as any)
+const AuthenticatedFederatedSqlRoute =
+  AuthenticatedFederatedSqlRouteImport.update({
+    id: '/sql',
+    path: '/sql',
+    getParentRoute: () => AuthenticatedFederatedRoute,
+  } as any)
+const AuthenticatedFederatedMeshRoute =
+  AuthenticatedFederatedMeshRouteImport.update({
+    id: '/mesh',
+    path: '/mesh',
+    getParentRoute: () => AuthenticatedFederatedRoute,
+  } as any)
+const AuthenticatedFederatedFleetRoute =
+  AuthenticatedFederatedFleetRouteImport.update({
+    id: '/fleet',
+    path: '/fleet',
+    getParentRoute: () => AuthenticatedFederatedRoute,
+  } as any)
 const AuthenticatedEditorUsersRoute =
   AuthenticatedEditorUsersRouteImport.update({
     id: '/users',
@@ -733,6 +760,7 @@ export interface FileRoutesByFullPath {
   '/editor': typeof AuthenticatedEditorRouteWithChildren
   '/environment': typeof AuthenticatedEnvironmentRoute
   '/failover': typeof AuthenticatedFailoverRoute
+  '/federated': typeof AuthenticatedFederatedRouteWithChildren
   '/group-ids': typeof AuthenticatedGroupIdsRoute
   '/groups': typeof AuthenticatedGroupsRoute
   '/hn-domains': typeof AuthenticatedHnDomainsRoute
@@ -781,6 +809,9 @@ export interface FileRoutesByFullPath {
   '/editor/social': typeof AuthenticatedEditorSocialRoute
   '/editor/subscriptions': typeof AuthenticatedEditorSubscriptionsRoute
   '/editor/users': typeof AuthenticatedEditorUsersRoute
+  '/federated/fleet': typeof AuthenticatedFederatedFleetRoute
+  '/federated/mesh': typeof AuthenticatedFederatedMeshRoute
+  '/federated/sql': typeof AuthenticatedFederatedSqlRoute
   '/manara/$key': typeof AuthenticatedManaraKeyRoute
   '/servers/$serverId': typeof AuthenticatedServersServerIdRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
@@ -842,6 +873,7 @@ export interface FileRoutesByTo {
   '/downloads': typeof AuthenticatedDownloadsRoute
   '/environment': typeof AuthenticatedEnvironmentRoute
   '/failover': typeof AuthenticatedFailoverRoute
+  '/federated': typeof AuthenticatedFederatedRouteWithChildren
   '/group-ids': typeof AuthenticatedGroupIdsRoute
   '/groups': typeof AuthenticatedGroupsRoute
   '/hn-domains': typeof AuthenticatedHnDomainsRoute
@@ -890,6 +922,9 @@ export interface FileRoutesByTo {
   '/editor/social': typeof AuthenticatedEditorSocialRoute
   '/editor/subscriptions': typeof AuthenticatedEditorSubscriptionsRoute
   '/editor/users': typeof AuthenticatedEditorUsersRoute
+  '/federated/fleet': typeof AuthenticatedFederatedFleetRoute
+  '/federated/mesh': typeof AuthenticatedFederatedMeshRoute
+  '/federated/sql': typeof AuthenticatedFederatedSqlRoute
   '/manara/$key': typeof AuthenticatedManaraKeyRoute
   '/servers/$serverId': typeof AuthenticatedServersServerIdRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
@@ -954,6 +989,7 @@ export interface FileRoutesById {
   '/_authenticated/editor': typeof AuthenticatedEditorRouteWithChildren
   '/_authenticated/environment': typeof AuthenticatedEnvironmentRoute
   '/_authenticated/failover': typeof AuthenticatedFailoverRoute
+  '/_authenticated/federated': typeof AuthenticatedFederatedRouteWithChildren
   '/_authenticated/group-ids': typeof AuthenticatedGroupIdsRoute
   '/_authenticated/groups': typeof AuthenticatedGroupsRoute
   '/_authenticated/hn-domains': typeof AuthenticatedHnDomainsRoute
@@ -1002,6 +1038,9 @@ export interface FileRoutesById {
   '/_authenticated/editor/social': typeof AuthenticatedEditorSocialRoute
   '/_authenticated/editor/subscriptions': typeof AuthenticatedEditorSubscriptionsRoute
   '/_authenticated/editor/users': typeof AuthenticatedEditorUsersRoute
+  '/_authenticated/federated/fleet': typeof AuthenticatedFederatedFleetRoute
+  '/_authenticated/federated/mesh': typeof AuthenticatedFederatedMeshRoute
+  '/_authenticated/federated/sql': typeof AuthenticatedFederatedSqlRoute
   '/_authenticated/manara/$key': typeof AuthenticatedManaraKeyRoute
   '/_authenticated/servers/$serverId': typeof AuthenticatedServersServerIdRoute
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
@@ -1066,6 +1105,7 @@ export interface FileRouteTypes {
     | '/editor'
     | '/environment'
     | '/failover'
+    | '/federated'
     | '/group-ids'
     | '/groups'
     | '/hn-domains'
@@ -1114,6 +1154,9 @@ export interface FileRouteTypes {
     | '/editor/social'
     | '/editor/subscriptions'
     | '/editor/users'
+    | '/federated/fleet'
+    | '/federated/mesh'
+    | '/federated/sql'
     | '/manara/$key'
     | '/servers/$serverId'
     | '/settings/notifications'
@@ -1175,6 +1218,7 @@ export interface FileRouteTypes {
     | '/downloads'
     | '/environment'
     | '/failover'
+    | '/federated'
     | '/group-ids'
     | '/groups'
     | '/hn-domains'
@@ -1223,6 +1267,9 @@ export interface FileRouteTypes {
     | '/editor/social'
     | '/editor/subscriptions'
     | '/editor/users'
+    | '/federated/fleet'
+    | '/federated/mesh'
+    | '/federated/sql'
     | '/manara/$key'
     | '/servers/$serverId'
     | '/settings/notifications'
@@ -1286,6 +1333,7 @@ export interface FileRouteTypes {
     | '/_authenticated/editor'
     | '/_authenticated/environment'
     | '/_authenticated/failover'
+    | '/_authenticated/federated'
     | '/_authenticated/group-ids'
     | '/_authenticated/groups'
     | '/_authenticated/hn-domains'
@@ -1334,6 +1382,9 @@ export interface FileRouteTypes {
     | '/_authenticated/editor/social'
     | '/_authenticated/editor/subscriptions'
     | '/_authenticated/editor/users'
+    | '/_authenticated/federated/fleet'
+    | '/_authenticated/federated/mesh'
+    | '/_authenticated/federated/sql'
     | '/_authenticated/manara/$key'
     | '/_authenticated/servers/$serverId'
     | '/_authenticated/settings/notifications'
@@ -1694,6 +1745,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedGroupIdsRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/federated': {
+      id: '/_authenticated/federated'
+      path: '/federated'
+      fullPath: '/federated'
+      preLoaderRoute: typeof AuthenticatedFederatedRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/failover': {
       id: '/_authenticated/failover'
       path: '/failover'
@@ -1910,6 +1968,27 @@ declare module '@tanstack/react-router' {
       fullPath: '/manara/$key'
       preLoaderRoute: typeof AuthenticatedManaraKeyRouteImport
       parentRoute: typeof AuthenticatedManaraRoute
+    }
+    '/_authenticated/federated/sql': {
+      id: '/_authenticated/federated/sql'
+      path: '/sql'
+      fullPath: '/federated/sql'
+      preLoaderRoute: typeof AuthenticatedFederatedSqlRouteImport
+      parentRoute: typeof AuthenticatedFederatedRoute
+    }
+    '/_authenticated/federated/mesh': {
+      id: '/_authenticated/federated/mesh'
+      path: '/mesh'
+      fullPath: '/federated/mesh'
+      preLoaderRoute: typeof AuthenticatedFederatedMeshRouteImport
+      parentRoute: typeof AuthenticatedFederatedRoute
+    }
+    '/_authenticated/federated/fleet': {
+      id: '/_authenticated/federated/fleet'
+      path: '/fleet'
+      fullPath: '/federated/fleet'
+      preLoaderRoute: typeof AuthenticatedFederatedFleetRouteImport
+      parentRoute: typeof AuthenticatedFederatedRoute
     }
     '/_authenticated/editor/users': {
       id: '/_authenticated/editor/users'
@@ -2210,6 +2289,24 @@ const AuthenticatedEditorRouteChildren: AuthenticatedEditorRouteChildren = {
 const AuthenticatedEditorRouteWithChildren =
   AuthenticatedEditorRoute._addFileChildren(AuthenticatedEditorRouteChildren)
 
+interface AuthenticatedFederatedRouteChildren {
+  AuthenticatedFederatedFleetRoute: typeof AuthenticatedFederatedFleetRoute
+  AuthenticatedFederatedMeshRoute: typeof AuthenticatedFederatedMeshRoute
+  AuthenticatedFederatedSqlRoute: typeof AuthenticatedFederatedSqlRoute
+}
+
+const AuthenticatedFederatedRouteChildren: AuthenticatedFederatedRouteChildren =
+  {
+    AuthenticatedFederatedFleetRoute: AuthenticatedFederatedFleetRoute,
+    AuthenticatedFederatedMeshRoute: AuthenticatedFederatedMeshRoute,
+    AuthenticatedFederatedSqlRoute: AuthenticatedFederatedSqlRoute,
+  }
+
+const AuthenticatedFederatedRouteWithChildren =
+  AuthenticatedFederatedRoute._addFileChildren(
+    AuthenticatedFederatedRouteChildren,
+  )
+
 interface AuthenticatedManaraRouteChildren {
   AuthenticatedManaraKeyRoute: typeof AuthenticatedManaraKeyRoute
 }
@@ -2258,6 +2355,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedEditorRoute: typeof AuthenticatedEditorRouteWithChildren
   AuthenticatedEnvironmentRoute: typeof AuthenticatedEnvironmentRoute
   AuthenticatedFailoverRoute: typeof AuthenticatedFailoverRoute
+  AuthenticatedFederatedRoute: typeof AuthenticatedFederatedRouteWithChildren
   AuthenticatedGroupIdsRoute: typeof AuthenticatedGroupIdsRoute
   AuthenticatedGroupsRoute: typeof AuthenticatedGroupsRoute
   AuthenticatedHnDomainsRoute: typeof AuthenticatedHnDomainsRoute
@@ -2316,6 +2414,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedEditorRoute: AuthenticatedEditorRouteWithChildren,
   AuthenticatedEnvironmentRoute: AuthenticatedEnvironmentRoute,
   AuthenticatedFailoverRoute: AuthenticatedFailoverRoute,
+  AuthenticatedFederatedRoute: AuthenticatedFederatedRouteWithChildren,
   AuthenticatedGroupIdsRoute: AuthenticatedGroupIdsRoute,
   AuthenticatedGroupsRoute: AuthenticatedGroupsRoute,
   AuthenticatedHnDomainsRoute: AuthenticatedHnDomainsRoute,

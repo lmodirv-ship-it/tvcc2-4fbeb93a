@@ -101,7 +101,7 @@ export function NightlyDestinations() {
   const create = useMutation({
     mutationFn: async () => {
       if (!formValid) throw new Error("املأ الاسم وعنوان السيرفر والمسار");
-      return save({ data: form });
+      return save({ data: { ...form, storageServerId: form.storageServerId || null } });
     },
     onSuccess: () => {
       toast.success("تم حفظ وجهة النسخ");
@@ -111,10 +111,25 @@ export function NightlyDestinations() {
     onError: (e: any) => toast.error(e?.message || "تعذّر الحفظ"),
   });
 
+  const downloadScript = useMutation({
+    mutationFn: (id: string) =>
+      script({ data: { destinationId: id, baseUrl: window.location.origin } }),
+    onSuccess: (r: any) => {
+      const url = URL.createObjectURL(new Blob([r.script], { type: "text/javascript" }));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = r.filename;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("تم تحميل سكريبت سيرفر التخزين");
+    },
+    onError: (e: any) => toast.error(e?.message || "تعذّر توليد السكريبت"),
+  });
+
   const run = useMutation({
     mutationFn: (id: string) => runNow({ data: { id } }),
     onSuccess: (r: any) => {
-      toast.success(`تم جدولة ${r.queued} نسخة (${r.sites} موقع مُثبت الملكية)`);
+      toast.success(`تم جدولة ${r.queued} نسخة من أصل ${r.sites} موقع`);
       invalidate();
     },
     onError: (e: any) => toast.error(e?.message || "تعذّر التشغيل"),

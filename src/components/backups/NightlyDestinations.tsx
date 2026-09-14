@@ -57,7 +57,7 @@ export function NightlyDestinations() {
 
   const [form, setForm] = useState({
     name: "", host: "", username: "root", port: 22, password: "",
-    basePath: "/srv/tvcc-backups", isEnabled: true,
+    basePath: "/var/www/tvcc", isEnabled: true,
     storageServerId: "" as string,
     scope: "all" as "all" | "verified",
   });

@@ -235,16 +235,8 @@ export function AppSidebar() {
         ))}
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-1.5">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton onClick={handleLogout} className="h-7 min-h-7 py-0.5 text-xs gap-2 text-muted-foreground">
-              <LogOut className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate">{t("common.logout")}</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
+      <SidebarFooter className="border-t border-sidebar-border p-1.5" />
+
     </Sidebar>
   );
 }

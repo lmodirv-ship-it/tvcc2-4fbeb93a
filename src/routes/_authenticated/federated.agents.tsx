@@ -86,6 +86,33 @@ function AgentsPage() {
   const [jobTitle, setJobTitle] = useState("");
   const [jobDryRun, setJobDryRun] = useState(false);
   const [jobSteps, setJobSteps] = useState<Array<{ action: string; arg: string }>>([{ action: "agent_diag", arg: "" }]);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [mergeRow, setMergeRow] = useState<any>(null);
+  const mergeFn = useServerFn(mergeDuplicateServer);
+
+  // أعمدة جدول السيرفرات القابلة للإظهار/الإخفاء
+  const COLS: Array<{ key: string; label: string; on: boolean }> = [
+    { key: "id", label: "المعرّف", on: true },
+    { key: "name", label: "الاسم", on: true },
+    { key: "host", label: "المضيف / IP", on: true },
+    { key: "agents", label: "الوكلاء", on: true },
+    { key: "link", label: "قوة الاتصال", on: true },
+    { key: "trust", label: "الموثوقية", on: true },
+    { key: "cpu", label: "المعالج", on: true },
+    { key: "ram", label: "الرام", on: true },
+    { key: "disk", label: "التخزين", on: true },
+    { key: "sites", label: "المواقع", on: true },
+    { key: "queue", label: "الطابور", on: true },
+    { key: "tools", label: "الأدوات", on: true },
+    { key: "net", label: "الشبكة", on: false },
+    { key: "uptime", label: "مدة التشغيل", on: false },
+    { key: "ports", label: "المنافذ", on: false },
+    { key: "dbs", label: "قواعد البيانات", on: false },
+    { key: "status", label: "الحالة", on: false },
+    { key: "os", label: "النظام", on: false },
+  ];
+  const [visible, setVisible] = useState<Record<string, boolean>>(() => Object.fromEntries(COLS.map((c) => [c.key, c.on])));
+  const visibleCols = COLS.filter((c) => visible[c.key]);
 
   const { data, isLoading } = useQuery({
     queryKey: ["federated-agents"],

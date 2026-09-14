@@ -132,10 +132,29 @@ function DownloadsPage() {
                     ))}
                   </SelectContent>
                 </Select>
+                <Select
+                  value={agentRole}
+                  onValueChange={(v) => {
+                    setAgentRole(v);
+                    setAgentKey(v);
+                  }}
+                >
+                  <SelectTrigger className="w-56"><SelectValue placeholder="دور الوكيل" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="main">وكيل رئيسي (تحكم عام)</SelectItem>
+                    <SelectItem value="db">قواعد البيانات</SelectItem>
+                    <SelectItem value="web">المواقع و Nginx</SelectItem>
+                    <SelectItem value="backup">النسخ الاحتياطية</SelectItem>
+                    <SelectItem value="monitor">المراقبة فقط</SelectItem>
+                    <SelectItem value="healer">الإحياء الذاتي</SelectItem>
+                    <SelectItem value="security">الأمان</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Button onClick={buildInstall} disabled={loading}>
                   {loading ? "جارٍ التوليد..." : "توليد أمر التثبيت"}
                 </Button>
               </div>
+
 
               {install && (
                 <div className="space-y-3">

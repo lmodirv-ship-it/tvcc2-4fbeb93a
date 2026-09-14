@@ -564,6 +564,23 @@ export const importTableCsv = createServerFn({ method: "POST" })
     if (csv.length > 2_000_000) throw new Error("حجم CSV كبير جداً — قسّمه إلى دفعات");
     const header = csv.split(/\r?\n/)[0]!.split(",").map((c) => c.trim().replace(/^"|"$/g, ""));
     header.forEach((c) => ident(c, "العمود"));
+    if (isInternalDb(db)) {
+      if (isProtectedTable(schema, table)) throw new Error("لا يمكن الاستيراد إلى هذا الجدول");
+      const lines = csv.split(/\r?\n/).slice(1).filter(Boolean);
+      const lit = (value: string) => value === "" || value.toLowerCase() === "null" ? "null" : `'${value.replace(/'/g, "''")}'`;
+      const inserts: string[] = [];
+      for (const line of lines) {
+        const values = line.split(",").map((c) => c.trim().replace(/^"|"$/g, ""));
+        if (values.length !== header.length) continue;
+        inserts.push(`insert into "${schema}"."${table}" (${header.map((c) => `"${c}"`).join(", ")}) values (${values.map(lit).join(", ")})`);
+      }
+      if (inserts.length) await runInternalSql(inserts.join(";\n"));
+      const command = internalCommand("pg_import_csv", {
+        database_id: db.id, schema, table, columns: header, read_only: false,
+      }, { inserted: inserts.length });
+      await audit(supabase, userId, "pg_import_csv", db.id, { command_id: command.id, schema, table, columns: header });
+      return command;
+    }
     const command = await queueCommand(supabase, userId, db.server_id, "pg_import_csv", {
       ...baseArgs(db), schema, table, columns: header, csv, read_only: false,
     });

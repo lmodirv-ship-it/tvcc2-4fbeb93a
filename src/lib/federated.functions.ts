@@ -212,7 +212,7 @@ export const getAgentsData = createServerFn({ method: "GET" })
     const sb = supabase as any;
     const [servers, configs, commands, nginx, snapshots, websites, instances, health, caps, pending] =
       await Promise.all([
-        sb.from("servers").select("id, name, hostname, ip_address, status, role, agent_version, last_seen_at, os").order("name"),
+        sb.from("servers").select("id, name, hostname, public_ip, private_ip, status, role, agent_version, last_seen_at, os").order("name"),
         sb.from("agent_configs").select("server_id, heartbeat_interval_sec, allowed_commands, autostart"),
         sb
           .from("server_commands")

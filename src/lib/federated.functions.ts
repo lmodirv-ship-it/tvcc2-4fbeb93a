@@ -203,27 +203,63 @@ export const deployBlueprint = createServerFn({ method: "POST" })
     return { created };
   });
 
-/** صفحة الوكيل: إعدادات + Nginx + لقطات. */
+/** صفحة الوكيل: جدول السيرفرات + جدول المهام + إعدادات و Nginx ولقطات. */
 export const getAgentsData = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
     await assertAdmin(supabase, userId);
-    const [servers, configs, commands, nginx, snapshots, websites] = await Promise.all([
-      supabase.from("servers").select("id, name, hostname, status, agent_version, last_seen_at").order("name"),
-      supabase.from("agent_configs").select("*"),
-      supabase.from("server_commands").select("id, server_id, action, status, created_at").order("created_at", { ascending: false }).limit(100),
-      supabase.from("nginx_configs").select("id, server_id, website_id, file_path, status, version, updated_at").order("updated_at", { ascending: false }),
-      supabase.from("site_snapshots").select("*").order("created_at", { ascending: false }),
-      supabase.from("websites").select("id, name, domain, server_id, status"),
-    ]);
+    const sb = supabase as any;
+    const [servers, configs, commands, nginx, snapshots, websites, instances, health, caps, pending] =
+      await Promise.all([
+        sb.from("servers").select("id, name, hostname, ip_address, status, role, agent_version, last_seen_at, os").order("name"),
+        sb.from("agent_configs").select("server_id, heartbeat_interval_sec, allowed_commands, autostart"),
+        sb
+          .from("server_commands")
+          .select("id, server_id, action, status, exit_code, created_at, finished_at")
+          .order("created_at", { ascending: false })
+          .limit(500),
+        sb.from("nginx_configs").select("id, server_id, website_id, file_path, status, version, updated_at").order("updated_at", { ascending: false }),
+        sb.from("site_snapshots").select("id, website_id, slot, created_at").order("created_at", { ascending: false }),
+        sb.from("websites").select("id, name, domain, server_id, status"),
+        sb.from("agent_instances").select("server_id, agent_version, os, status, running_commands, last_poll_at, poll_latency_ms"),
+        sb
+          .from("server_health_snapshots")
+          .select("server_id, cpu_percent, memory_percent, disk_percent, score, level, created_at")
+          .order("created_at", { ascending: false })
+          .limit(400),
+        sb.from("agent_capabilities").select("server_id, action, allowed, requires_confirm"),
+        sb.from("server_commands").select("server_id, status").in("status", ["pending", "running"]).limit(1000),
+      ]);
+
+    const latestHealth: Record<string, any> = {};
+    for (const h of (health.data ?? []) as any[]) if (!latestHealth[h.server_id]) latestHealth[h.server_id] = h;
+
+    const queued: Record<string, { pending: number; running: number }> = {};
+    for (const c of (pending.data ?? []) as any[]) {
+      const q = (queued[c.server_id] ??= { pending: 0, running: 0 });
+      if (c.status === "running") q.running++; else q.pending++;
+    }
+
+    // آخر تنفيذ لكل (سيرفر + أمر)
+    const lastRun: Record<string, { status: string; created_at: string; exit_code: number | null }> = {};
+    for (const c of (commands.data ?? []) as any[]) {
+      const key = `${c.server_id}:${c.action}`;
+      if (!lastRun[key]) lastRun[key] = { status: c.status, created_at: c.created_at, exit_code: c.exit_code ?? null };
+    }
+
     return {
-      servers: servers.data ?? [],
-      configs: configs.data ?? [],
-      commands: commands.data ?? [],
-      nginx: nginx.data ?? [],
-      snapshots: snapshots.data ?? [],
-      websites: websites.data ?? [],
+      servers: (servers.data ?? []) as any[],
+      configs: (configs.data ?? []) as any[],
+      commands: (commands.data ?? []) as any[],
+      nginx: (nginx.data ?? []) as any[],
+      snapshots: (snapshots.data ?? []) as any[],
+      websites: (websites.data ?? []) as any[],
+      instances: (instances.data ?? []) as any[],
+      health: latestHealth,
+      capabilities: (caps.data ?? []) as any[],
+      queued,
+      lastRun,
     };
   });
 

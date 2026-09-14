@@ -164,7 +164,7 @@ async function runTask(task, docRoots) {
 
   // النسخة الأولى تُكتب مرة واحدة فقط
   if (task.copy_kind === 'first' && !isEmptyDir(dir)) {
-    return { status: 'completed', size: dirSize(dir), note: 'first_exists' };
+    return { status: 'completed', size: dirSize(dir), dir: dir, note: 'first_exists' };
   }
 
   const stamp = new Date().toISOString().replace(/[:.]/g, '-');
@@ -174,7 +174,7 @@ async function runTask(task, docRoots) {
     const file = path.join(dir, 'site-' + stamp + '.tar.gz');
     sh('tar -czf ' + q(file) + ' -C ' + q(root) + ' . 2>/dev/null');
     if (fs.existsSync(file) && fs.statSync(file).size > 0) {
-      return { status: 'completed', size: dirSize(dir), note: 'local_archive' };
+      return { status: 'completed', size: dirSize(dir), dir: dir, note: 'local_archive' };
     }
   }
 
@@ -186,9 +186,9 @@ async function runTask(task, docRoots) {
   }
   if (isEmptyDir(mirror)) {
     const ok = await saveSinglePage(host, mirror);
-    if (!ok) return { status: 'failed', size: null, error: 'تعذر الوصول إلى ' + host };
+    if (!ok) return { status: 'failed', size: null, dir: dir, error: 'تعذر الوصول إلى ' + host };
   }
-  return { status: 'completed', size: dirSize(dir), note: 'remote_fetch' };
+  return { status: 'completed', size: dirSize(dir), dir: dir, note: 'remote_fetch' };
 }
 
 /* ---------- نظام ونبضة ---------- */
@@ -246,7 +246,7 @@ async function cycle() {
       const r = await runTask(t, docRoots);
       await api('/api/public/backups/report', {
         destination_id: DESTINATION_ID, copy_id: t.id, status: r.status,
-        size_bytes: r.size, remote_path: t.remote_path, error_message: r.error || null,
+        size_bytes: r.size, remote_path: r.dir || t.remote_path, error_message: r.error || null,
       });
       if (r.status === 'completed') { done++; log('✓ ' + t.domain + ' (' + t.copy_kind + ') ' + (r.note || '')); }
       else { failed++; log('✗ ' + t.domain + ': ' + r.error); }

@@ -32,6 +32,7 @@ const SOURCES = [
   { key: "storage", label: "التخزين" },
   { key: "notifications", label: "الإشعارات" },
   { key: "activity", label: "النشاط" },
+  { key: "security", label: "السجل الأمني" },
 ];
 
 const LEVEL_STYLE: Record<string, string> = {

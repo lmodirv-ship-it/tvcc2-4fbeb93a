@@ -69,6 +69,7 @@ function DbStudioPage() {
   const [section, setSection] = useState("overview");
   const [databaseId, setDatabaseId] = useState("");
   const [search, setSearch] = useState("");
+  const [navOpen, setNavOpen] = useState(true);
   const client = useQueryClient();
 
   const fetchStudio = useServerFn(getDbStudioData);

@@ -482,5 +482,10 @@ export const rollbackSiteSnapshot = createServerFn({ method: "POST" })
       requested_by: userId,
       dry_run: false,
     });
+    const { logSecurityEvent } = await import("./security-log.server");
+    await logSecurityEvent(supabase, userId, {
+      category: "website", action: "site_rollback", resource: "websites",
+      resourceId: data.websiteId, severity: "critical", details: { snapshot_id: snap.id },
+    });
     return { ok: true };
   });

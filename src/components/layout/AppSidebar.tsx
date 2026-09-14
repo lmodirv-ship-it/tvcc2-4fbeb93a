@@ -4,6 +4,7 @@ import {
   Code2, Wand2, FolderOpen, LayoutTemplate, Radio, ListChecks, Plug,
   Smartphone, KeyRound, Server, ShieldCheck, BadgeCheck, Bell, FileCog, LifeBuoy, ClipboardCheck,
   FileBarChart, Wallet, Boxes, Brain, Film, HardDrive, MessageSquare, History, NotebookPen, Archive, Network, Share2, ScrollText, ShieldAlert, GitBranch, Zap, Download, Link2, Cloud, Globe2, Fingerprint, Rocket, Radar, Database, Shield, HeartPulse, Package, Bot, Container,
+  PanelRightClose, PanelRightOpen, PanelLeftClose, PanelLeftOpen,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -150,6 +151,7 @@ export function AppSidebar() {
   const { isVisible } = usePlatformPageRules();
   const { setOpen } = useSidebar();
   const [lang, setLang] = useState<AppLang>(i18n.language as AppLang);
+  const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
     const onLangChanged = (lng: string) => setLang(lng as AppLang);
@@ -165,6 +167,10 @@ export function AppSidebar() {
 
   const isActive = (path: string) => pathname === path || pathname.startsWith(path + "/");
 
+  const ToggleIcon = hidden
+    ? (side === "right" ? PanelRightOpen : PanelLeftOpen)
+    : (side === "right" ? PanelRightClose : PanelLeftClose);
+
   const handleExport = async () => {
     try {
       await exportDashboardHtml();
@@ -174,9 +180,32 @@ export function AppSidebar() {
     }
   };
 
+  if (hidden) {
+    return (
+      <button
+        onClick={() => setHidden(false)}
+        className={`fixed top-1/2 -translate-y-1/2 z-50 w-7 h-14 bg-sidebar border border-sidebar-border flex items-center justify-center shadow-lg hover:bg-sidebar-accent transition-colors ${
+          side === "right" ? "right-0 rounded-l-lg" : "left-0 rounded-r-lg"
+        }`}
+        title={t("sidebar.show_sidebar")}
+      >
+        <ToggleIcon className="w-4 h-4 text-muted-foreground" />
+      </button>
+    );
+  }
+
   return (
     <Sidebar collapsible="icon" side={side} className="border-l border-sidebar-border" dir={langDef.dir}>
-      <SidebarHeader className="border-b border-sidebar-border p-2">
+      <SidebarHeader className="border-b border-sidebar-border p-2 relative">
+        <button
+          onClick={() => setHidden(true)}
+          className={`absolute top-1/2 -translate-y-1/2 z-10 w-6 h-6 rounded flex items-center justify-center hover:bg-sidebar-accent ${
+            side === "right" ? "left-1" : "right-1"
+          }`}
+          title={t("sidebar.hide_sidebar")}
+        >
+          <ToggleIcon className="w-3.5 h-3.5 text-muted-foreground" />
+        </button>
         <Link to="/" className="flex flex-col items-center gap-1 text-center">
           <img
             src={tvccLogo.url}

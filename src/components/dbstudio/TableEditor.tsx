@@ -384,7 +384,7 @@ export function TableEditor({ databaseId, hasAgent = true }: { databaseId: strin
                 <div className="flex flex-wrap gap-2">
                   <AddColumnDialog onAdd={(column) => ddl.mutate({ kind: "add_column", table, column })} pending={ddl.isPending} />
                   <Button size="sm" variant="outline" onClick={() => ddl.mutate({ kind: "enable_rls", table, rls: true })}><ShieldCheck className="size-4" />تفعيل RLS</Button>
-                  <Button size="sm" variant="outline" onClick={() => catalog({ data: { databaseId, mode: "columns", schema, table } }).then(() => query.refetch())}><RefreshCw className="size-4" />تحديث</Button>
+                  <Button size="sm" variant="outline" onClick={() => catalog({ data: { databaseId, mode: "columns", schema, table } }).then(() => query.refetch()).catch((e: any) => toast.error(e?.message ?? "تعذّر التنفيذ"))}><RefreshCw className="size-4" />تحديث</Button>
                 </div>
                 <Card><CardContent className="overflow-x-auto p-0">
                   <table className="w-full text-sm">
@@ -422,7 +422,7 @@ export function TableEditor({ databaseId, hasAgent = true }: { databaseId: strin
                 )}
                 <div className="flex flex-wrap gap-2">
                   <NewPolicyDialog table={table} onCreate={(policy) => ddl.mutate({ kind: "create_policy", table, policy })} pending={ddl.isPending} />
-                  <Button size="sm" variant="outline" onClick={() => catalog({ data: { databaseId, mode: "policies", schema, table } }).then(() => query.refetch())}><RefreshCw className="size-4" />قراءة السياسات</Button>
+                  <Button size="sm" variant="outline" onClick={() => catalog({ data: { databaseId, mode: "policies", schema, table } }).then(() => query.refetch()).catch((e: any) => toast.error(e?.message ?? "تعذّر التنفيذ"))}><RefreshCw className="size-4" />قراءة السياسات</Button>
                 </div>
                 <Card><CardContent className="overflow-x-auto p-0">
                   <table className="w-full text-sm">

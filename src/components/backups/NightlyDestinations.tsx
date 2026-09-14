@@ -187,6 +187,33 @@ export function NightlyDestinations() {
                     <TableCell className="text-xs font-medium">{d.name}</TableCell>
                     <TableCell className="text-xs" dir="ltr">{d.username}@{d.host}:{d.port}</TableCell>
                     <TableCell className="text-xs" dir="ltr">{d.base_path}</TableCell>
+                    <TableCell className="text-xs whitespace-nowrap">
+                      {d.metrics?.mem_total_mb ? (
+                        <>
+                          <span className="tabular-nums">{fmtMb(d.metrics.mem_used_mb)} / {fmtMb(d.metrics.mem_free_mb)}</span>
+                          <Badge variant="outline" className={`mr-1 text-[10px] ${pctStyle(d.metrics.mem_percent)}`}>{d.metrics.mem_percent}%</Badge>
+                        </>
+                      ) : "—"}
+                    </TableCell>
+                    <TableCell className="text-xs whitespace-nowrap">
+                      {d.metrics?.disk_total_gb ? (
+                        <>
+                          <span className="tabular-nums">{d.metrics.disk_used_gb ?? 0} / {d.metrics.disk_free_gb} GB</span>
+                          <Badge variant="outline" className={`mr-1 text-[10px] ${pctStyle(d.metrics.disk_percent)}`}>{d.metrics.disk_percent}%</Badge>
+                        </>
+                      ) : "—"}
+                    </TableCell>
+                    <TableCell className="text-xs whitespace-nowrap">
+                      <Badge variant="outline" className={d.agent_online ? "bg-success/20 text-success border-success/40 text-[10px]" : "bg-destructive/20 text-destructive border-destructive/40 text-[10px]"}>
+                        {d.agent_online ? "متفاعل" : "غير متفاعل"}
+                      </Badge>
+                      {d.metrics?.link_quality != null && (
+                        <span className="text-muted-foreground mr-1">{d.metrics.link_quality}%</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-xs whitespace-nowrap tabular-nums">
+                      {d.metrics?.latency_ms != null ? `${Math.round(d.metrics.latency_ms)} ms` : "—"}
+                    </TableCell>
                     <TableCell className="text-xs">
                       {d.last_run_at ? new Date(d.last_run_at).toLocaleString("ar") : "—"}
                       {d.last_run_summary?.queued != null && (

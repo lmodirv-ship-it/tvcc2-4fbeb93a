@@ -43,6 +43,7 @@
 - حسابي → `user_preferences`
 - الإشعارات → `notification_preferences` + `notification_channels`
 - الأدوار → `user_roles` + `profiles`
+- قواعد البيانات → `databases` + `site_databases` + `backup_schedules` (تُدار من الإعدادات بدل صفحة منفصلة)
 
 ## التفاصيل التقنية
 

@@ -31,3 +31,7 @@ export async function hasAnyRole(
 export async function isAdminOrOwner(supabase: any, userId: string): Promise<boolean> {
   return hasAnyRole(supabase, userId, ["admin", "system_owner"]);
 }
+
+export async function isSystemOwner(supabase: any, userId: string): Promise<boolean> {
+  return hasAnyRole(supabase, userId, ["system_owner"]);
+}

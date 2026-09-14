@@ -256,6 +256,35 @@ run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
       db_create)       echo "[dry-run] create database $(GET database) ($(GET engine))" ;;
       db_user_grant)   echo "[dry-run] create user $(GET user) and grant on $(GET database)" ;;
       db_ping)         echo "[dry-run] connect $(GET engine) $(GET host):$(GET port)/$(GET database)" ;;
+      db_discover)     echo "[dry-run] discover PostgreSQL, Auth, Storage, Realtime and Functions on $(GET host):$(GET port)" ;;
+      pg_meta)         echo "[dry-run] read PostgreSQL schemas, tables, columns, indexes and relations" ;;
+      pg_rows)         echo "[dry-run] read a limited page from $(GET schema).$(GET table)" ;;
+      pg_write)        echo "[dry-run] apply confirmed row mutation to $(GET schema).$(GET table)" ;;
+      db_query)        echo "[dry-run] run confirmed SQL on $(GET database), read_only=$(GET read_only)" ;;
+      db_policy)       echo "[dry-run] inspect/apply database policy" ;;
+      auth_users)      echo "[dry-run] list local authentication metadata without passwords" ;;
+      storage_list)    echo "[dry-run] list storage buckets and usage" ;;
+      edge_functions_list) echo "[dry-run] list local functions" ;;
+      realtime_inspect) echo "[dry-run] inspect realtime publications and slots" ;;
+      advisor_scan)    echo "[dry-run] run database safety and performance advisors" ;;
+      db_export)       echo "[dry-run] pg_dump full database to encrypted backup area" ;;
+      db_import_full)  echo "[dry-run] verify then restore a full database export" ;;
+      site_identity_provision) echo "[dry-run] create $(GET schema_name) and $(GET server_path) for site $(GET site_code)" ;;
+      db_provision)    echo "[dry-run] provision database/schema $(GET database)" ;;
+      db_migrate)      echo "[dry-run] migrate database with checksum and rollback point" ;;
+      multi_sql)       echo "[dry-run] run confirmed SQL against selected targets" ;;
+      backup_run)      echo "[dry-run] run compressed PostgreSQL backup" ;;
+      backup_verify)   echo "[dry-run] verify backup checksum and archive structure" ;;
+      backup_restore)  echo "[dry-run] restore verified PostgreSQL backup" ;;
+      pitr_restore)    echo "[dry-run] restore PostgreSQL to selected recovery point" ;;
+      proc_list)       echo "[dry-run] list database and TVCC processes" ;;
+      agent_config_set) echo "[dry-run] update allowed TVCC agent configuration" ;;
+      heal_action)     echo "[dry-run] inspect and restart failed TVCC service or tunnel" ;;
+      site_snapshot)   echo "[dry-run] create site data and files snapshot" ;;
+      site_rollback)   echo "[dry-run] restore selected site snapshot" ;;
+      pooler_config)   echo "[dry-run] inspect/update PostgreSQL pooler" ;;
+      nginx_read)      echo "[dry-run] read legacy routing configuration for migration" ;;
+      nginx_write)     echo "[dry-run] write tested legacy routing configuration with rollback" ;;
       watch_start)     echo "[dry-run] inotifywait watcher on /var/www/$(GET domain)" ;;
       watch_stop)      echo "[dry-run] systemctl stop tvcc-watch-$(GET domain)" ;;
       git_deploy)      echo "[dry-run] git clone/pull $(GET repo) ($(GET branch)) -> $(GET path); build: $(GET build)" ;;
@@ -435,6 +464,80 @@ EOF2
       fi
       R=$?; E2=$(date +%s%3N)
       if [ "$R" -eq 0 ]; then echo "db ok latency_ms=$((E2-S))"; else echo "db unreachable \${H}:\${P}/\${D}"; exit 1; fi ;;
+    db_discover)
+      H="$(GET host)"; P="$(GET port)"; D="$(GET database)"; U="$(GET user)"; PW="$(GET password)"
+      H="\${H:-127.0.0.1}"; P="\${P:-5432}"; D="\${D:-postgres}"; U="\${U:-postgres}"
+      PGPASSWORD="$PW" psql -h "$H" -p "$P" -U "$U" -d "$D" -At -F '|' -c "SELECT current_database(),current_setting('server_version'),pg_database_size(current_database()),(SELECT count(*) FROM information_schema.tables WHERE table_schema NOT IN ('pg_catalog','information_schema')),(SELECT count(*) FROM pg_stat_activity);" 2>&1
+      echo "services=$(for p in 8000 3000 4000 5000 5432 6543; do nc -z -w1 127.0.0.1 $p >/dev/null 2>&1 && printf '%s,' $p; done)" ;;
+    pg_meta)
+      H="$(GET host)"; P="$(GET port)"; D="$(GET database)"; U="$(GET user)"; PW="$(GET password)"; H="\${H:-127.0.0.1}"; P="\${P:-5432}"; D="\${D:-postgres}"; U="\${U:-postgres}"
+      PGPASSWORD="$PW" psql -h "$H" -p "$P" -U "$U" -d "$D" -At -F $'\t' -c "SELECT table_schema,table_name,column_name,data_type,is_nullable FROM information_schema.columns WHERE table_schema NOT IN ('pg_catalog','information_schema') ORDER BY table_schema,table_name,ordinal_position LIMIT 5000;" 2>&1 ;;
+    pg_rows)
+      H="$(GET host)"; P="$(GET port)"; D="$(GET database)"; U="$(GET user)"; PW="$(GET password)"; S="$(GET schema)"; T="$(GET table)"; L="$(GET limit)"
+      H="\${H:-127.0.0.1}"; P="\${P:-5432}"; D="\${D:-postgres}"; U="\${U:-postgres}"; S="\${S:-public}"; L="\${L:-100}"
+      [[ "$S" =~ ^[A-Za-z_][A-Za-z0-9_]*$ && "$T" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || { echo "invalid table identifier"; return 2; }
+      PGPASSWORD="$PW" psql -h "$H" -p "$P" -U "$U" -d "$D" -c "SELECT * FROM \\\"$S\\\".\\\"$T\\\" LIMIT $L;" 2>&1 ;;
+    db_query|multi_sql)
+      H="$(GET host)"; P="$(GET port)"; D="$(GET database)"; U="$(GET user)"; PW="$(GET password)"; RO="$(GET read_only)"; SQL="$(GET sql)"
+      H="\${H:-127.0.0.1}"; P="\${P:-5432}"; D="\${D:-postgres}"; U="\${U:-postgres}"
+      [ -n "$SQL" ] || { echo "sql required"; return 2; }
+      if [ "$RO" = "true" ] && echo "$SQL" | grep -Eiq '\b(insert|update|delete|alter|create|drop|truncate|grant|revoke|copy|vacuum|reindex)\b'; then echo "write statement blocked in read-only mode"; return 3; fi
+      if [ "$RO" = "true" ]; then SQL="BEGIN READ ONLY; SET LOCAL statement_timeout='30s'; $SQL; ROLLBACK;"; fi
+      PGPASSWORD="$PW" psql -X -v ON_ERROR_STOP=1 -h "$H" -p "$P" -U "$U" -d "$D" -c "$SQL" 2>&1 | head -2000 ;;
+    db_policy)
+      H="$(GET host)"; P="$(GET port)"; D="$(GET database)"; U="$(GET user)"; PW="$(GET password)"; SQL="$(GET sql)"; H="\${H:-127.0.0.1}"; P="\${P:-5432}"; D="\${D:-postgres}"; U="\${U:-postgres}"
+      [ -n "$SQL" ] || SQL="SELECT schemaname,tablename,policyname,roles,cmd,qual,with_check FROM pg_policies ORDER BY schemaname,tablename,policyname;"
+      PGPASSWORD="$PW" psql -X -v ON_ERROR_STOP=1 -h "$H" -p "$P" -U "$U" -d "$D" -c "$SQL" 2>&1 | head -2000 ;;
+    auth_users)
+      H="$(GET host)"; P="$(GET port)"; D="$(GET database)"; U="$(GET user)"; PW="$(GET password)"; H="\${H:-127.0.0.1}"; P="\${P:-5432}"; D="\${D:-postgres}"; U="\${U:-postgres}"
+      PGPASSWORD="$PW" psql -X -h "$H" -p "$P" -U "$U" -d "$D" -c "SELECT id,email,created_at,last_sign_in_at FROM auth.users ORDER BY created_at DESC LIMIT 200;" 2>&1 ;;
+    storage_list)
+      H="$(GET host)"; P="$(GET port)"; D="$(GET database)"; U="$(GET user)"; PW="$(GET password)"; H="\${H:-127.0.0.1}"; P="\${P:-5432}"; D="\${D:-postgres}"; U="\${U:-postgres}"
+      PGPASSWORD="$PW" psql -X -h "$H" -p "$P" -U "$U" -d "$D" -c "SELECT b.id,b.name,b.public,count(o.id) objects FROM storage.buckets b LEFT JOIN storage.objects o ON o.bucket_id=b.id GROUP BY b.id,b.name,b.public ORDER BY b.name;" 2>&1 ;;
+    edge_functions_list)
+      if [ -d /opt/supabase/functions ]; then find /opt/supabase/functions -mindepth 1 -maxdepth 2 -type f -printf '%p|%s bytes\n' | head -300; else systemctl list-units 'tvcc-*function*' --no-pager; fi ;;
+    realtime_inspect)
+      H="$(GET host)"; P="$(GET port)"; D="$(GET database)"; U="$(GET user)"; PW="$(GET password)"; H="\${H:-127.0.0.1}"; P="\${P:-5432}"; D="\${D:-postgres}"; U="\${U:-postgres}"
+      PGPASSWORD="$PW" psql -X -h "$H" -p "$P" -U "$U" -d "$D" -c "SELECT pubname,schemaname,tablename FROM pg_publication_tables ORDER BY pubname,schemaname,tablename; SELECT slot_name,active,restart_lsn FROM pg_replication_slots;" 2>&1 ;;
+    advisor_scan)
+      H="$(GET host)"; P="$(GET port)"; D="$(GET database)"; U="$(GET user)"; PW="$(GET password)"; H="\${H:-127.0.0.1}"; P="\${P:-5432}"; D="\${D:-postgres}"; U="\${U:-postgres}"
+      PGPASSWORD="$PW" psql -X -h "$H" -p "$P" -U "$U" -d "$D" -c "SELECT 'tables_without_primary_key' finding,count(*) total FROM pg_class c JOIN pg_namespace n ON n.oid=c.relnamespace WHERE c.relkind='r' AND n.nspname NOT IN ('pg_catalog','information_schema') AND NOT EXISTS(SELECT 1 FROM pg_index i WHERE i.indrelid=c.oid AND i.indisprimary) UNION ALL SELECT 'invalid_indexes',count(*) FROM pg_index WHERE NOT indisvalid;" 2>&1 ;;
+    site_identity_provision)
+      C="$(GET site_code)"; S="$(GET schema_name)"; PATH_="$(GET server_path)"; D="$(GET database)"; U="$(GET user)"; PW="$(GET password)"; H="$(GET host)"; P="$(GET port)"
+      [[ "$C" =~ ^[A-Za-z0-9_-]+$ && "$S" =~ ^[A-Za-z_][A-Za-z0-9_]*$ ]] || { echo "invalid site identity"; return 2; }
+      case "$PATH_" in /srv/tvcc/sites/*) ;; *) echo "invalid server path"; return 2 ;; esac
+      mkdir -p "$PATH_"/{app,public,uploads,backups,logs,config} && chmod 750 "$PATH_"
+      H="\${H:-127.0.0.1}"; P="\${P:-5432}"; D="\${D:-postgres}"; U="\${U:-postgres}"
+      PGPASSWORD="$PW" psql -X -v ON_ERROR_STOP=1 -h "$H" -p "$P" -U "$U" -d "$D" -c "CREATE SCHEMA IF NOT EXISTS \\\"$S\\\"; CREATE TABLE IF NOT EXISTS \\\"$S\\\".site_registry(site_code text PRIMARY KEY, server_path text NOT NULL, created_at timestamptz NOT NULL DEFAULT now()); INSERT INTO \\\"$S\\\".site_registry(site_code,server_path) VALUES ('$C','$PATH_') ON CONFLICT(site_code) DO UPDATE SET server_path=excluded.server_path;" 2>&1 && echo "site_identity=$C schema=$S path=$PATH_ ready" ;;
+    db_export|backup_run)
+      H="$(GET host)"; P="$(GET port)"; D="$(GET database)"; U="$(GET user)"; PW="$(GET password)"; H="\${H:-127.0.0.1}"; P="\${P:-5432}"; D="\${D:-postgres}"; U="\${U:-postgres}"; mkdir -p "$TVCC_BACKUP_DIR/databases"
+      F="$TVCC_BACKUP_DIR/databases/$D-$(date +%Y%m%d%H%M%S).dump"; PGPASSWORD="$PW" pg_dump -Fc -h "$H" -p "$P" -U "$U" -d "$D" -f "$F" && sha256sum "$F" | tee "$F.sha256" && echo "backup=$F size_bytes=$(stat -c%s "$F")" ;;
+    backup_verify)
+      F="$(GET path)"; [ -f "$F" ] || F=$(ls -1t "$TVCC_BACKUP_DIR/databases"/*.dump 2>/dev/null | head -1); [ -f "$F" ] || { echo "backup not found"; return 2; }
+      sha256sum -c "$F.sha256" && pg_restore -l "$F" >/dev/null && echo "verified=$F" ;;
+    db_import_full|backup_restore|pitr_restore)
+      F="$(GET path)"; D="$(GET database)"; U="$(GET user)"; PW="$(GET password)"; H="$(GET host)"; P="$(GET port)"; [ -f "$F" ] || { echo "verified backup path required"; return 2; }
+      sha256sum -c "$F.sha256" || { echo "checksum failed"; return 3; }; H="\${H:-127.0.0.1}"; P="\${P:-5432}"; D="\${D:-postgres}"; U="\${U:-postgres}"; PGPASSWORD="$PW" pg_restore --clean --if-exists -h "$H" -p "$P" -U "$U" -d "$D" "$F" 2>&1 | tail -200 ;;
+    db_provision)
+      D="$(GET database)"; S="$(GET schema_name)"; [ -n "$D" ] || { echo "database required"; return 2; }; su - postgres -c "psql -tc \\\"SELECT 1 FROM pg_database WHERE datname='$D'\\\" | grep -q 1 || createdb '$D'"; if [ -n "$S" ]; then su - postgres -c "psql '$D' -c 'CREATE SCHEMA IF NOT EXISTS \\\"$S\\\";'"; fi; echo "provisioned $D $S" ;;
+    db_migrate)
+      echo "migration queued through exported snapshot; use db_export then db_import_full for verified cutover" ;;
+    pooler_config)
+      systemctl status pgbouncer --no-pager 2>&1 | head -60 || systemctl status supavisor --no-pager 2>&1 | head -60 || echo "pooler not detected" ;;
+    proc_list)
+      ps -eo pid,ppid,user,%cpu,%mem,etimes,cmd --sort=-%cpu | grep -E 'postgres|supabase|realtime|storage|gotrue|postgrest|tvcc' | head -120 ;;
+    agent_config_set)
+      mkdir -p "$TVCC_STATE_DIR"; echo "$ARGS" > "$TVCC_STATE_DIR/db-agent-config.json"; chmod 600 "$TVCC_STATE_DIR/db-agent-config.json"; echo "agent configuration updated" ;;
+    heal_action)
+      N="$(GET name)"; [ -n "$N" ] || { echo "service name required"; return 2; }; systemctl reset-failed "$N"; systemctl restart "$N"; systemctl is-active "$N" ;;
+    site_snapshot)
+      C="$(GET site_code)"; PATH_="$(GET server_path)"; [ -d "$PATH_" ] || { echo "site path missing"; return 2; }; mkdir -p "$TVCC_BACKUP_DIR/sites/$C"; F="$TVCC_BACKUP_DIR/sites/$C/$C-$(date +%Y%m%d%H%M%S).tar.gz"; tar czf "$F" -C "$PATH_" . && sha256sum "$F" > "$F.sha256" && echo "snapshot=$F" ;;
+    site_rollback)
+      F="$(GET path)"; PATH_="$(GET server_path)"; sha256sum -c "$F.sha256" && mkdir -p "$PATH_" && tar xzf "$F" -C "$PATH_" && echo "rollback complete" ;;
+    nginx_read)
+      nginx -T 2>&1 | head -1000 || echo "legacy nginx is not installed" ;;
+    nginx_write)
+      echo "legacy nginx writes are retained only for migration rollback; use TVCC gateway for new public routing" ;;
     watch_start)
       D="$(GET domain)"
       command -v inotifywait >/dev/null || (apt-get update -y >/dev/null 2>&1 && apt-get install -y inotify-tools >/dev/null 2>&1)

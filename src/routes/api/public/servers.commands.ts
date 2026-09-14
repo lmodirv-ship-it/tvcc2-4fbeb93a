@@ -112,6 +112,48 @@ export const Route = createFileRoute("/api/public/servers/commands")({
 
           if (!cmd) continue;
 
+          const args = (cmd.args ?? {}) as Record<string, unknown>;
+          const websiteId = cmd.website_id ?? (typeof args.website_id === "string" ? args.website_id : null);
+          const databaseId = typeof args.database_id === "string" ? args.database_id : null;
+          const historyId = typeof args.history_id === "string" ? args.history_id : null;
+          if (historyId) {
+            await admin.from("query_history").update({
+              status: code === 0 ? "completed" : "failed",
+              success_count: code === 0 ? 1 : 0,
+              failed_count: code === 0 ? 0 : 1,
+              took_ms: duration,
+              results: code === 0 ? { output: output?.slice(0, 30000) ?? "" } : null,
+              error: code === 0 ? null : output?.slice(0, 4000) ?? "Agent command failed",
+              finished_at: now,
+            }).eq("id", historyId);
+          }
+          if (databaseId) {
+            const discovery = cmd.action === "db_discover" && code === 0;
+            await admin.from("databases").update({
+              pairing_status: discovery ? "connected" : undefined,
+              status: discovery ? "online" : undefined,
+              agent_last_seen_at: now,
+              last_error: code === 0 ? null : output?.slice(0, 2000),
+              last_sync_at: cmd.action === "db_sync" && code === 0 ? now : undefined,
+            }).eq("id", databaseId);
+            await admin.from("db_connections").update({
+              status: discovery ? "connected" : code === 0 ? "available" : "error",
+              last_seen_at: now,
+              last_latency_ms: duration,
+              last_error: code === 0 ? null : output?.slice(0, 2000),
+              pairing_code_hash: discovery ? null : undefined,
+              pairing_expires_at: discovery ? null : undefined,
+            }).eq("database_id", databaseId);
+          }
+          if (cmd.action === "site_identity_provision" && websiteId && databaseId) {
+            await admin.from("site_databases").update({
+              provisioning_status: code === 0 ? "ready" : "failed",
+              provisioned_at: code === 0 ? now : null,
+              provisioning_error: code === 0 ? null : output?.slice(0, 2000),
+              status: code === 0 ? "active" : "error",
+            }).eq("website_id", websiteId).eq("database_id", databaseId);
+          }
+
           await admin.from("operation_log").insert({
             owner_id: server.owner_id,
             scope: cmd.website_id ? "website" : "server",
@@ -119,7 +161,7 @@ export const Route = createFileRoute("/api/public/servers/commands")({
             website_id: cmd.website_id,
             operation: cmd.action,
             title: `تنفيذ ${cmd.action} على السيرفر`,
-            input: cmd.args ?? {},
+            input: args,
             result: { exit_code: code, output: output?.slice(0, 4000) ?? "" },
             status: code === 0 ? "success" : "error",
             actor: "agent",

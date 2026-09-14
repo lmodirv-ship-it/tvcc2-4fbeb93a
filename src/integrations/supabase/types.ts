@@ -1593,6 +1593,9 @@ export type Database = {
       }
       databases: {
         Row: {
+          agent_id: string | null
+          agent_last_seen_at: string | null
+          capabilities: Json
           connection_url: string | null
           created_at: string
           db_kind: string
@@ -1610,18 +1613,24 @@ export type Database = {
           migration_status: string
           name: string
           owner_id: string
+          pairing_status: string
           password_hash: string | null
           port: number | null
+          public_endpoint: string | null
           rows_count: number | null
           server_id: string | null
           size_mb: number | null
           status: string
           sync_mode: string
           tables_count: number | null
+          tunnel_id: string | null
           updated_at: string
           website_id: string | null
         }
         Insert: {
+          agent_id?: string | null
+          agent_last_seen_at?: string | null
+          capabilities?: Json
           connection_url?: string | null
           created_at?: string
           db_kind?: string
@@ -1639,18 +1648,24 @@ export type Database = {
           migration_status?: string
           name: string
           owner_id: string
+          pairing_status?: string
           password_hash?: string | null
           port?: number | null
+          public_endpoint?: string | null
           rows_count?: number | null
           server_id?: string | null
           size_mb?: number | null
           status?: string
           sync_mode?: string
           tables_count?: number | null
+          tunnel_id?: string | null
           updated_at?: string
           website_id?: string | null
         }
         Update: {
+          agent_id?: string | null
+          agent_last_seen_at?: string | null
+          capabilities?: Json
           connection_url?: string | null
           created_at?: string
           db_kind?: string
@@ -1668,14 +1683,17 @@ export type Database = {
           migration_status?: string
           name?: string
           owner_id?: string
+          pairing_status?: string
           password_hash?: string | null
           port?: number | null
+          public_endpoint?: string | null
           rows_count?: number | null
           server_id?: string | null
           size_mb?: number | null
           status?: string
           sync_mode?: string
           tables_count?: number | null
+          tunnel_id?: string | null
           updated_at?: string
           website_id?: string | null
         }
@@ -1695,10 +1713,109 @@ export type Database = {
             referencedColumns: ["id"]
           },
           {
+            foreignKeyName: "databases_tunnel_id_fkey"
+            columns: ["tunnel_id"]
+            isOneToOne: false
+            referencedRelation: "server_tunnels"
+            referencedColumns: ["id"]
+          },
+          {
             foreignKeyName: "databases_website_id_fkey"
             columns: ["website_id"]
             isOneToOne: false
             referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      db_connections: {
+        Row: {
+          agent_instance_id: string | null
+          capabilities: Json
+          certificate_expires_at: string | null
+          certificate_fingerprint: string | null
+          connection_kind: string
+          created_at: string
+          database_id: string
+          id: string
+          last_error: string | null
+          last_latency_ms: number | null
+          last_seen_at: string | null
+          owner_id: string
+          pairing_code_hash: string | null
+          pairing_expires_at: string | null
+          server_id: string | null
+          status: string
+          tunnel_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          agent_instance_id?: string | null
+          capabilities?: Json
+          certificate_expires_at?: string | null
+          certificate_fingerprint?: string | null
+          connection_kind?: string
+          created_at?: string
+          database_id: string
+          id?: string
+          last_error?: string | null
+          last_latency_ms?: number | null
+          last_seen_at?: string | null
+          owner_id: string
+          pairing_code_hash?: string | null
+          pairing_expires_at?: string | null
+          server_id?: string | null
+          status?: string
+          tunnel_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          agent_instance_id?: string | null
+          capabilities?: Json
+          certificate_expires_at?: string | null
+          certificate_fingerprint?: string | null
+          connection_kind?: string
+          created_at?: string
+          database_id?: string
+          id?: string
+          last_error?: string | null
+          last_latency_ms?: number | null
+          last_seen_at?: string | null
+          owner_id?: string
+          pairing_code_hash?: string | null
+          pairing_expires_at?: string | null
+          server_id?: string | null
+          status?: string
+          tunnel_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "db_connections_agent_instance_id_fkey"
+            columns: ["agent_instance_id"]
+            isOneToOne: false
+            referencedRelation: "agent_instances"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "db_connections_database_id_fkey"
+            columns: ["database_id"]
+            isOneToOne: true
+            referencedRelation: "databases"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "db_connections_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "db_connections_tunnel_id_fkey"
+            columns: ["tunnel_id"]
+            isOneToOne: false
+            referencedRelation: "server_tunnels"
             referencedColumns: ["id"]
           },
         ]
@@ -4416,7 +4533,9 @@ export type Database = {
       }
       query_history: {
         Row: {
+          confirmed_write: boolean
           created_at: string
+          database_id: string | null
           error: string | null
           failed_count: number
           finished_at: string | null
@@ -4431,10 +4550,13 @@ export type Database = {
           target_ids: Json
           target_kind: string
           targets_count: number
+          title: string | null
           took_ms: number | null
         }
         Insert: {
+          confirmed_write?: boolean
           created_at?: string
+          database_id?: string | null
           error?: string | null
           failed_count?: number
           finished_at?: string | null
@@ -4449,10 +4571,13 @@ export type Database = {
           target_ids?: Json
           target_kind?: string
           targets_count?: number
+          title?: string | null
           took_ms?: number | null
         }
         Update: {
+          confirmed_write?: boolean
           created_at?: string
+          database_id?: string | null
           error?: string | null
           failed_count?: number
           finished_at?: string | null
@@ -4467,9 +4592,17 @@ export type Database = {
           target_ids?: Json
           target_kind?: string
           targets_count?: number
+          title?: string | null
           took_ms?: number | null
         }
         Relationships: [
+          {
+            foreignKeyName: "query_history_database_id_fkey"
+            columns: ["database_id"]
+            isOneToOne: false
+            referencedRelation: "databases"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "query_history_group_id_fkey"
             columns: ["group_id"]
@@ -6390,9 +6523,15 @@ export type Database = {
           latency_ms: number | null
           owner_id: string
           port: number | null
+          provisioned_at: string | null
+          provisioning_error: string | null
+          provisioning_status: string
           role: string
+          schema_name: string | null
           secret_id: string | null
           server_id: string | null
+          server_path: string | null
+          site_code: string | null
           status: string
           updated_at: string
           website_id: string
@@ -6411,9 +6550,15 @@ export type Database = {
           latency_ms?: number | null
           owner_id?: string
           port?: number | null
+          provisioned_at?: string | null
+          provisioning_error?: string | null
+          provisioning_status?: string
           role?: string
+          schema_name?: string | null
           secret_id?: string | null
           server_id?: string | null
+          server_path?: string | null
+          site_code?: string | null
           status?: string
           updated_at?: string
           website_id: string
@@ -6432,9 +6577,15 @@ export type Database = {
           latency_ms?: number | null
           owner_id?: string
           port?: number | null
+          provisioned_at?: string | null
+          provisioning_error?: string | null
+          provisioning_status?: string
           role?: string
+          schema_name?: string | null
           secret_id?: string | null
           server_id?: string | null
+          server_path?: string | null
+          site_code?: string | null
           status?: string
           updated_at?: string
           website_id?: string
@@ -8299,17 +8450,7 @@ export type Database = {
     }
     Functions: {
       bump_site_visits: { Args: never; Returns: number }
-      can_manage: { Args: { _owner: string }; Returns: boolean }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
       is_permanent_owner_email: { Args: { _email: string }; Returns: boolean }
-      is_team_editor: { Args: { _user_id: string }; Returns: boolean }
-      is_team_member: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "editor" | "viewer" | "system_owner"

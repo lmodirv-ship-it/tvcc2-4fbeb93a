@@ -1107,10 +1107,12 @@ PYC
 }
 
 install_systemd() {
-  cat > /etc/systemd/system/tvcc-agent.service <<'EOF'
+  # Templated unit: one service per agent key -> tvcc-agent@main, tvcc-agent@db, ...
+  cat > /etc/systemd/system/tvcc-agent@.service <<'EOF'
 [Unit]
-Description=TVCC Agent
-After=network.target
+Description=TVCC Agent (%i)
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=simple
@@ -1118,16 +1120,55 @@ ExecStart=/usr/local/bin/tvcc-agent.sh
 Restart=always
 RestartSec=10
 User=root
+Environment="TVCC_AGENT_KEY=%i"
+EnvironmentFile=-/etc/tvcc/agent-%i.env
 Environment="TVCC_BACKUP_DIR=/var/backups/tvcc"
+StandardOutput=append:/var/log/tvcc-agent-%i.log
+StandardError=append:/var/log/tvcc-agent-%i.log
 
 [Install]
 WantedBy=multi-user.target
 EOF
-  systemctl daemon-reload
-  systemctl enable tvcc-agent.service
-  systemctl start tvcc-agent.service
-  echo "systemd service installed and started"
+
+  mkdir -p /etc/tvcc
+  printf 'TVCC_AGENT_ROLE=%s\n' "\${TVCC_AGENT_ROLE}" > "/etc/tvcc/agent-\${TVCC_AGENT_KEY}.env"
+  chmod 600 "/etc/tvcc/agent-\${TVCC_AGENT_KEY}.env"
+
+  cat > /etc/logrotate.d/tvcc-agent <<'EOF'
+/var/log/tvcc-agent*.log {
+  daily
+  rotate 7
+  size 20M
+  missingok
+  notifempty
+  copytruncate
+  compress
 }
+EOF
+
+  # Legacy single-instance unit is replaced by the templated one.
+  if systemctl list-unit-files 2>/dev/null | grep -q '^tvcc-agent.service'; then
+    systemctl disable --now tvcc-agent.service >/dev/null 2>&1 || true
+    rm -f /etc/systemd/system/tvcc-agent.service
+  fi
+
+  systemctl daemon-reload
+  systemctl enable "tvcc-agent@\${TVCC_AGENT_KEY}.service"
+  systemctl restart "tvcc-agent@\${TVCC_AGENT_KEY}.service"
+  echo "systemd service tvcc-agent@\${TVCC_AGENT_KEY} installed and started"
+}
+
+preflight() {
+  local PROBLEMS=""
+  [ "$(id -u)" = "0" ] || PROBLEMS="\${PROBLEMS}root required; "
+  command -v curl >/dev/null 2>&1 || PROBLEMS="\${PROBLEMS}curl missing; "
+  command -v python3 >/dev/null 2>&1 || PROBLEMS="\${PROBLEMS}python3 missing; "
+  command -v openssl >/dev/null 2>&1 || PROBLEMS="\${PROBLEMS}openssl missing; "
+  command -v systemctl >/dev/null 2>&1 || echo "warn: systemd not found — agent will run in foreground mode"
+  if [ -n "$PROBLEMS" ]; then echo "preflight failed: $PROBLEMS"; return 1; fi
+  echo "preflight ok (key=\${TVCC_AGENT_KEY} role=\${TVCC_AGENT_ROLE})"
+}
+
 
 restore_services() { # bring every registered unit back up after a reboot
   local REPORT="" OKC=0 FAILC=0

@@ -123,16 +123,38 @@ function scanPorts() {
   return [...new Set([...out.matchAll(/:(\\d{2,5})\\s/g)].map((m) => Number(m[1])))].sort((a, b) => a - b);
 }
 
-(async () => {
-  log('الاتصال بالمنصة…');
-  const inv = await api('/api/public/backups/inventory', { destination_id: DESTINATION_ID });
-  const domains = inv.domains || [];
-  log('عدد المواقع في المنصة: ' + domains.length);
+/* ---------- 3) معلومات النظام ---------- */
+function diskInfo() {
+  const out = sh('df -BG --output=size,avail ' + JSON.stringify(BASE) + ' 2>/dev/null || df -g ' + JSON.stringify(BASE));
+  const nums = (out.match(/(\\d+)G/g) || []).map((s) => Number(s.replace('G', '')));
+  return { total: nums[0] || null, free: nums[1] || null };
+}
+
+async function ping(extra) {
+  const disk = diskInfo();
+  return api('/api/public/backups/link', Object.assign({
+    destination_id: DESTINATION_ID,
+    hostname: os.hostname(),
+    base_path: BASE,
+    agent_version: '1.0.0',
+    disk_total_gb: disk.total,
+    disk_free_gb: disk.free,
+    mem_total_mb: Math.round(os.totalmem() / 1048576),
+    mem_free_mb: Math.round(os.freemem() / 1048576),
+    load_avg: os.loadavg()[0],
+    uptime_seconds: Math.round(os.uptime()),
+  }, extra || {}));
+}
+
+/* ---------- 4) دورة عمل واحدة ---------- */
+async function cycle() {
+  const link = await ping({});
+  const domains = link.domains || [];
+  log('خط الاتصال ✓ — مواقع المنصة: ' + domains.length + ' | المسار: ' + BASE);
 
   const created = ensureFolders(domains);
-  log((DRY ? 'معاينة — ' : '') + 'مجلدات أُنشئت: ' + created + ' داخل ' + BASE);
+  log((DRY ? 'معاينة — ' : '') + 'مجلدات أُنشئت: ' + created);
 
-  log('تحليل مواقع هذا السيرفر…');
   const vhosts = scanVhosts();
   const roots = scanWebRoots();
   const byDomain = new Map();
@@ -142,20 +164,32 @@ function scanPorts() {
   const sites = [...byDomain.values()];
   const services = scanServices();
   const ports = scanPorts();
+  log('مواقع على السيرفر: ' + sites.length + ' | خدمات: ' + services.length + ' | منافذ: ' + ports.length);
 
-  log('مواقع مكتشفة على السيرفر: ' + sites.length + ' | خدمات: ' + services.length + ' | منافذ: ' + ports.length);
-  for (const s of sites) log('  - ' + s.domain + (s.doc_root ? '  (' + s.doc_root + ')' : ''));
+  if (DRY) { log('وضع المعاينة — لم يُرسل تقرير.'); return; }
 
-  if (DRY) { log('وضع المعاينة — لم يُرسل أي تقرير.'); return; }
-
-  const report = await api('/api/public/backups/scan-report', {
+  await api('/api/public/backups/scan-report', {
     destination_id: DESTINATION_ID,
     hostname: os.hostname(),
     sites,
     services,
     ports,
   });
-  log('تم رفع التقرير: ' + JSON.stringify(report));
-})().catch((e) => { console.error('[tvcc] خطأ: ' + e.message); process.exit(1); });
+  await ping({ domains_count: domains.length, folders_count: created, sites_found: sites.length });
+  log('تم إرسال التقرير والنبضة ✓');
+}
+
+/* ---------- 5) التشغيل: نبضة كل 5 دقائق ---------- */
+(async () => {
+  const runOnce = async () => {
+    try { await cycle(); }
+    catch (e) { console.error('[tvcc] خطأ في الدورة: ' + e.message); }
+  };
+  await runOnce();
+  if (ONCE || DRY) return;
+  log('الوضع المستمر — نبضة كل ' + (INTERVAL / 60000) + ' دقائق. (Ctrl+C للإيقاف)');
+  setInterval(runOnce, INTERVAL);
+})();
 `;
 }
+

@@ -7,6 +7,8 @@ import {
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
+import { usePermissions } from "@/hooks/use-permissions";
+import { usePlatformPageRules } from "@/hooks/use-platform-pages";
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";

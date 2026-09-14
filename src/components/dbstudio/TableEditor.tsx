@@ -110,7 +110,7 @@ export function TableEditor({ databaseId, hasAgent = true }: { databaseId: strin
   }, [databaseId, schema, schemasCmd, tablesCmd]);
 
   useEffect(() => {
-    if (!databaseId || !table) return;
+    if (!databaseId || !table || !hasAgent) return;
     if (!columnsCmd) runOnce(`cols:${schema}.${table}`, () => catalog({ data: { databaseId, mode: "columns", schema, table } }));
     if (!rowsCmd) runOnce(`rows:${schema}.${table}`, () => rowsFn({ data: { databaseId, schema, table, page, pageSize } }));
   }, [databaseId, schema, table, columnsCmd, rowsCmd]);

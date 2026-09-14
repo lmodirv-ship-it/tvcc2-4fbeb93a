@@ -4,6 +4,7 @@ import {
   Code2, Wand2, FolderOpen, LayoutTemplate, Radio, ListChecks, Plug,
   Smartphone, KeyRound, Server, ShieldCheck, BadgeCheck, Bell, FileCog, LifeBuoy, ClipboardCheck,
   FileBarChart, Wallet, Boxes, Brain, Film, HardDrive, MessageSquare, History, NotebookPen, Archive, Network, Share2, ScrollText, ShieldAlert, GitBranch, Zap, Download, Link2, Cloud, Globe2, Fingerprint, Rocket, Radar, Database, Shield, HeartPulse, Package, Bot, Container,
+  PanelRightClose, PanelRightOpen, PanelLeftClose, PanelLeftOpen,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -150,6 +151,7 @@ export function AppSidebar() {
   const { isVisible } = usePlatformPageRules();
   const { setOpen } = useSidebar();
   const [lang, setLang] = useState<AppLang>(i18n.language as AppLang);
+  const [hidden, setHidden] = useState(false);
 
   useEffect(() => {
     const onLangChanged = (lng: string) => setLang(lng as AppLang);
@@ -164,6 +166,10 @@ export function AppSidebar() {
   const side = langDef.dir === "rtl" ? "right" : "left";
 
   const isActive = (path: string) => pathname === path || pathname.startsWith(path + "/");
+
+  const ToggleIcon = hidden
+    ? (side === "right" ? PanelRightOpen : PanelLeftOpen)
+    : (side === "right" ? PanelRightClose : PanelLeftClose);
 
   const handleExport = async () => {
     try {

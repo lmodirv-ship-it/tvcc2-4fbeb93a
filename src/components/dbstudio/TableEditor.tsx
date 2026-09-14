@@ -262,15 +262,17 @@ export function TableEditor({ databaseId, hasAgent = true }: { databaseId: strin
                   <Button size="icon" variant="outline" className="size-7" title="تحديث الجداول" onClick={() => refreshTables.mutate()} disabled={refreshTables.isPending}>{refreshTables.isPending ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />}</Button>
                 </div>
               </div>
-              <div className="min-h-0 flex-1 overflow-y-auto p-1">
+              <div className="min-h-0 flex-1 overflow-y-auto overflow-x-auto p-1">
                 <p className="px-1.5 py-0.5 text-[10px] font-semibold uppercase text-muted-foreground">{visibleTables.length} جدولاً</p>
                 {visibleTables.length ? visibleTables.map((item: any) => (
-                  <button key={item.name} onClick={() => openTable(item.name)} className={`group flex w-full items-center gap-1.5 rounded px-1.5 py-1 text-right text-[11px] transition-colors hover:bg-sidebar-accent ${table === item.name ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground"}`}>
-                    <span className="min-w-0 flex-1 truncate font-mono" dir="ltr">{item.name}</span>
-                    {item.rls_enabled ? <Shield className="size-2.5 text-success" /> : item.kind === "table" ? <ShieldAlert className="size-2.5 text-warning" /> : null}
-                    <Star className={`size-2.5 opacity-0 group-hover:opacity-100 ${favorites.includes(item.name) ? "fill-primary text-primary opacity-100" : "text-muted-foreground"}`} onClick={(e) => { e.stopPropagation(); setFavorites((prev) => prev.includes(item.name) ? prev.filter((n) => n !== item.name) : [...prev, item.name]); }} />
+                  <button key={item.name} onClick={() => openTable(item.name)} title={codeByTable[item.name]} className={`group flex w-fit max-w-none items-center gap-1.5 rounded px-1.5 py-1 text-right text-[11px] transition-colors hover:bg-sidebar-accent ${table === item.name ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground"}`}>
+                    <span className="whitespace-nowrap font-mono" dir="ltr">{item.name}</span>
+                    <span className="whitespace-nowrap rounded bg-muted px-1 font-mono text-[9px] text-muted-foreground" dir="ltr">{codeByTable[item.name]}</span>
+                    {item.rls_enabled ? <Shield className="size-2.5 shrink-0 text-success" /> : item.kind === "table" ? <ShieldAlert className="size-2.5 shrink-0 text-warning" /> : null}
+                    <Star className={`size-2.5 shrink-0 opacity-0 group-hover:opacity-100 ${favorites.includes(item.name) ? "fill-primary text-primary opacity-100" : "text-muted-foreground"}`} onClick={(e) => { e.stopPropagation(); setFavorites((prev) => prev.includes(item.name) ? prev.filter((n) => n !== item.name) : [...prev, item.name]); }} />
                   </button>
                 )) : <p className="p-3 text-center text-[11px] text-muted-foreground">{tablesCmd ? "لا توجد جداول" : "بانتظار قائمة الجداول…"}</p>}
+
 
               </div>
               <div className="border-t p-1.5"><AgentHint command={tablesCmd} /></div>

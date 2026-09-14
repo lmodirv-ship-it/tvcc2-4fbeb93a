@@ -58,6 +58,8 @@ function DownloadsPage() {
   const fetchServers = useServerFn(listServers);
   const fetchInstall = useServerFn(getAgentInstall);
   const [serverId, setServerId] = useState<string>("");
+  const [agentKey, setAgentKey] = useState<string>("main");
+  const [agentRole, setAgentRole] = useState<string>("main");
   const [install, setInstall] = useState<{ command: string; scriptUrl: string; script?: string } | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -70,7 +72,7 @@ function DownloadsPage() {
     if (!serverId) return toast.error("اختر سيرفراً أولاً");
     setLoading(true);
     try {
-      const res: any = await fetchInstall({ data: { serverId, origin: window.location.origin } });
+      const res: any = await fetchInstall({ data: { serverId, origin: window.location.origin, agentKey, agentRole } });
       setInstall({ command: res.install, scriptUrl: "", script: res.script });
       toast.success("تم توليد أمر التثبيت");
     } catch (e: any) {

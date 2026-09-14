@@ -173,13 +173,22 @@ export function TableEditor({ databaseId, hasAgent = true }: { databaseId: strin
   });
 
   const pendingCount = Object.keys(edits).length + inserts.length + deletes.length;
+  const codeByTable = useMemo(() => {
+    const map: Record<string, string> = {};
+    [...tables]
+      .map((t: any) => String(t.name))
+      .sort((a, b) => a.localeCompare(b))
+      .forEach((name, i) => { map[name] = tableCode(i); });
+    return map;
+  }, [tables]);
   const visibleTables = tables
     .filter((t: any) => {
       const term = tableSearch.trim().toLowerCase();
       if (!term) return true;
-      return String(t.name).toLowerCase().includes(term) || tableCode(schema, t.name).toLowerCase().includes(term);
+      return String(t.name).toLowerCase().includes(term) || (codeByTable[t.name] ?? "").toLowerCase().includes(term);
     })
     .sort((a: any, b: any) => Number(favorites.includes(b.name)) - Number(favorites.includes(a.name)));
+
 
   const openTable = (name: string) => {
     setOpenTables((prev) => prev.includes(name) ? prev : [...prev, name]);

@@ -225,47 +225,47 @@ export function TableEditor({ databaseId, hasAgent = true }: { databaseId: strin
         <Badge variant="outline" className="gap-2 border-success/40 text-success"><span className="size-1.5 rounded-full bg-success" />متصل</Badge>
       </div>
 
-      <div className={`grid min-h-[72vh] overflow-hidden rounded-md border bg-card ${catalogCollapsed ? "lg:grid-cols-[52px_minmax(0,1fr)]" : "lg:grid-cols-[250px_minmax(0,1fr)]"}`}>
+      <div className={`grid min-h-[72vh] overflow-hidden rounded-md border bg-card ${catalogCollapsed ? "lg:grid-cols-[44px_minmax(0,1fr)]" : "lg:grid-cols-[220px_minmax(0,1fr)]"}`}>
         <aside className="flex min-h-0 flex-col border-l bg-sidebar/40">
-          <div className="flex items-center gap-2 border-b p-2">
-            {!catalogCollapsed && <div className="flex min-w-0 flex-1 items-center gap-2"><Database className="size-4 text-primary" /><span className="truncate text-sm font-semibold">قاعدة البيانات</span></div>}
-            <Button size="icon" variant="ghost" className="size-8 shrink-0" title={catalogCollapsed ? "إظهار الجداول" : "طي قائمة الجداول"} onClick={() => setCatalogCollapsed((value) => !value)}>
-              {catalogCollapsed ? <PanelRightOpen className="size-4" /> : <PanelRightClose className="size-4" />}
+          <div className="flex items-center gap-1 border-b p-1.5">
+            {!catalogCollapsed && <div className="flex min-w-0 flex-1 items-center gap-1.5"><Database className="size-3.5 text-primary" /><span className="truncate text-xs font-semibold">قاعدة البيانات</span></div>}
+            <Button size="icon" variant="ghost" className="size-7 shrink-0" title={catalogCollapsed ? "إظهار الجداول" : "طي قائمة الجداول"} onClick={() => setCatalogCollapsed((value) => !value)}>
+              {catalogCollapsed ? <PanelRightOpen className="size-3.5" /> : <PanelRightClose className="size-3.5" />}
             </Button>
           </div>
           {catalogCollapsed ? (
-            <div className="flex flex-col items-center gap-2 p-2">
+            <div className="flex flex-col items-center gap-1.5 p-1.5">
               <NewTableDialog compact onCreate={(payload) => ddl.mutate({ kind: "create_table", ...payload })} pending={ddl.isPending} />
-              <Button size="icon" variant="ghost" className="size-8" title="تحديث الجداول" onClick={() => refreshTables.mutate()}><RefreshCw className="size-4" /></Button>
+              <Button size="icon" variant="ghost" className="size-7" title="تحديث الجداول" onClick={() => refreshTables.mutate()}><RefreshCw className="size-3.5" /></Button>
             </div>
           ) : (
             <>
-              <div className="space-y-2 border-b p-2">
+              <div className="space-y-1.5 border-b p-1.5">
                 <Select value={schema} onValueChange={(value) => { setSchema(value); setTable(""); setOpenTables([]); }}>
-                  <SelectTrigger className="h-9 font-mono text-xs" dir="ltr"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="h-7 font-mono text-[11px]" dir="ltr"><SelectValue /></SelectTrigger>
                   <SelectContent>{schemas.map((name) => <SelectItem key={name} value={name}>{name}</SelectItem>)}</SelectContent>
                 </Select>
                 <NewTableDialog fullWidth onCreate={(payload) => ddl.mutate({ kind: "create_table", ...payload })} pending={ddl.isPending} />
                 <div className="flex gap-1">
                   <div className="relative min-w-0 flex-1">
-                    <Search className="absolute right-2.5 top-2.5 size-3.5 text-muted-foreground" />
-                    <Input value={tableSearch} onChange={(e) => setTableSearch(e.target.value)} placeholder="بحث الجداول" className="h-9 pr-8 text-xs" />
+                    <Search className="absolute right-2 top-2 size-3 text-muted-foreground" />
+                    <Input value={tableSearch} onChange={(e) => setTableSearch(e.target.value)} placeholder="بحث الجداول" className="h-7 pr-7 text-[11px]" />
                   </div>
-                  <Button size="icon" variant="outline" className="size-9" title="تحديث الجداول" onClick={() => refreshTables.mutate()} disabled={refreshTables.isPending}>{refreshTables.isPending ? <Loader2 className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}</Button>
+                  <Button size="icon" variant="outline" className="size-7" title="تحديث الجداول" onClick={() => refreshTables.mutate()} disabled={refreshTables.isPending}>{refreshTables.isPending ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />}</Button>
                 </div>
               </div>
-              <div className="min-h-0 flex-1 overflow-y-auto p-1.5">
-                <p className="px-2 py-1 text-[10px] font-semibold uppercase text-muted-foreground">{visibleTables.length} جدولاً</p>
+              <div className="min-h-0 flex-1 overflow-y-auto p-1">
+                <p className="px-1.5 py-0.5 text-[10px] font-semibold uppercase text-muted-foreground">{visibleTables.length} جدولاً</p>
                 {visibleTables.length ? visibleTables.map((item: any) => (
-                  <button key={item.name} onClick={() => openTable(item.name)} className={`group flex w-full items-center gap-2 rounded px-2 py-1.5 text-right text-xs transition-colors hover:bg-sidebar-accent ${table === item.name ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground"}`}>
+                  <button key={item.name} onClick={() => openTable(item.name)} className={`group flex w-full items-center gap-1.5 rounded px-1.5 py-1 text-right text-[11px] transition-colors hover:bg-sidebar-accent ${table === item.name ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground"}`}>
                     <span className="min-w-0 flex-1 truncate font-mono" dir="ltr">{item.name}</span>
-                    {item.rls_enabled ? <Shield className="size-3 text-success" /> : item.kind === "table" ? <ShieldAlert className="size-3 text-warning" /> : null}
-                    <Star className={`size-3 opacity-0 group-hover:opacity-100 ${favorites.includes(item.name) ? "fill-primary text-primary opacity-100" : "text-muted-foreground"}`} onClick={(e) => { e.stopPropagation(); setFavorites((prev) => prev.includes(item.name) ? prev.filter((n) => n !== item.name) : [...prev, item.name]); }} />
+                    {item.rls_enabled ? <Shield className="size-2.5 text-success" /> : item.kind === "table" ? <ShieldAlert className="size-2.5 text-warning" /> : null}
+                    <Star className={`size-2.5 opacity-0 group-hover:opacity-100 ${favorites.includes(item.name) ? "fill-primary text-primary opacity-100" : "text-muted-foreground"}`} onClick={(e) => { e.stopPropagation(); setFavorites((prev) => prev.includes(item.name) ? prev.filter((n) => n !== item.name) : [...prev, item.name]); }} />
                   </button>
-                )) : <p className="p-4 text-center text-xs text-muted-foreground">{tablesCmd ? "لا توجد جداول" : "بانتظار قائمة الجداول…"}</p>}
+                )) : <p className="p-3 text-center text-[11px] text-muted-foreground">{tablesCmd ? "لا توجد جداول" : "بانتظار قائمة الجداول…"}</p>}
 
               </div>
-              <div className="border-t p-2"><AgentHint command={tablesCmd} /></div>
+              <div className="border-t p-1.5"><AgentHint command={tablesCmd} /></div>
             </>
           )}
         </aside>

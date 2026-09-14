@@ -14,8 +14,9 @@ export function buildStorageScript(opts: {
 }): string {
   const { baseUrl, secret, destinationId, basePath } = opts;
   return `#!/usr/bin/env node
-/* TVCC — سكريبت سيرفر التخزين: إنشاء مجلدات النسخ + تحليل مواقع السيرفر
-   التشغيل:  node tvcc-storage.js            (تنفيذ فعلي)
+/* TVCC — سكريبت سيرفر التخزين: خط اتصال حي كل 5 دقائق + مجلدات النسخ + تحليل المواقع
+   التشغيل:  node tvcc-storage.js            (مستمر: نبضة كل 5 دقائق)
+             node tvcc-storage.js --once     (دورة واحدة فقط)
              node tvcc-storage.js --dry-run  (معاينة فقط)
    لا يحذف هذا السكريبت أي ملف إطلاقاً. */
 'use strict';
@@ -29,6 +30,9 @@ const SECRET = ${JSON.stringify(secret)};
 const DESTINATION_ID = ${JSON.stringify(destinationId)};
 const BASE = ${JSON.stringify(basePath)};
 const DRY = process.argv.includes('--dry-run');
+const ONCE = process.argv.includes('--once');
+const INTERVAL = 5 * 60 * 1000;
+
 
 function log(m) { console.log('[tvcc] ' + m); }
 

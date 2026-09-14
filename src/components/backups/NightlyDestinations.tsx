@@ -70,8 +70,14 @@ export function NightlyDestinations() {
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["backup-destinations"] });
 
+  const formValid =
+    form.name.trim().length > 0 && form.host.trim().length > 0 && form.basePath.trim().length > 0;
+
   const create = useMutation({
-    mutationFn: () => save({ data: form }),
+    mutationFn: async () => {
+      if (!formValid) throw new Error("املأ الاسم وعنوان السيرفر والمسار");
+      return save({ data: form });
+    },
     onSuccess: () => {
       toast.success("تم حفظ وجهة النسخ");
       setForm({ ...form, name: "", host: "", password: "" });

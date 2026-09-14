@@ -8450,17 +8450,7 @@ export type Database = {
     }
     Functions: {
       bump_site_visits: { Args: never; Returns: number }
-      can_manage: { Args: { _owner: string }; Returns: boolean }
-      has_role: {
-        Args: {
-          _role: Database["public"]["Enums"]["app_role"]
-          _user_id: string
-        }
-        Returns: boolean
-      }
       is_permanent_owner_email: { Args: { _email: string }; Returns: boolean }
-      is_team_editor: { Args: { _user_id: string }; Returns: boolean }
-      is_team_member: { Args: { _user_id: string }; Returns: boolean }
     }
     Enums: {
       app_role: "admin" | "editor" | "viewer" | "system_owner"

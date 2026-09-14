@@ -18,8 +18,8 @@ export const getFederatedOverview = createServerFn({ method: "GET" })
       supabase.from("websites").select("id, name, domain, status, server_id, manara_code"),
       supabase
         .from("server_metrics")
-        .select("server_id, cpu_percent, mem_used_mb, mem_total_mb, disk_used_gb, disk_total_gb, created_at")
-        .order("created_at", { ascending: false })
+        .select("server_id, cpu_percent, mem_used_mb, mem_total_mb, disk_used_gb, disk_total_gb, collected_at")
+        .order("collected_at", { ascending: false })
         .limit(200),
       supabase.from("federated_alerts").select("*").is("resolved_at", null).order("created_at", { ascending: false }).limit(50),
       supabase.from("site_clones").select("id, status, created_at").order("created_at", { ascending: false }).limit(10),

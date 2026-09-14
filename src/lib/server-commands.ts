@@ -116,8 +116,6 @@ export const COMMAND_LABELS: Record<string, string> = {
   pitr_restore: "استعادة نقطة زمنية",
   nginx_read: "قراءة إعدادات Nginx",
   nginx_write: "كتابة إعدادات Nginx مع فحص",
-  nginx_test: "فحص Nginx",
-  nginx_reload: "إعادة تحميل Nginx",
   site_snapshot: "لقطة موقع",
   site_rollback: "استعادة نسخة موقع",
   agent_config_set: "تحديث إعدادات الوكيل",

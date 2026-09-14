@@ -18,7 +18,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
-  connectDatabaseAgent, getDbStudioData, linkDatabaseServer, provisionSiteIdentities, queueDbStudioAction, runDbStudioQuery,
+  connectDatabaseAgent, getDbStudioData, linkDatabaseServer, provisionSiteIdentities, queueDbStudioAction, runDbStudioQuery, getQueryHistory,
 } from "@/lib/dbstudio.functions";
 import { TableEditor } from "@/components/dbstudio/TableEditor";
 import { TemplateLibrary } from "@/components/dbstudio/TemplateLibrary";

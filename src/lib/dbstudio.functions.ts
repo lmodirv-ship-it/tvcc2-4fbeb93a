@@ -649,6 +649,17 @@ export const applyTemplate = createServerFn({ method: "POST" })
     const statements = buildTemplateSql(template, {
       schema, prefix: data.prefix, rls: data.rls, seeds: data.seeds, tables: data.tables,
     });
+    if (isInternalDb(db)) {
+      await runInternalSql(statements.join(";\n") + ";");
+      const command = internalCommand("pg_ddl", {
+        database_id: db.id, schema, kind: "apply_template", template_id: template.id,
+        statements, sql: statements.join(";\n") + ";", read_only: false,
+      }, { affected: statements.length });
+      await audit(supabase, userId, `template_apply_${template.id}`, db.id, {
+        command_id: command.id, schema, tables: template.tables.length, statements: statements.length,
+      });
+      return command;
+    }
     const command = await queueCommand(supabase, userId, db.server_id, "pg_ddl", {
       ...baseArgs(db), schema, kind: "apply_template", template_id: template.id,
       statements, sql: statements.join(";\n") + ";", read_only: false,

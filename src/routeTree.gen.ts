@@ -131,6 +131,7 @@ import { Route as ApiPublicCoreIngestRouteImport } from './routes/api/public/cor
 import { Route as ApiPublicBackupsScanReportRouteImport } from './routes/api/public/backups/scan-report'
 import { Route as ApiPublicBackupsRunDueRouteImport } from './routes/api/public/backups/run-due'
 import { Route as ApiPublicBackupsNightlyRouteImport } from './routes/api/public/backups/nightly'
+import { Route as ApiPublicBackupsLinkRouteImport } from './routes/api/public/backups/link'
 import { Route as ApiPublicBackupsInventoryRouteImport } from './routes/api/public/backups/inventory'
 import { Route as ApiPublicHnIdentityCodeRouteImport } from './routes/api/public/hn/identity.$code'
 
@@ -791,6 +792,11 @@ const ApiPublicBackupsNightlyRoute = ApiPublicBackupsNightlyRouteImport.update({
   path: '/api/public/backups/nightly',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicBackupsLinkRoute = ApiPublicBackupsLinkRouteImport.update({
+  id: '/api/public/backups/link',
+  path: '/api/public/backups/link',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicBackupsInventoryRoute =
   ApiPublicBackupsInventoryRouteImport.update({
     id: '/api/public/backups/inventory',
@@ -904,6 +910,7 @@ export interface FileRoutesByFullPath {
   '/federated/': typeof AuthenticatedFederatedIndexRoute
   '/servers/': typeof AuthenticatedServersIndexRoute
   '/api/public/backups/inventory': typeof ApiPublicBackupsInventoryRoute
+  '/api/public/backups/link': typeof ApiPublicBackupsLinkRoute
   '/api/public/backups/nightly': typeof ApiPublicBackupsNightlyRoute
   '/api/public/backups/run-due': typeof ApiPublicBackupsRunDueRoute
   '/api/public/backups/scan-report': typeof ApiPublicBackupsScanReportRoute
@@ -1027,6 +1034,7 @@ export interface FileRoutesByTo {
   '/federated': typeof AuthenticatedFederatedIndexRoute
   '/servers': typeof AuthenticatedServersIndexRoute
   '/api/public/backups/inventory': typeof ApiPublicBackupsInventoryRoute
+  '/api/public/backups/link': typeof ApiPublicBackupsLinkRoute
   '/api/public/backups/nightly': typeof ApiPublicBackupsNightlyRoute
   '/api/public/backups/run-due': typeof ApiPublicBackupsRunDueRoute
   '/api/public/backups/scan-report': typeof ApiPublicBackupsScanReportRoute
@@ -1154,6 +1162,7 @@ export interface FileRoutesById {
   '/_authenticated/federated/': typeof AuthenticatedFederatedIndexRoute
   '/_authenticated/servers/': typeof AuthenticatedServersIndexRoute
   '/api/public/backups/inventory': typeof ApiPublicBackupsInventoryRoute
+  '/api/public/backups/link': typeof ApiPublicBackupsLinkRoute
   '/api/public/backups/nightly': typeof ApiPublicBackupsNightlyRoute
   '/api/public/backups/run-due': typeof ApiPublicBackupsRunDueRoute
   '/api/public/backups/scan-report': typeof ApiPublicBackupsScanReportRoute
@@ -1281,6 +1290,7 @@ export interface FileRouteTypes {
     | '/federated/'
     | '/servers/'
     | '/api/public/backups/inventory'
+    | '/api/public/backups/link'
     | '/api/public/backups/nightly'
     | '/api/public/backups/run-due'
     | '/api/public/backups/scan-report'
@@ -1404,6 +1414,7 @@ export interface FileRouteTypes {
     | '/federated'
     | '/servers'
     | '/api/public/backups/inventory'
+    | '/api/public/backups/link'
     | '/api/public/backups/nightly'
     | '/api/public/backups/run-due'
     | '/api/public/backups/scan-report'
@@ -1530,6 +1541,7 @@ export interface FileRouteTypes {
     | '/_authenticated/federated/'
     | '/_authenticated/servers/'
     | '/api/public/backups/inventory'
+    | '/api/public/backups/link'
     | '/api/public/backups/nightly'
     | '/api/public/backups/run-due'
     | '/api/public/backups/scan-report'
@@ -1574,6 +1586,7 @@ export interface RootRouteChildren {
   ApiPublicSiteConfigRoute: typeof ApiPublicSiteConfigRoute
   ApiPublicVisitsRoute: typeof ApiPublicVisitsRoute
   ApiPublicBackupsInventoryRoute: typeof ApiPublicBackupsInventoryRoute
+  ApiPublicBackupsLinkRoute: typeof ApiPublicBackupsLinkRoute
   ApiPublicBackupsNightlyRoute: typeof ApiPublicBackupsNightlyRoute
   ApiPublicBackupsRunDueRoute: typeof ApiPublicBackupsRunDueRoute
   ApiPublicBackupsScanReportRoute: typeof ApiPublicBackupsScanReportRoute
@@ -2455,6 +2468,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicBackupsNightlyRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/backups/link': {
+      id: '/api/public/backups/link'
+      path: '/api/public/backups/link'
+      fullPath: '/api/public/backups/link'
+      preLoaderRoute: typeof ApiPublicBackupsLinkRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/backups/inventory': {
       id: '/api/public/backups/inventory'
       path: '/api/public/backups/inventory'
@@ -2711,6 +2731,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicSiteConfigRoute: ApiPublicSiteConfigRoute,
   ApiPublicVisitsRoute: ApiPublicVisitsRoute,
   ApiPublicBackupsInventoryRoute: ApiPublicBackupsInventoryRoute,
+  ApiPublicBackupsLinkRoute: ApiPublicBackupsLinkRoute,
   ApiPublicBackupsNightlyRoute: ApiPublicBackupsNightlyRoute,
   ApiPublicBackupsRunDueRoute: ApiPublicBackupsRunDueRoute,
   ApiPublicBackupsScanReportRoute: ApiPublicBackupsScanReportRoute,

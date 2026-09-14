@@ -269,3 +269,38 @@ export const COMMAND_ARG: Record<string, { key: string; placeholder: string }> =
   watch_start: { key: "domain", placeholder: "example.com" },
   watch_stop: { key: "domain", placeholder: "example.com" },
 };
+
+/** تصنيف المهام لعرضها في جدول مهام الوكيل. */
+export const COMMAND_CATEGORIES = [
+  "مراقبة",
+  "خدمات",
+  "مواقع",
+  "قواعد بيانات",
+  "شبكة",
+  "نسخ احتياطي",
+  "ملفات",
+  "ذكاء اصطناعي",
+  "نظام",
+] as const;
+export type CommandCategory = (typeof COMMAND_CATEGORIES)[number];
+
+/** أوامر تُعدّ خطرة وتحتاج تأكيداً قبل التنفيذ. */
+export const RISKY_COMMANDS: readonly string[] = [
+  "fs_delete", "fs_write", "fs_move", "db_import", "db_import_full", "db_write",
+  "pg_write", "site_restore", "restore_all", "backup_restore", "pitr_restore",
+  "agent_self_update", "agent_update", "failover_switch", "firewall_apply",
+  "firewall_deny", "db_migrate", "heal_action", "site_rollback", "db_query",
+  "multi_sql", "platform_deploy", "site_identity_provision", "db_provision",
+];
+
+export function commandCategory(action: string): CommandCategory {
+  if (/^(scan_ports|read_configs|disk_usage|storage_usage|link_check|port_check|proc_list|agent_diag|advisor_scan|realtime_inspect)$/.test(action)) return "مراقبة";
+  if (action.startsWith("service_") || action.startsWith("unit_") || action.startsWith("serve_") || action.startsWith("watch_")) return "خدمات";
+  if (action.startsWith("site_") || action.startsWith("hosting_") || action.startsWith("blueprint_") || action.startsWith("git_") || action.startsWith("build_") || action.startsWith("deploy_") || action === "sync_site") return "مواقع";
+  if (action.startsWith("db_") || action.startsWith("pg_") || action.startsWith("supabase_") || action.startsWith("pooler_") || action === "multi_sql" || action === "auth_users") return "قواعد بيانات";
+  if (action.startsWith("nginx_") || action.startsWith("firewall_") || action.startsWith("port_") || action.startsWith("tunnel_") || action.startsWith("vpn_") || action.startsWith("hn_") || action.startsWith("ssl_") || action === "issue_ssl" || action === "gateway_publish") return "شبكة";
+  if (action.startsWith("backup_") || action.startsWith("storage_") || action.startsWith("file_") || action === "restore_all" || action === "pitr_restore") return "نسخ احتياطي";
+  if (action.startsWith("fs_")) return "ملفات";
+  if (action.startsWith("ollama_") || action.startsWith("ai_") || action.startsWith("edge_functions")) return "ذكاء اصطناعي";
+  return "نظام";
+}

@@ -1,10 +1,10 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { isAdminOrOwner } from "./roles.server";
 
 async function assertAdmin(supabase: any, userId: string) {
-  const { data: admin } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-  const { data: owner } = await supabase.rpc("has_role", { _user_id: userId, _role: "system_owner" });
-  if (!admin && !owner) throw new Error("صلاحيات غير كافية — السيطرة الفيدرالية للمالك والمدير فقط");
+  const ok = await isAdminOrOwner(supabase, userId);
+  if (!ok) throw new Error("صلاحيات غير كافية — السيطرة الفيدرالية للمالك والمدير فقط");
 }
 
 /** نظرة عامة فيدرالية: طبولوجيا + موارد مجمّعة + تنبيهات. */

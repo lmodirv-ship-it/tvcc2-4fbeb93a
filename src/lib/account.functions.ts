@@ -1,5 +1,6 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { hasAnyRole, isAdminOrOwner } from "./roles.server";
 
 const PERMANENT_OWNERS = ["lmodirv@gmail.com", "info@hnchat.net", "taltnamart@gmail.com"];
 
@@ -13,9 +14,9 @@ export const adminSetPassword = createServerFn({ method: "POST" })
   })
   .handler(async ({ data, context }) => {
     const sb = context.supabase as any;
-    const [{ data: isAdmin }, { data: isOwner }] = await Promise.all([
-      sb.rpc("has_role", { _user_id: context.userId, _role: "admin" }),
-      sb.rpc("has_role", { _user_id: context.userId, _role: "system_owner" }),
+    const [isAdmin, isOwner] = await Promise.all([
+      hasAnyRole(sb, context.userId, ["admin"]),
+      hasAnyRole(sb, context.userId, ["system_owner"]),
     ]);
     if (!isAdmin && !isOwner) throw new Error("غير مسموح — للمالك أو المدير فقط");
 

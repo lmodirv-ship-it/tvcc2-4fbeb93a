@@ -1,14 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
+import { hasAnyRole, isAdminOrOwner } from "./roles.server";
 
 /** Hosting: plans, subscriptions, tenants, quotas, server grants, replicas. */
 
 async function isAdmin(sb: any, userId: string) {
-  const [{ data: a }, { data: o }] = await Promise.all([
-    sb.rpc("has_role", { _user_id: userId, _role: "admin" }),
-    sb.rpc("has_role", { _user_id: userId, _role: "system_owner" }),
-  ]);
-  return Boolean(a || o);
+  return isAdminOrOwner(sb, userId);
 }
 
 async function queue(

@@ -110,7 +110,7 @@ const adminItems = [
 ];
 
 function SidebarLink({ item, active }: { item: typeof coreItems[number]; active: boolean }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { setOpenMobile, isMobile, setOpen } = useSidebar();
 
   const handleClick = () => {
@@ -127,19 +127,21 @@ function SidebarLink({ item, active }: { item: typeof coreItems[number]; active:
         tooltip={t(item.titleKey)}
         title={t(item.titleKey)}
         className={
-          active
+          "h-7 min-h-7 py-0.5 text-xs gap-2 " +
+          (active
             ? "bg-primary/15 text-primary border-r-2 border-primary rounded-md"
-            : "hover:bg-sidebar-accent"
+            : "hover:bg-sidebar-accent")
         }
       >
         <Link to={item.url} onClick={handleClick}>
-          <item.icon className="w-4 h-4" />
-          <span>{t(item.titleKey)}</span>
+          <item.icon className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">{t(item.titleKey)}</span>
         </Link>
       </SidebarMenuButton>
     </SidebarMenuItem>
   );
 }
+
 
 
 export function AppSidebar() {
@@ -181,18 +183,18 @@ export function AppSidebar() {
 
   return (
     <Sidebar collapsible="icon" side={side} className="border-l border-sidebar-border" dir={langDef.dir}>
-      <SidebarHeader className="border-b border-sidebar-border p-5">
-        <Link to="/" className="flex flex-col items-center gap-2 text-center">
+      <SidebarHeader className="border-b border-sidebar-border p-2">
+        <Link to="/" className="flex flex-col items-center gap-1 text-center">
           <img
             src={tvccLogo.url}
             alt="TVCC"
-            className="w-20 h-20 rounded-2xl object-cover shadow-lg"
+            className="w-10 h-10 rounded-lg object-cover shadow"
           />
-          <div className="text-xs text-muted-foreground font-medium">{t("sidebar.tagline")}</div>
+          <div className="text-[10px] text-muted-foreground font-medium leading-tight">{t("sidebar.tagline")}</div>
         </Link>
       </SidebarHeader>
 
-      <SidebarContent className="px-2 py-3">
+      <SidebarContent className="px-1 py-1">
         {[
           { label: t("sidebar.core"), items: coreItems },
           { label: t("sidebar.federated"), items: fedItems },
@@ -200,12 +202,12 @@ export function AppSidebar() {
           { label: t("sidebar.operations"), items: opsItems },
           { label: t("sidebar.admin"), items: adminItems },
         ].map((section) => (
-          <SidebarGroup key={section.label}>
-            <SidebarGroupLabel className="text-[10px] text-muted-foreground/70 px-2">
+          <SidebarGroup key={section.label} className="py-1">
+            <SidebarGroupLabel className="text-[9px] text-muted-foreground/70 px-1.5 py-0 leading-none">
               {section.label}
             </SidebarGroupLabel>
             <SidebarGroupContent>
-              <SidebarMenu>
+              <SidebarMenu className="gap-0">
                 {section.items
                   .filter((item) => primaryRole === "system_owner" || isVisible(item.url, primaryRole))
                   .map((item) => (
@@ -220,10 +222,10 @@ export function AppSidebar() {
                       }}
                       tooltip={t("sidebar.export_html")}
                       title={t("sidebar.export_html")}
-                      className="text-primary"
+                      className="h-7 min-h-7 py-0.5 text-xs gap-2 text-primary"
                     >
-                      <Code2 className="w-4 h-4" />
-                      <span>{t("sidebar.export_html")}</span>
+                      <Code2 className="w-3.5 h-3.5 shrink-0" />
+                      <span className="truncate">{t("sidebar.export_html")}</span>
                     </SidebarMenuButton>
                   </SidebarMenuItem>
                 )}
@@ -233,13 +235,12 @@ export function AppSidebar() {
         ))}
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-3 space-y-2">
-
+      <SidebarFooter className="border-t border-sidebar-border p-1.5">
         <SidebarMenu>
           <SidebarMenuItem>
-            <SidebarMenuButton onClick={handleLogout} className="text-muted-foreground">
-              <LogOut className="w-4 h-4" />
-              <span>{t("common.logout")}</span>
+            <SidebarMenuButton onClick={handleLogout} className="h-7 min-h-7 py-0.5 text-xs gap-2 text-muted-foreground">
+              <LogOut className="w-3.5 h-3.5 shrink-0" />
+              <span className="truncate">{t("common.logout")}</span>
             </SidebarMenuButton>
           </SidebarMenuItem>
         </SidebarMenu>
@@ -247,3 +248,4 @@ export function AppSidebar() {
     </Sidebar>
   );
 }
+

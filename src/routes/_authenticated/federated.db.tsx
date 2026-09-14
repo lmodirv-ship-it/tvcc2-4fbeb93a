@@ -114,7 +114,6 @@ function DbStudioPage() {
             <nav className="grid grid-cols-1 gap-1">{sections.filter((item) => item.label.includes(search)).map((item) => <Button key={item.id} variant={section === item.id ? "secondary" : "ghost"} className="justify-start" onClick={() => setSection(item.id)}><item.icon className="size-4" />{item.label}</Button>)}</nav>
           </aside>
           <main className="min-w-0 space-y-4 p-4 md:p-6">
-            {selected && <EntityRelations databaseId={selected.id} serverId={selected.server_id ?? null} websiteId={selected.website_id ?? null} />}
             {!selected ? <EmptyState /> : <SectionContent section={section} data={data} selected={selected} connection={connection} server={server} actionMutation={actionMutation} provisionMutation={provisionMutation} runQuery={runQuery} invalidate={invalidate} />}
           </main>
 

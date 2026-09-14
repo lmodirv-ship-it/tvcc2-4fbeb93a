@@ -61,13 +61,20 @@ export function TableEditor({ databaseId, hasAgent = true }: { databaseId: strin
   const [favorites, setFavorites] = useState<string[]>([]);
   const queued = useRef<Set<string>>(new Set());
 
+  const [local, setLocal] = useState<AgentCommand[]>([]);
+  const push = (result: any) => {
+    const cmd = result?.action ? result : result?.command?.action ? result.command : null;
+    if (cmd) setLocal((prev) => [cmd as AgentCommand, ...prev].slice(0, 80));
+    return result;
+  };
+
   const query = useQuery({
     queryKey: ["db-editor", databaseId],
     queryFn: () => fetchCommands({ data: { databaseId } }) as Promise<AgentCommand[]>,
     refetchInterval: 6000,
     enabled: Boolean(databaseId),
   });
-  const commands = (query.data ?? []) as AgentCommand[];
+  const commands = useMemo(() => [...local, ...((query.data ?? []) as AgentCommand[])], [local, query.data]);
 
   const schemasCmd = findCommand(commands, "pg_meta", (a) => a.mode === "schemas");
   const tablesCmd = findCommand(commands, "pg_meta", (a) => a.mode === "tables" && a.schema === schema);

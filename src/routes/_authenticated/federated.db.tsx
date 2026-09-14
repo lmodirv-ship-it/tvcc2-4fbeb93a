@@ -18,9 +18,10 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
-  connectDatabaseAgent, getDbStudioData, provisionSiteIdentities, queueDbStudioAction, runDbStudioQuery,
+  connectDatabaseAgent, getDbStudioData, linkDatabaseServer, provisionSiteIdentities, queueDbStudioAction, runDbStudioQuery,
 } from "@/lib/dbstudio.functions";
 import { TableEditor } from "@/components/dbstudio/TableEditor";
+import { TemplateLibrary } from "@/components/dbstudio/TemplateLibrary";
 
 export const Route = createFileRoute("/_authenticated/federated/db")({
   component: DbStudioPage,
@@ -38,6 +39,7 @@ type Section = { id: string; label: string; icon: typeof Database };
 const sections: Section[] = [
   { id: "overview", label: "نظرة عامة", icon: Gauge },
   { id: "tables", label: "محرر الجداول", icon: Table2 },
+  { id: "templates", label: "نماذج الجداول", icon: Layers3 },
   { id: "sql", label: "محرر SQL", icon: Code2 },
   { id: "schema", label: "المخطط والعلاقات", icon: Network },
   { id: "auth", label: "المصادقة", icon: Users },
@@ -122,10 +124,11 @@ function SectionContent({ section, data, selected, connection, server, actionMut
   if (section === "sql" || section === "assistant") return <SqlPanel selected={selected} runQuery={runQuery} invalidate={invalidate} assistant={section === "assistant"} />;
   if (section === "sites") return <SitesPanel data={data} selected={selected} provisionMutation={provisionMutation} />;
   if (section === "tables") return <TableEditor databaseId={selected.id} hasAgent={Boolean(selected.server_id)} />;
+  if (section === "templates") return <TemplateLibrary databaseId={selected.id} hasAgent={Boolean(selected.server_id)} />;
   if (section === "activity") return <ActivityPanel data={data} />;
   if (section === "backups") return <BackupsPanel data={data} selected={selected} mutation={actionMutation} />;
   if (section === "integrations") return <IntegrationsPanel data={data} selected={selected} connection={connection} server={server} mutation={actionMutation} />;
-  if (section === "settings") return <SettingsPanel selected={selected} connection={connection} server={server} mutation={actionMutation} />;
+  if (section === "settings") return <SettingsPanel data={data} selected={selected} connection={connection} server={server} mutation={actionMutation} invalidate={invalidate} />;
   const spec = SECTION_SPECS[section] ?? SECTION_SPECS.monitoring!;
   return <LivePanel spec={spec} data={data} selected={selected} mutation={actionMutation} />;
 }
@@ -278,12 +281,29 @@ function IntegrationsPanel({ data, selected, connection, server, mutation }: any
   </div>;
 }
 
-function SettingsPanel({ selected, connection, server, mutation }: any) {
+function SettingsPanel({ data, selected, connection, server, mutation, invalidate }: any) {
+  const link = useServerFn(linkDatabaseServer);
+  const [serverId, setServerId] = useState(selected.server_id ?? "");
+  const linkMutation = useMutation({
+    mutationFn: () => link({ data: { databaseId: selected.id, serverId: serverId || null } }),
+    onSuccess: () => { toast.success("تم ربط القاعدة بالسيرفر"); invalidate(); },
+    onError: (e: any) => toast.error(e.message),
+  });
   return <div className="space-y-5">
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div><h2 className="text-2xl font-bold">إعدادات القاعدة</h2><p className="text-muted-foreground">بيانات الاتصال والربط بالوكيل. القيم الحسّاسة تبقى في الخزنة.</p></div>
       <Button disabled={mutation.isPending} onClick={() => mutation.mutate({ action: "agent_update" })}><CloudCog className="size-4" />تحديث الوكيل</Button>
     </div>
+    <Card><CardHeader><CardTitle>السيرفر المسؤول (الوكيل)</CardTitle></CardHeader><CardContent className="flex flex-wrap items-center gap-3">
+      <Select value={serverId} onValueChange={setServerId}>
+        <SelectTrigger className="w-[320px]"><SelectValue placeholder="اختر سيرفراً عليه وكيل TVCC" /></SelectTrigger>
+        <SelectContent>{(data?.servers ?? []).map((row: any) => <SelectItem key={row.id} value={row.id}>{row.name} · {row.status ?? "—"}</SelectItem>)}</SelectContent>
+      </Select>
+      <Button disabled={linkMutation.isPending || serverId === (selected.server_id ?? "")} onClick={() => linkMutation.mutate()}>
+        {linkMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <Cable className="size-4" />}حفظ الربط
+      </Button>
+      {!selected.server_id && <span className="text-sm text-destructive">غير مرتبطة بوكيل — محرر الجداول والنماذج معطّلة حتى تُربط.</span>}
+    </CardContent></Card>
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
       {[["الاسم", selected.name], ["المعرف", selected.id], ["المحرك", selected.db_type], ["المضيف", selected.host], ["المنفذ", selected.port], ["القاعدة", selected.db_name], ["مفتاح البيئة", selected.env_key], ["أساسية", selected.is_primary ? "نعم" : "لا"], ["حالة الاقتران", connection?.status ?? selected.pairing_status ?? "—"], ["السيرفر", server?.name ?? "—"]].map(([label, value]: any) => (
         <Card key={label}><CardContent className="p-4"><p className="text-sm text-muted-foreground">{label}</p><p className="mt-1 break-all font-mono text-sm" dir="ltr">{value ?? "—"}</p></CardContent></Card>

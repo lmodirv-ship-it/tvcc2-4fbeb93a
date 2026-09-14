@@ -667,6 +667,9 @@ function BackupsPage() {
           )}
         </TabsContent>
       </Tabs>
+
+      <SiteTransfersTable />
     </div>
+
   );
 }

@@ -1101,7 +1101,9 @@ export type Database = {
           notes: string | null
           owner_id: string
           port: number
+          scope: string
           secret_id: string | null
+          storage_server_id: string | null
           updated_at: string
           username: string
         }
@@ -1118,7 +1120,9 @@ export type Database = {
           notes?: string | null
           owner_id: string
           port?: number
+          scope?: string
           secret_id?: string | null
+          storage_server_id?: string | null
           updated_at?: string
           username?: string
         }
@@ -1135,7 +1139,9 @@ export type Database = {
           notes?: string | null
           owner_id?: string
           port?: number
+          scope?: string
           secret_id?: string | null
+          storage_server_id?: string | null
           updated_at?: string
           username?: string
         }
@@ -1145,6 +1151,13 @@ export type Database = {
             columns: ["secret_id"]
             isOneToOne: false
             referencedRelation: "vault_secrets"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "backup_destinations_storage_server_id_fkey"
+            columns: ["storage_server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
             referencedColumns: ["id"]
           },
         ]
@@ -5919,6 +5932,62 @@ export type Database = {
         Relationships: [
           {
             foreignKeyName: "server_services_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      server_site_scans: {
+        Row: {
+          created_at: string
+          details: Json
+          doc_root: string | null
+          domain: string
+          host: string | null
+          id: string
+          owner_id: string
+          port: number | null
+          scanned_at: string
+          server_id: string | null
+          service_name: string | null
+          source: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          details?: Json
+          doc_root?: string | null
+          domain: string
+          host?: string | null
+          id?: string
+          owner_id: string
+          port?: number | null
+          scanned_at?: string
+          server_id?: string | null
+          service_name?: string | null
+          source?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          details?: Json
+          doc_root?: string | null
+          domain?: string
+          host?: string | null
+          id?: string
+          owner_id?: string
+          port?: number | null
+          scanned_at?: string
+          server_id?: string | null
+          service_name?: string | null
+          source?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "server_site_scans_server_id_fkey"
             columns: ["server_id"]
             isOneToOne: false
             referencedRelation: "servers"

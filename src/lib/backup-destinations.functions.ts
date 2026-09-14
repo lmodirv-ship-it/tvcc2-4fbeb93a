@@ -9,7 +9,7 @@ export const listBackupDestinations = createServerFn({ method: "POST" })
     const [{ data: destinations }, { data: copies }] = await Promise.all([
       sb
         .from("backup_destinations")
-        .select("id, name, host, username, port, base_path, is_enabled, last_run_at, last_run_status, last_run_summary, notes, created_at, secret_id")
+        .select("id, name, host, username, port, base_path, is_enabled, last_run_at, last_run_status, last_run_summary, notes, created_at, secret_id, storage_server_id, scope")
         .order("created_at", { ascending: false }),
       sb
         .from("site_backup_copies")
@@ -22,8 +22,9 @@ export const listBackupDestinations = createServerFn({ method: "POST" })
       sb.from("agent_instances").select("server_id, status, last_heartbeat_at, poll_latency_ms, link_quality").limit(500),
     ]);
 
+    const destIds = new Set(((destinations ?? []) as any[]).map((d) => d.storage_server_id).filter(Boolean));
     const matched = ((servers ?? []) as any[]).filter((s) =>
-      hosts.has(String(s.hostname ?? "")) || hosts.has(String(s.public_ip ?? "")) || hosts.has(String(s.private_ip ?? "")),
+      destIds.has(s.id) || hosts.has(String(s.hostname ?? "")) || hosts.has(String(s.public_ip ?? "")) || hosts.has(String(s.private_ip ?? "")),
     );
 
     const metricsByServer = new Map<string, any>();
@@ -48,7 +49,10 @@ export const listBackupDestinations = createServerFn({ method: "POST" })
     const fresh = Date.now() - 10 * 60 * 1000;
     const enriched = ((destinations ?? []) as any[]).map((d) => {
       const host = String(d.host ?? "").trim();
-      const srv = matched.find((s) => s.hostname === host || s.public_ip === host || s.private_ip === host) ?? null;
+      const srv =
+        (d.storage_server_id ? matched.find((s) => s.id === d.storage_server_id) : null) ??
+        matched.find((s) => s.hostname === host || s.public_ip === host || s.private_ip === host) ??
+        null;
       const m = srv ? metricsByServer.get(srv.id) ?? null : null;
       const ag = srv ? agentByServer.get(srv.id) ?? null : null;
       const agentOnline = !!ag && ag.status === "online" && !!ag.last_heartbeat_at && new Date(ag.last_heartbeat_at).getTime() > fresh;
@@ -95,6 +99,8 @@ export const saveBackupDestination = createServerFn({ method: "POST" })
       basePath: string;
       isEnabled: boolean;
       notes?: string | null;
+      storageServerId?: string | null;
+      scope?: "all" | "verified";
     }) => input,
   )
   .handler(async ({ data, context }) => {
@@ -131,6 +137,8 @@ export const saveBackupDestination = createServerFn({ method: "POST" })
       base_path: data.basePath.trim().replace(/\/+$/, ""),
       is_enabled: data.isEnabled,
       notes: data.notes ?? null,
+      storage_server_id: data.storageServerId ?? null,
+      scope: data.scope ?? "all",
     };
     if (secretId) payload["secret_id"] = secretId;
 
@@ -181,7 +189,7 @@ export const runBackupDestinationNow = createServerFn({ method: "POST" })
     const sb = context.supabase as any;
     const { data: dest } = await sb
       .from("backup_destinations")
-      .select("id, owner_id, name, host, username, port, base_path, secret_id, is_enabled")
+      .select("id, owner_id, name, host, username, port, base_path, secret_id, is_enabled, storage_server_id, scope")
       .eq("id", data.id)
       .maybeSingle();
     if (!dest) throw new Error("الوجهة غير موجودة");
@@ -190,4 +198,43 @@ export const runBackupDestinationNow = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { runNightlyBackupForDestination } = await import("@/lib/nightly-backup.server");
     return runNightlyBackupForDestination(supabaseAdmin as any, dest);
+  });
+
+/** سيرفرات المالك لاختيار سيرفر التخزين. */
+export const listOwnerServers = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data } = await (context.supabase as any)
+      .from("servers")
+      .select("id, name, hostname, public_ip, private_ip, status")
+      .order("name");
+    return { servers: (data ?? []) as any[] };
+  });
+
+/** توليد سكريبت Node.js الخاص بسيرفر التخزين (إنشاء المجلدات + تحليل المواقع). */
+export const getStorageScript = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { destinationId: string; baseUrl: string }) => input)
+  .handler(async ({ data, context }) => {
+    const { data: dest } = await (context.supabase as any)
+      .from("backup_destinations")
+      .select("id, owner_id, base_path")
+      .eq("id", data.destinationId)
+      .maybeSingle();
+    if (!dest) throw new Error("الوجهة غير موجودة");
+    if (dest.owner_id !== context.userId) throw new Error("غير مصرح");
+
+    const secret = process.env["NIGHTLY_BACKUP_SECRET"] ?? "";
+    if (!secret) throw new Error("مفتاح النسخ الليلي غير مضبوط");
+
+    const { buildStorageScript } = await import("@/lib/storage-script.server");
+    return {
+      filename: "tvcc-storage.js",
+      script: buildStorageScript({
+        baseUrl: data.baseUrl.replace(/\/+$/, ""),
+        secret,
+        destinationId: dest.id,
+        basePath: dest.base_path,
+      }),
+    };
   });

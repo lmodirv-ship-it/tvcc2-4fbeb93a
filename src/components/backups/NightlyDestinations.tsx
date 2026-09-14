@@ -11,10 +11,13 @@ import { Switch } from "@/components/ui/switch";
 import {
   Table, TableBody, TableCell, TableHead, TableHeader, TableRow,
 } from "@/components/ui/table";
-import { HardDrive, Loader2, Play, Trash2, RefreshCw, Download } from "lucide-react";
+import { HardDrive, Loader2, Play, Trash2, RefreshCw, Download, FileCode } from "lucide-react";
+import {
+  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+} from "@/components/ui/select";
 import {
   listBackupDestinations, saveBackupDestination, toggleBackupDestination,
-  deleteBackupDestination, runBackupDestinationNow,
+  deleteBackupDestination, runBackupDestinationNow, listOwnerServers, getStorageScript,
 } from "@/lib/backup-destinations.functions";
 
 const copyStyle = (s: string) =>
@@ -49,10 +52,14 @@ export function NightlyDestinations() {
   const toggle = useServerFn(toggleBackupDestination);
   const remove = useServerFn(deleteBackupDestination);
   const runNow = useServerFn(runBackupDestinationNow);
+  const loadServers = useServerFn(listOwnerServers);
+  const script = useServerFn(getStorageScript);
 
   const [form, setForm] = useState({
     name: "", host: "", username: "root", port: 22, password: "",
     basePath: "/srv/tvcc-backups", isEnabled: true,
+    storageServerId: "" as string,
+    scope: "all" as "all" | "verified",
   });
   const [search, setSearch] = useState("");
 
@@ -61,6 +68,12 @@ export function NightlyDestinations() {
     queryFn: () => load({ data: {} as never }),
     refetchInterval: 30000,
   });
+
+  const { data: serversData } = useQuery({
+    queryKey: ["owner-servers"],
+    queryFn: () => loadServers({ data: {} as never }),
+  });
+  const servers = (serversData?.servers ?? []) as any[];
 
   const destinations = (data?.destinations ?? []) as any[];
   const copies = (data?.copies ?? []) as any[];
@@ -88,7 +101,7 @@ export function NightlyDestinations() {
   const create = useMutation({
     mutationFn: async () => {
       if (!formValid) throw new Error("املأ الاسم وعنوان السيرفر والمسار");
-      return save({ data: form });
+      return save({ data: { ...form, storageServerId: form.storageServerId || null } });
     },
     onSuccess: () => {
       toast.success("تم حفظ وجهة النسخ");
@@ -98,10 +111,25 @@ export function NightlyDestinations() {
     onError: (e: any) => toast.error(e?.message || "تعذّر الحفظ"),
   });
 
+  const downloadScript = useMutation({
+    mutationFn: (id: string) =>
+      script({ data: { destinationId: id, baseUrl: window.location.origin } }),
+    onSuccess: (r: any) => {
+      const url = URL.createObjectURL(new Blob([r.script], { type: "text/javascript" }));
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = r.filename;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success("تم تحميل سكريبت سيرفر التخزين");
+    },
+    onError: (e: any) => toast.error(e?.message || "تعذّر توليد السكريبت"),
+  });
+
   const run = useMutation({
     mutationFn: (id: string) => runNow({ data: { id } }),
     onSuccess: (r: any) => {
-      toast.success(`تم جدولة ${r.queued} نسخة (${r.sites} موقع مُثبت الملكية)`);
+      toast.success(`تم جدولة ${r.queued} نسخة من أصل ${r.sites} موقع`);
       invalidate();
     },
     onError: (e: any) => toast.error(e?.message || "تعذّر التشغيل"),
@@ -170,6 +198,33 @@ export function NightlyDestinations() {
               <Label className="text-xs">المنفذ</Label>
               <Input dir="ltr" type="number" value={form.port} onChange={(e) => setForm({ ...form, port: Number(e.target.value) || 22 })} />
             </div>
+            <div className="space-y-1">
+              <Label className="text-xs">سيرفر التخزين المخصّص</Label>
+              <Select
+                value={form.storageServerId || "none"}
+                onValueChange={(v) => setForm({ ...form, storageServerId: v === "none" ? "" : v })}
+              >
+                <SelectTrigger><SelectValue placeholder="اختر سيرفر التخزين" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">تلقائي (حسب عنوان السيرفر)</SelectItem>
+                  {servers.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name} — {s.public_ip || s.private_ip || s.hostname}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">نطاق النسخ</Label>
+              <Select value={form.scope} onValueChange={(v) => setForm({ ...form, scope: v as "all" | "verified" })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">كل مواقع المنصة</SelectItem>
+                  <SelectItem value="verified">المواقع مُثبتة الملكية فقط</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <label className="flex items-center gap-2 text-xs">
@@ -181,7 +236,7 @@ export function NightlyDestinations() {
             </Button>
           </div>
           <p className="text-[11px] text-muted-foreground">
-            داخل المسار يُنشأ مجلد باسم كل موقع، وبداخله <span dir="ltr">first/</span> للنسخة الأولى (لا تُستبدل) و<span dir="ltr">current/</span> للنسخة الحالية (تُستبدل كل ليلة). يشمل ذلك المواقع المُثبتة ملكيتها عبر سجل TXT في إعدادات DNS فقط.
+            داخل المسار يُنشأ مجلد باسم كل موقع، وبداخله <span dir="ltr">first/</span> للنسخة الأولى (لا تُستبدل) و<span dir="ltr">current/</span> للنسخة الحالية (تُستبدل كل ليلة). يُنسخ كل موقع في المنصة، وحتى المواقع غير الموجودة على سيرفراتك تُنزَّل من مصدرها الحيّ وتُحفظ في سيرفر التخزين. زر «سكريبت السيرفر» ينزّل ملف Node.js يُنشئ المجلدات ويحلّل أي مواقع موجودة فعلاً على السيرفر.
           </p>
         </CardContent>
       </Card>
@@ -269,6 +324,15 @@ export function NightlyDestinations() {
                           disabled={run.isPending}
                         >
                           {run.isPending ? <Loader2 className="w-3 h-3 animate-spin ml-1" /> : <Play className="w-3 h-3 ml-1" />} تشغيل الآن
+                        </Button>
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          title="تحميل سكريبت سيرفر التخزين (إنشاء المجلدات + تحليل مواقع السيرفر)"
+                          onClick={() => downloadScript.mutate(d.id)}
+                          disabled={downloadScript.isPending}
+                        >
+                          {downloadScript.isPending ? <Loader2 className="w-3 h-3 animate-spin ml-1" /> : <FileCode className="w-3 h-3 ml-1" />} سكريبت السيرفر
                         </Button>
                         <Button
                           size="sm"

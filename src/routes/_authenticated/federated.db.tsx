@@ -23,6 +23,7 @@ import {
 import { TableEditor } from "@/components/dbstudio/TableEditor";
 import { TemplateLibrary } from "@/components/dbstudio/TemplateLibrary";
 import { EntityRelations } from "@/components/relations/EntityRelations";
+import { InsightView } from "@/components/dbstudio/InsightView";
 import { cn } from "@/lib/utils";
 
 
@@ -164,7 +165,7 @@ function SectionContent({ section, data, selected, connection, server, actionMut
   if (section === "integrations") return <IntegrationsPanel data={data} selected={selected} connection={connection} server={server} mutation={actionMutation} />;
   if (section === "settings") return <SettingsPanel data={data} selected={selected} connection={connection} server={server} mutation={actionMutation} invalidate={invalidate} />;
   const spec = SECTION_SPECS[section] ?? SECTION_SPECS.monitoring!;
-  return <LivePanel spec={spec} data={data} selected={selected} mutation={actionMutation} />;
+  return <LivePanel spec={spec} sectionId={section} data={data} selected={selected} mutation={actionMutation} />;
 }
 
 type SectionSpec = {

@@ -35,33 +35,46 @@ export type RunSummary = {
 
 const cleanPath = (p: string) => (p || "/srv/tvcc-backups").replace(/\/+$/, "");
 
-/** يحدّد سيرفر التخزين: العمود المخصّص، أو سيرفر يطابق عنوان الوجهة، أو أي سيرفر بوكيل متصل. */
+/** يحدّد سيرفر التخزين: يُفضَّل دائماً سيرفر عليه وكيل متصل بنسخة حديثة. */
 async function resolveStorageServer(admin: any, dest: DestinationRow): Promise<string | null> {
-  if (dest.storage_server_id) return dest.storage_server_id;
-
   const host = String(dest.host ?? "").trim();
+
   const { data: servers } = await admin
     .from("servers")
-    .select("id, hostname, public_ip, private_ip, last_seen_at")
+    .select("id, hostname, public_ip, private_ip")
     .eq("owner_id", dest.owner_id)
     .limit(500);
-
   const list = (servers as any[]) ?? [];
-  const match = list.find(
-    (s) => s.hostname === host || s.public_ip === host || s.private_ip === host,
-  );
-  if (match) return match.id;
+  const ids = new Set(list.map((s) => s.id));
 
   const { data: agents } = await admin
     .from("agent_instances")
-    .select("server_id, status, last_heartbeat_at")
+    .select("server_id, status, agent_version, last_heartbeat_at")
     .eq("status", "online")
     .order("last_heartbeat_at", { ascending: false })
-    .limit(20);
-  const ids = new Set(list.map((s) => s.id));
-  const online = ((agents as any[]) ?? []).find((a) => ids.has(a.server_id));
-  return online?.server_id ?? null;
+    .limit(100);
+  const fresh = ((agents as any[]) ?? []).filter(
+    (a) =>
+      ids.has(a.server_id) &&
+      a.last_heartbeat_at &&
+      Date.now() - new Date(a.last_heartbeat_at).getTime() < 15 * 60 * 1000 &&
+      // نسخ المواقع مدعومة ابتداءً من 3.x فقط
+      Number(String(a.agent_version ?? "0").split(".")[0] ?? 0) >= 3,
+  );
+  const liveIds = new Set(fresh.map((a) => a.server_id));
+
+  // السيرفر المخصّص يُقبل فقط إذا كان عليه وكيل حي
+  if (dest.storage_server_id && liveIds.has(dest.storage_server_id)) return dest.storage_server_id;
+
+  const matchesHost = (s: any) =>
+    s.hostname === host || s.public_ip === host || s.private_ip === host;
+
+  const liveHostMatch = list.find((s) => liveIds.has(s.id) && matchesHost(s));
+  if (liveHostMatch) return liveHostMatch.id;
+
+  return fresh[0]?.server_id ?? dest.storage_server_id ?? null;
 }
+
 
 export async function runNightlyBackupForDestination(
   admin: any,

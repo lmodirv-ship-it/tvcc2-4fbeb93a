@@ -88,7 +88,7 @@ export function TableEditor({ databaseId, hasAgent = true }: { databaseId: strin
   const commands = useMemo(() => [...local, ...((query.data ?? []) as AgentCommand[])], [local, query.data]);
 
   const schemasCmd = findCommand(commands, "pg_meta", (a) => a.mode === "schemas");
-  const tablesCmd = findCommand(commands, "pg_meta", (a) => a.mode === "tables" && a.schema === schema);
+  const tablesCmd = findCommand(commands, "pg_meta", (a) => a.mode === "tables" && a.schema === schema && !a.template_id);
   const columnsCmd = findCommand(commands, "pg_meta", (a) => a.mode === "columns" && a.schema === schema && a.table === table);
   const policiesCmd = findCommand(commands, "db_policy", (a) => a.schema === schema && a.table === table);
   const rowsCmd = findCommand(commands, "pg_rows", (a) => a.schema === schema && a.table === table);
@@ -123,9 +123,10 @@ export function TableEditor({ databaseId, hasAgent = true }: { databaseId: strin
 
   useEffect(() => {
     if (!databaseId || !hasAgent) return;
-    if (!schemasCmd) runOnce(`schemas`, () => catalog({ data: { databaseId, mode: "schemas" } }));
-    if (!tablesCmd) runOnce(`tables:${schema}`, () => catalog({ data: { databaseId, mode: "tables", schema } }));
-  }, [databaseId, schema, schemasCmd, tablesCmd]);
+    // نطلب دائماً قائمة محدّثة للمخططات والجداول حتى لا تُستخدم نتيجة قديمة من السجل.
+    runOnce(`schemas:${databaseId}`, () => catalog({ data: { databaseId, mode: "schemas" } }));
+    runOnce(`tables:${databaseId}:${schema}`, () => catalog({ data: { databaseId, mode: "tables", schema } }));
+  }, [databaseId, schema]);
 
   useEffect(() => {
     if (!databaseId || !table || !hasAgent) return;

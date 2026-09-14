@@ -8,6 +8,7 @@ import { Loader2, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { usePermissions } from "@/hooks/use-permissions";
 import { usePlatformPageRules } from "@/hooks/use-platform-pages";
+import { getLocalOwnerEmail } from "@/hooks/use-roles";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthenticatedLayout,
@@ -19,7 +20,7 @@ function AuthenticatedLayout() {
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
-      if (!s) navigate({ to: "/auth" });
+      if (!s && !getLocalOwnerEmail()) navigate({ to: "/auth" });
     });
     supabase.auth.getSession().then(({ data: { session } }) => {
       if (session || getLocalOwnerEmail()) setReady(true);

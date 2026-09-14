@@ -110,7 +110,7 @@ const adminItems = [
 ];
 
 function SidebarLink({ item, active }: { item: typeof coreItems[number]; active: boolean }) {
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const { setOpenMobile, isMobile, setOpen } = useSidebar();
 
   const handleClick = () => {
@@ -127,19 +127,21 @@ function SidebarLink({ item, active }: { item: typeof coreItems[number]; active:
         tooltip={t(item.titleKey)}
         title={t(item.titleKey)}
         className={
-          active
+          "h-7 min-h-7 py-0.5 text-xs gap-2 " +
+          (active
             ? "bg-primary/15 text-primary border-r-2 border-primary rounded-md"
-            : "hover:bg-sidebar-accent"
+            : "hover:bg-sidebar-accent")
         }
       >
         <Link to={item.url} onClick={handleClick}>
-          <item.icon className="w-4 h-4" />
-          <span>{t(item.titleKey)}</span>
+          <item.icon className="w-3.5 h-3.5 shrink-0" />
+          <span className="truncate">{t(item.titleKey)}</span>
         </Link>
       </SidebarMenuButton>
     </SidebarMenuItem>
   );
 }
+
 
 
 export function AppSidebar() {

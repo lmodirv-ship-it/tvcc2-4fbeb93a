@@ -19,6 +19,43 @@ async function assertAdmin(supabase: any, userId: string) {
   if (!ok) throw new Error("إدارة قواعد البيانات متاحة للمالك والمدير فقط");
 }
 
+const PROTECTED_TABLES = new Set([
+  "user_roles", "profiles", "audit_log", "security_events", "vault_secrets", "vault_secret_versions",
+  "server_commands", "agent_instances", "agent_jobs", "agent_job_steps", "agent_configs", "agent_roles",
+  "agent_role_bindings", "agent_capabilities", "agent_installers",
+]);
+
+function isInternalDb(db: any) {
+  return db?.db_kind === "internal";
+}
+
+function isProtectedTable(schema: string, table: string) {
+  if (["auth", "storage", "realtime", "supabase_functions", "vault", "pg_catalog", "information_schema"].includes(schema)) return true;
+  return schema === "public" && PROTECTED_TABLES.has(table);
+}
+
+async function runInternalSql(sql: string, scalar = false): Promise<any> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const fn = scalar ? "tvcc_exec_sql_scalar" : "tvcc_exec_sql";
+  const { data, error } = await (supabaseAdmin as any).rpc(fn, { sql });
+  if (error) throw new Error(error.message);
+  return data;
+}
+
+function internalCommand(action: string, args: Record<string, unknown>, output: unknown): AgentCommand {
+  const now = new Date().toISOString();
+  return {
+    id: `internal-${action}-${Date.now()}`,
+    action,
+    args,
+    status: "completed",
+    output,
+    exit_code: 0,
+    created_at: now,
+    completed_at: now,
+  };
+}
+
 async function queueCommand(supabase: any, userId: string, serverId: string, action: DbAction, args: Record<string, unknown>) {
   const { data, error } = await supabase
     .from("server_commands")
@@ -66,9 +103,14 @@ export const getDbStudioData = createServerFn({ method: "GET" })
       supabase.from("audit_log").select("id,action,resource_id,severity,after_data,created_at").eq("resource", "databases").order("created_at", { ascending: false }).limit(40),
       supabase.from("site_backups").select("id,website_id,server_id,status,backup_type,size_bytes,verified_at,created_at").order("created_at", { ascending: false }).limit(40),
     ]);
-    const selected = (databases.data ?? []).find((row) => row.id === data.databaseId) ?? databases.data?.[0] ?? null;
+    const sortedDatabases = [...(databases.data ?? [])].sort((a: any, b: any) => {
+      if (a.db_kind === "internal" && b.db_kind !== "internal") return -1;
+      if (a.db_kind !== "internal" && b.db_kind === "internal") return 1;
+      return String(a.name).localeCompare(String(b.name));
+    });
+    const selected = sortedDatabases.find((row) => row.id === data.databaseId) ?? sortedDatabases[0] ?? null;
     return {
-      databases: databases.data ?? [], connections: connections.data ?? [], servers: servers.data ?? [],
+      databases: sortedDatabases, connections: connections.data ?? [], servers: servers.data ?? [],
       siteDatabases: siteDatabases.data ?? [], websites: websites.data ?? [], history: history.data ?? [],
       commands: commands.data ?? [], audits: audits.data ?? [], backups: backups.data ?? [], selected,
     };
@@ -240,7 +282,7 @@ export const EDITOR_ACTIONS = ["pg_meta", "pg_rows", "pg_write", "pg_ddl", "db_p
 async function dbOrThrow(supabase: any, databaseId: string) {
   const { data: db } = await supabase.from("databases").select("*").eq("id", databaseId).single();
   if (!db) throw new Error("القاعدة غير موجودة");
-  if (!db.server_id) throw new Error("القاعدة غير مرتبطة بسيرفر عليه وكيل TVCC");
+  if (!db.server_id && !isInternalDb(db)) throw new Error("القاعدة غير مرتبطة بسيرفر عليه وكيل TVCC");
   return db;
 }
 
@@ -315,6 +357,12 @@ export const readCatalog = createServerFn({ method: "POST" })
                from pg_policy p join pg_class c on c.oid = p.polrelid join pg_namespace n on n.oid = c.relnamespace
                where n.nspname = '${schema ?? "public"}' ${table ? `and c.relname = '${table}'` : ""}
              ) t order by name`;
+    if (isInternalDb(db)) {
+      const rows = await runInternalSql(sql);
+      return internalCommand(data.mode === "policies" ? "db_policy" : "pg_meta", {
+        database_id: db.id, mode: data.mode, schema: schema ?? "public", table: table ?? null, sql, read_only: true,
+      }, { rows });
+    }
     return queueCommand(supabase, userId, db.server_id, data.mode === "policies" ? "db_policy" : "pg_meta", {
       ...baseArgs(db), mode: data.mode, schema: schema ?? "public", table: table ?? null, sql, read_only: true,
     });
@@ -350,6 +398,14 @@ export const readTableRows = createServerFn({ method: "POST" })
     const orderSql = data.sort?.column ? `order by "${ident(data.sort.column, "العمود")}" ${data.sort.dir === "desc" ? "desc" : "asc"}` : "";
     const sql = `select * from "${schema}"."${table}" ${whereSql} ${orderSql} limit ${pageSize} offset ${(page - 1) * pageSize}`;
     const countSql = `select count(*)::bigint as total from "${schema}"."${table}" ${whereSql}`;
+    if (isInternalDb(db)) {
+      if (isProtectedTable(schema, table)) throw new Error("لا يمكن قراءة هذا الجدول من خلال المحرّر");
+      const rows = await runInternalSql(sql);
+      const total = await runInternalSql(countSql, true);
+      return internalCommand("pg_rows", {
+        database_id: db.id, schema, table, page, page_size: pageSize, sql, count_sql: countSql, read_only: true,
+      }, { rows, total: Number(total ?? 0) });
+    }
     return queueCommand(supabase, userId, db.server_id, "pg_rows", {
       ...baseArgs(db), schema, table, page, page_size: pageSize, sql, count_sql: countSql, read_only: true,
     });

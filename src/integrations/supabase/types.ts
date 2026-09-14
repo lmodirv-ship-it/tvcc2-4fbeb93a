@@ -8458,6 +8458,7 @@ export type Database = {
           is_active: boolean
           is_remix: boolean | null
           last_checked_at: string | null
+          legacy_site_code: string | null
           lovable_workspace_id: string | null
           manara_code: string | null
           name: string
@@ -8499,6 +8500,7 @@ export type Database = {
           is_active?: boolean
           is_remix?: boolean | null
           last_checked_at?: string | null
+          legacy_site_code?: string | null
           lovable_workspace_id?: string | null
           manara_code?: string | null
           name: string
@@ -8540,6 +8542,7 @@ export type Database = {
           is_active?: boolean
           is_remix?: boolean | null
           last_checked_at?: string | null
+          legacy_site_code?: string | null
           lovable_workspace_id?: string | null
           manara_code?: string | null
           name?: string
@@ -8591,6 +8594,8 @@ export type Database = {
       bump_site_visits: { Args: never; Returns: number }
       is_permanent_owner_email: { Args: { _email: string }; Returns: boolean }
       rollup_server_metrics: { Args: { retain_days?: number }; Returns: number }
+      tvcc_exec_sql: { Args: { sql: string }; Returns: Json[] }
+      tvcc_exec_sql_scalar: { Args: { sql: string }; Returns: Json }
     }
     Enums: {
       app_role: "admin" | "editor" | "viewer" | "system_owner"

@@ -103,6 +103,11 @@ export const COMMAND_WHITELIST = [
   "db_query",
   "db_policy",
   "pooler_config",
+  "backup_run",
+  "backup_verify",
+  "backup_restore",
+  "db_migrate",
+  "heal_action",
 ] as const;
 
 

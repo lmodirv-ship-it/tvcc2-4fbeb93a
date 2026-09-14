@@ -605,3 +605,20 @@ export const extractTemplate = createServerFn({ method: "POST" })
     await audit(supabase, userId, "template_extract", db.id, { command_id: command.id, schema });
     return command;
   });
+
+/** ربط القاعدة بسيرفر عليه وكيل TVCC (أو فك الربط). */
+export const linkDatabaseServer = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { databaseId: string; serverId: string | null }) => input)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+    if (data.serverId) {
+      const { data: server } = await supabase.from("servers").select("id").eq("id", data.serverId).single();
+      if (!server) throw new Error("السيرفر غير موجود");
+    }
+    const { error } = await supabase.from("databases").update({ server_id: data.serverId }).eq("id", data.databaseId);
+    if (error) throw new Error(error.message);
+    await audit(supabase, userId, "database_link_server", data.databaseId, { server_id: data.serverId });
+    return { ok: true };
+  });

@@ -120,7 +120,36 @@ export const COMMAND_WHITELIST = [
   "backup_restore",
   "db_migrate",
   "heal_action",
+  "docker_ps",
+  "docker_images",
+  "docker_logs",
+  "docker_action",
+  "docker_exec",
+  "docker_pull",
+  "docker_rm",
+  "docker_networks",
+  "docker_volumes",
+  "docker_compose_read",
+  "docker_compose_write",
+  "docker_compose_up",
+  "docker_compose_down",
+  "docker_create",
+  "docker_prune",
+  "docker_stats",
+  "nginx_vhost_list",
+  "nginx_vhost_read",
+  "nginx_vhost_write",
+  "nginx_vhost_enable",
+  "nginx_vhost_disable",
+  "nginx_vhost_delete",
+  "nginx_cert_list",
+  "nginx_cert_issue",
+  "nginx_cert_renew",
+  "nginx_access_log",
+  "nginx_error_log",
+  "nginx_stats",
 ] as const;
+
 
 
 
@@ -249,7 +278,37 @@ export const COMMAND_LABELS: Record<string, string> = {
   agent_diag: "تشخيص الوكيل",
   job_cancel: "إلغاء مهمة",
 
+  docker_ps: "قائمة الحاويات",
+  docker_images: "قائمة الصور",
+  docker_logs: "سجلات حاوية",
+  docker_action: "تشغيل/إيقاف/إعادة تشغيل حاوية",
+  docker_exec: "تنفيذ أمر داخل حاوية",
+  docker_pull: "سحب صورة",
+  docker_rm: "حذف حاوية",
+  docker_networks: "شبكات Docker",
+  docker_volumes: "مجلدات Docker",
+  docker_compose_read: "قراءة ملف Compose",
+  docker_compose_write: "كتابة ملف Compose",
+  docker_compose_up: "تشغيل Compose",
+  docker_compose_down: "إيقاف Compose",
+  docker_create: "إنشاء حاوية جديدة",
+  docker_prune: "تنظيف Docker",
+  docker_stats: "استهلاك الحاويات",
+
+  nginx_vhost_list: "قائمة مواقع Nginx",
+  nginx_vhost_read: "قراءة ملف موقع Nginx",
+  nginx_vhost_write: "كتابة ملف موقع Nginx",
+  nginx_vhost_enable: "تفعيل موقع Nginx",
+  nginx_vhost_disable: "تعطيل موقع Nginx",
+  nginx_vhost_delete: "حذف موقع Nginx",
+  nginx_cert_list: "قائمة شهادات SSL",
+  nginx_cert_issue: "إصدار شهادة SSL",
+  nginx_cert_renew: "تجديد شهادات SSL",
+  nginx_access_log: "سجل الزيارات",
+  nginx_error_log: "سجل الأخطاء",
+  nginx_stats: "إحصاءات Nginx",
 };
+
 
 /** Actions that take a free-text argument, with the arg key + placeholder. */
 export const COMMAND_ARG: Record<string, { key: string; placeholder: string }> = {
@@ -277,6 +336,7 @@ export const COMMAND_CATEGORIES = [
   "مواقع",
   "قواعد بيانات",
   "شبكة",
+  "حاويات",
   "نسخ احتياطي",
   "ملفات",
   "ذكاء اصطناعي",
@@ -291,10 +351,15 @@ export const RISKY_COMMANDS: readonly string[] = [
   "agent_self_update", "agent_update", "failover_switch", "firewall_apply",
   "firewall_deny", "db_migrate", "heal_action", "site_rollback", "db_query",
   "multi_sql", "platform_deploy", "site_identity_provision", "db_provision",
+  "docker_rm", "docker_prune", "docker_exec", "docker_compose_down",
+  "docker_compose_write", "docker_create", "docker_action",
+  "nginx_vhost_write", "nginx_vhost_delete", "nginx_vhost_disable", "nginx_cert_issue",
 ];
 
 export function commandCategory(action: string): CommandCategory {
+  if (action.startsWith("docker_")) return "حاويات";
   if (/^(scan_ports|read_configs|disk_usage|storage_usage|link_check|port_check|proc_list|agent_diag|advisor_scan|realtime_inspect)$/.test(action)) return "مراقبة";
+
   if (action.startsWith("service_") || action.startsWith("unit_") || action.startsWith("serve_") || action.startsWith("watch_")) return "خدمات";
   if (action.startsWith("site_") || action.startsWith("hosting_") || action.startsWith("blueprint_") || action.startsWith("git_") || action.startsWith("build_") || action.startsWith("deploy_") || action === "sync_site") return "مواقع";
   if (action.startsWith("db_") || action.startsWith("pg_") || action.startsWith("supabase_") || action.startsWith("pooler_") || action === "multi_sql" || action === "auth_users") return "قواعد بيانات";

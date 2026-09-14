@@ -109,7 +109,9 @@
     "bridge": "Bridge & Storage",
     "domain_settings": "Domain settings",
     "publish_sync": "Unified publishing",
-    "manara": "Manara"
+    "manara": "Manara",
+    "fed_docker": "Containers (Docker)",
+    "fed_nginx": "Routing (Nginx)"
   },
   "dashboard": {
     "title": "Dashboard",

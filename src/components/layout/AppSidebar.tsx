@@ -57,6 +57,8 @@ const fedItems = [
   { titleKey: "sidebar.fed_assets", url: "/federated/assets", icon: Package },
   { titleKey: "sidebar.fed_db", url: "/federated/db", icon: Database },
   { titleKey: "sidebar.fed_agents", url: "/federated/agents", icon: Bot },
+  { titleKey: "sidebar.fed_docker", url: "/federated/docker", icon: Container },
+  { titleKey: "sidebar.fed_nginx", url: "/federated/nginx", icon: Globe },
 ];
 
 const aiItems = [

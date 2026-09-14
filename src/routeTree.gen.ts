@@ -76,6 +76,7 @@ import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticat
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
 import { Route as AuthenticatedServersIndexRouteImport } from './routes/_authenticated/servers.index'
+import { Route as AuthenticatedFederatedIndexRouteImport } from './routes/_authenticated/federated.index'
 import { Route as AuthenticatedEditorIndexRouteImport } from './routes/_authenticated/editor.index'
 import { Route as ApiPublicVisitsRouteImport } from './routes/api/public/visits'
 import { Route as ApiPublicSiteConfigRouteImport } from './routes/api/public/site-config'
@@ -477,6 +478,12 @@ const AuthenticatedServersIndexRoute =
     path: '/servers/',
     getParentRoute: () => AuthenticatedRoute,
   } as any)
+const AuthenticatedFederatedIndexRoute =
+  AuthenticatedFederatedIndexRouteImport.update({
+    id: '/',
+    path: '/',
+    getParentRoute: () => AuthenticatedFederatedRoute,
+  } as any)
 const AuthenticatedEditorIndexRoute =
   AuthenticatedEditorIndexRouteImport.update({
     id: '/',
@@ -858,6 +865,7 @@ export interface FileRoutesByFullPath {
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/api/public/visits': typeof ApiPublicVisitsRoute
   '/editor/': typeof AuthenticatedEditorIndexRoute
+  '/federated/': typeof AuthenticatedFederatedIndexRoute
   '/servers/': typeof AuthenticatedServersIndexRoute
   '/api/public/backups/run-due': typeof ApiPublicBackupsRunDueRoute
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
@@ -913,7 +921,6 @@ export interface FileRoutesByTo {
   '/downloads': typeof AuthenticatedDownloadsRoute
   '/environment': typeof AuthenticatedEnvironmentRoute
   '/failover': typeof AuthenticatedFailoverRoute
-  '/federated': typeof AuthenticatedFederatedRouteWithChildren
   '/group-ids': typeof AuthenticatedGroupIdsRoute
   '/groups': typeof AuthenticatedGroupsRoute
   '/hn-domains': typeof AuthenticatedHnDomainsRoute
@@ -976,6 +983,7 @@ export interface FileRoutesByTo {
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/api/public/visits': typeof ApiPublicVisitsRoute
   '/editor': typeof AuthenticatedEditorIndexRoute
+  '/federated': typeof AuthenticatedFederatedIndexRoute
   '/servers': typeof AuthenticatedServersIndexRoute
   '/api/public/backups/run-due': typeof ApiPublicBackupsRunDueRoute
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
@@ -1097,6 +1105,7 @@ export interface FileRoutesById {
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/api/public/visits': typeof ApiPublicVisitsRoute
   '/_authenticated/editor/': typeof AuthenticatedEditorIndexRoute
+  '/_authenticated/federated/': typeof AuthenticatedFederatedIndexRoute
   '/_authenticated/servers/': typeof AuthenticatedServersIndexRoute
   '/api/public/backups/run-due': typeof ApiPublicBackupsRunDueRoute
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
@@ -1218,6 +1227,7 @@ export interface FileRouteTypes {
     | '/api/public/site-config'
     | '/api/public/visits'
     | '/editor/'
+    | '/federated/'
     | '/servers/'
     | '/api/public/backups/run-due'
     | '/api/public/core/ingest'
@@ -1273,7 +1283,6 @@ export interface FileRouteTypes {
     | '/downloads'
     | '/environment'
     | '/failover'
-    | '/federated'
     | '/group-ids'
     | '/groups'
     | '/hn-domains'
@@ -1336,6 +1345,7 @@ export interface FileRouteTypes {
     | '/api/public/site-config'
     | '/api/public/visits'
     | '/editor'
+    | '/federated'
     | '/servers'
     | '/api/public/backups/run-due'
     | '/api/public/core/ingest'
@@ -1456,6 +1466,7 @@ export interface FileRouteTypes {
     | '/api/public/site-config'
     | '/api/public/visits'
     | '/_authenticated/editor/'
+    | '/_authenticated/federated/'
     | '/_authenticated/servers/'
     | '/api/public/backups/run-due'
     | '/api/public/core/ingest'
@@ -1992,6 +2003,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedServersIndexRouteImport
       parentRoute: typeof AuthenticatedRoute
     }
+    '/_authenticated/federated/': {
+      id: '/_authenticated/federated/'
+      path: '/'
+      fullPath: '/federated/'
+      preLoaderRoute: typeof AuthenticatedFederatedIndexRouteImport
+      parentRoute: typeof AuthenticatedFederatedRoute
+    }
     '/_authenticated/editor/': {
       id: '/_authenticated/editor/'
       path: '/'
@@ -2398,6 +2416,7 @@ interface AuthenticatedFederatedRouteChildren {
   AuthenticatedFederatedMeshRoute: typeof AuthenticatedFederatedMeshRoute
   AuthenticatedFederatedPitrRoute: typeof AuthenticatedFederatedPitrRoute
   AuthenticatedFederatedSqlRoute: typeof AuthenticatedFederatedSqlRoute
+  AuthenticatedFederatedIndexRoute: typeof AuthenticatedFederatedIndexRoute
 }
 
 const AuthenticatedFederatedRouteChildren: AuthenticatedFederatedRouteChildren =
@@ -2410,6 +2429,7 @@ const AuthenticatedFederatedRouteChildren: AuthenticatedFederatedRouteChildren =
     AuthenticatedFederatedMeshRoute: AuthenticatedFederatedMeshRoute,
     AuthenticatedFederatedPitrRoute: AuthenticatedFederatedPitrRoute,
     AuthenticatedFederatedSqlRoute: AuthenticatedFederatedSqlRoute,
+    AuthenticatedFederatedIndexRoute: AuthenticatedFederatedIndexRoute,
   }
 
 const AuthenticatedFederatedRouteWithChildren =

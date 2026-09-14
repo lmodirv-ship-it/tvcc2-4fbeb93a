@@ -123,7 +123,7 @@ function AuditPage() {
                   }>
                     <Rocket className="w-4 h-4 ml-1" /> {readiness.label}
                   </Badge>
-                </p>
+                </div>
               </div>
             </div>
             <div className="grid grid-cols-3 gap-3 text-center">

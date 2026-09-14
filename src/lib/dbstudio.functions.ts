@@ -419,10 +419,11 @@ export const readTableRows = createServerFn({ method: "POST" })
     if (isInternalDb(db)) {
       if (isProtectedTable(schema, table)) throw new Error("لا يمكن قراءة هذا الجدول من خلال المحرّر");
       const rows = await runInternalSql(sql);
-      const total = await runInternalSql(countSql, true);
+      const countRows = await runInternalSql(countSql);
+      const total = Number((countRows[0] as any)?.total ?? 0);
       return internalCommand("pg_rows", {
         database_id: db.id, schema, table, page, page_size: pageSize, sql, count_sql: countSql, read_only: true,
-      }, { rows, total: Number(total ?? 0) });
+      }, { rows, total });
     }
     return queueCommand(supabase, userId, db.server_id, "pg_rows", {
       ...baseArgs(db), schema, table, page, page_size: pageSize, sql, count_sql: countSql, read_only: true,

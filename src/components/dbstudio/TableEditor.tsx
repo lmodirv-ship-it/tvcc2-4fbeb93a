@@ -265,7 +265,7 @@ export function TableEditor({ databaseId, hasAgent = true }: { databaseId: strin
               <div className="min-h-0 flex-1 overflow-y-auto overflow-x-auto p-1">
                 <p className="px-1.5 py-0.5 text-[10px] font-semibold uppercase text-muted-foreground">{visibleTables.length} جدولاً</p>
                 {visibleTables.length ? visibleTables.map((item: any) => (
-                  <button key={item.name} onClick={() => openTable(item.name)} title={item.name} className={`group flex w-fit max-w-none items-center gap-1.5 rounded px-1.5 py-1 text-right text-[11px] transition-colors hover:bg-sidebar-accent ${table === item.name ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground"}`}>
+                  <button key={item.name} onClick={() => openTable(item.name)} title={item.name} dir="ltr" className={`group flex w-fit max-w-none items-center gap-1.5 rounded px-1.5 py-1 text-right text-[11px] transition-colors hover:bg-sidebar-accent ${table === item.name ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground"}`}>
                     <span className="whitespace-nowrap rounded bg-primary/10 px-1 font-mono text-[9px] text-primary" dir="ltr">{codeByTable[item.name]}</span>
                     <span className="whitespace-nowrap font-mono" dir="ltr">{item.name}</span>
                     {item.rls_enabled ? <Shield className="size-2.5 shrink-0 text-success" /> : item.kind === "table" ? <ShieldAlert className="size-2.5 shrink-0 text-warning" /> : null}
@@ -283,9 +283,11 @@ export function TableEditor({ databaseId, hasAgent = true }: { databaseId: strin
         <section className="flex min-w-0 flex-col overflow-hidden">
           <div className="flex h-9 items-end overflow-x-auto border-b bg-muted/20 px-1 pt-1" dir="ltr">
             {openTables.map((name) => (
-              <button key={name} onClick={() => openTable(name)} className={`group flex h-8 min-w-28 max-w-48 items-center gap-1.5 border-l px-2 text-[11px] ${table === name ? "border-t-2 border-t-primary bg-card text-foreground" : "bg-muted/20 text-muted-foreground hover:bg-muted/50"}`}>
-                <Table2 className="size-3 shrink-0" /><span className="flex-1 truncate text-left font-mono">{name}</span>
-                <X className="size-3 opacity-50 hover:text-destructive hover:opacity-100" onClick={(e) => { e.stopPropagation(); closeTable(name); }} />
+              <button key={name} onClick={() => openTable(name)} dir="ltr" className={`group flex h-8 min-w-48 max-w-72 items-center gap-1.5 border-l px-2 text-[11px] ${table === name ? "border-t-2 border-t-primary bg-card text-foreground" : "bg-muted/20 text-muted-foreground hover:bg-muted/50"}`}>
+                <Table2 className="size-3 shrink-0" />
+                <span className="shrink-0 rounded bg-primary/10 px-1 font-mono text-[9px] text-primary" dir="ltr">{codeByTable[name]}</span>
+                <span className="flex-1 overflow-hidden whitespace-nowrap font-mono text-left" dir="ltr" style={{ direction: "ltr", textOverflow: "ellipsis" }}>{name}</span>
+                <X className="size-3 shrink-0 opacity-50 hover:text-destructive hover:opacity-100" onClick={(e) => { e.stopPropagation(); closeTable(name); }} />
               </button>
             ))}
             <Button size="icon" variant="ghost" className="mb-0.5 ml-1 size-7 shrink-0" title="فتح جدول" onClick={() => setCatalogCollapsed(false)}><Plus className="size-3.5" /></Button>

@@ -4111,7 +4111,7 @@ export type Database = {
           kind: string
           label: string
           notes: string | null
-          owner_id: string | null
+          owner_id: string
           rib: string | null
           swift: string | null
           updated_at: string
@@ -4130,7 +4130,7 @@ export type Database = {
           kind?: string
           label: string
           notes?: string | null
-          owner_id?: string | null
+          owner_id: string
           rib?: string | null
           swift?: string | null
           updated_at?: string
@@ -4149,7 +4149,7 @@ export type Database = {
           kind?: string
           label?: string
           notes?: string | null
-          owner_id?: string | null
+          owner_id?: string
           rib?: string | null
           swift?: string | null
           updated_at?: string

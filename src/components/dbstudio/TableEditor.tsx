@@ -225,60 +225,60 @@ export function TableEditor({ databaseId, hasAgent = true }: { databaseId: strin
         <Badge variant="outline" className="gap-2 border-success/40 text-success"><span className="size-1.5 rounded-full bg-success" />متصل</Badge>
       </div>
 
-      <div className={`grid min-h-[72vh] overflow-hidden rounded-md border bg-card ${catalogCollapsed ? "lg:grid-cols-[52px_minmax(0,1fr)]" : "lg:grid-cols-[250px_minmax(0,1fr)]"}`}>
+      <div className={`grid min-h-[72vh] overflow-hidden rounded-md border bg-card ${catalogCollapsed ? "lg:grid-cols-[44px_minmax(0,1fr)]" : "lg:grid-cols-[220px_minmax(0,1fr)]"}`}>
         <aside className="flex min-h-0 flex-col border-l bg-sidebar/40">
-          <div className="flex items-center gap-2 border-b p-2">
-            {!catalogCollapsed && <div className="flex min-w-0 flex-1 items-center gap-2"><Database className="size-4 text-primary" /><span className="truncate text-sm font-semibold">قاعدة البيانات</span></div>}
-            <Button size="icon" variant="ghost" className="size-8 shrink-0" title={catalogCollapsed ? "إظهار الجداول" : "طي قائمة الجداول"} onClick={() => setCatalogCollapsed((value) => !value)}>
-              {catalogCollapsed ? <PanelRightOpen className="size-4" /> : <PanelRightClose className="size-4" />}
+          <div className="flex items-center gap-1 border-b p-1.5">
+            {!catalogCollapsed && <div className="flex min-w-0 flex-1 items-center gap-1.5"><Database className="size-3.5 text-primary" /><span className="truncate text-xs font-semibold">قاعدة البيانات</span></div>}
+            <Button size="icon" variant="ghost" className="size-7 shrink-0" title={catalogCollapsed ? "إظهار الجداول" : "طي قائمة الجداول"} onClick={() => setCatalogCollapsed((value) => !value)}>
+              {catalogCollapsed ? <PanelRightOpen className="size-3.5" /> : <PanelRightClose className="size-3.5" />}
             </Button>
           </div>
           {catalogCollapsed ? (
-            <div className="flex flex-col items-center gap-2 p-2">
+            <div className="flex flex-col items-center gap-1.5 p-1.5">
               <NewTableDialog compact onCreate={(payload) => ddl.mutate({ kind: "create_table", ...payload })} pending={ddl.isPending} />
-              <Button size="icon" variant="ghost" className="size-8" title="تحديث الجداول" onClick={() => refreshTables.mutate()}><RefreshCw className="size-4" /></Button>
+              <Button size="icon" variant="ghost" className="size-7" title="تحديث الجداول" onClick={() => refreshTables.mutate()}><RefreshCw className="size-3.5" /></Button>
             </div>
           ) : (
             <>
-              <div className="space-y-2 border-b p-2">
+              <div className="space-y-1.5 border-b p-1.5">
                 <Select value={schema} onValueChange={(value) => { setSchema(value); setTable(""); setOpenTables([]); }}>
-                  <SelectTrigger className="h-9 font-mono text-xs" dir="ltr"><SelectValue /></SelectTrigger>
+                  <SelectTrigger className="h-7 font-mono text-[11px]" dir="ltr"><SelectValue /></SelectTrigger>
                   <SelectContent>{schemas.map((name) => <SelectItem key={name} value={name}>{name}</SelectItem>)}</SelectContent>
                 </Select>
                 <NewTableDialog fullWidth onCreate={(payload) => ddl.mutate({ kind: "create_table", ...payload })} pending={ddl.isPending} />
                 <div className="flex gap-1">
                   <div className="relative min-w-0 flex-1">
-                    <Search className="absolute right-2.5 top-2.5 size-3.5 text-muted-foreground" />
-                    <Input value={tableSearch} onChange={(e) => setTableSearch(e.target.value)} placeholder="بحث الجداول" className="h-9 pr-8 text-xs" />
+                    <Search className="absolute right-2 top-2 size-3 text-muted-foreground" />
+                    <Input value={tableSearch} onChange={(e) => setTableSearch(e.target.value)} placeholder="بحث الجداول" className="h-7 pr-7 text-[11px]" />
                   </div>
-                  <Button size="icon" variant="outline" className="size-9" title="تحديث الجداول" onClick={() => refreshTables.mutate()} disabled={refreshTables.isPending}>{refreshTables.isPending ? <Loader2 className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}</Button>
+                  <Button size="icon" variant="outline" className="size-7" title="تحديث الجداول" onClick={() => refreshTables.mutate()} disabled={refreshTables.isPending}>{refreshTables.isPending ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />}</Button>
                 </div>
               </div>
-              <div className="min-h-0 flex-1 overflow-y-auto p-1.5">
-                <p className="px-2 py-1 text-[10px] font-semibold uppercase text-muted-foreground">{visibleTables.length} جدولاً</p>
+              <div className="min-h-0 flex-1 overflow-y-auto p-1">
+                <p className="px-1.5 py-0.5 text-[10px] font-semibold uppercase text-muted-foreground">{visibleTables.length} جدولاً</p>
                 {visibleTables.length ? visibleTables.map((item: any) => (
-                  <button key={item.name} onClick={() => openTable(item.name)} className={`group flex w-full items-center gap-2 rounded px-2 py-1.5 text-right text-xs transition-colors hover:bg-sidebar-accent ${table === item.name ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground"}`}>
+                  <button key={item.name} onClick={() => openTable(item.name)} className={`group flex w-full items-center gap-1.5 rounded px-1.5 py-1 text-right text-[11px] transition-colors hover:bg-sidebar-accent ${table === item.name ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground"}`}>
                     <span className="min-w-0 flex-1 truncate font-mono" dir="ltr">{item.name}</span>
-                    {item.rls_enabled ? <Shield className="size-3 text-success" /> : item.kind === "table" ? <ShieldAlert className="size-3 text-warning" /> : null}
-                    <Star className={`size-3 opacity-0 group-hover:opacity-100 ${favorites.includes(item.name) ? "fill-primary text-primary opacity-100" : "text-muted-foreground"}`} onClick={(e) => { e.stopPropagation(); setFavorites((prev) => prev.includes(item.name) ? prev.filter((n) => n !== item.name) : [...prev, item.name]); }} />
+                    {item.rls_enabled ? <Shield className="size-2.5 text-success" /> : item.kind === "table" ? <ShieldAlert className="size-2.5 text-warning" /> : null}
+                    <Star className={`size-2.5 opacity-0 group-hover:opacity-100 ${favorites.includes(item.name) ? "fill-primary text-primary opacity-100" : "text-muted-foreground"}`} onClick={(e) => { e.stopPropagation(); setFavorites((prev) => prev.includes(item.name) ? prev.filter((n) => n !== item.name) : [...prev, item.name]); }} />
                   </button>
-                )) : <p className="p-4 text-center text-xs text-muted-foreground">{tablesCmd ? "لا توجد جداول" : "بانتظار قائمة الجداول…"}</p>}
+                )) : <p className="p-3 text-center text-[11px] text-muted-foreground">{tablesCmd ? "لا توجد جداول" : "بانتظار قائمة الجداول…"}</p>}
 
               </div>
-              <div className="border-t p-2"><AgentHint command={tablesCmd} /></div>
+              <div className="border-t p-1.5"><AgentHint command={tablesCmd} /></div>
             </>
           )}
         </aside>
 
         <section className="flex min-w-0 flex-col overflow-hidden">
-          <div className="flex h-11 items-end overflow-x-auto border-b bg-muted/20 px-1 pt-1" dir="ltr">
+          <div className="flex h-9 items-end overflow-x-auto border-b bg-muted/20 px-1 pt-1" dir="ltr">
             {openTables.map((name) => (
-              <button key={name} onClick={() => openTable(name)} className={`group flex h-10 min-w-36 max-w-56 items-center gap-2 border-l px-3 text-xs ${table === name ? "border-t-2 border-t-primary bg-card text-foreground" : "bg-muted/20 text-muted-foreground hover:bg-muted/50"}`}>
-                <Table2 className="size-3.5 shrink-0" /><span className="flex-1 truncate text-left font-mono">{name}</span>
-                <X className="size-3.5 opacity-50 hover:text-destructive hover:opacity-100" onClick={(e) => { e.stopPropagation(); closeTable(name); }} />
+              <button key={name} onClick={() => openTable(name)} className={`group flex h-8 min-w-28 max-w-48 items-center gap-1.5 border-l px-2 text-[11px] ${table === name ? "border-t-2 border-t-primary bg-card text-foreground" : "bg-muted/20 text-muted-foreground hover:bg-muted/50"}`}>
+                <Table2 className="size-3 shrink-0" /><span className="flex-1 truncate text-left font-mono">{name}</span>
+                <X className="size-3 opacity-50 hover:text-destructive hover:opacity-100" onClick={(e) => { e.stopPropagation(); closeTable(name); }} />
               </button>
             ))}
-            <Button size="icon" variant="ghost" className="mb-1 ml-1 size-8 shrink-0" title="فتح جدول" onClick={() => setCatalogCollapsed(false)}><Plus className="size-4" /></Button>
+            <Button size="icon" variant="ghost" className="mb-0.5 ml-1 size-7 shrink-0" title="فتح جدول" onClick={() => setCatalogCollapsed(false)}><Plus className="size-3.5" /></Button>
           </div>
 
           {!table ? (
@@ -287,46 +287,46 @@ export function TableEditor({ databaseId, hasAgent = true }: { databaseId: strin
             </div>
           ) : (
             <Tabs defaultValue="data" className="flex min-h-0 flex-1 flex-col">
-              <div className="flex flex-wrap items-center gap-2 border-b px-2 py-1.5">
-                <TabsList className="h-8"><TabsTrigger value="data" className="h-7 text-xs">البيانات</TabsTrigger><TabsTrigger value="columns" className="h-7 text-xs">الأعمدة</TabsTrigger><TabsTrigger value="policies" className="h-7 text-xs">السياسات</TabsTrigger></TabsList>
+              <div className="flex flex-wrap items-center gap-2 border-b px-2 py-1">
+                <TabsList className="h-7"><TabsTrigger value="data" className="h-6 text-[11px] px-2">البيانات</TabsTrigger><TabsTrigger value="columns" className="h-6 text-[11px] px-2">الأعمدة</TabsTrigger><TabsTrigger value="policies" className="h-6 text-[11px] px-2">السياسات</TabsTrigger></TabsList>
                 <Badge variant="outline" className="font-mono text-[10px]" dir="ltr">{schema}.{table}</Badge>
                 {currentTable?.size && <Badge variant="secondary" className="text-[10px]">{currentTable.size}</Badge>}
               </div>
 
               <TabsContent value="data" className="mt-0 flex min-h-0 flex-1 flex-col data-[state=inactive]:hidden">
-                <div className="flex flex-wrap items-center gap-1.5 border-b p-2">
-                  <div className="relative min-w-44 flex-1">
-                    <Search className="absolute right-2.5 top-2.5 size-3.5 text-muted-foreground" />
-                    <Input value={quickSearch} onChange={(e) => setQuickSearch(e.target.value)} placeholder="ابحث في الصفوف المعروضة…" className="h-9 pr-8 text-xs" />
+                <div className="flex flex-wrap items-center gap-1.5 border-b px-2 py-1">
+                  <div className="relative min-w-36 flex-1">
+                    <Search className="absolute right-2 top-2 size-3 text-muted-foreground" />
+                    <Input value={quickSearch} onChange={(e) => setQuickSearch(e.target.value)} placeholder="ابحث في الصفوف المعروضة…" className="h-7 pr-7 text-[11px]" />
                   </div>
                   <FiltersMenu filters={filters} setFilters={setFilters} headers={columns.map((c: any) => c.name)} onApply={() => { setPage(1); refreshRows.mutate({ page: 1 }); }} />
                   <Select value={sort ? `${sort.column}:${sort.dir}` : "none"} onValueChange={(value) => { if (value === "none") return setSort(null); const [column, dir] = value.split(":"); if (column) setSort({ column, dir: dir as "asc" | "desc" }); }}>
-                    <SelectTrigger className="h-9 w-32 text-xs"><SelectValue placeholder="الترتيب" /></SelectTrigger>
+                    <SelectTrigger className="h-7 w-28 text-[11px]"><SelectValue placeholder="الترتيب" /></SelectTrigger>
                     <SelectContent><SelectItem value="none">بدون ترتيب</SelectItem>{columns.flatMap((c: any) => [<SelectItem key={`${c.name}:asc`} value={`${c.name}:asc`}>{c.name} ↑</SelectItem>, <SelectItem key={`${c.name}:desc`} value={`${c.name}:desc`}>{c.name} ↓</SelectItem>])}</SelectContent>
                   </Select>
-                  <DropdownMenu><DropdownMenuTrigger asChild><Button size="sm" variant="outline"><Columns3 className="size-4" />الأعمدة</Button></DropdownMenuTrigger><DropdownMenuContent className="max-h-80 overflow-y-auto"><DropdownMenuLabel>إظهار/إخفاء</DropdownMenuLabel>{columns.map((c: any) => <DropdownMenuCheckboxItem key={c.name} checked={!hidden.includes(c.name)} onCheckedChange={(checked) => setHidden((prev) => checked ? prev.filter((n) => n !== c.name) : [...prev, c.name])}>{c.name}</DropdownMenuCheckboxItem>)}</DropdownMenuContent></DropdownMenu>
-                  <Button size="sm" variant="outline" onClick={() => catalog({ data: { databaseId, mode: "policies", schema, table } }).then((r) => { push(r); query.refetch(); })}><ShieldCheck className="size-4" />RLS · {policies.length}</Button>
-                  <Button size="icon" variant="ghost" className="size-9" title="تحديث" onClick={() => refreshRows.mutate({})}>{refreshRows.isPending ? <Loader2 className="size-4 animate-spin" /> : <RefreshCw className="size-4" />}</Button>
-                  <DropdownMenu><DropdownMenuTrigger asChild><Button size="icon" variant="ghost" className="size-9"><MoreHorizontal className="size-4" /></Button></DropdownMenuTrigger><DropdownMenuContent><DropdownMenuLabel>إجراءات البيانات</DropdownMenuLabel><DropdownMenuCheckboxItem checked={false} onCheckedChange={() => downloadText(`${schema}.${table}.csv`, toCsv(rows, headers))}>تصدير CSV</DropdownMenuCheckboxItem></DropdownMenuContent></DropdownMenu>
-                  <Button size="sm" className="bg-success text-success-foreground hover:bg-success/90" onClick={() => setInserts((prev) => [...prev, {}])}><Plus className="size-4" />إدراج</Button>
+                  <DropdownMenu><DropdownMenuTrigger asChild><Button size="sm" variant="outline" className="h-7 text-[11px] px-2"><Columns3 className="size-3" />الأعمدة</Button></DropdownMenuTrigger><DropdownMenuContent className="max-h-80 overflow-y-auto"><DropdownMenuLabel>إظهار/إخفاء</DropdownMenuLabel>{columns.map((c: any) => <DropdownMenuCheckboxItem key={c.name} checked={!hidden.includes(c.name)} onCheckedChange={(checked) => setHidden((prev) => checked ? prev.filter((n) => n !== c.name) : [...prev, c.name])}>{c.name}</DropdownMenuCheckboxItem>)}</DropdownMenuContent></DropdownMenu>
+                  <Button size="sm" variant="outline" className="h-7 text-[11px] px-2" onClick={() => catalog({ data: { databaseId, mode: "policies", schema, table } }).then((r) => { push(r); query.refetch(); })}><ShieldCheck className="size-3" />RLS · {policies.length}</Button>
+                  <Button size="icon" variant="ghost" className="size-7" title="تحديث" onClick={() => refreshRows.mutate({})}>{refreshRows.isPending ? <Loader2 className="size-3.5 animate-spin" /> : <RefreshCw className="size-3.5" />}</Button>
+                  <DropdownMenu><DropdownMenuTrigger asChild><Button size="icon" variant="ghost" className="size-7"><MoreHorizontal className="size-3.5" /></Button></DropdownMenuTrigger><DropdownMenuContent><DropdownMenuLabel>إجراءات البيانات</DropdownMenuLabel><DropdownMenuCheckboxItem checked={false} onCheckedChange={() => downloadText(`${schema}.${table}.csv`, toCsv(rows, headers))}>تصدير CSV</DropdownMenuCheckboxItem></DropdownMenuContent></DropdownMenu>
+                  <Button size="sm" className="h-7 bg-success text-success-foreground hover:bg-success/90 text-[11px] px-2" onClick={() => setInserts((prev) => [...prev, {}])}><Plus className="size-3" />إدراج</Button>
                 </div>
 
-                {pendingCount > 0 && <div className="flex flex-wrap items-center gap-3 border-b border-primary/40 bg-primary/5 p-2 text-xs"><Badge>{pendingCount} تغيير</Badge><span className="text-muted-foreground">تعديل {Object.keys(edits).length} · إضافة {inserts.length} · حذف {deletes.length}</span><Button size="sm" variant="ghost" onClick={() => { setEdits({}); setInserts([]); setDeletes([]); }}><Undo2 className="size-4" />تراجع</Button><Button size="sm" className="mr-auto" onClick={() => saveChanges.mutate()} disabled={saveChanges.isPending}>{saveChanges.isPending ? <Loader2 className="size-4 animate-spin" /> : <Save className="size-4" />}حفظ التغييرات</Button></div>}
+                {pendingCount > 0 && <div className="flex flex-wrap items-center gap-2 border-b border-primary/40 bg-primary/5 px-2 py-1 text-[11px]"><Badge className="text-[10px]">{pendingCount} تغيير</Badge><span className="text-muted-foreground">تعديل {Object.keys(edits).length} · إضافة {inserts.length} · حذف {deletes.length}</span><Button size="sm" variant="ghost" className="h-6 text-[11px] px-2" onClick={() => { setEdits({}); setInserts([]); setDeletes([]); }}><Undo2 className="size-3" />تراجع</Button><Button size="sm" className="mr-auto h-6 text-[11px] px-2" onClick={() => saveChanges.mutate()} disabled={saveChanges.isPending}>{saveChanges.isPending ? <Loader2 className="size-3 animate-spin" /> : <Save className="size-3" />}حفظ</Button></div>}
 
-                <div className="min-h-[420px] flex-1 overflow-auto bg-background/30">
-                  <table className="w-max min-w-full border-collapse text-xs" dir="ltr">
-                    <thead className="sticky top-0 z-10 bg-card"><tr>{<th className="sticky left-0 z-20 w-10 border-b border-r bg-card p-2"><Checkbox checked={filteredRows.length > 0 && selected.length === filteredRows.length} onCheckedChange={(checked) => setSelected(checked ? filteredRows.map((r: any) => String(r[pk])) : [])} /></th>}{headers.map((key) => <th key={key} className="min-w-40 whitespace-nowrap border-b border-r p-2 text-left font-medium"><button className="flex w-full items-center gap-1.5" onClick={() => setSort((prev) => prev?.column === key && prev.dir === "asc" ? { column: key, dir: "desc" } : { column: key, dir: "asc" })}>{columnInfo[key]?.is_primary && <KeyRound className="size-3 text-primary" />}<span>{key}</span><span className="font-normal text-muted-foreground">{columnInfo[key]?.type}</span>{sort?.column === key && (sort.dir === "asc" ? <ArrowUpAZ className="size-3" /> : <ArrowDownAZ className="size-3" />)}</button></th>)}<th className="w-10 border-b p-2" /></tr></thead>
-                    <tbody>{filteredRows.map((row: any, index: number) => { const id = String(row[pk]); const removed = deletes.includes(id); return <tr key={id || index} className={`group hover:bg-muted/30 ${removed ? "opacity-40 line-through" : ""}`}><td className="sticky left-0 border-b border-r bg-card p-2"><Checkbox checked={selected.includes(id)} onCheckedChange={(checked) => setSelected((prev) => checked ? [...prev, id] : prev.filter((x) => x !== id))} /></td>{headers.map((key) => <td key={key} className="max-w-72 border-b border-r p-0"><input className={`h-9 w-full min-w-40 truncate bg-transparent px-2 font-mono outline-none focus:bg-muted ${edits[id] && key in edits[id] ? "bg-primary/10" : ""}`} value={formatValue(cellValue(row, key))} onDoubleClick={(e) => e.currentTarget.select()} onChange={(e) => setCell(row, key, e.target.value)} /></td>)}<td className="border-b px-1"><div className="flex"><Button size="icon" variant="ghost" className="size-7" title="نسخ الصف" onClick={() => setInserts((prev) => [...prev, { ...row }])}><Copy className="size-3.5" /></Button><Button size="icon" variant="ghost" className="size-7" title="فتح الصف" onClick={() => setDrawerRow(row)}><Eye className="size-3.5" /></Button></div></td></tr>; })}
-                    {inserts.map((row, index) => <tr key={`new-${index}`} className="bg-success/5"><td className="sticky left-0 border-b border-r bg-card p-2"><Badge variant="secondary" className="text-[9px]">جديد</Badge></td>{headers.map((key) => <td key={key} className="border-b border-r p-0"><input className="h-9 w-full min-w-40 bg-transparent px-2 font-mono outline-none focus:bg-muted" value={String(row[key] ?? "")} onChange={(e) => setInserts((prev) => prev.map((r, i) => i === index ? { ...r, [key]: e.target.value } : r))} /></td>)}<td className="border-b p-1"><Button size="icon" variant="ghost" className="size-7" onClick={() => setInserts((prev) => prev.filter((_, i) => i !== index))}><X className="size-3.5" /></Button></td></tr>)}
-                    {!filteredRows.length && !inserts.length && <tr><td colSpan={headers.length + 2} className="h-72 text-center"><Rows3 className="mx-auto mb-3 size-10 text-muted-foreground/40" /><p className="font-medium">هذا الجدول فارغ</p><div className="mt-4 flex justify-center gap-2"><ImportCsvDialog onImport={(csv) => importCsv.mutate(csv)} pending={importCsv.isPending} /><Button size="sm" onClick={() => setInserts([{}])}><Plus className="size-4" />إدراج صف</Button></div></td></tr>}
+                <div className="min-h-0 flex-1 overflow-auto bg-background/30">
+                  <table className="w-max min-w-full border-collapse text-[11px]" dir="ltr">
+                    <thead className="sticky top-0 z-10 bg-card"><tr>{<th className="sticky left-0 z-20 w-8 border-b border-r bg-card px-1 py-1"><Checkbox checked={filteredRows.length > 0 && selected.length === filteredRows.length} onCheckedChange={(checked) => setSelected(checked ? filteredRows.map((r: any) => String(r[pk])) : [])} /></th>}{headers.map((key) => <th key={key} className="min-w-28 whitespace-nowrap border-b border-r px-2 py-1 text-left font-medium"><button className="flex w-full items-center gap-1" onClick={() => setSort((prev) => prev?.column === key && prev.dir === "asc" ? { column: key, dir: "desc" } : { column: key, dir: "asc" })}>{columnInfo[key]?.is_primary && <KeyRound className="size-2.5 text-primary" />}<span>{key}</span><span className="font-normal text-muted-foreground">{columnInfo[key]?.type}</span>{sort?.column === key && (sort.dir === "asc" ? <ArrowUpAZ className="size-2.5" /> : <ArrowDownAZ className="size-2.5" />)}</button></th>)}<th className="w-8 border-b px-1 py-1" /></tr></thead>
+                    <tbody>{filteredRows.map((row: any, index: number) => { const id = String(row[pk]); const removed = deletes.includes(id); return <tr key={id || index} className={`group hover:bg-muted/30 ${removed ? "opacity-40 line-through" : ""}`}><td className="sticky left-0 border-b border-r bg-card px-1 py-1"><Checkbox checked={selected.includes(id)} onCheckedChange={(checked) => setSelected((prev) => checked ? [...prev, id] : prev.filter((x) => x !== id))} /></td>{headers.map((key) => <td key={key} className="max-w-56 border-b border-r p-0"><input className={`h-6 w-full min-w-28 truncate bg-transparent px-1.5 font-mono outline-none focus:bg-muted ${edits[id] && key in edits[id] ? "bg-primary/10" : ""}`} value={formatValue(cellValue(row, key))} onDoubleClick={(e) => e.currentTarget.select()} onChange={(e) => setCell(row, key, e.target.value)} /></td>)}<td className="border-b px-0.5"><div className="flex"><Button size="icon" variant="ghost" className="size-6" title="نسخ الصف" onClick={() => setInserts((prev) => [...prev, { ...row }])}><Copy className="size-3" /></Button><Button size="icon" variant="ghost" className="size-6" title="فتح الصف" onClick={() => setDrawerRow(row)}><Eye className="size-3" /></Button></div></td></tr>; })}
+                    {inserts.map((row, index) => <tr key={`new-${index}`} className="bg-success/5"><td className="sticky left-0 border-b border-r bg-card px-1 py-1"><Badge variant="secondary" className="text-[9px] px-1">جديد</Badge></td>{headers.map((key) => <td key={key} className="border-b border-r p-0"><input className="h-6 w-full min-w-28 bg-transparent px-1.5 font-mono outline-none focus:bg-muted" value={String(row[key] ?? "")} onChange={(e) => setInserts((prev) => prev.map((r, i) => i === index ? { ...r, [key]: e.target.value } : r))} /></td>)}<td className="border-b p-0.5"><Button size="icon" variant="ghost" className="size-6" onClick={() => setInserts((prev) => prev.filter((_, i) => i !== index))}><X className="size-3" /></Button></td></tr>)}
+                    {!filteredRows.length && !inserts.length && <tr><td colSpan={headers.length + 2} className="h-56 text-center"><Rows3 className="mx-auto mb-2 size-8 text-muted-foreground/40" /><p className="text-sm font-medium">هذا الجدول فارغ</p><div className="mt-3 flex justify-center gap-2"><ImportCsvDialog onImport={(csv) => importCsv.mutate(csv)} pending={importCsv.isPending} /><Button size="sm" className="h-7 text-[11px]" onClick={() => setInserts([{}])}><Plus className="size-3" />إدراج صف</Button></div></td></tr>}
                     </tbody>
                   </table>
                 </div>
 
-                <div className="flex flex-wrap items-center gap-3 border-t px-3 py-2 text-xs text-muted-foreground">
-                  <Select value={String(pageSize)} onValueChange={(value) => { setPageSize(Number(value)); setPage(1); }}><SelectTrigger className="h-8 w-24"><SelectValue /></SelectTrigger><SelectContent>{[25, 50, 100, 200, 500].map((n) => <SelectItem key={n} value={String(n)}>{n} صف</SelectItem>)}</SelectContent></Select>
+                <div className="flex flex-wrap items-center gap-2 border-t px-2 py-1 text-[11px] text-muted-foreground">
+                  <Select value={String(pageSize)} onValueChange={(value) => { setPageSize(Number(value)); setPage(1); }}><SelectTrigger className="h-7 w-20 text-[11px]"><SelectValue /></SelectTrigger><SelectContent>{[25, 50, 100, 200, 500].map((n) => <SelectItem key={n} value={String(n)}>{n} صف</SelectItem>)}</SelectContent></Select>
                   <span>صفحة {page}{total !== null ? ` من ${Math.max(1, Math.ceil(total / pageSize))}` : ""}</span><span>{total !== null ? `${total} سجل` : `${filteredRows.length} ظاهر`}</span>
-                  <div className="mr-auto flex gap-1"><Button size="icon" variant="outline" className="size-8" disabled={page <= 1} onClick={() => { const next = page - 1; setPage(next); refreshRows.mutate({ page: next }); }}><ChevronRight className="size-4" /></Button><Button size="icon" variant="outline" className="size-8" disabled={rows.length < pageSize} onClick={() => { const next = page + 1; setPage(next); refreshRows.mutate({ page: next }); }}><ChevronLeft className="size-4" /></Button></div>
+                  <div className="mr-auto flex gap-1"><Button size="icon" variant="outline" className="size-7" disabled={page <= 1} onClick={() => { const next = page - 1; setPage(next); refreshRows.mutate({ page: next }); }}><ChevronRight className="size-3.5" /></Button><Button size="icon" variant="outline" className="size-7" disabled={rows.length < pageSize} onClick={() => { const next = page + 1; setPage(next); refreshRows.mutate({ page: next }); }}><ChevronLeft className="size-3.5" /></Button></div>
                 </div>
               </TabsContent>
 

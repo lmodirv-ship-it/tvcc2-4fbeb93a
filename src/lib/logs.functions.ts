@@ -158,6 +158,23 @@ export const getUnifiedLogs = createServerFn({ method: "GET" })
       });
     }
 
+    for (const r of security) {
+      entries.push({
+        id: `security:${r["id"]}`,
+        at: r["created_at"],
+        source: "security",
+        level: (r["success"] === false
+          ? "error"
+          : r["severity"] === "critical"
+            ? "warning"
+            : "info") as LogEntry["level"],
+        title: `${r["category"]} · ${r["action"]}`,
+        detail: [r["actor_email"], r["resource"], r["resource_id"]].filter(Boolean).join(" · "),
+        serverId: r["resource"] === "servers" ? (r["resource_id"] ?? null) : null,
+        websiteId: r["resource"] === "websites" ? (r["resource_id"] ?? null) : null,
+      });
+    }
+
     entries.sort((a, b) => new Date(b.at).getTime() - new Date(a.at).getTime());
 
     const serverNames: Record<string, string> = {};

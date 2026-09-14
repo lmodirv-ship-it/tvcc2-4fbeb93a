@@ -39,11 +39,11 @@ function AuthenticatedLayout() {
 
   return (
     <SidebarProvider>
-      <div className="min-h-screen flex w-full">
+      <div className="min-h-screen flex w-full min-w-0 overflow-x-hidden">
         <AppSidebar />
-        <div className="flex-1 flex flex-col">
+        <div className="min-w-0 flex-1 flex flex-col">
           <AppHeader />
-          <main className="flex-1 p-6">
+          <main className="min-w-0 flex-1 p-6">
             <PageGuard>
               <Outlet />
             </PageGuard>

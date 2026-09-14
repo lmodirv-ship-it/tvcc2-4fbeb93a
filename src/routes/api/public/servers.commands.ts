@@ -203,18 +203,35 @@ export const Route = createFileRoute("/api/public/servers/commands")({
         }
 
         // --- 3. Agent instance bookkeeping + IP change handling ------------
+        // Multi-agent: each agent on a server has its own key + role (default main).
+        const agentKey = typeof body.agent_key === "string" && /^[a-z0-9-]{1,40}$/i.test(body.agent_key)
+          ? body.agent_key : "main";
+        const agentRole = typeof body.agent_role === "string" && /^[a-z0-9-]{1,40}$/i.test(body.agent_role)
+          ? body.agent_role : agentKey;
+        const machineId = typeof body.machine_id === "string" ? body.machine_id.slice(0, 80) : null;
+        if (machineId && !(server as any).machine_id) {
+          await admin.from("servers").update({ machine_id: machineId }).eq("id", serverId);
+        }
         await admin.from("agent_instances").upsert(
           {
             owner_id: server.owner_id,
             server_id: serverId,
+            agent_key: agentKey,
+            role: agentRole,
             agent_id: typeof body.agent_id === "string" ? body.agent_id.slice(0, 64) : null,
             agent_version: agentVersion,
             os: typeof body.os === "string" ? body.os.slice(0, 120) : null,
             status: "online",
             last_poll_at: now,
+            verified_at: now, // signature was verified above
+            machine_id: machineId,
+            net_rx_bytes: typeof body.net_rx_bytes === "number" ? Math.round(body.net_rx_bytes) : null,
+            net_tx_bytes: typeof body.net_tx_bytes === "number" ? Math.round(body.net_tx_bytes) : null,
+            uptime_seconds: typeof body.uptime_seconds === "number" ? Math.round(body.uptime_seconds) : null,
+            last_error: null,
             meta: { public_ip: publicIp },
           },
-          { onConflict: "server_id" },
+          { onConflict: "server_id,agent_key" },
         );
 
         if (publicIp && publicIp !== server.public_ip) {

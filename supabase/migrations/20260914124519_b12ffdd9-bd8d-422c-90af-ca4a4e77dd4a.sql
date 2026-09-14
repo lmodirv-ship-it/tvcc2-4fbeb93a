@@ -1,0 +1,17 @@
+ALTER TABLE public.agent_instances DROP CONSTRAINT IF EXISTS agent_instances_server_id_key;
+ALTER TABLE public.agent_instances ADD COLUMN IF NOT EXISTS agent_key text NOT NULL DEFAULT 'main';
+ALTER TABLE public.agent_instances ADD COLUMN IF NOT EXISTS role text NOT NULL DEFAULT 'main';
+ALTER TABLE public.agent_instances ADD COLUMN IF NOT EXISTS machine_id text;
+ALTER TABLE public.agent_instances ADD COLUMN IF NOT EXISTS link_quality integer;
+ALTER TABLE public.agent_instances ADD COLUMN IF NOT EXISTS net_rx_bytes bigint;
+ALTER TABLE public.agent_instances ADD COLUMN IF NOT EXISTS net_tx_bytes bigint;
+ALTER TABLE public.agent_instances ADD COLUMN IF NOT EXISTS uptime_seconds bigint;
+ALTER TABLE public.agent_instances ADD COLUMN IF NOT EXISTS last_error text;
+ALTER TABLE public.agent_instances ADD COLUMN IF NOT EXISTS verified_at timestamptz;
+CREATE UNIQUE INDEX IF NOT EXISTS agent_instances_server_key_uq ON public.agent_instances (server_id, agent_key);
+CREATE INDEX IF NOT EXISTS agent_instances_machine_idx ON public.agent_instances (machine_id);
+ALTER TABLE public.servers ADD COLUMN IF NOT EXISTS machine_id text;
+ALTER TABLE public.servers ADD COLUMN IF NOT EXISTS duplicate_of uuid REFERENCES public.servers(id) ON DELETE SET NULL;
+ALTER TABLE public.servers ADD COLUMN IF NOT EXISTS maintenance_mode boolean NOT NULL DEFAULT false;
+CREATE INDEX IF NOT EXISTS servers_machine_idx ON public.servers (machine_id);
+COMMENT ON COLUMN public.agent_instances.link_quality IS '0-100 composite of heartbeat regularity, poll latency, command success rate';

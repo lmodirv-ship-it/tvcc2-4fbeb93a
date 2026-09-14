@@ -185,57 +185,84 @@ export type Database = {
       agent_instances: {
         Row: {
           agent_id: string | null
+          agent_key: string
           agent_version: string | null
           created_at: string
           id: string
+          last_error: string | null
           last_heartbeat_at: string | null
           last_poll_at: string | null
+          link_quality: number | null
+          machine_id: string | null
           meta: Json
+          net_rx_bytes: number | null
+          net_tx_bytes: number | null
           os: string | null
           owner_id: string
           poll_latency_ms: number | null
+          role: string
           running_commands: number
           server_id: string
           status: string
           updated_at: string
+          uptime_seconds: number | null
+          verified_at: string | null
         }
         Insert: {
           agent_id?: string | null
+          agent_key?: string
           agent_version?: string | null
           created_at?: string
           id?: string
+          last_error?: string | null
           last_heartbeat_at?: string | null
           last_poll_at?: string | null
+          link_quality?: number | null
+          machine_id?: string | null
           meta?: Json
+          net_rx_bytes?: number | null
+          net_tx_bytes?: number | null
           os?: string | null
           owner_id: string
           poll_latency_ms?: number | null
+          role?: string
           running_commands?: number
           server_id: string
           status?: string
           updated_at?: string
+          uptime_seconds?: number | null
+          verified_at?: string | null
         }
         Update: {
           agent_id?: string | null
+          agent_key?: string
           agent_version?: string | null
           created_at?: string
           id?: string
+          last_error?: string | null
           last_heartbeat_at?: string | null
           last_poll_at?: string | null
+          link_quality?: number | null
+          machine_id?: string | null
           meta?: Json
+          net_rx_bytes?: number | null
+          net_tx_bytes?: number | null
           os?: string | null
           owner_id?: string
           poll_latency_ms?: number | null
+          role?: string
           running_commands?: number
           server_id?: string
           status?: string
           updated_at?: string
+          uptime_seconds?: number | null
+          verified_at?: string | null
         }
         Relationships: [
           {
             foreignKeyName: "agent_instances_server_id_fkey"
             columns: ["server_id"]
-            isOneToOne: true
+            isOneToOne: false
             referencedRelation: "servers"
             referencedColumns: ["id"]
           },
@@ -6034,10 +6061,13 @@ export type Database = {
           created_at: string
           description: string | null
           disk_gb: number | null
+          duplicate_of: string | null
           hostname: string
           id: string
           is_tvcc_node: boolean
           last_seen_at: string | null
+          machine_id: string | null
+          maintenance_mode: boolean
           metadata: Json
           name: string
           network_kind: string
@@ -6062,10 +6092,13 @@ export type Database = {
           created_at?: string
           description?: string | null
           disk_gb?: number | null
+          duplicate_of?: string | null
           hostname: string
           id?: string
           is_tvcc_node?: boolean
           last_seen_at?: string | null
+          machine_id?: string | null
+          maintenance_mode?: boolean
           metadata?: Json
           name: string
           network_kind?: string
@@ -6090,10 +6123,13 @@ export type Database = {
           created_at?: string
           description?: string | null
           disk_gb?: number | null
+          duplicate_of?: string | null
           hostname?: string
           id?: string
           is_tvcc_node?: boolean
           last_seen_at?: string | null
+          machine_id?: string | null
+          maintenance_mode?: boolean
           metadata?: Json
           name?: string
           network_kind?: string
@@ -6111,7 +6147,15 @@ export type Database = {
           updated_at?: string
           vcpu?: number | null
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "servers_duplicate_of_fkey"
+            columns: ["duplicate_of"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       service_dependencies: {
         Row: {

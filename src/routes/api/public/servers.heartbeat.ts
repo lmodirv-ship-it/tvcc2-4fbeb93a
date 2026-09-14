@@ -274,6 +274,7 @@ export const Route = createFileRoute("/api/public/servers/heartbeat")({
         const isTvccNode = body.is_tvcc_node === true;
         const tvccVersion = typeof body.tvcc_version === "string" ? body.tvcc_version.slice(0, 32) : null;
 
+        const machineId = typeof body.machine_id === "string" ? body.machine_id.slice(0, 80) : null;
         await admin
           .from("servers")
           .update({
@@ -285,6 +286,7 @@ export const Route = createFileRoute("/api/public/servers/heartbeat")({
             is_tvcc_node: isTvccNode,
             tvcc_version: tvccVersion,
             os: typeof body.os === "string" ? body.os : undefined,
+            machine_id: machineId ?? undefined,
             metadata: {
               ai_endpoint: typeof body.ai_endpoint === "string" ? body.ai_endpoint : null,
               ai_models: Array.isArray(body.ai_models) ? body.ai_models.slice(0, 100) : [],
@@ -297,6 +299,33 @@ export const Route = createFileRoute("/api/public/servers/heartbeat")({
             },
           })
           .eq("id", serverId);
+
+        // Multi-agent instance upsert (signature already verified → verified_at = now)
+        const agentKey = typeof body.agent_key === "string" && /^[a-z0-9-]{1,40}$/i.test(body.agent_key)
+          ? body.agent_key : "main";
+        const agentRole = typeof body.agent_role === "string" && /^[a-z0-9-]{1,40}$/i.test(body.agent_role)
+          ? body.agent_role : agentKey;
+        await admin.from("agent_instances").upsert(
+          {
+            owner_id: server.owner_id,
+            server_id: serverId,
+            agent_key: agentKey,
+            role: agentRole,
+            agent_id: agentId,
+            agent_version: agentVersion,
+            os: typeof body.os === "string" ? body.os.slice(0, 120) : null,
+            status: "online",
+            last_heartbeat_at: now,
+            last_poll_at: now,
+            verified_at: now,
+            machine_id: machineId,
+            net_rx_bytes: num(body.net_rx_bytes),
+            net_tx_bytes: num(body.net_tx_bytes),
+            uptime_seconds: num(body.uptime_seconds),
+            last_error: null,
+          },
+          { onConflict: "server_id,agent_key" },
+        );
 
 
         await admin.from("server_metrics").insert({

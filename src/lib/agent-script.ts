@@ -13,17 +13,23 @@ TVCC_AI_ENDPOINT="\${TVCC_AI_ENDPOINT:-http://127.0.0.1:11434}"
 TVCC_BACKUP_DIR="\${TVCC_BACKUP_DIR:-/var/backups/tvcc}"
 TVCC_AGENT_VERSION="${AGENT_VERSION}"
 TVCC_HEARTBEAT_INTERVAL="\${TVCC_HEARTBEAT_INTERVAL:-60}"
+# Multi-agent support: run several agents on one server, each with its own key/role.
+# Example second agent: TVCC_AGENT_KEY=db TVCC_AGENT_ROLE=db ./tvcc-agent.sh
+TVCC_AGENT_KEY="\${TVCC_AGENT_KEY:-main}"
+TVCC_AGENT_ROLE="\${TVCC_AGENT_ROLE:-\$TVCC_AGENT_KEY}"
 TVCC_STATE_DIR="\${TVCC_STATE_DIR:-/var/lib/tvcc}"
 TVCC_HN_DIR="\${TVCC_HN_DIR:-/home/ismail/hn}"
 mkdir -p "$TVCC_BACKUP_DIR"
 mkdir -p "$TVCC_HN_DIR" 2>/dev/null || true
 mkdir -p "$TVCC_STATE_DIR" 2>/dev/null || true
-# stable agent id per machine
-TVCC_AGENT_ID=$(cat /etc/tvcc-agent-id 2>/dev/null || true)
+# stable agent id per machine (key-scoped so multiple agents coexist)
+TVCC_AGENT_ID=$(cat "/etc/tvcc-agent-id-\${TVCC_AGENT_KEY}" 2>/dev/null || true)
 if [ -z "\${TVCC_AGENT_ID:-}" ]; then
   TVCC_AGENT_ID=$( (cat /etc/machine-id 2>/dev/null || head -c 16 /dev/urandom | od -An -tx1 | tr -d ' \\n') )
-  echo "$TVCC_AGENT_ID" > /etc/tvcc-agent-id 2>/dev/null || true
+  echo "$TVCC_AGENT_ID" > "/etc/tvcc-agent-id-\${TVCC_AGENT_KEY}" 2>/dev/null || true
 fi
+# machine fingerprint for duplicate-server detection
+TVCC_MACHINE_ID=$(cat /etc/machine-id 2>/dev/null || echo "\${TVCC_AGENT_ID}")
 
 
 json_escape() { python3 -c 'import sys,json;print(json.dumps(sys.stdin.read()))'; }
@@ -988,7 +994,7 @@ task_loop() {
   local BACKOFF=1
   while true; do
     PUB=$(curl -s --max-time 6 https://api.ipify.org 2>/dev/null || echo "")
-    REQ="{\\"agent_id\\":\\"\${TVCC_AGENT_ID}\\",\\"agent_version\\":\\"\${TVCC_AGENT_VERSION}\\",\\"public_ip\\":\\"\${PUB}\\",\\"os\\":\\"$(. /etc/os-release 2>/dev/null && echo "\${PRETTY_NAME:-linux}" || echo linux)\\",\\"wait\\":\${TVCC_TASK_WAIT},\\"results\\":\${TVCC_PENDING_RESULTS:-[]}}"
+    REQ="{\\"agent_id\\":\\"\${TVCC_AGENT_ID}\\",\\"agent_key\\":\\"\${TVCC_AGENT_KEY}\\",\\"agent_role\\":\\"\${TVCC_AGENT_ROLE}\\",\\"machine_id\\":\\"\${TVCC_MACHINE_ID}\\",\\"agent_version\\":\\"\${TVCC_AGENT_VERSION}\\",\\"public_ip\\":\\"\${PUB}\\",\\"os\\":\\"$(. /etc/os-release 2>/dev/null && echo "\${PRETTY_NAME:-linux}" || echo linux)\\",\\"wait\\":\${TVCC_TASK_WAIT},\\"results\\":\${TVCC_PENDING_RESULTS:-[]}}"
     RESP=$(post_tasks "$REQ")
     TVCC_PENDING_RESULTS="[]"
 
@@ -1113,6 +1119,15 @@ PYEOF
   LOAD=$(awk '{print $1}' /proc/loadavg)
   UPTIME=$(awk '{print int($1)}' /proc/uptime)
   PROCS=$(ps -e --no-headers | wc -l)
+  # raw network counters (sum of all non-loopback interfaces)
+  NET_RX=0; NET_TX=0
+  if [ -d /sys/class/net ]; then
+    for IF in /sys/class/net/*; do
+      N=$(basename "$IF"); [ "$N" = "lo" ] && continue
+      RX=$(cat "$IF/statistics/rx_bytes" 2>/dev/null || echo 0); TX=$(cat "$IF/statistics/tx_bytes" 2>/dev/null || echo 0)
+      NET_RX=$((NET_RX + RX)); NET_TX=$((NET_TX + TX))
+    done
+  fi
   OS=$(. /etc/os-release 2>/dev/null && echo "$PRETTY_NAME" || uname -s)
   PUBLIC_IP=$( (curl -s --max-time 5 https://api.ipify.org || curl -s --max-time 5 https://ifconfig.me || echo "") | head -1 | tr -d '\\n')
   PRIVATE_IP=$(hostname -I 2>/dev/null | awk '{print $1}' | tr -d '\\n')
@@ -1376,7 +1391,7 @@ for kind,p in paths:
 print(json.dumps(out))' 2>/dev/null || echo "[]")
   fi
 
-  BODY="{\\"server_id\\":\\"\${TVCC_SERVER_ID}\\",\\"agent_id\\":\\"\${TVCC_AGENT_ID}\\",\\"cpu_percent\\":\${CPU:-0},\\"mem_used_mb\\":\${MEM_USED:-0},\\"mem_total_mb\\":\${MEM_TOTAL:-0},\\"disk_used_gb\\":\${DISK_USED:-0},\\"disk_total_gb\\":\${DISK_TOTAL:-0},\\"load_avg\\":\${LOAD:-0},\\"uptime_seconds\\":\${UPTIME:-0},\\"process_count\\":\${PROCS:-0},\\"os\\":\\"\${OS}\\",\\"kernel\\":\\"\${KERNEL}\\",\\"arch\\":\\"\${ARCH}\\",\\"agent_version\\":\\"\${TVCC_AGENT_VERSION}\\",\\"public_ip\\":\\"\${PUBLIC_IP}\\",\\"private_ip\\":\\"\${PRIVATE_IP}\\",\\"is_tvcc_node\\":\${TVCC_NODE},\\"tvcc_version\\":\\"\${TVCC_VERSION}\\",\\"ai_endpoint\\":\\"\${TVCC_AI_ENDPOINT}\\",\\"ai_models\\":\${AI_MODELS},\\"ports\\":\${PORTS},\\"configs\\":\${CONFIGS}}"
+  BODY="{\\"server_id\\":\\"\${TVCC_SERVER_ID}\\",\\"agent_id\\":\\"\${TVCC_AGENT_ID}\\",\\"agent_key\\":\\"\${TVCC_AGENT_KEY}\\",\\"agent_role\\":\\"\${TVCC_AGENT_ROLE}\\",\\"machine_id\\":\\"\${TVCC_MACHINE_ID}\\",\\"net_rx_bytes\\":\${NET_RX:-0},\\"net_tx_bytes\\":\${NET_TX:-0},\\"cpu_percent\\":\${CPU:-0},\\"mem_used_mb\\":\${MEM_USED:-0},\\"mem_total_mb\\":\${MEM_TOTAL:-0},\\"disk_used_gb\\":\${DISK_USED:-0},\\"disk_total_gb\\":\${DISK_TOTAL:-0},\\"load_avg\\":\${LOAD:-0},\\"uptime_seconds\\":\${UPTIME:-0},\\"process_count\\":\${PROCS:-0},\\"os\\":\\"\${OS}\\",\\"kernel\\":\\"\${KERNEL}\\",\\"arch\\":\\"\${ARCH}\\",\\"agent_version\\":\\"\${TVCC_AGENT_VERSION}\\",\\"public_ip\\":\\"\${PUBLIC_IP}\\",\\"private_ip\\":\\"\${PRIVATE_IP}\\",\\"is_tvcc_node\\":\${TVCC_NODE},\\"tvcc_version\\":\\"\${TVCC_VERSION}\\",\\"ai_endpoint\\":\\"\${TVCC_AI_ENDPOINT}\\",\\"ai_models\\":\${AI_MODELS},\\"ports\\":\${PORTS},\\"configs\\":\${CONFIGS}}"
   BODY=$(python3 -c 'import sys,json
 b=json.loads(sys.argv[1])
 for extra in sys.argv[2:]:

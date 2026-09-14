@@ -37,6 +37,14 @@ const OPS: [string, string][] = [
 ];
 type FilterRow = { column: string; op: string; value: string };
 
+/** معرّف ثابت لكل جدول: حرف + ستة أرقام (مثل D222222) مشتق من اسم المخطط والجدول. */
+function tableCode(schema: string, name: string) {
+  const key = `${schema}.${name}`;
+  let hash = 0;
+  for (let i = 0; i < key.length; i += 1) hash = (hash * 31 + key.charCodeAt(i)) >>> 0;
+  return `D${String(hash % 1000000).padStart(6, "0")}`;
+}
+
 export function TableEditor({ databaseId, hasAgent = true }: { databaseId: string; hasAgent?: boolean }) {
   const fetchCommands = useServerFn(getEditorCommands);
   const catalog = useServerFn(readCatalog);
@@ -166,7 +174,11 @@ export function TableEditor({ databaseId, hasAgent = true }: { databaseId: strin
 
   const pendingCount = Object.keys(edits).length + inserts.length + deletes.length;
   const visibleTables = tables
-    .filter((t: any) => !tableSearch || String(t.name).includes(tableSearch))
+    .filter((t: any) => {
+      const term = tableSearch.trim().toLowerCase();
+      if (!term) return true;
+      return String(t.name).toLowerCase().includes(term) || tableCode(schema, t.name).toLowerCase().includes(term);
+    })
     .sort((a: any, b: any) => Number(favorites.includes(b.name)) - Number(favorites.includes(a.name)));
 
   const openTable = (name: string) => {
@@ -246,6 +258,7 @@ export function TableEditor({ databaseId, hasAgent = true }: { databaseId: strin
                 {visibleTables.length ? visibleTables.map((item: any) => (
                   <button key={item.name} onClick={() => openTable(item.name)} className={`group flex w-full items-center gap-2 rounded px-2 py-1.5 text-right text-xs transition-colors hover:bg-sidebar-accent ${table === item.name ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground"}`}>
                     <Table2 className={`size-3.5 shrink-0 ${table === item.name ? "text-primary" : "text-muted-foreground"}`} />
+                    <span className="shrink-0 rounded bg-muted px-1 py-0.5 font-mono text-[10px] text-muted-foreground" dir="ltr">{tableCode(schema, item.name)}</span>
                     <span className="min-w-0 flex-1 truncate font-mono" dir="ltr">{item.name}</span>
                     {item.rls_enabled ? <Shield className="size-3 text-success" /> : item.kind === "table" ? <ShieldAlert className="size-3 text-warning" /> : null}
                     <Star className={`size-3 opacity-0 group-hover:opacity-100 ${favorites.includes(item.name) ? "fill-primary text-primary opacity-100" : "text-muted-foreground"}`} onClick={(e) => { e.stopPropagation(); setFavorites((prev) => prev.includes(item.name) ? prev.filter((n) => n !== item.name) : [...prev, item.name]); }} />

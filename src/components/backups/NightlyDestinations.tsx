@@ -172,6 +172,10 @@ export function NightlyDestinations() {
                   <TableHead>الوجهة</TableHead>
                   <TableHead>السيرفر</TableHead>
                   <TableHead>المسار</TableHead>
+                  <TableHead>الذاكرة (مستعملة / حرة)</TableHead>
+                  <TableHead>التخزين (ممتلئ / فارغ)</TableHead>
+                  <TableHead>التفاعل</TableHead>
+                  <TableHead>سرعة الاستجابة</TableHead>
                   <TableHead>آخر تشغيل</TableHead>
                   <TableHead>مفعّل</TableHead>
                   <TableHead />

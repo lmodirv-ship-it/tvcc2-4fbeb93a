@@ -38,7 +38,7 @@ export const getUnifiedLogs = createServerFn({ method: "GET" })
     const sb = context.supabase as any;
     const lim = 200;
 
-    const [activity, ops, commands, alerts, notifs, storage, health, servers, websites] = await Promise.all([
+    const [activity, ops, commands, alerts, notifs, storage, health, security, servers, websites] = await Promise.all([
       safe(sb.from("activity_log").select("*").order("created_at", { ascending: false }).limit(lim)),
       safe(sb.from("operation_log").select("*").order("created_at", { ascending: false }).limit(lim)),
       safe(sb.from("server_commands").select("*").order("created_at", { ascending: false }).limit(lim)),

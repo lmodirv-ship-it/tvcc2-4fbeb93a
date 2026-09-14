@@ -47,7 +47,7 @@ export const getDbStudioData = createServerFn({ method: "GET" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertAdmin(supabase, userId);
-    const [databases, connections, servers, siteDatabases, websites, history, commands, audits, backups, tunnels] = await Promise.all([
+    const [databases, connections, servers, siteDatabases, websites, history, commands, audits, backups] = await Promise.all([
       supabase.from("databases").select("*").order("is_primary", { ascending: false }).order("name"),
       supabase.from("db_connections").select("*").order("updated_at", { ascending: false }),
       supabase.from("servers").select("id,name,hostname,status,agent_version,last_seen_at,public_ip,private_ip,role").order("name"),
@@ -57,13 +57,12 @@ export const getDbStudioData = createServerFn({ method: "GET" })
       supabase.from("server_commands").select("id,server_id,action,args,status,output,exit_code,progress,created_at,completed_at").in("action", [...DB_ACTIONS]).order("created_at", { ascending: false }).limit(80),
       supabase.from("audit_log").select("id,action,resource_id,severity,after_data,created_at").eq("resource", "databases").order("created_at", { ascending: false }).limit(40),
       supabase.from("site_backups").select("id,website_id,server_id,status,backup_type,size_bytes,verified_at,created_at").order("created_at", { ascending: false }).limit(40),
-      supabase.from("server_tunnels").select("*").order("updated_at", { ascending: false }).limit(40),
     ]);
-    const selected = (databases.data ?? []).find((row: any) => row.id === data.databaseId) ?? databases.data?.[0] ?? null;
+    const selected = (databases.data ?? []).find((row) => row.id === data.databaseId) ?? databases.data?.[0] ?? null;
     return {
       databases: databases.data ?? [], connections: connections.data ?? [], servers: servers.data ?? [],
       siteDatabases: siteDatabases.data ?? [], websites: websites.data ?? [], history: history.data ?? [],
-      commands: commands.data ?? [], audits: audits.data ?? [], backups: backups.data ?? [], tunnels: tunnels.data ?? [], selected,
+      commands: commands.data ?? [], audits: audits.data ?? [], backups: backups.data ?? [], selected,
     };
   });
 

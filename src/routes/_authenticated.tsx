@@ -22,8 +22,8 @@ function AuthenticatedLayout() {
       if (!s) navigate({ to: "/auth" });
     });
     supabase.auth.getSession().then(({ data: { session } }) => {
-      if (!session) navigate({ to: "/auth" });
-      else setReady(true);
+      if (session || getLocalOwnerEmail()) setReady(true);
+      else navigate({ to: "/auth" });
     });
     return () => subscription.unsubscribe();
   }, [navigate]);

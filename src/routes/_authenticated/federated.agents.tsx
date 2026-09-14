@@ -428,7 +428,7 @@ function AgentsPage() {
                   }
                 };
                 return (
-                  <>
+                  <Fragment key={s.id}>
                     <TableRow key={s.id} className={isActive ? "bg-primary/5" : ""} onClick={() => setSelected(s.id)}>
                       {visibleCols.map((c) => <TableCell key={c.key}>{cell(c.key)}</TableCell>)}
                     </TableRow>
@@ -457,7 +457,7 @@ function AgentsPage() {
                         </TableCell>
                       </TableRow>
                     )}
-                  </>
+                  </Fragment>
                 );
               })}
               {visibleServers.length === 0 && (

@@ -52,10 +52,14 @@ export function NightlyDestinations() {
   const toggle = useServerFn(toggleBackupDestination);
   const remove = useServerFn(deleteBackupDestination);
   const runNow = useServerFn(runBackupDestinationNow);
+  const loadServers = useServerFn(listOwnerServers);
+  const script = useServerFn(getStorageScript);
 
   const [form, setForm] = useState({
     name: "", host: "", username: "root", port: 22, password: "",
     basePath: "/srv/tvcc-backups", isEnabled: true,
+    storageServerId: "" as string,
+    scope: "all" as "all" | "verified",
   });
   const [search, setSearch] = useState("");
 
@@ -64,6 +68,12 @@ export function NightlyDestinations() {
     queryFn: () => load({ data: {} as never }),
     refetchInterval: 30000,
   });
+
+  const { data: serversData } = useQuery({
+    queryKey: ["owner-servers"],
+    queryFn: () => loadServers({ data: {} as never }),
+  });
+  const servers = (serversData?.servers ?? []) as any[];
 
   const destinations = (data?.destinations ?? []) as any[];
   const copies = (data?.copies ?? []) as any[];

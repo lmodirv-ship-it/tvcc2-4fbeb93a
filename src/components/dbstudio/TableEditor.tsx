@@ -97,13 +97,14 @@ export function TableEditor({ databaseId, hasAgent = true }: { databaseId: strin
   const currentTable = tables.find((t: any) => t.name === table);
 
   const runOnce = (key: string, fn: () => Promise<unknown>) => {
+    if (!hasAgent) return;
     if (queued.current.has(key)) return;
     queued.current.add(key);
-    void fn().then(() => query.refetch()).catch((e: any) => toast.error(e.message));
+    void fn().then(() => query.refetch()).catch((e: any) => toast.error(e?.message ?? "تعذّر تنفيذ الطلب عبر الوكيل"));
   };
 
   useEffect(() => {
-    if (!databaseId) return;
+    if (!databaseId || !hasAgent) return;
     if (!schemasCmd) runOnce(`schemas`, () => catalog({ data: { databaseId, mode: "schemas" } }));
     if (!tablesCmd) runOnce(`tables:${schema}`, () => catalog({ data: { databaseId, mode: "tables", schema } }));
   }, [databaseId, schema, schemasCmd, tablesCmd]);

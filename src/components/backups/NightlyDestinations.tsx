@@ -198,6 +198,33 @@ export function NightlyDestinations() {
               <Label className="text-xs">المنفذ</Label>
               <Input dir="ltr" type="number" value={form.port} onChange={(e) => setForm({ ...form, port: Number(e.target.value) || 22 })} />
             </div>
+            <div className="space-y-1">
+              <Label className="text-xs">سيرفر التخزين المخصّص</Label>
+              <Select
+                value={form.storageServerId || "none"}
+                onValueChange={(v) => setForm({ ...form, storageServerId: v === "none" ? "" : v })}
+              >
+                <SelectTrigger><SelectValue placeholder="اختر سيرفر التخزين" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="none">تلقائي (حسب عنوان السيرفر)</SelectItem>
+                  {servers.map((s) => (
+                    <SelectItem key={s.id} value={s.id}>
+                      {s.name} — {s.public_ip || s.private_ip || s.hostname}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div className="space-y-1">
+              <Label className="text-xs">نطاق النسخ</Label>
+              <Select value={form.scope} onValueChange={(v) => setForm({ ...form, scope: v as "all" | "verified" })}>
+                <SelectTrigger><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">كل مواقع المنصة</SelectItem>
+                  <SelectItem value="verified">المواقع مُثبتة الملكية فقط</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
           </div>
           <div className="flex items-center justify-between gap-3 flex-wrap">
             <label className="flex items-center gap-2 text-xs">
@@ -209,7 +236,7 @@ export function NightlyDestinations() {
             </Button>
           </div>
           <p className="text-[11px] text-muted-foreground">
-            داخل المسار يُنشأ مجلد باسم كل موقع، وبداخله <span dir="ltr">first/</span> للنسخة الأولى (لا تُستبدل) و<span dir="ltr">current/</span> للنسخة الحالية (تُستبدل كل ليلة). يشمل ذلك المواقع المُثبتة ملكيتها عبر سجل TXT في إعدادات DNS فقط.
+            داخل المسار يُنشأ مجلد باسم كل موقع، وبداخله <span dir="ltr">first/</span> للنسخة الأولى (لا تُستبدل) و<span dir="ltr">current/</span> للنسخة الحالية (تُستبدل كل ليلة). يُنسخ كل موقع في المنصة، وحتى المواقع غير الموجودة على سيرفراتك تُنزَّل من مصدرها الحيّ وتُحفظ في سيرفر التخزين. زر «سكريبت السيرفر» ينزّل ملف Node.js يُنشئ المجلدات ويحلّل أي مواقع موجودة فعلاً على السيرفر.
           </p>
         </CardContent>
       </Card>

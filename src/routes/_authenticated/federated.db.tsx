@@ -121,7 +121,7 @@ function SectionContent({ section, data, selected, connection, server, actionMut
   if (section === "overview") return <Overview data={data} selected={selected} connection={connection} server={server} actionMutation={actionMutation} />;
   if (section === "sql" || section === "assistant") return <SqlPanel selected={selected} runQuery={runQuery} invalidate={invalidate} assistant={section === "assistant"} />;
   if (section === "sites") return <SitesPanel data={data} selected={selected} provisionMutation={provisionMutation} />;
-  if (section === "tables") return <TableEditor databaseId={selected.id} />;
+  if (section === "tables") return <TableEditor databaseId={selected.id} hasAgent={Boolean(selected.server_id)} />;
   if (section === "activity") return <ActivityPanel data={data} />;
   if (section === "backups") return <BackupsPanel data={data} selected={selected} mutation={actionMutation} />;
   if (section === "integrations") return <IntegrationsPanel data={data} selected={selected} connection={connection} server={server} mutation={actionMutation} />;

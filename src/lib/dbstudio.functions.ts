@@ -408,7 +408,6 @@ export const readTableRows = createServerFn({ method: "POST" })
     const db = await dbOrThrow(supabase, data.databaseId);
     const schema = ident(data.schema, "المخطط");
     const table = ident(data.table, "الجدول");
-    const owner = await isSystemOwner(supabase, userId);
     const pageSize = Math.min(Math.max(Number(data.pageSize ?? 100), 1), 1000);
     const page = Math.max(Number(data.page ?? 1), 1);
     const where = (data.filters ?? []).filter((f) => f.column && FILTER_OPS[f.op]).map((f) => {
@@ -453,6 +452,7 @@ export const writeTableRows = createServerFn({ method: "POST" })
     const db = await dbOrThrow(supabase, data.databaseId);
     const schema = ident(data.schema, "المخطط");
     const table = ident(data.table, "الجدول");
+    const isOwner = await isSystemOwner(supabase, userId);
     const pk = ident(data.pk, "المفتاح الأساسي");
     const lit = (value: unknown) => value === null || value === undefined || value === ""
       ? "null"
@@ -475,7 +475,7 @@ export const writeTableRows = createServerFn({ method: "POST" })
     }
     if (!statements.length) throw new Error("لا توجد تغييرات للحفظ");
     if (isInternalDb(db)) {
-      if (isProtectedTable(schema, table) && !owner) throw new Error("تعديل جدول النظام متاح لمالك المنصة فقط");
+      if (isProtectedTable(schema, table) && !isOwner) throw new Error("تعديل جدول النظام متاح لمالك المنصة فقط");
       if (isSecretTable(schema, table)) throw new Error("تُدار قيم الأسرار من الخزنة الآمنة ولا تُعرض في محرّر الجداول");
       await runInternalSql(statements.join(";\n"));
       const command = internalCommand("pg_write", {
@@ -517,7 +517,7 @@ export const applyTableDdl = createServerFn({ method: "POST" })
     const db = await dbOrThrow(supabase, data.databaseId);
     const schema = ident(data.schema, "المخطط");
     const table = ident(data.table, "الجدول");
-    const owner = await isSystemOwner(supabase, userId);
+    const isOwner = await isSystemOwner(supabase, userId);
     const typeOf = (spec: ColumnSpec) => {
       const type = String(spec.type ?? "text").toLowerCase();
       if (!TYPES.includes(type)) throw new Error(`نوع غير مدعوم: ${type}`);
@@ -551,8 +551,8 @@ export const applyTableDdl = createServerFn({ method: "POST" })
       const policy = data.policy!;
       const name = ident(policy.name, "السياسة");
       const cmd = ["SELECT", "INSERT", "UPDATE", "DELETE", "ALL"].includes(policy.command) ? policy.command : "SELECT";
-      const owner = policy.ownerColumn ? ident(policy.ownerColumn, "عمود المالك") : "user_id";
-      const using = policy.template === "own_rows" ? `auth.uid() = "${owner}"`
+      const ownerColumn = policy.ownerColumn ? ident(policy.ownerColumn, "عمود المالك") : "user_id";
+      const using = policy.template === "own_rows" ? `auth.uid() = "${ownerColumn}"`
         : policy.template === "admin_only" ? `public.has_role(auth.uid(), 'admin')`
           : "true";
       const role = policy.template === "public_read" ? "anon, authenticated" : "authenticated";
@@ -561,7 +561,7 @@ export const applyTableDdl = createServerFn({ method: "POST" })
         : `create policy "${name}" on "${schema}"."${table}" for ${cmd.toLowerCase()} to ${role} using (${using})`);
     }
     if (isInternalDb(db)) {
-      if (isProtectedTable(schema, table) && !owner) throw new Error("تغيير بنية جدول النظام متاح لمالك المنصة فقط");
+      if (isProtectedTable(schema, table) && !isOwner) throw new Error("تغيير بنية جدول النظام متاح لمالك المنصة فقط");
       if (isSecretTable(schema, table)) throw new Error("تُدار بنية مخزن الأسرار من الخزنة الآمنة فقط");
       await runInternalSql(statements.join(";\n"));
       const command = internalCommand("pg_ddl", {
@@ -588,14 +588,14 @@ export const importTableCsv = createServerFn({ method: "POST" })
     const db = await dbOrThrow(supabase, data.databaseId);
     const schema = ident(data.schema, "المخطط");
     const table = ident(data.table, "الجدول");
-    const owner = await isSystemOwner(supabase, userId);
+    const isOwner = await isSystemOwner(supabase, userId);
     const csv = String(data.csv ?? "").trim();
     if (!csv) throw new Error("الملف فارغ");
     if (csv.length > 2_000_000) throw new Error("حجم CSV كبير جداً — قسّمه إلى دفعات");
     const header = csv.split(/\r?\n/)[0]!.split(",").map((c) => c.trim().replace(/^"|"$/g, ""));
     header.forEach((c) => ident(c, "العمود"));
     if (isInternalDb(db)) {
-      if (isProtectedTable(schema, table) && !owner) throw new Error("الاستيراد إلى جدول النظام متاح لمالك المنصة فقط");
+      if (isProtectedTable(schema, table) && !isOwner) throw new Error("الاستيراد إلى جدول النظام متاح لمالك المنصة فقط");
       if (isSecretTable(schema, table)) throw new Error("لا يمكن استيراد قيم الأسرار من محرّر الجداول");
       const lines = csv.split(/\r?\n/).slice(1).filter(Boolean);
       const lit = (value: string) => value === "" || value.toLowerCase() === "null" ? "null" : `'${value.replace(/'/g, "''")}'`;

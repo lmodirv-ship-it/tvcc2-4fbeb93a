@@ -123,9 +123,10 @@ export function TableEditor({ databaseId, hasAgent = true }: { databaseId: strin
 
   useEffect(() => {
     if (!databaseId || !hasAgent) return;
-    if (!schemasCmd) runOnce(`schemas`, () => catalog({ data: { databaseId, mode: "schemas" } }));
-    if (!tablesCmd) runOnce(`tables:${schema}`, () => catalog({ data: { databaseId, mode: "tables", schema } }));
-  }, [databaseId, schema, schemasCmd, tablesCmd]);
+    // نطلب دائماً قائمة محدّثة للمخططات والجداول حتى لا تُستخدم نتيجة قديمة من السجل.
+    runOnce(`schemas:${databaseId}`, () => catalog({ data: { databaseId, mode: "schemas" } }));
+    runOnce(`tables:${databaseId}:${schema}`, () => catalog({ data: { databaseId, mode: "tables", schema } }));
+  }, [databaseId, schema]);
 
   useEffect(() => {
     if (!databaseId || !table || !hasAgent) return;

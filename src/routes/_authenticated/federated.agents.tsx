@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import {
   getAgentsData, saveAgentConfig, getNginxConfig, saveNginxConfig, mergeDuplicateServer,
   createSiteSnapshot, rollbackSiteSnapshot,
@@ -255,7 +255,6 @@ function AgentsPage() {
 
   if (isLoading || !data) return <div className="p-8 text-muted-foreground">جارٍ تحميل الوكلاء…</div>;
 
-  const instance = (id: string) => ((data.instances ?? []) as any[]).find((i) => i.server_id === id);
   const healthOf = (id: string) => ((data.health ?? {}) as any)[id];
   const metricsOf = (id: string) => ((data.metrics ?? {}) as any)[id];
   const queueOf = (id: string) => ((data.queued ?? {}) as any)[id] ?? { pending: 0, running: 0 };

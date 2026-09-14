@@ -8,7 +8,7 @@ export const listSiteTransfers = createServerFn({ method: "POST" })
     const sb = context.supabase as any;
     const since = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
 
-    const [{ data: sites }, { data: copies }, { data: tasks }, { data: checks }] = await Promise.all([
+    const [{ data: sites }, { data: copies }, { data: tasks }, { data: checks }, { data: links }, { data: agents }, { data: dests }] = await Promise.all([
       sb
         .from("websites")
         .select("id, name, domain, site_code, status, verified, is_active, last_checked_at, updated_at")
@@ -21,7 +21,24 @@ export const listSiteTransfers = createServerFn({ method: "POST" })
         .order("created_at", { ascending: false })
         .limit(500),
       sb.from("site_health_checks").select("website_id, checked_at, status").gte("checked_at", since).limit(2000),
+      sb.from("server_sites").select("website_id, server_id, status").limit(2000),
+      sb.from("agent_instances").select("server_id, status, last_heartbeat_at").limit(500),
+      sb.from("backup_destinations").select("id, is_enabled").limit(50),
     ]);
+
+    const okAgentServers = new Set<string>();
+    const freshLimit = Date.now() - 10 * 60 * 1000;
+    for (const a of (agents ?? []) as any[]) {
+      const fresh = a.last_heartbeat_at ? new Date(a.last_heartbeat_at).getTime() > freshLimit : false;
+      if (a.status === "online" && fresh) okAgentServers.add(a.server_id);
+    }
+    const siteHasAgent = new Map<string, boolean>();
+    for (const l of (links ?? []) as any[]) {
+      if (!l.website_id) continue;
+      if (okAgentServers.has(l.server_id)) siteHasAgent.set(l.website_id, true);
+      else if (!siteHasAgent.has(l.website_id)) siteHasAgent.set(l.website_id, false);
+    }
+    const hasDestination = ((dests ?? []) as any[]).some((d) => d.is_enabled);
 
     const copyBySite = new Map<string, { size: number; first?: string; current?: string; last?: string }>();
     for (const c of (copies ?? []) as any[]) {
@@ -72,6 +89,9 @@ export const listSiteTransfers = createServerFn({ method: "POST" })
         last_checked_at: s.last_checked_at,
         tasks_count: t.length,
         last_task: t[0] ?? null,
+        has_agent: siteHasAgent.get(s.id) === true,
+        has_destination: hasDestination,
+        ready: siteHasAgent.get(s.id) === true && hasDestination && s.is_active !== false,
       };
     });
 

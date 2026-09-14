@@ -107,6 +107,21 @@ export function NightlyDestinations() {
     onError: (e: any) => toast.error(e?.message || "تعذّر التشغيل"),
   });
 
+  // تشغيل تلقائي بدون تدخل: أي وجهة جاهزة لم تعمل منذ 24 ساعة تُشغَّل تلقائياً.
+  const autoFired = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    for (const d of destinations) {
+      if (!d.ready || autoFired.current.has(d.id)) continue;
+      const last = d.last_run_at ? new Date(d.last_run_at).getTime() : 0;
+      if (Date.now() - last < 24 * 3600 * 1000) continue;
+      autoFired.current.add(d.id);
+      runNow({ data: { id: d.id } })
+        .then(() => { toast.success(`تشغيل تلقائي للنسخ: ${d.name}`); invalidate(); })
+        .catch(() => autoFired.current.delete(d.id));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [destinations]);
+
   const exportCsv = () => {
     const header = "domain,first_status,first_size,current_status,current_updated\n";
     const body = bySite

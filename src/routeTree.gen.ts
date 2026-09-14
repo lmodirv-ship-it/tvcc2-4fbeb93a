@@ -87,7 +87,9 @@ import { Route as AuthenticatedFederatedPitrRouteImport } from './routes/_authen
 import { Route as AuthenticatedFederatedMeshRouteImport } from './routes/_authenticated/federated.mesh'
 import { Route as AuthenticatedFederatedHealingRouteImport } from './routes/_authenticated/federated.healing'
 import { Route as AuthenticatedFederatedFleetRouteImport } from './routes/_authenticated/federated.fleet'
+import { Route as AuthenticatedFederatedDbRouteImport } from './routes/_authenticated/federated.db'
 import { Route as AuthenticatedFederatedAssetsRouteImport } from './routes/_authenticated/federated.assets'
+import { Route as AuthenticatedFederatedAgentsRouteImport } from './routes/_authenticated/federated.agents'
 import { Route as AuthenticatedEditorUsersRouteImport } from './routes/_authenticated/editor.users'
 import { Route as AuthenticatedEditorSubscriptionsRouteImport } from './routes/_authenticated/editor.subscriptions'
 import { Route as AuthenticatedEditorSocialRouteImport } from './routes/_authenticated/editor.social'
@@ -538,10 +540,22 @@ const AuthenticatedFederatedFleetRoute =
     path: '/fleet',
     getParentRoute: () => AuthenticatedFederatedRoute,
   } as any)
+const AuthenticatedFederatedDbRoute =
+  AuthenticatedFederatedDbRouteImport.update({
+    id: '/db',
+    path: '/db',
+    getParentRoute: () => AuthenticatedFederatedRoute,
+  } as any)
 const AuthenticatedFederatedAssetsRoute =
   AuthenticatedFederatedAssetsRouteImport.update({
     id: '/assets',
     path: '/assets',
+    getParentRoute: () => AuthenticatedFederatedRoute,
+  } as any)
+const AuthenticatedFederatedAgentsRoute =
+  AuthenticatedFederatedAgentsRouteImport.update({
+    id: '/agents',
+    path: '/agents',
     getParentRoute: () => AuthenticatedFederatedRoute,
   } as any)
 const AuthenticatedEditorUsersRoute =
@@ -830,7 +844,9 @@ export interface FileRoutesByFullPath {
   '/editor/social': typeof AuthenticatedEditorSocialRoute
   '/editor/subscriptions': typeof AuthenticatedEditorSubscriptionsRoute
   '/editor/users': typeof AuthenticatedEditorUsersRoute
+  '/federated/agents': typeof AuthenticatedFederatedAgentsRoute
   '/federated/assets': typeof AuthenticatedFederatedAssetsRoute
+  '/federated/db': typeof AuthenticatedFederatedDbRoute
   '/federated/fleet': typeof AuthenticatedFederatedFleetRoute
   '/federated/healing': typeof AuthenticatedFederatedHealingRoute
   '/federated/mesh': typeof AuthenticatedFederatedMeshRoute
@@ -946,7 +962,9 @@ export interface FileRoutesByTo {
   '/editor/social': typeof AuthenticatedEditorSocialRoute
   '/editor/subscriptions': typeof AuthenticatedEditorSubscriptionsRoute
   '/editor/users': typeof AuthenticatedEditorUsersRoute
+  '/federated/agents': typeof AuthenticatedFederatedAgentsRoute
   '/federated/assets': typeof AuthenticatedFederatedAssetsRoute
+  '/federated/db': typeof AuthenticatedFederatedDbRoute
   '/federated/fleet': typeof AuthenticatedFederatedFleetRoute
   '/federated/healing': typeof AuthenticatedFederatedHealingRoute
   '/federated/mesh': typeof AuthenticatedFederatedMeshRoute
@@ -1065,7 +1083,9 @@ export interface FileRoutesById {
   '/_authenticated/editor/social': typeof AuthenticatedEditorSocialRoute
   '/_authenticated/editor/subscriptions': typeof AuthenticatedEditorSubscriptionsRoute
   '/_authenticated/editor/users': typeof AuthenticatedEditorUsersRoute
+  '/_authenticated/federated/agents': typeof AuthenticatedFederatedAgentsRoute
   '/_authenticated/federated/assets': typeof AuthenticatedFederatedAssetsRoute
+  '/_authenticated/federated/db': typeof AuthenticatedFederatedDbRoute
   '/_authenticated/federated/fleet': typeof AuthenticatedFederatedFleetRoute
   '/_authenticated/federated/healing': typeof AuthenticatedFederatedHealingRoute
   '/_authenticated/federated/mesh': typeof AuthenticatedFederatedMeshRoute
@@ -1184,7 +1204,9 @@ export interface FileRouteTypes {
     | '/editor/social'
     | '/editor/subscriptions'
     | '/editor/users'
+    | '/federated/agents'
     | '/federated/assets'
+    | '/federated/db'
     | '/federated/fleet'
     | '/federated/healing'
     | '/federated/mesh'
@@ -1300,7 +1322,9 @@ export interface FileRouteTypes {
     | '/editor/social'
     | '/editor/subscriptions'
     | '/editor/users'
+    | '/federated/agents'
     | '/federated/assets'
+    | '/federated/db'
     | '/federated/fleet'
     | '/federated/healing'
     | '/federated/mesh'
@@ -1418,7 +1442,9 @@ export interface FileRouteTypes {
     | '/_authenticated/editor/social'
     | '/_authenticated/editor/subscriptions'
     | '/_authenticated/editor/users'
+    | '/_authenticated/federated/agents'
     | '/_authenticated/federated/assets'
+    | '/_authenticated/federated/db'
     | '/_authenticated/federated/fleet'
     | '/_authenticated/federated/healing'
     | '/_authenticated/federated/mesh'
@@ -2043,11 +2069,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFederatedFleetRouteImport
       parentRoute: typeof AuthenticatedFederatedRoute
     }
+    '/_authenticated/federated/db': {
+      id: '/_authenticated/federated/db'
+      path: '/db'
+      fullPath: '/federated/db'
+      preLoaderRoute: typeof AuthenticatedFederatedDbRouteImport
+      parentRoute: typeof AuthenticatedFederatedRoute
+    }
     '/_authenticated/federated/assets': {
       id: '/_authenticated/federated/assets'
       path: '/assets'
       fullPath: '/federated/assets'
       preLoaderRoute: typeof AuthenticatedFederatedAssetsRouteImport
+      parentRoute: typeof AuthenticatedFederatedRoute
+    }
+    '/_authenticated/federated/agents': {
+      id: '/_authenticated/federated/agents'
+      path: '/agents'
+      fullPath: '/federated/agents'
+      preLoaderRoute: typeof AuthenticatedFederatedAgentsRouteImport
       parentRoute: typeof AuthenticatedFederatedRoute
     }
     '/_authenticated/editor/users': {
@@ -2350,7 +2390,9 @@ const AuthenticatedEditorRouteWithChildren =
   AuthenticatedEditorRoute._addFileChildren(AuthenticatedEditorRouteChildren)
 
 interface AuthenticatedFederatedRouteChildren {
+  AuthenticatedFederatedAgentsRoute: typeof AuthenticatedFederatedAgentsRoute
   AuthenticatedFederatedAssetsRoute: typeof AuthenticatedFederatedAssetsRoute
+  AuthenticatedFederatedDbRoute: typeof AuthenticatedFederatedDbRoute
   AuthenticatedFederatedFleetRoute: typeof AuthenticatedFederatedFleetRoute
   AuthenticatedFederatedHealingRoute: typeof AuthenticatedFederatedHealingRoute
   AuthenticatedFederatedMeshRoute: typeof AuthenticatedFederatedMeshRoute
@@ -2360,7 +2402,9 @@ interface AuthenticatedFederatedRouteChildren {
 
 const AuthenticatedFederatedRouteChildren: AuthenticatedFederatedRouteChildren =
   {
+    AuthenticatedFederatedAgentsRoute: AuthenticatedFederatedAgentsRoute,
     AuthenticatedFederatedAssetsRoute: AuthenticatedFederatedAssetsRoute,
+    AuthenticatedFederatedDbRoute: AuthenticatedFederatedDbRoute,
     AuthenticatedFederatedFleetRoute: AuthenticatedFederatedFleetRoute,
     AuthenticatedFederatedHealingRoute: AuthenticatedFederatedHealingRoute,
     AuthenticatedFederatedMeshRoute: AuthenticatedFederatedMeshRoute,

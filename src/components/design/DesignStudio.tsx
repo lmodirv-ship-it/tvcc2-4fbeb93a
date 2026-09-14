@@ -58,6 +58,13 @@ export function DesignStudio() {
     try {
       await save({ data: tokens });
       cacheDesignTokens(tokens);
+      // the saved brand identity becomes the active look: drop any previously
+      // picked theme so the colors survive a reload
+      try {
+        window.localStorage.removeItem(THEME_STORAGE_KEY);
+      } catch {
+        /* ignore */
+      }
       applyDesignTokens(tokens);
       toast.success("تم حفظ هوية التصميم وتطبيقها على كامل المنصة");
     } catch (e: any) {

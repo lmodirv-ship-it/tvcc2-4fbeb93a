@@ -716,6 +716,12 @@ export const extractTemplate = createServerFn({ method: "POST" })
                  left join pg_attrdef d on d.adrelid = c.oid and d.adnum = a.attnum
                  where n.nspname = '${schema}' and c.relkind in ('r','p')
                  order by c.relname, a.attnum`;
+    if (isInternalDb(db)) {
+      const rows = await runInternalSql(sql);
+      const command = internalCommand("pg_meta", { database_id: db.id, mode: "extract_template", schema, sql, read_only: true }, { rows });
+      await audit(supabase, userId, "template_extract", db.id, { command_id: command.id, schema });
+      return command;
+    }
     const command = await queueCommand(supabase, userId, db.server_id, "pg_meta", {
       ...baseArgs(db), mode: "extract_template", schema, sql, read_only: true,
     });

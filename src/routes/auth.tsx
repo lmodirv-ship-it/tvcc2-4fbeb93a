@@ -10,6 +10,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import tvccLogo from "@/assets/tvcc-logo.asset.json";
+import { useServerFn } from "@tanstack/react-start";
+import { ownerSignIn } from "@/lib/owner-auth.functions";
+import { OWNER_SESSION_KEY } from "@/hooks/use-roles";
 
 /** Only same-origin relative paths are accepted as a post-auth destination. */
 function safeNext(value: unknown): string | undefined {
@@ -33,6 +36,7 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const ownerLogin = useServerFn(ownerSignIn);
 
   const goNext = () => {
     if (next) {

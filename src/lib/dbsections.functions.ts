@@ -210,38 +210,45 @@ async function build(section: InsightSection, supabase: any, databaseId: string)
 
   if (section === "secrets") {
     const { data: rows } = await supabase.from("vault_secrets")
-      .select("id,name,scope,status,rotated_at,updated_at").order("name").limit(200);
+      .select("id,name,category,description,last_rotated_at,rotation_period_days,expires_at,updated_at").order("name").limit(200);
     const list = (rows ?? []).map((r: any) => ({
-      name: r.name, scope: r.scope ?? "—", status: r.status ?? "نشط",
-      rotated_at: r.rotated_at ? new Date(r.rotated_at).toLocaleString("ar") : "—",
+      name: r.name, category: r.category ?? "—", description: r.description ?? "—",
+      last_rotated_at: r.last_rotated_at ? new Date(r.last_rotated_at).toLocaleString("ar") : "—",
+      expires_at: r.expires_at ? new Date(r.expires_at).toLocaleString("ar") : "—",
       updated_at: r.updated_at ? new Date(r.updated_at).toLocaleString("ar") : "—",
     }));
-    stats.push({ label: "الأسرار المحفوظة", value: list.length });
-    groups.push(group("الأسماء فقط — القيم لا تغادر الخزنة", list, ["name", "scope", "status", "rotated_at", "updated_at"]));
+    const expiring = list.filter((r: any) => r.expires_at !== "—").length;
+    stats.push({ label: "الأسرار المحفوظة", value: list.length }, { label: "لها تاريخ انتهاء", value: expiring });
+    groups.push(group("الأسماء فقط — القيم لا تغادر الخزنة", list, ["name", "category", "description", "last_rotated_at", "expires_at", "updated_at"]));
   }
 
   if (section === "sync") {
     const { data: syncs } = await supabase.from("site_storage_syncs")
-      .select("id,website_id,status,direction,last_run_at,last_error").order("updated_at", { ascending: false }).limit(100);
+      .select("id,domain,status,auto_sync,interval_minutes,file_count,size_bytes,last_synced_at,last_output").order("updated_at", { ascending: false }).limit(100);
     const rows = (syncs ?? []).map((r: any) => ({
-      website_id: r.website_id, direction: r.direction ?? "—", status: r.status ?? "—",
-      last_run_at: r.last_run_at ? new Date(r.last_run_at).toLocaleString("ar") : "—",
-      last_error: r.last_error ?? "—",
+      domain: r.domain ?? "—", status: r.status ?? "—",
+      auto_sync: r.auto_sync ? `كل ${r.interval_minutes ?? 0} دقيقة` : "يدوي",
+      files: r.file_count ?? 0,
+      size: r.size_bytes ? `${(r.size_bytes / 1048576).toFixed(1)} MB` : "—",
+      last_synced_at: r.last_synced_at ? new Date(r.last_synced_at).toLocaleString("ar") : "—",
     }));
-    stats.push({ label: "مهام المزامنة", value: rows.length }, { label: "متعثّرة", value: rows.filter((r: any) => r.last_error !== "—").length, tone: rows.some((r: any) => r.last_error !== "—") ? "warn" : "ok" });
-    groups.push(group("مهام المزامنة", rows, ["website_id", "direction", "status", "last_run_at", "last_error"]));
+    const failed = rows.filter((r: any) => r.status === "failed" || r.status === "error").length;
+    stats.push({ label: "مهام المزامنة", value: rows.length }, { label: "متعثّرة", value: failed, tone: failed ? "warn" : "ok" });
+    groups.push(group("مهام المزامنة", rows, ["domain", "status", "auto_sync", "files", "size", "last_synced_at"]));
   }
 
   if (section === "transfer") {
     const { data: transfers } = await supabase.from("file_transfers")
-      .select("id,kind,status,direction,bytes_total,created_at").order("created_at", { ascending: false }).limit(100);
+      .select("id,name,mode,status,dry_run,file_count,size_bytes,target_path,created_at").order("created_at", { ascending: false }).limit(100);
     const rows = (transfers ?? []).map((r: any) => ({
-      kind: r.kind ?? "—", direction: r.direction ?? "—", status: r.status ?? "—",
-      size: r.bytes_total ? `${(r.bytes_total / 1048576).toFixed(1)} MB` : "—",
+      name: r.name ?? "—", mode: r.mode ?? "—", status: r.status ?? "—",
+      files: r.file_count ?? 0,
+      size: r.size_bytes ? `${(r.size_bytes / 1048576).toFixed(1)} MB` : "—",
+      target_path: r.target_path ?? "—",
       created_at: new Date(r.created_at).toLocaleString("ar"),
     }));
     stats.push({ label: "عمليات النقل", value: rows.length });
-    groups.push(group("آخر عمليات الاستيراد والتصدير", rows, ["kind", "direction", "status", "size", "created_at"]));
+    groups.push(group("آخر عمليات الاستيراد والتصدير", rows, ["name", "mode", "status", "files", "size", "target_path", "created_at"]));
   }
 
   if (section === "activity") {

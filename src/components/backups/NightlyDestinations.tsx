@@ -70,8 +70,14 @@ export function NightlyDestinations() {
 
   const invalidate = () => qc.invalidateQueries({ queryKey: ["backup-destinations"] });
 
+  const formValid =
+    form.name.trim().length > 0 && form.host.trim().length > 0 && form.basePath.trim().length > 0;
+
   const create = useMutation({
-    mutationFn: () => save({ data: form }),
+    mutationFn: async () => {
+      if (!formValid) throw new Error("املأ الاسم وعنوان السيرفر والمسار");
+      return save({ data: form });
+    },
     onSuccess: () => {
       toast.success("تم حفظ وجهة النسخ");
       setForm({ ...form, name: "", host: "", password: "" });
@@ -143,7 +149,7 @@ export function NightlyDestinations() {
               <Switch checked={form.isEnabled} onCheckedChange={(v) => setForm({ ...form, isEnabled: v })} />
               تفعيل النسخ الليلي (كل يوم 00:00)
             </label>
-            <Button size="sm" onClick={() => create.mutate()} disabled={create.isPending}>
+            <Button size="sm" onClick={() => create.mutate()} disabled={create.isPending || !formValid}>
               {create.isPending ? <Loader2 className="w-4 h-4 animate-spin ml-1" /> : null} حفظ الوجهة
             </Button>
           </div>

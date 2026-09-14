@@ -7332,6 +7332,78 @@ export type Database = {
         }
         Relationships: []
       }
+      site_transfer_tasks: {
+        Row: {
+          completed_at: string | null
+          created_at: string
+          destination_id: string | null
+          direction: string
+          domain: string
+          error_message: string | null
+          file_path: string | null
+          id: string
+          notes: string | null
+          owner_id: string
+          site_code: string | null
+          size_bytes: number | null
+          started_at: string | null
+          status: string
+          updated_at: string
+          website_id: string | null
+        }
+        Insert: {
+          completed_at?: string | null
+          created_at?: string
+          destination_id?: string | null
+          direction?: string
+          domain: string
+          error_message?: string | null
+          file_path?: string | null
+          id?: string
+          notes?: string | null
+          owner_id: string
+          site_code?: string | null
+          size_bytes?: number | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Update: {
+          completed_at?: string | null
+          created_at?: string
+          destination_id?: string | null
+          direction?: string
+          domain?: string
+          error_message?: string | null
+          file_path?: string | null
+          id?: string
+          notes?: string | null
+          owner_id?: string
+          site_code?: string | null
+          size_bytes?: number | null
+          started_at?: string | null
+          status?: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_transfer_tasks_destination_id_fkey"
+            columns: ["destination_id"]
+            isOneToOne: false
+            referencedRelation: "backup_destinations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_transfer_tasks_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_user_access: {
         Row: {
           access_level: string

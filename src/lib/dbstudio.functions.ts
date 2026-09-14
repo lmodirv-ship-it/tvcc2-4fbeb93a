@@ -809,3 +809,19 @@ export const linkDatabaseServer = createServerFn({ method: "POST" })
     await audit(supabase, userId, "database_link_server", data.databaseId, { server_id: data.serverId });
     return { ok: true };
   });
+
+/** سجل آخر استعلامات SQL لهذه القاعدة. */
+export const getQueryHistory = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { databaseId: string }) => input)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+    const { data: rows } = await supabase
+      .from("query_history")
+      .select("id,title,sql_text,mode,status,created_at")
+      .eq("database_id", data.databaseId)
+      .order("created_at", { ascending: false })
+      .limit(25);
+    return rows ?? [];
+  });

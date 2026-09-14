@@ -144,10 +144,24 @@ export function SiteTransfersTable() {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1">
-                      <Button size="sm" variant="outline" className="h-7 text-[11px]" disabled={busy === `${r.id}-export`} onClick={() => run(r.id, "export")}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        title={r.ready ? "جاهز للتشغيل التلقائي" : !r.has_agent ? "لا يوجد وكيل متصل على سيرفر الموقع" : !r.has_destination ? "لا توجد وجهة نسخ مفعّلة" : "الموقع غير مفعّل"}
+                        className={`h-7 text-[11px] ${r.ready ? "border-success/50 bg-success/15 text-success hover:bg-success/25" : "border-destructive/50 bg-destructive/15 text-destructive hover:bg-destructive/25"}`}
+                        disabled={busy === `${r.id}-export`}
+                        onClick={() => run(r.id, "export")}
+                      >
                         {busy === `${r.id}-export` ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3 ml-1" />} تصدير
                       </Button>
-                      <Button size="sm" variant="outline" className="h-7 text-[11px]" disabled={busy === `${r.id}-import`} onClick={() => run(r.id, "import")}>
+                      <Button
+                        size="sm"
+                        variant="outline"
+                        title={r.ready ? "جاهز للتشغيل التلقائي" : !r.has_agent ? "لا يوجد وكيل متصل على سيرفر الموقع" : !r.has_destination ? "لا توجد وجهة نسخ مفعّلة" : "الموقع غير مفعّل"}
+                        className={`h-7 text-[11px] ${r.ready ? "border-success/50 bg-success/15 text-success hover:bg-success/25" : "border-destructive/50 bg-destructive/15 text-destructive hover:bg-destructive/25"}`}
+                        disabled={busy === `${r.id}-import`}
+                        onClick={() => run(r.id, "import")}
+                      >
                         {busy === `${r.id}-import` ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3 ml-1" />} استيراد
                       </Button>
                     </div>

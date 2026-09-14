@@ -42,7 +42,18 @@ async function runInternalSql(sql: string, scalar = false): Promise<any> {
   return data;
 }
 
-function internalCommand(action: string, args: Record<string, unknown>, output: unknown): AgentCommand {
+type AgentCommandResult = {
+  id: string;
+  action: string;
+  args: Record<string, any> | null;
+  status: string;
+  output: unknown;
+  exit_code: number | null;
+  created_at: string;
+  completed_at: string | null;
+};
+
+function internalCommand(action: string, args: Record<string, unknown>, output: unknown): AgentCommandResult {
   const now = new Date().toISOString();
   return {
     id: `internal-${action}-${Date.now()}`,

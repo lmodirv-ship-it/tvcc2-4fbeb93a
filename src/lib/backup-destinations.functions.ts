@@ -137,6 +137,8 @@ export const saveBackupDestination = createServerFn({ method: "POST" })
       base_path: data.basePath.trim().replace(/\/+$/, ""),
       is_enabled: data.isEnabled,
       notes: data.notes ?? null,
+      storage_server_id: data.storageServerId ?? null,
+      scope: data.scope ?? "all",
     };
     if (secretId) payload["secret_id"] = secretId;
 

@@ -107,7 +107,7 @@ export function TableEditor({ databaseId, hasAgent = true }: { databaseId: strin
     if (!hasAgent) return;
     if (queued.current.has(key)) return;
     queued.current.add(key);
-    void fn().then(() => query.refetch()).catch((e: any) => toast.error(e?.message ?? "تعذّر تنفيذ الطلب عبر الوكيل"));
+    void fn().then((r) => { push(r); query.refetch(); }).catch((e: any) => toast.error(e?.message ?? "تعذّر تنفيذ الطلب عبر الوكيل"));
   };
 
   useEffect(() => {
@@ -124,14 +124,14 @@ export function TableEditor({ databaseId, hasAgent = true }: { databaseId: strin
 
   const refreshTables = useMutation({
     mutationFn: () => catalog({ data: { databaseId, mode: "tables", schema } }),
-    onSuccess: () => { toast.success("طُلبت قائمة الجداول من الوكيل"); query.refetch(); },
+    onSuccess: (r: any) => { push(r); toast.success("تم تحديث قائمة الجداول"); query.refetch(); },
     onError: (e: any) => toast.error(e.message),
   });
   const refreshRows = useMutation({
     mutationFn: (next?: { page?: number }) => rowsFn({
       data: { databaseId, schema, table, page: next?.page ?? page, pageSize, sort, filters: filters.filter((f) => f.column) },
     }),
-    onSuccess: () => { toast.success("طُلبت الصفوف من الوكيل"); query.refetch(); },
+    onSuccess: (r: any) => { push(r); toast.success("تم تحديث الصفوف"); query.refetch(); },
     onError: (e: any) => toast.error(e.message),
   });
   const saveChanges = useMutation({
@@ -142,8 +142,9 @@ export function TableEditor({ databaseId, hasAgent = true }: { databaseId: strin
         updates: Object.entries(edits).map(([id, values]) => ({ pk: id, values })),
       },
     }),
-    onSuccess: () => {
-      toast.success("أُرسلت التغييرات إلى الوكيل وسُجّلت");
+    onSuccess: (r: any) => {
+      push(r);
+      toast.success("تم حفظ التغييرات وتسجيلها");
       setEdits({}); setInserts([]); setDeletes([]); setSelected([]);
       query.refetch();
     },
@@ -151,12 +152,12 @@ export function TableEditor({ databaseId, hasAgent = true }: { databaseId: strin
   });
   const ddl = useMutation({
     mutationFn: (payload: any) => ddlFn({ data: { databaseId, confirm: true, schema, ...payload } }),
-    onSuccess: () => { toast.success("أُرسل تغيير البنية إلى الوكيل"); query.refetch(); },
+    onSuccess: (r: any) => { push(r); toast.success("تم تنفيذ تغيير البنية"); query.refetch(); },
     onError: (e: any) => toast.error(e.message),
   });
   const importCsv = useMutation({
     mutationFn: (csv: string) => csvFn({ data: { databaseId, schema, table, csv, confirm: true } }),
-    onSuccess: () => { toast.success("أُرسل الاستيراد إلى الوكيل"); query.refetch(); },
+    onSuccess: (r: any) => { push(r); toast.success("تم تنفيذ الاستيراد"); query.refetch(); },
     onError: (e: any) => toast.error(e.message),
   });
 

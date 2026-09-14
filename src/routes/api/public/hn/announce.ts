@@ -69,7 +69,7 @@ export const Route = createFileRoute("/api/public/hn/announce")({
           return Response.json({ error: "rate_limited", code }, { status: 429, headers: CORS });
         }
 
-        if (secret && !signatureValid) {
+        if (!signatureValid) {
           await supabaseAdmin.from("hn_group_identity_signals").insert({
             identity_id: existing?.id ?? null,
             code,
@@ -113,7 +113,7 @@ export const Route = createFileRoute("/api/public/hn/announce")({
           origin,
           ip_hash: ipHash,
           user_agent: userAgent,
-          signature_valid: secret ? signatureValid : false,
+          signature_valid: signatureValid,
           payload: body as never,
         });
 

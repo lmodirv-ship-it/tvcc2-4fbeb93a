@@ -118,7 +118,7 @@ function DbStudioPage() {
             <div className="relative mb-3"><Search className="absolute right-3 top-2.5 size-4 text-muted-foreground" /><Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="بحث" className="pr-9" /></div>
             <nav className="grid grid-cols-1 gap-1">{sections.filter((item) => item.label.includes(search)).map((item) => <Button key={item.id} variant={section === item.id ? "secondary" : "ghost"} className="justify-start" onClick={() => setSection(item.id)}><item.icon className="size-4" />{item.label}</Button>)}</nav>
           </aside>
-          <main className="min-w-0 space-y-4 p-4 md:p-6">
+          <main ref={mainRef} className="min-w-0 space-y-4 p-4 md:p-6">
             {!selected ? <EmptyState /> : <SectionContent section={section} data={data} selected={selected} connection={connection} server={server} actionMutation={actionMutation} provisionMutation={provisionMutation} runQuery={runQuery} invalidate={invalidate} />}
           </main>
 

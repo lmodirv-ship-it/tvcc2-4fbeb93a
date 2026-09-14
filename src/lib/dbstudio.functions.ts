@@ -123,6 +123,7 @@ export const connectDatabaseAgent = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     await assertAdmin(supabase, userId);
     const { data: db } = await supabase.from("databases").select("*").eq("id", data.databaseId).single();
+    if (isInternalDb(db)) throw new Error("قاعدة TVCC الأساسية تعمل مباشرة دون وكيل");
     if (!db?.server_id) throw new Error("اربط القاعدة بسيرفر عليه وكيل TVCC أولاً");
     const pairingCode = randomBytes(4).toString("hex").toUpperCase();
     const pairingHash = createHash("sha256").update(pairingCode).digest("hex");

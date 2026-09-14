@@ -166,7 +166,11 @@ export function TableEditor({ databaseId, hasAgent = true }: { databaseId: strin
 
   const pendingCount = Object.keys(edits).length + inserts.length + deletes.length;
   const visibleTables = tables
-    .filter((t: any) => !tableSearch || String(t.name).includes(tableSearch))
+    .filter((t: any) => {
+      const term = tableSearch.trim().toLowerCase();
+      if (!term) return true;
+      return String(t.name).toLowerCase().includes(term) || tableCode(schema, t.name).toLowerCase().includes(term);
+    })
     .sort((a: any, b: any) => Number(favorites.includes(b.name)) - Number(favorites.includes(a.name)));
 
   const openTable = (name: string) => {

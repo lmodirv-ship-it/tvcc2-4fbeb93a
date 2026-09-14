@@ -235,6 +235,7 @@ run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
         fi
         ;;
       site_backup)     echo "[dry-run] tar czf $(GET dest_path)/\$D-\$(date).tar.gz /var/www/\$D then rsync -> $(GET target_host)" ;;
+      site_archive)    echo "[dry-run] full archive of $(GET domain) -> $(GET target_user)@$(GET target_host):$(GET remote_path) ($(GET kind))" ;;
       site_restore)    echo "[dry-run] tar xzf $(GET storage_path) -C /" ;;
       db_dump)         echo "[dry-run] dump DB | gzip > $(GET dest_path)/file.sql.gz then rsync -> $(GET target_host)" ;;
       db_sync)         echo "[dry-run] dump source db then load into linked target db" ;;
@@ -365,6 +366,37 @@ run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
           && echo "$F ($SZ MB) -> $TH:$OUT" || echo "$F ($SZ MB) transfer_failed=$TH"
       else
         echo "$F ($SZ MB)"
+      fi ;;
+    site_archive)
+      D="$(GET domain)"; K="$(GET kind)"; RP="$(GET remote_path)"
+      TH="$(GET target_host)"; TU="$(GET target_user)"; TPT="$(GET target_port)"; TPW="$(GET target_password)"
+      if [ -z "$D" ] || [ -z "$RP" ]; then echo "missing domain/remote_path"; exit 1; fi
+      WORK="$TVCC_BACKUP_DIR/archive-$D-$(date +%s)"; mkdir -p "$WORK"
+      tar czf "$WORK/files.tar.gz" "/var/www/$D" 2>/dev/null || true
+      DBN=$(echo "$D" | tr '.-' '__')
+      mysqldump --single-transaction "$DBN" 2>/dev/null | gzip > "$WORK/database.sql.gz"
+      if [ ! -s "$WORK/database.sql.gz" ]; then su - postgres -c "pg_dump '$DBN'" 2>/dev/null | gzip > "$WORK/database.sql.gz"; fi
+      printf '{"domain":"%s","kind":"%s","created_at":"%s"}' "$D" "$K" "$(date -u +%Y-%m-%dT%H:%M:%SZ)" > "$WORK/manifest.json"
+      SZ=$(du -sk "$WORK" | cut -f1)
+      SSHOPT="-o StrictHostKeyChecking=no -p \${TPT:-22}"
+      RUN=""
+      if [ -n "$TPW" ] && command -v sshpass >/dev/null 2>&1; then RUN="sshpass -p $TPW"; fi
+      if [ -n "$TH" ]; then
+        REMOTE="\${TU:-root}@$TH"
+        $RUN ssh $SSHOPT "$REMOTE" "mkdir -p '$RP.tmp' '$RP'" >/dev/null 2>&1
+        if $RUN rsync -az --delete -e "ssh $SSHOPT" "$WORK/" "$REMOTE:$RP.tmp/" >/dev/null 2>&1; then
+          if [ "$K" = "first" ]; then
+            $RUN ssh $SSHOPT "$REMOTE" "if [ -f '$RP/manifest.json' ]; then rm -rf '$RP.tmp'; else rm -rf '$RP'; mv '$RP.tmp' '$RP'; fi" >/dev/null 2>&1
+          else
+            $RUN ssh $SSHOPT "$REMOTE" "rm -rf '$RP.old'; mv '$RP' '$RP.old' 2>/dev/null; mv '$RP.tmp' '$RP'; rm -rf '$RP.old'" >/dev/null 2>&1
+          fi
+          rm -rf "$WORK"
+          echo "archived $D ($K) size_kb=$SZ -> $TH:$RP"
+        else
+          rm -rf "$WORK"; echo "transfer failed to $TH:$RP"; exit 1
+        fi
+      else
+        echo "archived locally $WORK size_kb=$SZ"
       fi ;;
     site_restore)    tar xzf "$(GET storage_path)" -C / && echo "restored $(GET storage_path)" ;;
     db_dump)

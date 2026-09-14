@@ -42,6 +42,25 @@ async function claimPending(admin: any, serverId: string) {
       .update({ status: "running", dispatched_at: now, started_at: now })
       .in("id", (pending as Array<{ id: string }>).map((p) => p.id));
   }
+
+  // كلمات السر لا تُخزَّن في الأوامر — تُحقن فقط لحظة التسليم للوكيل.
+  for (const cmd of ((pending as any[]) ?? [])) {
+    const ref = cmd?.args?.secret_ref;
+    if (!ref) continue;
+    const { data: secret } = await admin
+      .from("vault_secrets")
+      .select("encrypted_value, iv")
+      .eq("id", ref)
+      .maybeSingle();
+    if (!secret) continue;
+    try {
+      const { decryptSecret } = await import("@/lib/vault-crypto.server");
+      cmd.args = { ...cmd.args, target_password: decryptSecret(secret.encrypted_value, secret.iv) };
+      delete cmd.args.secret_ref;
+    } catch {
+      /* تجاهل سرّاً تعذّر فكّه */
+    }
+  }
   return pending ?? [];
 }
 
@@ -144,6 +163,20 @@ export const Route = createFileRoute("/api/public/servers/commands")({
               pairing_code_hash: discovery ? null : undefined,
               pairing_expires_at: discovery ? null : undefined,
             }).eq("database_id", databaseId);
+          }
+          if (cmd.action === "site_archive" && typeof args.destination_id === "string") {
+            const kb = Number(/size_kb=(\d+)/.exec(output ?? "")?.[1] ?? 0);
+            await admin
+              .from("site_backup_copies")
+              .update({
+                status: code === 0 ? "completed" : "failed",
+                size_bytes: kb ? kb * 1024 : null,
+                error_message: code === 0 ? null : output?.slice(0, 2000) ?? "فشل النسخ",
+                completed_at: code === 0 ? now : null,
+              })
+              .eq("destination_id", args.destination_id)
+              .eq("website_id", websiteId)
+              .eq("copy_kind", String(args.kind ?? "current"));
           }
           if (cmd.action === "site_identity_provision" && websiteId && databaseId) {
             await admin.from("site_databases").update({

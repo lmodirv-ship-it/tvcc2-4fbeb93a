@@ -1087,6 +1087,68 @@ export type Database = {
           },
         ]
       }
+      backup_destinations: {
+        Row: {
+          base_path: string
+          created_at: string
+          host: string
+          id: string
+          is_enabled: boolean
+          last_run_at: string | null
+          last_run_status: string | null
+          last_run_summary: Json
+          name: string
+          notes: string | null
+          owner_id: string
+          port: number
+          secret_id: string | null
+          updated_at: string
+          username: string
+        }
+        Insert: {
+          base_path?: string
+          created_at?: string
+          host: string
+          id?: string
+          is_enabled?: boolean
+          last_run_at?: string | null
+          last_run_status?: string | null
+          last_run_summary?: Json
+          name: string
+          notes?: string | null
+          owner_id: string
+          port?: number
+          secret_id?: string | null
+          updated_at?: string
+          username?: string
+        }
+        Update: {
+          base_path?: string
+          created_at?: string
+          host?: string
+          id?: string
+          is_enabled?: boolean
+          last_run_at?: string | null
+          last_run_status?: string | null
+          last_run_summary?: Json
+          name?: string
+          notes?: string | null
+          owner_id?: string
+          port?: number
+          secret_id?: string | null
+          updated_at?: string
+          username?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "backup_destinations_secret_id_fkey"
+            columns: ["secret_id"]
+            isOneToOne: false
+            referencedRelation: "vault_secrets"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       backup_schedules: {
         Row: {
           backup_type: string
@@ -4049,7 +4111,7 @@ export type Database = {
           kind: string
           label: string
           notes: string | null
-          owner_id: string | null
+          owner_id: string
           rib: string | null
           swift: string | null
           updated_at: string
@@ -4068,7 +4130,7 @@ export type Database = {
           kind?: string
           label: string
           notes?: string | null
-          owner_id?: string | null
+          owner_id: string
           rib?: string | null
           swift?: string | null
           updated_at?: string
@@ -4087,7 +4149,7 @@ export type Database = {
           kind?: string
           label?: string
           notes?: string | null
-          owner_id?: string | null
+          owner_id?: string
           rib?: string | null
           swift?: string | null
           updated_at?: string
@@ -6391,6 +6453,75 @@ export type Database = {
           },
         ]
       }
+      site_backup_copies: {
+        Row: {
+          checksum: string | null
+          command_id: string | null
+          completed_at: string | null
+          copy_kind: string
+          created_at: string
+          destination_id: string
+          domain: string
+          error_message: string | null
+          id: string
+          owner_id: string
+          remote_path: string
+          size_bytes: number | null
+          status: string
+          updated_at: string
+          website_id: string
+        }
+        Insert: {
+          checksum?: string | null
+          command_id?: string | null
+          completed_at?: string | null
+          copy_kind: string
+          created_at?: string
+          destination_id: string
+          domain: string
+          error_message?: string | null
+          id?: string
+          owner_id: string
+          remote_path: string
+          size_bytes?: number | null
+          status?: string
+          updated_at?: string
+          website_id: string
+        }
+        Update: {
+          checksum?: string | null
+          command_id?: string | null
+          completed_at?: string | null
+          copy_kind?: string
+          created_at?: string
+          destination_id?: string
+          domain?: string
+          error_message?: string | null
+          id?: string
+          owner_id?: string
+          remote_path?: string
+          size_bytes?: number | null
+          status?: string
+          updated_at?: string
+          website_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_backup_copies_destination_id_fkey"
+            columns: ["destination_id"]
+            isOneToOne: false
+            referencedRelation: "backup_destinations"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_backup_copies_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_backups: {
         Row: {
           backup_type: string
@@ -8610,6 +8741,10 @@ export type Database = {
       is_permanent_owner_email: { Args: { _email: string }; Returns: boolean }
       rollup_server_metrics: { Args: { retain_days?: number }; Returns: number }
       tvcc_exec_sql: { Args: { sql: string }; Returns: Json[] }
+      verify_cron_secret: {
+        Args: { _name: string; _secret: string }
+        Returns: boolean
+      }
     }
     Enums: {
       app_role: "admin" | "editor" | "viewer" | "system_owner"

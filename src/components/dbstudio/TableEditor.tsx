@@ -37,7 +37,7 @@ const OPS: [string, string][] = [
 ];
 type FilterRow = { column: string; op: string; value: string };
 
-export function TableEditor({ databaseId }: { databaseId: string }) {
+export function TableEditor({ databaseId, hasAgent = true }: { databaseId: string; hasAgent?: boolean }) {
   const fetchCommands = useServerFn(getEditorCommands);
   const catalog = useServerFn(readCatalog);
   const rowsFn = useServerFn(readTableRows);
@@ -97,19 +97,20 @@ export function TableEditor({ databaseId }: { databaseId: string }) {
   const currentTable = tables.find((t: any) => t.name === table);
 
   const runOnce = (key: string, fn: () => Promise<unknown>) => {
+    if (!hasAgent) return;
     if (queued.current.has(key)) return;
     queued.current.add(key);
-    void fn().then(() => query.refetch()).catch((e: any) => toast.error(e.message));
+    void fn().then(() => query.refetch()).catch((e: any) => toast.error(e?.message ?? "تعذّر تنفيذ الطلب عبر الوكيل"));
   };
 
   useEffect(() => {
-    if (!databaseId) return;
+    if (!databaseId || !hasAgent) return;
     if (!schemasCmd) runOnce(`schemas`, () => catalog({ data: { databaseId, mode: "schemas" } }));
     if (!tablesCmd) runOnce(`tables:${schema}`, () => catalog({ data: { databaseId, mode: "tables", schema } }));
   }, [databaseId, schema, schemasCmd, tablesCmd]);
 
   useEffect(() => {
-    if (!databaseId || !table) return;
+    if (!databaseId || !table || !hasAgent) return;
     if (!columnsCmd) runOnce(`cols:${schema}.${table}`, () => catalog({ data: { databaseId, mode: "columns", schema, table } }));
     if (!rowsCmd) runOnce(`rows:${schema}.${table}`, () => rowsFn({ data: { databaseId, schema, table, page, pageSize } }));
   }, [databaseId, schema, table, columnsCmd, rowsCmd]);
@@ -169,6 +170,15 @@ export function TableEditor({ databaseId }: { databaseId: string }) {
     const id = String(row[pk]);
     setEdits((prev) => ({ ...prev, [id]: { ...(prev[id] ?? {}), [key]: value } }));
   };
+
+  if (!hasAgent) {
+    return (
+      <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
+        هذه القاعدة غير مرتبطة بسيرفر عليه وكيل TVCC، لذلك لا يمكن قراءة الجداول أو تعديلها.
+        اربط القاعدة بسيرفر يعمل عليه الوكيل من تبويب «الإعدادات»، ثم عُد إلى محرر الجداول.
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-4">
@@ -374,7 +384,7 @@ export function TableEditor({ databaseId }: { databaseId: string }) {
                 <div className="flex flex-wrap gap-2">
                   <AddColumnDialog onAdd={(column) => ddl.mutate({ kind: "add_column", table, column })} pending={ddl.isPending} />
                   <Button size="sm" variant="outline" onClick={() => ddl.mutate({ kind: "enable_rls", table, rls: true })}><ShieldCheck className="size-4" />تفعيل RLS</Button>
-                  <Button size="sm" variant="outline" onClick={() => catalog({ data: { databaseId, mode: "columns", schema, table } }).then(() => query.refetch())}><RefreshCw className="size-4" />تحديث</Button>
+                  <Button size="sm" variant="outline" onClick={() => catalog({ data: { databaseId, mode: "columns", schema, table } }).then(() => query.refetch()).catch((e: any) => toast.error(e?.message ?? "تعذّر التنفيذ"))}><RefreshCw className="size-4" />تحديث</Button>
                 </div>
                 <Card><CardContent className="overflow-x-auto p-0">
                   <table className="w-full text-sm">
@@ -412,7 +422,7 @@ export function TableEditor({ databaseId }: { databaseId: string }) {
                 )}
                 <div className="flex flex-wrap gap-2">
                   <NewPolicyDialog table={table} onCreate={(policy) => ddl.mutate({ kind: "create_policy", table, policy })} pending={ddl.isPending} />
-                  <Button size="sm" variant="outline" onClick={() => catalog({ data: { databaseId, mode: "policies", schema, table } }).then(() => query.refetch())}><RefreshCw className="size-4" />قراءة السياسات</Button>
+                  <Button size="sm" variant="outline" onClick={() => catalog({ data: { databaseId, mode: "policies", schema, table } }).then(() => query.refetch()).catch((e: any) => toast.error(e?.message ?? "تعذّر التنفيذ"))}><RefreshCw className="size-4" />قراءة السياسات</Button>
                 </div>
                 <Card><CardContent className="overflow-x-auto p-0">
                   <table className="w-full text-sm">

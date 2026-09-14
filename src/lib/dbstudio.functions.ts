@@ -5,6 +5,7 @@ import { hasAnyRole, isAdminOrOwner } from "./roles.server";
 
 const DB_ACTIONS = [
   "db_discover", "pg_meta", "pg_rows", "pg_write", "db_query", "db_policy",
+  "pg_ddl", "pg_import_csv",
   "auth_users", "storage_list", "edge_functions_list", "realtime_inspect",
   "advisor_scan", "db_export", "db_import_full", "db_sync", "db_migrate",
   "backup_run", "backup_verify", "backup_restore", "site_identity_provision",

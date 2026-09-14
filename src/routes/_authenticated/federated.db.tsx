@@ -69,12 +69,8 @@ function DbStudioPage() {
   const [section, setSection] = useState("overview");
   const [databaseId, setDatabaseId] = useState("");
   const [search, setSearch] = useState("");
-  const mainRef = useRef<HTMLDivElement>(null);
   const client = useQueryClient();
 
-  useEffect(() => {
-    mainRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
-  }, [section]);
   const fetchStudio = useServerFn(getDbStudioData);
   const connect = useServerFn(connectDatabaseAgent);
   const action = useServerFn(queueDbStudioAction);

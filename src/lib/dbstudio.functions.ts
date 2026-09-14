@@ -736,6 +736,8 @@ export const linkDatabaseServer = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertAdmin(supabase, userId);
+    const { data: db } = await supabase.from("databases").select("db_kind").eq("id", data.databaseId).single();
+    if (db?.db_kind === "internal") throw new Error("قاعدة TVCC الأساسية لا تُربط بسيرفر");
     if (data.serverId) {
       const { data: server } = await supabase.from("servers").select("id").eq("id", data.serverId).single();
       if (!server) throw new Error("السيرفر غير موجود");

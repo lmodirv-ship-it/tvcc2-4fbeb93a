@@ -1,9 +1,9 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useMemo, useState } from "react";
+import { Fragment, useMemo, useState } from "react";
 import {
-  getAgentsData, saveAgentConfig, getNginxConfig, saveNginxConfig,
+  getAgentsData, saveAgentConfig, getNginxConfig, saveNginxConfig, mergeDuplicateServer,
   createSiteSnapshot, rollbackSiteSnapshot,
 } from "@/lib/federated.functions";
 import { setAgentCapability, dispatchAgentCommand, createAgentJob } from "@/lib/agent-roles.functions";
@@ -18,7 +18,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Bot, Loader2, Save, FileCode2, Copy, Play, Plus, Activity, RefreshCw, ExternalLink, Trash2 } from "lucide-react";
+import { Bot, Loader2, Save, FileCode2, Copy, Play, Plus, Activity, RefreshCw, ExternalLink, Trash2, SlidersHorizontal, ShieldCheck, GitMerge, ChevronDown, ChevronLeft, Download, Signal } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/federated/agents")({
@@ -49,6 +51,21 @@ function ago(iso: string | null) {
 
 function pct(v: number | null | undefined) {
   return v == null ? "—" : `${Math.round(v)}%`;
+}
+
+function fmtBytes(n: number | null | undefined) {
+  if (n == null) return "—";
+  if (n >= 1e12) return `${(n / 1e12).toFixed(1)}TB`;
+  if (n >= 1e9) return `${(n / 1e9).toFixed(1)}GB`;
+  if (n >= 1e6) return `${(n / 1e6).toFixed(1)}MB`;
+  return `${Math.round(n / 1e3)}KB`;
+}
+
+function fmtUptime(sec: number | null | undefined) {
+  if (sec == null) return "—";
+  const d = Math.floor(sec / 86400);
+  const h = Math.floor((sec % 86400) / 3600);
+  return d > 0 ? `${d}d ${h}h` : `${h}h ${Math.floor((sec % 3600) / 60)}m`;
 }
 
 function statusBadge(status: string) {
@@ -84,6 +101,33 @@ function AgentsPage() {
   const [jobTitle, setJobTitle] = useState("");
   const [jobDryRun, setJobDryRun] = useState(false);
   const [jobSteps, setJobSteps] = useState<Array<{ action: string; arg: string }>>([{ action: "agent_diag", arg: "" }]);
+  const [expanded, setExpanded] = useState<Record<string, boolean>>({});
+  const [mergeRow, setMergeRow] = useState<any>(null);
+  const mergeFn = useServerFn(mergeDuplicateServer);
+
+  // أعمدة جدول السيرفرات القابلة للإظهار/الإخفاء
+  const COLS: Array<{ key: string; label: string; on: boolean }> = [
+    { key: "id", label: "المعرّف", on: true },
+    { key: "name", label: "الاسم", on: true },
+    { key: "host", label: "المضيف / IP", on: true },
+    { key: "agents", label: "الوكلاء", on: true },
+    { key: "link", label: "قوة الاتصال", on: true },
+    { key: "trust", label: "الموثوقية", on: true },
+    { key: "cpu", label: "المعالج", on: true },
+    { key: "ram", label: "الرام", on: true },
+    { key: "disk", label: "التخزين", on: true },
+    { key: "sites", label: "المواقع", on: true },
+    { key: "queue", label: "الطابور", on: true },
+    { key: "tools", label: "الأدوات", on: true },
+    { key: "net", label: "الشبكة", on: false },
+    { key: "uptime", label: "مدة التشغيل", on: false },
+    { key: "ports", label: "المنافذ", on: false },
+    { key: "dbs", label: "قواعد البيانات", on: false },
+    { key: "status", label: "الحالة", on: false },
+    { key: "os", label: "النظام", on: false },
+  ];
+  const [visible, setVisible] = useState<Record<string, boolean>>(() => Object.fromEntries(COLS.map((c) => [c.key, c.on])));
+  const visibleCols = COLS.filter((c) => visible[c.key]);
 
   const { data, isLoading } = useQuery({
     queryKey: ["federated-agents"],
@@ -211,9 +255,35 @@ function AgentsPage() {
 
   if (isLoading || !data) return <div className="p-8 text-muted-foreground">جارٍ تحميل الوكلاء…</div>;
 
-  const instance = (id: string) => ((data.instances ?? []) as any[]).find((i) => i.server_id === id);
   const healthOf = (id: string) => ((data.health ?? {}) as any)[id];
+  const metricsOf = (id: string) => ((data.metrics ?? {}) as any)[id];
   const queueOf = (id: string) => ((data.queued ?? {}) as any)[id] ?? { pending: 0, running: 0 };
+
+  // لا نعرض النسخ المؤرشفة/المدموجة في الجدول (منع تكرار نفس السيرفر)
+  const visibleServers = filteredServers.filter((s) => !s.duplicate_of && s.status !== "archived");
+
+  const exportCsv = () => {
+    const header = ["id", "name", "hostname", "public_ip", "status", "agents", "link_quality", "cpu%", "ram", "disk", "sites", "verified"];
+    const lines = visibleServers.map((s) => {
+      const agents: any[] = ((data.agents ?? {}) as any)[s.id] ?? [];
+      const main = agents.find((a) => a.agent_key === "main") ?? agents[0];
+      const m = metricsOf(s.id);
+      return [
+        s.id, s.name, s.hostname ?? "", s.public_ip ?? "", s.status, agents.length,
+        main?.link_quality ?? "", m?.cpu_percent ?? "",
+        m?.mem_used_mb != null ? `${(m.mem_used_mb / 1024).toFixed(1)}/${((m.mem_total_mb ?? 0) / 1024).toFixed(1)}GB` : "",
+        m?.disk_used_gb != null ? `${m.disk_used_gb}/${m.disk_total_gb}GB` : "",
+        ((data.sitesPer ?? {}) as any)[s.id] ?? 0, main?.verified_at ? "yes" : "no",
+      ].join(",");
+    });
+    const blob = new Blob(["\uFEFF" + header.join(",") + "\n" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `servers-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast.success("صُدّر ملف CSV");
+  };
 
   const serverSites = activeId ? (data.websites as any[]).filter((w) => w.server_id === activeId) : [];
   const serverNginx = activeId ? (data.nginx as any[]).filter((n) => n.server_id === activeId) : [];
@@ -232,72 +302,204 @@ function AgentsPage() {
         <Button variant="outline" size="sm" onClick={refresh}><RefreshCw className="w-4 h-4 ml-1" /> تحديث</Button>
       </div>
 
-      {/* ===== القسم الأول: جدول حالة السيرفرات (12 خانة) ===== */}
+      {/* ===== القسم الأول: جدول حالة السيرفرات (بيانات موثّقة من الوكيل) ===== */}
       <section className="space-y-3">
         <div className="flex items-center justify-between gap-3 flex-wrap">
-          <h2 className="text-lg font-bold flex items-center gap-2"><Activity className="w-4 h-4 text-primary" /> حالة السيرفرات ({servers.length})</h2>
-          <Input placeholder="بحث بالاسم أو المضيف أو المعرّف…" value={serverSearch} onChange={(e) => setServerSearch(e.target.value)} className="max-w-xs" />
+          <h2 className="text-lg font-bold flex items-center gap-2"><Activity className="w-4 h-4 text-primary" /> حالة السيرفرات ({visibleServers.length})</h2>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={exportCsv}><Download className="w-4 h-4 ml-1" /> تصدير CSV</Button>
+            <Popover>
+              <PopoverTrigger asChild>
+                <Button variant="outline" size="sm"><SlidersHorizontal className="w-4 h-4 ml-1" /> الأعمدة</Button>
+              </PopoverTrigger>
+              <PopoverContent className="w-56 max-h-80 overflow-y-auto" align="end">
+                <div className="space-y-2">
+                  {COLS.map((c) => (
+                    <label key={c.key} className="flex items-center gap-2 text-sm cursor-pointer">
+                      <Checkbox checked={!!visible[c.key]} onCheckedChange={(v) => setVisible((p) => ({ ...p, [c.key]: !!v }))} />
+                      {c.label}
+                    </label>
+                  ))}
+                </div>
+              </PopoverContent>
+            </Popover>
+            <Input placeholder="بحث بالاسم أو المضيف أو المعرّف…" value={serverSearch} onChange={(e) => setServerSearch(e.target.value)} className="max-w-xs" />
+          </div>
         </div>
         <Card><CardContent className="p-0 overflow-x-auto">
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>المعرّف</TableHead>
-                <TableHead>الاسم</TableHead>
-                <TableHead>المضيف / IP</TableHead>
-                <TableHead>الحالة</TableHead>
-                <TableHead>إصدار الوكيل</TableHead>
-                <TableHead>آخر اتصال</TableHead>
-                <TableHead>النظام</TableHead>
-                <TableHead>المعالج</TableHead>
-                <TableHead>الذاكرة</TableHead>
-                <TableHead>القرص</TableHead>
-                <TableHead>الطابور</TableHead>
-                <TableHead>إجراءات</TableHead>
+                {visibleCols.map((c) => <TableHead key={c.key}>{c.label}</TableHead>)}
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredServers.map((s) => {
-                const inst = instance(s.id);
+              {visibleServers.map((s, i) => {
+                const agents: any[] = ((data.agents ?? {}) as any)[s.id] ?? [];
+                const main = agents.find((a) => a.agent_key === "main") ?? agents[0];
                 const h = healthOf(s.id);
+                const m = metricsOf(s.id);
                 const q = queueOf(s.id);
+                const quality: number | null = main?.link_quality ?? null;
+                const verified = !!main?.verified_at;
+                const liveState = main?.live ?? "offline";
+                const dupIds: string[] = ((data.duplicates ?? {}) as any)[s.id] ?? [];
+                const isDupOf = !!s.duplicate_of;
+                const sitesN = ((data.sitesPer ?? {}) as any)[s.id] ?? 0;
                 const isActive = s.id === activeId;
-                return (
-                  <TableRow key={s.id} className={isActive ? "bg-primary/5" : ""} onClick={() => setSelected(s.id)}>
-                    <TableCell>
+                const open = !!expanded[s.id];
+                const qColor = quality == null ? "bg-muted" : quality >= 75 ? "bg-success" : quality >= 40 ? "bg-warning" : "bg-destructive";
+                const cell = (key: string) => {
+                  switch (key) {
+                    case "id": return (
                       <button className="flex items-center gap-1 font-mono text-xs text-primary" dir="ltr"
                         onClick={(e) => { e.stopPropagation(); copy(s.id); }}>
-                        {String(s.id).slice(0, 8)} <Copy className="w-3 h-3" />
+                        #{i + 1} · {String(s.id).slice(0, 8)} <Copy className="w-3 h-3" />
                       </button>
-                    </TableCell>
-                    <TableCell className="font-medium whitespace-nowrap">{s.name}</TableCell>
-                    <TableCell dir="ltr" className="text-xs text-muted-foreground whitespace-nowrap">{s.hostname}{s.public_ip ? ` · ${s.public_ip}` : s.private_ip ? ` · ${s.private_ip}` : ""}</TableCell>
-                    <TableCell><Badge className={statusBadge(s.status)}>{s.status}</Badge></TableCell>
-                    <TableCell dir="ltr" className="text-xs">v{inst?.agent_version ?? s.agent_version ?? "—"}</TableCell>
-                    <TableCell className="text-xs whitespace-nowrap">{ago(inst?.last_poll_at ?? s.last_seen_at)}</TableCell>
-                    <TableCell className="text-xs" dir="ltr">{inst?.os ?? s.os ?? "—"}</TableCell>
-                    <TableCell className="text-xs">{pct(h?.cpu_percent)}</TableCell>
-                    <TableCell className="text-xs">{pct(h?.memory_percent)}</TableCell>
-                    <TableCell className="text-xs">{pct(h?.disk_percent)}</TableCell>
-                    <TableCell className="text-xs whitespace-nowrap">{q.running} / {q.pending}</TableCell>
-                    <TableCell onClick={(e) => e.stopPropagation()}>
-                      <div className="flex gap-1">
+                    );
+                    case "name": return (
+                      <span className="font-medium whitespace-nowrap flex items-center gap-1">
+                        {s.name}
+                        {isDupOf && <Badge className="bg-muted text-muted-foreground text-[10px]">مكرر</Badge>}
+                        {dupIds.length > 0 && <Badge className="bg-warning/15 text-warning text-[10px]">له نسخة مكررة</Badge>}
+                      </span>
+                    );
+                    case "host": return <span dir="ltr" className="text-xs text-muted-foreground whitespace-nowrap">{s.hostname}{s.public_ip ? ` · ${s.public_ip}` : s.private_ip ? ` · ${s.private_ip}` : ""}</span>;
+                    case "status": return <Badge className={statusBadge(s.status)}>{s.status}</Badge>;
+                    case "os": return <span className="text-xs" dir="ltr">{main?.os ?? s.os ?? "—"}</span>;
+                    case "agents": return (
+                      <button className="flex items-center gap-1 text-xs" onClick={(e) => { e.stopPropagation(); setExpanded((p) => ({ ...p, [s.id]: !p[s.id] })); }}>
+                        <Badge className="bg-primary/10 text-primary">{agents.length || 0} وكيل</Badge>
+                        {open ? <ChevronDown className="w-3 h-3" /> : <ChevronLeft className="w-3 h-3" />}
+                        <span className="text-muted-foreground" dir="ltr">v{main?.agent_version ?? s.agent_version ?? "—"}</span>
+                      </button>
+                    );
+                    case "link": return quality == null ? <span className="text-xs text-muted-foreground">لا نبض</span> : (
+                      <div className="flex items-center gap-2 min-w-[110px]">
+                        <Signal className="w-3.5 h-3.5 text-muted-foreground" />
+                        <div className="flex-1 h-1.5 rounded-full bg-muted overflow-hidden"><div className={`h-full ${qColor}`} style={{ width: `${quality}%` }} /></div>
+                        <span className="text-xs font-mono" dir="ltr">{quality}%</span>
+                      </div>
+                    );
+                    case "trust": return (
+                      <span className="flex items-center gap-1 text-xs whitespace-nowrap">
+                        {verified ? <Badge className="bg-success/15 text-success"><ShieldCheck className="w-3 h-3 ml-1" /> موثّق</Badge> : <Badge className="bg-muted text-muted-foreground">غير موثّق</Badge>}
+                        <span className={liveState === "live" ? "text-success" : liveState === "stale" ? "text-warning" : "text-destructive"}>
+                          {liveState === "live" ? "مباشر" : liveState === "stale" ? "متأخر" : "منقطع"}
+                        </span>
+                        <span className="text-muted-foreground">{ago(main?.last_poll_at ?? s.last_seen_at)}</span>
+                      </span>
+                    );
+                    case "cpu": return <span className="text-xs">{pct(m?.cpu_percent ?? h?.cpu_percent)}</span>;
+                    case "ram": return (
+                      <span className="text-xs whitespace-nowrap" dir="ltr">
+                        {m?.mem_used_mb != null ? `${(m.mem_used_mb / 1024).toFixed(1)}/${((m.mem_total_mb ?? 0) / 1024).toFixed(1)}GB` : pct(h?.memory_percent)}
+                      </span>
+                    );
+                    case "disk": return (
+                      <span className="text-xs whitespace-nowrap" dir="ltr">
+                        {m?.disk_used_gb != null ? `${Math.round(m.disk_used_gb)}/${Math.round(m.disk_total_gb ?? 0)}GB` : pct(h?.disk_percent)}
+                      </span>
+                    );
+                    case "sites": return <Badge className="bg-secondary text-secondary-foreground">{sitesN}</Badge>;
+                    case "ports": return <span className="text-xs">{((data.portsPer ?? {}) as any)[s.id] ?? 0}</span>;
+                    case "dbs": return <span className="text-xs">{((data.dbsPer ?? {}) as any)[s.id] ?? 0}</span>;
+                    case "net": return (
+                      <span className="text-[10px] font-mono whitespace-nowrap" dir="ltr">
+                        {main?.net_rx_bytes != null ? `↓${fmtBytes(main.net_rx_bytes)} ↑${fmtBytes(main.net_tx_bytes ?? 0)}` : "—"}
+                      </span>
+                    );
+                    case "uptime": return <span className="text-xs" dir="ltr">{fmtUptime(main?.uptime_seconds ?? m?.uptime_seconds)}</span>;
+                    case "queue": return <span className="text-xs whitespace-nowrap">{q.running} / {q.pending}</span>;
+                    case "tools": return (
+                      <div className="flex gap-1" onClick={(e) => e.stopPropagation()}>
                         <Button size="sm" variant="outline" onClick={() => run("agent_diag", s.id)}>تشخيص</Button>
                         <Button size="sm" variant="outline" onClick={() => run("agent_self_update", s.id)}>تحديث</Button>
                         <Button size="sm" variant="ghost" onClick={() => openConfig(s.id)}>إعدادات</Button>
+                        {dupIds.length > 0 && (
+                          <Button size="sm" variant="ghost" title="دمج النسخ المكررة" onClick={() => setMergeRow({ primary: s, dupIds })}>
+                            <GitMerge className="w-3.5 h-3.5" />
+                          </Button>
+                        )}
                         <Button size="sm" variant="ghost" asChild><a href={`/servers/${s.id}`}><ExternalLink className="w-3 h-3" /></a></Button>
                       </div>
-                    </TableCell>
-                  </TableRow>
+                    );
+                    default: return null;
+                  }
+                };
+                return (
+                  <Fragment key={s.id}>
+                    <TableRow key={s.id} className={isActive ? "bg-primary/5" : ""} onClick={() => setSelected(s.id)}>
+                      {visibleCols.map((c) => <TableCell key={c.key}>{cell(c.key)}</TableCell>)}
+                    </TableRow>
+                    {open && (
+                      <TableRow key={`${s.id}-agents`} className="bg-muted/30">
+                        <TableCell colSpan={visibleCols.length}>
+                          <div className="py-1 space-y-1">
+                            {agents.length === 0 && <p className="text-xs text-muted-foreground">لا يوجد وكيل مسجّل — ثبّت الوكيل من صفحة السيرفر.</p>}
+                            {agents.map((a) => (
+                              <div key={`${a.server_id}:${a.agent_key}`} className="flex items-center gap-4 text-xs flex-wrap" dir="rtl">
+                                <Badge className="bg-primary/10 text-primary" dir="ltr">{a.agent_key}</Badge>
+                                <span>الدور: {a.role}</span>
+                                <span dir="ltr">v{a.agent_version ?? "—"}</span>
+                                <span>النبض: {ago(a.last_poll_at)}</span>
+                                <span>الجودة: {a.link_quality}%</span>
+                                <span className={a.live === "live" ? "text-success" : a.live === "stale" ? "text-warning" : "text-destructive"}>
+                                  {a.live === "live" ? "مباشر" : a.live === "stale" ? "متأخر" : "منقطع"}
+                                </span>
+                                {a.poll_latency_ms != null && <span dir="ltr">{a.poll_latency_ms}ms</span>}
+                                {a.uptime_seconds != null && <span dir="ltr">up {fmtUptime(a.uptime_seconds)}</span>}
+                                {a.last_error && <span className="text-destructive">{a.last_error}</span>}
+                                <span className="text-muted-foreground" dir="ltr">{a.os ?? ""}</span>
+                              </div>
+                            ))}
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    )}
+                  </Fragment>
                 );
               })}
-              {filteredServers.length === 0 && (
-                <TableRow><TableCell colSpan={12} className="text-center text-muted-foreground">لا سيرفرات مطابقة</TableCell></TableRow>
+              {visibleServers.length === 0 && (
+                <TableRow><TableCell colSpan={visibleCols.length} className="text-center text-muted-foreground">لا سيرفرات مطابقة</TableCell></TableRow>
               )}
             </TableBody>
           </Table>
         </CardContent></Card>
       </section>
+
+      {/* حوار دمج السيرفرات المكررة */}
+      <Dialog open={!!mergeRow} onOpenChange={(o) => !o && setMergeRow(null)}>
+        <DialogContent dir="rtl">
+          <DialogHeader><DialogTitle>دمج سيرفرات مكررة (نفس البصمة)</DialogTitle></DialogHeader>
+          {mergeRow && (
+            <div className="space-y-3 text-sm">
+              <p>السجل الأصلي: <b>{mergeRow.primary.name}</b> <span className="font-mono text-xs" dir="ltr">({String(mergeRow.primary.id).slice(0, 8)})</span></p>
+              <p className="text-muted-foreground">السجلات التالية تشاركه بصمة الجهاز وستُنقل مواقعها وأوامرها للأصل ثم تُؤرشف:</p>
+              <ul className="list-disc pr-5 space-y-1">
+                {mergeRow.dupIds.map((id: string) => {
+                  const d = servers.find((x) => x.id === id);
+                  return <li key={id}><span className="font-mono text-xs" dir="ltr">{id.slice(0, 8)}</span> — {d?.name ?? "؟"}</li>;
+                })}
+              </ul>
+            </div>
+          )}
+          <DialogFooter>
+            <Button variant="ghost" onClick={() => setMergeRow(null)}>إلغاء</Button>
+            <Button disabled={busy} onClick={async () => {
+              if (!mergeRow) return;
+              setBusy(true);
+              try {
+                for (const id of mergeRow.dupIds) await mergeFn({ data: { primaryId: mergeRow.primary.id, duplicateId: id } });
+                toast.success("تم الدمج والأرشفة");
+                setMergeRow(null);
+                refresh();
+              } catch (e: any) { toast.error(e?.message ?? "تعذّر الدمج"); }
+              setBusy(false);
+            }}>{busy ? <Loader2 className="w-4 h-4 animate-spin" /> : "تأكيد الدمج"}</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* ===== القسم الثاني: جدول مهام الوكيل ===== */}
       <section className="space-y-3">

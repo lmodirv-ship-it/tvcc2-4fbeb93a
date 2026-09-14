@@ -210,9 +210,9 @@ export const getAgentsData = createServerFn({ method: "GET" })
     const { supabase, userId } = context;
     await assertAdmin(supabase, userId);
     const sb = supabase as any;
-    const [servers, configs, commands, nginx, snapshots, websites, instances, health, caps, pending] =
+    const [servers, configs, commands, nginx, snapshots, websites, instances, health, caps, pending, ports, dbs, metrics] =
       await Promise.all([
-        sb.from("servers").select("id, name, hostname, public_ip, private_ip, status, role, agent_version, last_seen_at, os").order("name"),
+        sb.from("servers").select("id, name, hostname, public_ip, private_ip, status, role, agent_version, last_seen_at, os, machine_id, duplicate_of, maintenance_mode").order("name"),
         sb.from("agent_configs").select("server_id, heartbeat_interval_sec, allowed_commands, autostart"),
         sb
           .from("server_commands")
@@ -222,7 +222,10 @@ export const getAgentsData = createServerFn({ method: "GET" })
         sb.from("nginx_configs").select("id, server_id, website_id, file_path, status, version, updated_at").order("updated_at", { ascending: false }),
         sb.from("site_snapshots").select("id, website_id, slot, created_at").order("created_at", { ascending: false }),
         sb.from("websites").select("id, name, domain, server_id, status"),
-        sb.from("agent_instances").select("server_id, agent_version, os, status, running_commands, last_poll_at, poll_latency_ms"),
+        sb
+          .from("agent_instances")
+          .select("server_id, agent_key, role, agent_version, os, status, running_commands, last_poll_at, poll_latency_ms, link_quality, net_rx_bytes, net_tx_bytes, uptime_seconds, last_error, verified_at, machine_id")
+          .order("agent_key"),
         sb
           .from("server_health_snapshots")
           .select("server_id, cpu_percent, memory_percent, disk_percent, score, level, created_at")
@@ -230,10 +233,20 @@ export const getAgentsData = createServerFn({ method: "GET" })
           .limit(400),
         sb.from("agent_capabilities").select("server_id, action, allowed, requires_confirm"),
         sb.from("server_commands").select("server_id, status").in("status", ["pending", "running"]).limit(1000),
+        sb.from("server_ports").select("server_id, port").limit(2000),
+        sb.from("site_databases").select("database_id, databases(server_id)").limit(2000),
+        sb
+          .from("server_metrics")
+          .select("server_id, cpu_percent, mem_used_mb, mem_total_mb, disk_used_gb, disk_total_gb, load_avg, uptime_seconds, collected_at")
+          .order("collected_at", { ascending: false })
+          .limit(600),
       ]);
 
     const latestHealth: Record<string, any> = {};
     for (const h of (health.data ?? []) as any[]) if (!latestHealth[h.server_id]) latestHealth[h.server_id] = h;
+
+    const latestMetrics: Record<string, any> = {};
+    for (const m of (metrics.data ?? []) as any[]) if (!latestMetrics[m.server_id]) latestMetrics[m.server_id] = m;
 
     const queued: Record<string, { pending: number; running: number }> = {};
     for (const c of (pending.data ?? []) as any[]) {
@@ -241,11 +254,57 @@ export const getAgentsData = createServerFn({ method: "GET" })
       if (c.status === "running") q.running++; else q.pending++;
     }
 
-    // آخر تنفيذ لكل (سيرفر + أمر)
+    // آخر تنفيذ لكل (سيرفر + أمر) + إحصائيات نجاح الأوامر خلال 24 ساعة
     const lastRun: Record<string, { status: string; created_at: string; exit_code: number | null }> = {};
+    const dayAgo = Date.now() - 24 * 3600 * 1000;
+    const cmdStats: Record<string, { ok: number; fail: number }> = {};
     for (const c of (commands.data ?? []) as any[]) {
       const key = `${c.server_id}:${c.action}`;
       if (!lastRun[key]) lastRun[key] = { status: c.status, created_at: c.created_at, exit_code: c.exit_code ?? null };
+      if (new Date(c.created_at).getTime() < dayAgo) continue;
+      if (c.status !== "done" && c.status !== "failed") continue;
+      const st = (cmdStats[c.server_id] ??= { ok: 0, fail: 0 });
+      if (c.status === "done") st.ok++; else st.fail++;
+    }
+
+    // عدّات لكل سيرفر: مواقع + منافذ + قواعد بيانات
+    const sitesPer: Record<string, number> = {};
+    for (const w of (websites.data ?? []) as any[]) if (w.server_id) sitesPer[w.server_id] = (sitesPer[w.server_id] ?? 0) + 1;
+    const portsPer: Record<string, number> = {};
+    for (const p of (ports.data ?? []) as any[]) portsPer[p.server_id] = (portsPer[p.server_id] ?? 0) + 1;
+    const dbsPer: Record<string, number> = {};
+    for (const d of (dbs.data ?? []) as any[]) {
+      const sid = d.databases?.server_id;
+      if (sid) dbsPer[sid] = (dbsPer[sid] ?? 0) + 1;
+    }
+
+    // الوكلاء لكل سيرفر مع درجة جودة الاتصال المحسوبة (نضارة النبض + زمن الاستجابة + نسبة نجاح الأوامر)
+    const nowMs = Date.now();
+    const agentsPer: Record<string, any[]> = {};
+    const cfgs = (configs.data ?? []) as any[];
+    for (const a of (instances.data ?? []) as any[]) {
+      const cfg = cfgs.find((c) => c.server_id === a.server_id);
+      const interval = (cfg?.heartbeat_interval_sec ?? 60) * 1000;
+      const lastMs = a.last_poll_at ? new Date(a.last_poll_at).getTime() : 0;
+      const age = lastMs ? nowMs - lastMs : Infinity;
+      const freshness = lastMs ? Math.max(0, Math.min(100, 100 - ((age - interval) / (300000 - interval)) * 100)) : 0;
+      const lat = a.poll_latency_ms;
+      const latencyScore = lat == null ? 60 : Math.max(0, Math.min(100, 100 - ((lat - 200) / 4800) * 100));
+      const st = cmdStats[a.server_id] ?? { ok: 0, fail: 0 };
+      const total = st.ok + st.fail;
+      const successScore = total === 0 ? 80 : (st.ok / total) * 100;
+      const quality = Math.round(freshness * 0.5 + latencyScore * 0.2 + successScore * 0.3);
+      const live = age <= interval * 2 ? "live" : age <= 300000 ? "stale" : "offline";
+      (agentsPer[a.server_id] ??= []).push({ ...a, link_quality: quality, live, age_ms: Number.isFinite(age) ? age : null });
+    }
+
+    // كشف السيرفرات المكررة عبر بصمة الجهاز (machine_id)
+    const machineSeen: Record<string, string> = {};
+    const duplicates: Record<string, string[]> = {};
+    for (const s of (servers.data ?? []) as any[]) {
+      if (!s.machine_id || s.duplicate_of) continue;
+      if (machineSeen[s.machine_id]) (duplicates[machineSeen[s.machine_id]] ??= []).push(s.id);
+      else machineSeen[s.machine_id] = s.id;
     }
 
     return {
@@ -256,11 +315,38 @@ export const getAgentsData = createServerFn({ method: "GET" })
       snapshots: (snapshots.data ?? []) as any[],
       websites: (websites.data ?? []) as any[],
       instances: (instances.data ?? []) as any[],
+      agents: agentsPer,
       health: latestHealth,
+      metrics: latestMetrics,
       capabilities: (caps.data ?? []) as any[],
       queued,
       lastRun,
+      sitesPer,
+      portsPer,
+      dbsPer,
+      cmdStats,
+      duplicates,
     };
+  });
+
+/** دمج سيرفر مكرر في السجل الأصلي: نقل المواقع والأوامر ثم أرشفة النسخة. */
+export const mergeDuplicateServer = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { primaryId: string; duplicateId: string }) => input)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+    const sb = supabase as any;
+    if (data.primaryId === data.duplicateId) throw new Error("نفس السيرفر");
+    await sb.from("websites").update({ server_id: data.primaryId }).eq("server_id", data.duplicateId);
+    await sb.from("server_commands").update({ server_id: data.primaryId }).eq("server_id", data.duplicateId);
+    await sb.from("agent_instances").delete().eq("server_id", data.duplicateId);
+    const { error } = await sb
+      .from("servers")
+      .update({ duplicate_of: data.primaryId, status: "archived" })
+      .eq("id", data.duplicateId);
+    if (error) throw new Error(error.message);
+    return { ok: true };
   });
 
 export const saveAgentConfig = createServerFn({ method: "POST" })

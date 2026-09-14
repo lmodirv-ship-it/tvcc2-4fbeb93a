@@ -184,9 +184,11 @@ export function AppSidebar() {
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {section.items.map((item) => (
-                  <SidebarLink key={item.url} item={item} active={isActive(item.url)} />
-                ))}
+                {section.items
+                  .filter((item) => primaryRole === "system_owner" || isVisible(item.url, primaryRole))
+                  .map((item) => (
+                    <SidebarLink key={item.url} item={item} active={isActive(item.url)} />
+                  ))}
                 {section.items === coreItems && (
                   <SidebarMenuItem>
                     <SidebarMenuButton

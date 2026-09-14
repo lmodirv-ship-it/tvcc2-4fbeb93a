@@ -46,6 +46,7 @@ export const getUnifiedLogs = createServerFn({ method: "GET" })
       safe(sb.from("notification_logs").select("*").order("created_at", { ascending: false }).limit(lim)),
       safe(sb.from("storage_events").select("*").order("created_at", { ascending: false }).limit(lim)),
       safe(sb.from("site_health_checks").select("*").order("checked_at", { ascending: false }).limit(lim)),
+      safe(sb.from("security_events").select("*").order("created_at", { ascending: false }).limit(lim)),
       safe(sb.from("servers").select("id, name, hostname")),
       safe(sb.from("websites").select("id, name, domain")),
     ]);

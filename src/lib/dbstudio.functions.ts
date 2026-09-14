@@ -222,3 +222,274 @@ export const provisionSiteIdentities = createServerFn({ method: "POST" })
     await audit(supabase, userId, "site_identity_provision_bulk", db.id, { queued });
     return { queued };
   });
+
+/* ============================================================
+   محرر الجداول — قراءة المخططات والجداول والصفوف وتحريرها عبر الوكيل
+   كل SQL يُبنى على الخادم من معرّفات محقّقة (لا نص حر من المستخدم).
+   ============================================================ */
+
+const IDENT = /^[A-Za-z_][A-Za-z0-9_]*$/;
+const ident = (value: unknown, label: string) => {
+  const text = String(value ?? "").trim();
+  if (!IDENT.test(text)) throw new Error(`اسم ${label} غير صالح: ${text || "(فارغ)"}`);
+  return text;
+};
+
+export const EDITOR_ACTIONS = ["pg_meta", "pg_rows", "pg_write", "pg_ddl", "db_policy", "pg_import_csv"] as const;
+
+async function dbOrThrow(supabase: any, databaseId: string) {
+  const { data: db } = await supabase.from("databases").select("*").eq("id", databaseId).single();
+  if (!db) throw new Error("القاعدة غير موجودة");
+  if (!db.server_id) throw new Error("القاعدة غير مرتبطة بسيرفر عليه وكيل TVCC");
+  return db;
+}
+
+function baseArgs(db: any) {
+  return {
+    database_id: db.id,
+    engine: db.db_type,
+    host: db.host,
+    port: db.port,
+    database: db.db_name ?? "postgres",
+    env_key: db.env_key,
+  };
+}
+
+/** آخر نتائج أوامر المحرر لهذه القاعدة (تُقرأ منها الشبكة والقوائم). */
+export const getEditorCommands = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { databaseId: string }) => input)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+    const { data: rows } = await supabase
+      .from("server_commands")
+      .select("id,action,args,status,output,exit_code,created_at,completed_at")
+      .eq("args->>database_id", data.databaseId)
+      .in("action", [...EDITOR_ACTIONS])
+      .order("created_at", { ascending: false })
+      .limit(60);
+    return rows ?? [];
+  });
+
+/** قراءة المخططات أو الجداول أو الأعمدة أو السياسات. */
+export const readCatalog = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { databaseId: string; mode: "schemas" | "tables" | "columns" | "policies"; schema?: string; table?: string }) => input)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+    const db = await dbOrThrow(supabase, data.databaseId);
+    const schema = data.schema ? ident(data.schema, "المخطط") : undefined;
+    const table = data.table ? ident(data.table, "الجدول") : undefined;
+    const sql = data.mode === "schemas"
+      ? `select nspname as schema from pg_namespace where nspname not like 'pg_%' and nspname <> 'information_schema' order by 1`
+      : data.mode === "tables"
+        ? `select c.relname as name,
+                  case c.relkind when 'r' then 'table' when 'v' then 'view' when 'm' then 'matview' when 'f' then 'foreign' when 'p' then 'partitioned' else c.relkind::text end as kind,
+                  c.relrowsecurity as rls_enabled,
+                  coalesce(s.n_live_tup, 0) as rows,
+                  pg_size_pretty(pg_total_relation_size(c.oid)) as size
+           from pg_class c join pg_namespace n on n.oid = c.relnamespace
+           left join pg_stat_user_tables s on s.relid = c.oid
+           where n.nspname = '${schema ?? "public"}' and c.relkind in ('r','v','m','f','p')
+           order by c.relname`
+        : data.mode === "columns"
+          ? `select a.attname as name, format_type(a.atttypid, a.atttypmod) as type, a.attnotnull as not_null,
+                    pg_get_expr(d.adbin, d.adrelid) as default_value,
+                    coalesce(pk.is_pk, false) as is_primary, fk.ref as foreign_ref
+             from pg_attribute a
+             join pg_class c on c.oid = a.attrelid
+             join pg_namespace n on n.oid = c.relnamespace
+             left join pg_attrdef d on d.adrelid = c.oid and d.adnum = a.attnum
+             left join lateral (select true as is_pk from pg_constraint k where k.conrelid = c.oid and k.contype='p' and a.attnum = any(k.conkey)) pk on true
+             left join lateral (select (fn.nspname||'.'||fc.relname) as ref from pg_constraint k join pg_class fc on fc.oid=k.confrelid join pg_namespace fn on fn.oid=fc.relnamespace where k.conrelid=c.oid and k.contype='f' and a.attnum = any(k.conkey) limit 1) fk on true
+             where n.nspname = '${schema ?? "public"}' and c.relname = '${table}' and a.attnum > 0 and not a.attisdropped
+             order by a.attnum`
+          : `select polname as name, cmd_label as command, roles, qual, with_check from (
+               select p.polname,
+                      case p.polcmd when 'r' then 'SELECT' when 'a' then 'INSERT' when 'w' then 'UPDATE' when 'd' then 'DELETE' else 'ALL' end as cmd_label,
+                      array_to_string(array(select rolname from pg_roles where oid = any(p.polroles)), ', ') as roles,
+                      pg_get_expr(p.polqual, p.polrelid) as qual,
+                      pg_get_expr(p.polwithcheck, p.polrelid) as with_check
+               from pg_policy p join pg_class c on c.oid = p.polrelid join pg_namespace n on n.oid = c.relnamespace
+               where n.nspname = '${schema ?? "public"}' ${table ? `and c.relname = '${table}'` : ""}
+             ) t order by name`;
+    return queueCommand(supabase, userId, db.server_id, data.mode === "policies" ? "db_policy" : "pg_meta", {
+      ...baseArgs(db), mode: data.mode, schema: schema ?? "public", table: table ?? null, sql, read_only: true,
+    });
+  });
+
+const FILTER_OPS: Record<string, string> = { eq: "=", neq: "<>", gt: ">", lt: "<", gte: ">=", lte: "<=", like: "ilike", isnull: "isnull", notnull: "notnull" };
+
+/** قراءة صفوف جدول مع فلترة وترتيب وصفحات. */
+export const readTableRows = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: {
+    databaseId: string; schema: string; table: string; page?: number; pageSize?: number;
+    sort?: { column: string; dir: "asc" | "desc" } | null;
+    filters?: { column: string; op: string; value?: string }[];
+  }) => input)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+    const db = await dbOrThrow(supabase, data.databaseId);
+    const schema = ident(data.schema, "المخطط");
+    const table = ident(data.table, "الجدول");
+    const pageSize = Math.min(Math.max(Number(data.pageSize ?? 100), 1), 1000);
+    const page = Math.max(Number(data.page ?? 1), 1);
+    const where = (data.filters ?? []).filter((f) => f.column && FILTER_OPS[f.op]).map((f) => {
+      const col = ident(f.column, "العمود");
+      if (f.op === "isnull") return `"${col}" is null`;
+      if (f.op === "notnull") return `"${col}" is not null`;
+      const raw = String(f.value ?? "").replace(/'/g, "''");
+      const value = f.op === "like" ? `'%${raw}%'` : `'${raw}'`;
+      return `"${col}"::text ${FILTER_OPS[f.op]} ${value}`;
+    });
+    const whereSql = where.length ? `where ${where.join(" and ")}` : "";
+    const orderSql = data.sort?.column ? `order by "${ident(data.sort.column, "العمود")}" ${data.sort.dir === "desc" ? "desc" : "asc"}` : "";
+    const sql = `select * from "${schema}"."${table}" ${whereSql} ${orderSql} limit ${pageSize} offset ${(page - 1) * pageSize}`;
+    const countSql = `select count(*)::bigint as total from "${schema}"."${table}" ${whereSql}`;
+    return queueCommand(supabase, userId, db.server_id, "pg_rows", {
+      ...baseArgs(db), schema, table, page, page_size: pageSize, sql, count_sql: countSql, read_only: true,
+    });
+  });
+
+/** حفظ تغييرات الصفوف (إضافة/تعديل/حذف) بعد تأكيد صريح. */
+export const writeTableRows = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: {
+    databaseId: string; schema: string; table: string; pk: string; confirm: boolean;
+    inserts?: Record<string, unknown>[];
+    updates?: { pk: unknown; values: Record<string, unknown> }[];
+    deletes?: unknown[];
+  }) => input)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+    if (!data.confirm) throw new Error("التغييرات تحتاج تأكيداً صريحاً قبل الحفظ");
+    const db = await dbOrThrow(supabase, data.databaseId);
+    const schema = ident(data.schema, "المخطط");
+    const table = ident(data.table, "الجدول");
+    const pk = ident(data.pk, "المفتاح الأساسي");
+    const lit = (value: unknown) => value === null || value === undefined || value === ""
+      ? "null"
+      : typeof value === "number" || typeof value === "boolean"
+        ? String(value)
+        : `'${String(value).replace(/'/g, "''")}'`;
+    const statements: string[] = [];
+    for (const row of data.inserts ?? []) {
+      const cols = Object.keys(row).filter((key) => IDENT.test(key));
+      if (!cols.length) continue;
+      statements.push(`insert into "${schema}"."${table}" (${cols.map((c) => `"${c}"`).join(", ")}) values (${cols.map((c) => lit(row[c])).join(", ")})`);
+    }
+    for (const change of data.updates ?? []) {
+      const cols = Object.keys(change.values).filter((key) => IDENT.test(key));
+      if (!cols.length) continue;
+      statements.push(`update "${schema}"."${table}" set ${cols.map((c) => `"${c}" = ${lit(change.values[c])}`).join(", ")} where "${pk}"::text = ${lit(String(change.pk))}`);
+    }
+    for (const id of data.deletes ?? []) {
+      statements.push(`delete from "${schema}"."${table}" where "${pk}"::text = ${lit(String(id))}`);
+    }
+    if (!statements.length) throw new Error("لا توجد تغييرات للحفظ");
+    const command = await queueCommand(supabase, userId, db.server_id, "pg_write", {
+      ...baseArgs(db), schema, table, statements, sql: statements.join(";\n"), read_only: false,
+    });
+    await audit(supabase, userId, "pg_write", db.id, {
+      command_id: command.id, schema, table,
+      inserts: data.inserts?.length ?? 0, updates: data.updates?.length ?? 0, deletes: data.deletes?.length ?? 0,
+    });
+    return command;
+  });
+
+type ColumnSpec = { name: string; type: string; nullable?: boolean; default?: string; primary?: boolean };
+const TYPES = ["int8", "int4", "text", "varchar", "bool", "uuid", "timestamptz", "date", "numeric", "jsonb", "float8"];
+
+/** تغييرات البنية: إنشاء جدول/عمود/فهرس، حذف عمود، تفعيل RLS. */
+export const applyTableDdl = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: {
+    databaseId: string; confirm: boolean;
+    kind: "create_table" | "add_column" | "drop_column" | "rename_column" | "create_index" | "enable_rls" | "create_policy";
+    schema: string; table: string;
+    columns?: ColumnSpec[]; column?: ColumnSpec; newName?: string; rls?: boolean;
+    policy?: { name: string; command: string; template: "own_rows" | "admin_only" | "public_read"; ownerColumn?: string };
+  }) => input)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+    if (!data.confirm) throw new Error("تغييرات البنية تحتاج تأكيداً صريحاً");
+    const db = await dbOrThrow(supabase, data.databaseId);
+    const schema = ident(data.schema, "المخطط");
+    const table = ident(data.table, "الجدول");
+    const typeOf = (spec: ColumnSpec) => {
+      const type = String(spec.type ?? "text").toLowerCase();
+      if (!TYPES.includes(type)) throw new Error(`نوع غير مدعوم: ${type}`);
+      return type;
+    };
+    const colSql = (spec: ColumnSpec) => {
+      const name = ident(spec.name, "العمود");
+      const def = spec.default ? ` default ${/^[A-Za-z0-9_().':+\- ]*$/.test(spec.default) ? spec.default : `'${spec.default.replace(/'/g, "''")}'`}` : "";
+      return `"${name}" ${typeOf(spec)}${spec.nullable === false ? " not null" : ""}${def}${spec.primary ? " primary key" : ""}`;
+    };
+    const statements: string[] = [];
+    if (data.kind === "create_table") {
+      const cols = (data.columns ?? []).filter((c) => c.name);
+      if (!cols.length) throw new Error("أضف عموداً واحداً على الأقل");
+      statements.push(`create table "${schema}"."${table}" (${cols.map(colSql).join(", ")})`);
+      statements.push(`grant select, insert, update, delete on "${schema}"."${table}" to authenticated`);
+      statements.push(`grant all on "${schema}"."${table}" to service_role`);
+      if (data.rls !== false) statements.push(`alter table "${schema}"."${table}" enable row level security`);
+    } else if (data.kind === "add_column") {
+      statements.push(`alter table "${schema}"."${table}" add column ${colSql(data.column!)}`);
+    } else if (data.kind === "drop_column") {
+      statements.push(`alter table "${schema}"."${table}" drop column "${ident(data.column?.name, "العمود")}"`);
+    } else if (data.kind === "rename_column") {
+      statements.push(`alter table "${schema}"."${table}" rename column "${ident(data.column?.name, "العمود")}" to "${ident(data.newName, "الاسم الجديد")}"`);
+    } else if (data.kind === "create_index") {
+      const col = ident(data.column?.name, "العمود");
+      statements.push(`create index if not exists "idx_${table}_${col}" on "${schema}"."${table}" ("${col}")`);
+    } else if (data.kind === "enable_rls") {
+      statements.push(`alter table "${schema}"."${table}" ${data.rls === false ? "disable" : "enable"} row level security`);
+    } else {
+      const policy = data.policy!;
+      const name = ident(policy.name, "السياسة");
+      const cmd = ["SELECT", "INSERT", "UPDATE", "DELETE", "ALL"].includes(policy.command) ? policy.command : "SELECT";
+      const owner = policy.ownerColumn ? ident(policy.ownerColumn, "عمود المالك") : "user_id";
+      const using = policy.template === "own_rows" ? `auth.uid() = "${owner}"`
+        : policy.template === "admin_only" ? `public.has_role(auth.uid(), 'admin')`
+          : "true";
+      const role = policy.template === "public_read" ? "anon, authenticated" : "authenticated";
+      statements.push(cmd === "INSERT"
+        ? `create policy "${name}" on "${schema}"."${table}" for insert to ${role} with check (${using})`
+        : `create policy "${name}" on "${schema}"."${table}" for ${cmd.toLowerCase()} to ${role} using (${using})`);
+    }
+    const command = await queueCommand(supabase, userId, db.server_id, "pg_ddl", {
+      ...baseArgs(db), schema, table, kind: data.kind, statements, sql: statements.join(";\n"), read_only: false,
+    });
+    await audit(supabase, userId, `pg_ddl_${data.kind}`, db.id, { command_id: command.id, schema, table, statements });
+    return command;
+  });
+
+/** استيراد صفوف من CSV إلى جدول قائم. */
+export const importTableCsv = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { databaseId: string; schema: string; table: string; csv: string; confirm: boolean }) => input)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+    if (!data.confirm) throw new Error("الاستيراد يحتاج تأكيداً صريحاً");
+    const db = await dbOrThrow(supabase, data.databaseId);
+    const schema = ident(data.schema, "المخطط");
+    const table = ident(data.table, "الجدول");
+    const csv = String(data.csv ?? "").trim();
+    if (!csv) throw new Error("الملف فارغ");
+    if (csv.length > 2_000_000) throw new Error("حجم CSV كبير جداً — قسّمه إلى دفعات");
+    const header = csv.split(/\r?\n/)[0]!.split(",").map((c) => c.trim().replace(/^"|"$/g, ""));
+    header.forEach((c) => ident(c, "العمود"));
+    const command = await queueCommand(supabase, userId, db.server_id, "pg_import_csv", {
+      ...baseArgs(db), schema, table, columns: header, csv, read_only: false,
+    });
+    await audit(supabase, userId, "pg_import_csv", db.id, { command_id: command.id, schema, table, columns: header });
+    return command;
+  });

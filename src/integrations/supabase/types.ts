@@ -3723,6 +3723,56 @@ export type Database = {
           },
         ]
       }
+      metrics_hourly: {
+        Row: {
+          bucket_start: string
+          cpu_avg: number | null
+          cpu_max: number | null
+          created_at: string
+          disk_avg: number | null
+          disk_max: number | null
+          id: string
+          memory_avg: number | null
+          memory_max: number | null
+          samples: number
+          server_id: string
+        }
+        Insert: {
+          bucket_start: string
+          cpu_avg?: number | null
+          cpu_max?: number | null
+          created_at?: string
+          disk_avg?: number | null
+          disk_max?: number | null
+          id?: string
+          memory_avg?: number | null
+          memory_max?: number | null
+          samples?: number
+          server_id: string
+        }
+        Update: {
+          bucket_start?: string
+          cpu_avg?: number | null
+          cpu_max?: number | null
+          created_at?: string
+          disk_avg?: number | null
+          disk_max?: number | null
+          id?: string
+          memory_avg?: number | null
+          memory_max?: number | null
+          samples?: number
+          server_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "metrics_hourly_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       nginx_configs: {
         Row: {
           content: string
@@ -4749,6 +4799,51 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      security_events: {
+        Row: {
+          action: string
+          actor_email: string | null
+          actor_id: string | null
+          category: string
+          created_at: string
+          details: Json
+          id: string
+          ip_address: string | null
+          resource: string | null
+          resource_id: string | null
+          severity: string
+          success: boolean
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          actor_id?: string | null
+          category: string
+          created_at?: string
+          details?: Json
+          id?: string
+          ip_address?: string | null
+          resource?: string | null
+          resource_id?: string | null
+          severity?: string
+          success?: boolean
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          actor_id?: string | null
+          category?: string
+          created_at?: string
+          details?: Json
+          id?: string
+          ip_address?: string | null
+          resource?: string | null
+          resource_id?: string | null
+          severity?: string
+          success?: boolean
+        }
+        Relationships: []
       }
       server_access: {
         Row: {
@@ -8495,6 +8590,7 @@ export type Database = {
     Functions: {
       bump_site_visits: { Args: never; Returns: number }
       is_permanent_owner_email: { Args: { _email: string }; Returns: boolean }
+      rollup_server_metrics: { Args: { retain_days?: number }; Returns: number }
     }
     Enums: {
       app_role: "admin" | "editor" | "viewer" | "system_owner"

@@ -7,7 +7,10 @@ import {
   createSiteSnapshot, rollbackSiteSnapshot,
 } from "@/lib/federated.functions";
 import { setAgentCapability, dispatchAgentCommand, createAgentJob } from "@/lib/agent-roles.functions";
-import { COMMAND_WHITELIST, COMMAND_LABELS, COMMAND_ARG, COMMAND_CATEGORIES, RISKY_COMMANDS, commandCategory } from "@/lib/server-commands";
+import { COMMAND_WHITELIST, COMMAND_LABELS, COMMAND_ARG, COMMAND_CATEGORIES, RISKY_COMMANDS, commandCategory, permissionForAction, rolesForAction, AGENT_ROLE_LABELS, agentRoleAllows } from "@/lib/server-commands";
+import { usePermissions } from "@/hooks/use-permissions";
+import { EntityRelations } from "@/components/relations/EntityRelations";
+
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
@@ -103,7 +106,10 @@ function AgentsPage() {
   const [jobSteps, setJobSteps] = useState<Array<{ action: string; arg: string }>>([{ action: "agent_diag", arg: "" }]);
   const [expanded, setExpanded] = useState<Record<string, boolean>>({});
   const [mergeRow, setMergeRow] = useState<any>(null);
+  const [runningAction, setRunningAction] = useState<string | null>(null);
+  const { can } = usePermissions();
   const mergeFn = useServerFn(mergeDuplicateServer);
+
 
   // أعمدة جدول السيرفرات القابلة للإظهار/الإخفاء
   const COLS: Array<{ key: string; label: string; on: boolean }> = [
@@ -144,6 +150,8 @@ function AgentsPage() {
 
   const activeServer = servers.find((s) => s.id === selected) ?? servers[0] ?? null;
   const activeId: string | null = activeServer?.id ?? null;
+  const activeAgents: any[] = activeId ? ((data?.agents as any)?.[activeId] ?? []) : [];
+
 
   const refresh = () => qc.invalidateQueries({ queryKey: ["federated-agents"] });
 
@@ -159,20 +167,27 @@ function AgentsPage() {
 
   const run = async (action: string, sid: string | null, args?: Record<string, unknown>) => {
     if (!sid) return toast.error("اختر سيرفراً أولاً");
+    if (!can(permissionForAction(action))) {
+      return toast.error(`صلاحيات غير كافية لتشغيل «${COMMAND_LABELS[action] ?? action}»`);
+    }
+    setRunningAction(action);
     try {
       await dispatchFn({ data: { serverId: sid, action, args: args ?? {} } });
       toast.success(`أُرسل الأمر ${COMMAND_LABELS[action] ?? action} — النتيجة تظهر في سجل الأوامر`);
       refresh();
     } catch (e: any) { toast.error(e?.message ?? "تعذّر إرسال الأمر"); }
+    finally { setRunningAction(null); }
   };
 
   const toggleCap = async (action: string, allowed: boolean) => {
     if (!activeId) return;
+    if (!can("agent.capability")) return toast.error("صلاحيات غير كافية لتعديل مهام الوكيل");
     try {
       await setCapFn({ data: { serverId: activeId, action, allowed } });
       refresh();
     } catch (e: any) { toast.error(e?.message ?? "تعذّر الحفظ"); }
   };
+
 
   const bulkCap = async (allowed: boolean) => {
     if (!activeId) return;
@@ -531,6 +546,7 @@ function AgentsPage() {
             <Button size="sm" disabled={!activeId} onClick={() => setJobOpen(true)}><Plus className="w-4 h-4 ml-1" /> إضافة مهمة</Button>
           </div>
         </div>
+        {activeId && <EntityRelations serverId={activeId} />}
         <Card><CardContent className="p-0 overflow-x-auto max-h-[560px] overflow-y-auto">
           <Table>
             <TableHeader>
@@ -538,6 +554,8 @@ function AgentsPage() {
                 <TableHead>معرّف المهمة</TableHead>
                 <TableHead>الاسم</TableHead>
                 <TableHead>التصنيف</TableHead>
+                <TableHead>دور الوكيل</TableHead>
+                <TableHead>الصلاحية</TableHead>
                 <TableHead>الخطورة</TableHead>
                 <TableHead>الحالة</TableHead>
                 <TableHead>آخر تنفيذ</TableHead>
@@ -546,11 +564,26 @@ function AgentsPage() {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {filteredTasks.map((t) => (
+              {filteredTasks.map((t) => {
+                const roles = rolesForAction(t.action);
+                const eligible = !activeAgents.length || activeAgents.some((a: any) => agentRoleAllows(a.role, t.action));
+                const allowedByPerm = can(permissionForAction(t.action));
+                const blockedReason = !activeId
+                  ? "اختر سيرفراً"
+                  : !allowedByPerm
+                    ? "صلاحياتك لا تسمح بهذه المهمة"
+                    : !eligible
+                      ? `لا يوجد وكيل بدور: ${roles.map((r) => AGENT_ROLE_LABELS[r]).join("، ")}`
+                      : "";
+                return (
                 <TableRow key={t.action}>
                   <TableCell dir="ltr" className="font-mono text-xs">{t.action}</TableCell>
                   <TableCell className="text-sm">{t.label}</TableCell>
                   <TableCell><Badge variant="outline">{t.cat}</Badge></TableCell>
+                  <TableCell className="text-[11px] text-muted-foreground">
+                    {roles.map((r) => AGENT_ROLE_LABELS[r]).join("، ")}
+                  </TableCell>
+                  <TableCell className="text-[11px] font-mono" dir="ltr">{permissionForAction(t.action)}</TableCell>
                   <TableCell>
                     <Badge className={t.risky ? "bg-destructive/15 text-destructive" : "bg-success/15 text-success"}>
                       {t.risky ? "يحتاج تأكيد" : "آمن"}
@@ -561,23 +594,32 @@ function AgentsPage() {
                     {t.last ? `${t.last.status} · ${ago(t.last.created_at)}` : "—"}
                   </TableCell>
                   <TableCell>
-                    <Switch checked={t.allowed} disabled={!activeId} onCheckedChange={(v) => toggleCap(t.action, v)} />
+                    <Switch
+                      checked={t.allowed}
+                      disabled={!activeId || !can("agent.capability")}
+                      onCheckedChange={(v) => toggleCap(t.action, v)}
+                    />
                   </TableCell>
                   <TableCell>
-                    <Button size="sm" variant="outline" disabled={!activeId}
+                    <Button size="sm" variant="outline" title={blockedReason}
+                      disabled={Boolean(blockedReason) || runningAction === t.action}
                       onClick={() => {
                         if (t.risky && !window.confirm(`تنفيذ «${t.label}» على ${activeServer?.name}؟ هذا أمر حسّاس.`)) return;
                         run(t.action, activeId);
                       }}>
-                      <Play className="w-3 h-3 ml-1" /> تشغيل
+                      {runningAction === t.action
+                        ? <Loader2 className="w-3 h-3 ml-1 animate-spin" />
+                        : <Play className="w-3 h-3 ml-1" />} تشغيل
                     </Button>
                   </TableCell>
                 </TableRow>
-              ))}
+                );
+              })}
             </TableBody>
           </Table>
         </CardContent></Card>
       </section>
+
 
       {/* ===== القسم الثالث: إعدادات الوكيل و Nginx واللقطات والسجل ===== */}
       {activeServer && (

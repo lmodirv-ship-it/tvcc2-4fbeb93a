@@ -19,6 +19,10 @@ import { toast } from "sonner";
 import {
   Globe, RefreshCw, FileCode, ShieldCheck, ScrollText, BarChart3, Power, Trash2, Wand2,
 } from "lucide-react";
+import { usePermissions } from "@/hooks/use-permissions";
+import { isReadOnlyCommand } from "@/lib/server-commands";
+import { EntityRelations } from "@/components/relations/EntityRelations";
+
 
 export const Route = createFileRoute("/_authenticated/federated/nginx")({
   component: NginxPage,
@@ -61,7 +65,10 @@ function NginxPage() {
   const fetchCommands = useServerFn(getNginxCommands);
   const queueAction = useServerFn(queueNginxAction);
 
+  const { can } = usePermissions();
+  const [busy, setBusy] = useState<string | null>(null);
   const [serverId, setServerId] = useState("");
+
   const [editFile, setEditFile] = useState("");
   const [editBody, setEditBody] = useState("");
   const [gen, setGen] = useState({ domain: "", port: "3000", ssl: true, websocket: true, maxBodyMb: "50", staticRoot: "" });
@@ -94,15 +101,24 @@ function NginxPage() {
 
   async function run(action: NginxAction, args: Record<string, unknown> = {}, opts: { dryRun?: boolean; confirm?: string } = {}) {
     if (!activeServer) { toast.error("اختر سيرفراً أولاً"); return; }
+    const readOnly = isReadOnlyCommand(action);
+    if (!can(readOnly ? "agent.read" : "nginx.manage")) {
+      toast.error("صلاحيات غير كافية — هذا الإجراء يتطلب صلاحية «إدارة Nginx والشهادات»");
+      return;
+    }
     if (opts.confirm && !window.confirm(opts.confirm)) return;
+    setBusy(action);
     try {
       await queueAction({ data: { serverId: activeServer, action, args, dryRun: opts.dryRun } });
       toast.success(opts.dryRun ? "تمت جدولة معاينة آمنة" : "أُرسل الأمر إلى الوكيل");
       qc.invalidateQueries({ queryKey: ["nginx-commands", activeServer] });
     } catch (e: any) {
       toast.error(e?.message ?? "تعذّر إرسال الأمر");
+    } finally {
+      setBusy(null);
     }
   }
+
 
   const generated = gen.domain
     ? buildVhost({
@@ -134,11 +150,21 @@ function NginxPage() {
               ))}
             </SelectContent>
           </Select>
-          <Button onClick={() => { run("nginx_vhost_list"); run("nginx_cert_list"); run("nginx_stats"); }} disabled={!activeServer}>
-            <RefreshCw className="w-4 h-4 ml-2" /> تحديث من السيرفر
+          <Button onClick={() => { run("nginx_vhost_list"); run("nginx_cert_list"); run("nginx_stats"); }} disabled={!activeServer || Boolean(busy)}>
+            <RefreshCw className={`w-4 h-4 ml-2 ${busy ? "animate-spin" : ""}`} /> تحديث من السيرفر
           </Button>
         </div>
       </div>
+
+      {!can("nginx.manage") && (
+        <Card className="border-warning/40 bg-warning/5"><CardContent className="py-3 text-sm">
+          لديك صلاحية العرض فقط — تحرير ملفات التوجيه وإصدار الشهادات معطّلان لحسابك.
+        </CardContent></Card>
+      )}
+
+      {activeServer && <EntityRelations serverId={activeServer} />}
+
+
 
       {!activeServer ? (
         <Card><CardContent className="py-10 text-center text-muted-foreground">

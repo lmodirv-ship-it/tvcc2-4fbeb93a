@@ -20,6 +20,10 @@ import {
   Container, RefreshCw, Play, Square, RotateCw, FileText, Trash2, Download,
   Layers, HardDrive, Network, Globe, Sparkles, Terminal,
 } from "lucide-react";
+import { usePermissions } from "@/hooks/use-permissions";
+import { isReadOnlyCommand } from "@/lib/server-commands";
+import { EntityRelations } from "@/components/relations/EntityRelations";
+
 
 export const Route = createFileRoute("/_authenticated/federated/docker")({
   component: DockerPage,
@@ -72,7 +76,10 @@ function DockerPage() {
   const queueAction = useServerFn(queueDockerAction);
   const bindDomain = useServerFn(bindContainerDomain);
 
+  const { can } = usePermissions();
+  const [busy, setBusy] = useState<string | null>(null);
   const [serverId, setServerId] = useState<string>("");
+
   const [logTarget, setLogTarget] = useState<string>("");
   const [composePath, setComposePath] = useState("/opt/tvcc/docker-compose.yml");
   const [composeBody, setComposeBody] = useState("");
@@ -117,15 +124,28 @@ function DockerPage() {
 
   async function run(action: DockerAction, args: Record<string, unknown> = {}, opts: { dryRun?: boolean; confirm?: string } = {}) {
     if (!activeServer) { toast.error("اختر سيرفراً أولاً"); return; }
+    const readOnly = isReadOnlyCommand(action);
+    if (!can(readOnly ? "agent.read" : "docker.manage")) {
+      toast.error("صلاحيات غير كافية — هذا الإجراء يتطلب صلاحية «إدارة الحاويات (Docker)»");
+      return;
+    }
+    if (!readOnly && !agentsByServer.get(activeServer)) {
+      toast.error("لا يوجد وكيل TVCC مثبّت على هذا السيرفر — ثبّت الوكيل من صفحة التحميلات");
+      return;
+    }
     if (opts.confirm && !window.confirm(opts.confirm)) return;
+    setBusy(action);
     try {
       await queueAction({ data: { serverId: activeServer, action, args, dryRun: opts.dryRun } });
       toast.success(opts.dryRun ? "تمت جدولة معاينة آمنة" : "أُرسل الأمر إلى الوكيل");
       qc.invalidateQueries({ queryKey: ["docker-commands", activeServer] });
     } catch (e: any) {
       toast.error(e?.message ?? "تعذّر إرسال الأمر");
+    } finally {
+      setBusy(null);
     }
   }
+
 
   async function refreshAll() {
     for (const a of ["docker_ps", "docker_stats", "docker_images", "docker_networks", "docker_volumes"] as DockerAction[]) {
@@ -163,11 +183,21 @@ function DockerPage() {
               ))}
             </SelectContent>
           </Select>
-          <Button onClick={refreshAll} disabled={!activeServer}>
-            <RefreshCw className="w-4 h-4 ml-2" /> تحديث من السيرفر
+          <Button onClick={refreshAll} disabled={!activeServer || Boolean(busy)}>
+            <RefreshCw className={`w-4 h-4 ml-2 ${busy ? "animate-spin" : ""}`} /> تحديث من السيرفر
           </Button>
         </div>
       </div>
+
+      {!can("docker.manage") && (
+        <Card className="border-warning/40 bg-warning/5"><CardContent className="py-3 text-sm">
+          لديك صلاحية العرض فقط — إجراءات تشغيل وإيقاف وحذف الحاويات معطّلة لحسابك.
+        </CardContent></Card>
+      )}
+
+      {activeServer && <EntityRelations serverId={activeServer} />}
+
+
 
       {!activeServer ? (
         <Card><CardContent className="py-10 text-center text-muted-foreground">

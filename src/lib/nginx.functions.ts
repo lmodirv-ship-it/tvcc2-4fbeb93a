@@ -16,9 +16,16 @@ const RISKY: readonly string[] = [
 ];
 
 async function assertAdmin(supabase: any, userId: string) {
-  const ok = await isAdminOrOwner(supabase, userId);
-  if (!ok) throw new Error("إدارة الواجهة والتوجيه متاحة للمالك والمدير فقط");
+  const { userCan } = await import("./roles.server");
+  const ok = (await isAdminOrOwner(supabase, userId)) || (await userCan(supabase, userId, "nginx.manage"));
+  if (!ok) throw new Error("صلاحيات غير كافية — إدارة التوجيه تتطلب صلاحية «إدارة Nginx والشهادات»");
 }
+
+async function assertRead(supabase: any, userId: string) {
+  const { userCan } = await import("./roles.server");
+  if (!(await userCan(supabase, userId, "agent.read"))) throw new Error("صلاحيات غير كافية لعرض إعدادات التوجيه");
+}
+
 
 async function audit(supabase: any, userId: string, action: string, serverId: string, details: Record<string, unknown>) {
   await supabase.from("audit_log").insert({
@@ -40,7 +47,7 @@ export const getNginxServers = createServerFn({ method: "GET" })
   .middleware([requireSupabaseAuth])
   .handler(async ({ context }) => {
     const { supabase, userId } = context;
-    await assertAdmin(supabase, userId);
+    await assertRead(supabase, userId);
     const [servers, agents, certs] = await Promise.all([
       supabase
         .from("servers")
@@ -58,7 +65,7 @@ export const getNginxCommands = createServerFn({ method: "GET" })
   .inputValidator((input: { serverId: string }) => input)
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
-    await assertAdmin(supabase, userId);
+    await assertRead(supabase, userId);
     const { data: rows } = await supabase
       .from("server_commands")
       .select("id,action,args,status,output,exit_code,created_at,completed_at,dry_run")

@@ -28,6 +28,14 @@ export const PERMISSIONS = [
   { key: "servers.view", label: "عرض السيرفرات", group: "البنية التحتية" },
   { key: "servers.manage", label: "التحكم بالسيرفرات والأوامر", group: "البنية التحتية" },
   { key: "domains.manage", label: "إدارة النطاقات والشهادات", group: "البنية التحتية" },
+  { key: "agent.read", label: "عرض الوكلاء ومهامهم", group: "الوكيل" },
+  { key: "agent.run", label: "تشغيل أوامر الوكيل", group: "الوكيل" },
+  { key: "agent.capability", label: "تفعيل/تعطيل مهام الوكيل وأدواره", group: "الوكيل" },
+  { key: "docker.manage", label: "إدارة الحاويات (Docker)", group: "الوكيل" },
+  { key: "nginx.manage", label: "إدارة Nginx والشهادات", group: "الوكيل" },
+  { key: "db.read", label: "قراءة قواعد البيانات والجداول", group: "قواعد البيانات" },
+  { key: "db.write", label: "تعديل صفوف قواعد البيانات", group: "قواعد البيانات" },
+  { key: "db.ddl", label: "تغيير بنية الجداول والاستيراد", group: "قواعد البيانات" },
   { key: "secrets.view", label: "الوصول إلى الخزنة والأسرار", group: "الأمان" },
   { key: "users.view", label: "عرض أعضاء الفريق", group: "الفريق" },
   { key: "users.manage", label: "دعوة الأعضاء ومنح الأدوار", group: "الفريق" },
@@ -37,11 +45,22 @@ export const PERMISSIONS = [
 
 export type PermissionKey = (typeof PERMISSIONS)[number]["key"];
 
-const EDITOR: PermissionKey[] = ["sites.view", "sites.manage", "sites.deploy", "servers.view", "users.view"];
+const VIEWER: PermissionKey[] = ["sites.view", "servers.view", "users.view", "agent.read", "db.read"];
+const EDITOR: PermissionKey[] = [
+  ...VIEWER,
+  "sites.manage",
+  "sites.deploy",
+  "agent.run",
+];
 const ADMIN: PermissionKey[] = [
   ...EDITOR,
   "servers.manage",
   "domains.manage",
+  "agent.capability",
+  "docker.manage",
+  "nginx.manage",
+  "db.write",
+  "db.ddl",
   "secrets.view",
   "users.manage",
   "billing.manage",
@@ -52,8 +71,9 @@ export const ROLE_PERMISSIONS: Record<AppRole, PermissionKey[]> = {
   system_owner: PERMISSIONS.map((p) => p.key),
   admin: ADMIN,
   editor: EDITOR,
-  viewer: ["sites.view", "servers.view", "users.view"],
+  viewer: VIEWER,
 };
+
 
 export function permissionsForRoles(roles: string[]): Set<PermissionKey> {
   const out = new Set<PermissionKey>();

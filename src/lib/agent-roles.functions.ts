@@ -112,7 +112,11 @@ export const applyAgentRole = createServerFn({ method: "POST" })
   .inputValidator((input: { serverId: string; roleId: string }) => input)
   .handler(async ({ data, context }) => {
     const sb = context.supabase as any;
+    const { assertCan } = await import("./roles.server");
+    await assertCan(sb, context.userId, "agent.capability");
     const { COMMAND_WHITELIST } = await import("./server-commands");
+
+
     const { data: role } = await sb.from("agent_roles").select("*").eq("id", data.roleId).maybeSingle();
     if (!role) throw new Error("الدور غير موجود");
 
@@ -158,6 +162,8 @@ export const setAgentCapability = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { serverId: string; action: string; allowed: boolean }) => input)
   .handler(async ({ data, context }) => {
+    const { assertCan } = await import("./roles.server");
+    await assertCan(context.supabase, context.userId, "agent.capability");
     const { error } = await (context.supabase as any).from("agent_capabilities").upsert(
       {
         owner_id: context.userId,
@@ -171,14 +177,59 @@ export const setAgentCapability = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-/** Queue one command, enforcing the capability map before it reaches the agent. */
+/** تفعيل/تعطيل كل مهام دور وكيل معيّن على سيرفر دفعة واحدة. */
+export const setCapabilitiesByAgentRole = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { serverId: string; agentRole: string; allowed: boolean }) => input)
+  .handler(async ({ data, context }) => {
+    const sb = context.supabase as any;
+    const { assertCan } = await import("./roles.server");
+    await assertCan(sb, context.userId, "agent.capability");
+    const { COMMAND_WHITELIST, agentRoleAllows } = await import("./server-commands");
+    const actions = Array.from(new Set(COMMAND_WHITELIST as readonly string[])).filter((a) =>
+      agentRoleAllows(data.agentRole, a),
+    );
+    const rows = actions.map((action) => ({
+      owner_id: context.userId,
+      server_id: data.serverId,
+      action,
+      allowed: data.allowed,
+    }));
+    if (!rows.length) return { ok: true, count: 0 };
+    const { error } = await sb.from("agent_capabilities").upsert(rows, { onConflict: "server_id,action" });
+    if (error) throw new Error(error.message);
+    return { ok: true, count: rows.length };
+  });
+
+
+/** Queue one command, enforcing user permission, agent role and the capability map. */
 export const dispatchAgentCommand = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { serverId: string; action: string; args?: Record<string, unknown>; dryRun?: boolean }) => input)
   .handler(async ({ data, context }) => {
     const sb = context.supabase as any;
-    const { COMMAND_WHITELIST } = await import("./server-commands");
+    const { COMMAND_WHITELIST, permissionForAction, agentRoleAllows, rolesForAction, AGENT_ROLE_LABELS, COMMAND_LABELS } =
+      await import("./server-commands");
     if (!(COMMAND_WHITELIST as readonly string[]).includes(data.action)) throw new Error("أمر غير مسموح");
+
+    const { assertCan } = await import("./roles.server");
+    await assertCan(sb, context.userId, permissionForAction(data.action));
+
+    // دور الوكيل: لا تُسند المهمة إلا لوكيل مخوّل بها
+    const { data: agents } = await sb
+      .from("agent_instances")
+      .select("agent_key, role, link_quality, last_poll_at")
+      .eq("server_id", data.serverId);
+    const list = (agents ?? []) as Array<{ agent_key: string; role: string | null; link_quality: number | null }>;
+    if (list.length) {
+      const eligible = list.filter((a) => agentRoleAllows(a.role, data.action));
+      if (!eligible.length) {
+        const roles = rolesForAction(data.action).map((r) => AGENT_ROLE_LABELS[r]).join("، ");
+        throw new Error(
+          `لا يوجد وكيل مخوّل بمهمة «${COMMAND_LABELS[data.action] ?? data.action}» على هذا السيرفر — الأدوار المخوّلة: ${roles}`,
+        );
+      }
+    }
 
     const { data: cap } = await sb
       .from("agent_capabilities")
@@ -198,6 +249,7 @@ export const dispatchAgentCommand = createServerFn({ method: "POST" })
         .gte("created_at", since);
       if ((count ?? 0) >= cap.max_per_hour) throw new Error("تم بلوغ الحد الأقصى لتنفيذ هذا الأمر خلال ساعة");
     }
+
 
     const { data: row, error } = await sb
       .from("server_commands")
@@ -220,7 +272,10 @@ export const cancelAgentCommand = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { id: string }) => input)
   .handler(async ({ data, context }) => {
+    const { assertCan } = await import("./roles.server");
+    await assertCan(context.supabase, context.userId, "agent.run");
     const { error } = await (context.supabase as any)
+
       .from("server_commands")
       .update({ status: "cancelled", finished_at: new Date().toISOString() })
       .eq("id", data.id)
@@ -240,8 +295,15 @@ export const createAgentJob = createServerFn({ method: "POST" })
   }) => input)
   .handler(async ({ data, context }) => {
     const sb = context.supabase as any;
-    const { COMMAND_WHITELIST } = await import("./server-commands");
+    const { COMMAND_WHITELIST, permissionForAction } = await import("./server-commands");
     if (!data.steps?.length) throw new Error("المهمة بلا خطوات");
+
+    const { assertCan } = await import("./roles.server");
+    for (const step of data.steps) {
+      if (!(COMMAND_WHITELIST as readonly string[]).includes(step.action)) throw new Error(`أمر غير مسموح: ${step.action}`);
+      await assertCan(sb, context.userId, permissionForAction(step.action));
+    }
+
 
     const { data: job, error } = await sb
       .from("agent_jobs")

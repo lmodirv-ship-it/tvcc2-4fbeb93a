@@ -37,11 +37,12 @@ export const Route = createFileRoute("/api/public/hn/announce")({
         }
 
         const secret = process.env["HN_HUB_VERIFICATION_SALT"];
-        let signatureValid = false;
-        if (secret) {
-          const expected = "sha256=" + createHmac("sha256", secret).update(raw).digest("hex");
-          signatureValid = safeEqual(request.headers.get("x-hn-signature") ?? "", expected);
+        // Fail closed: without the shared secret no announcement can be trusted.
+        if (!secret) {
+          return Response.json({ error: "not_configured" }, { status: 500, headers: CORS });
         }
+        const expectedSig = "sha256=" + createHmac("sha256", secret).update(raw).digest("hex");
+        const signatureValid = safeEqual(request.headers.get("x-hn-signature") ?? "", expectedSig);
 
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
 

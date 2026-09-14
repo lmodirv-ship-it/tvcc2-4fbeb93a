@@ -34,12 +34,11 @@ function isProtectedTable(schema: string, table: string) {
   return schema === "public" && PROTECTED_TABLES.has(table);
 }
 
-async function runInternalSql(sql: string, scalar = false): Promise<any> {
+async function runInternalSql(sql: string): Promise<any[]> {
   const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
-  const fn = scalar ? "tvcc_exec_sql_scalar" : "tvcc_exec_sql";
-  const { data, error } = await (supabaseAdmin as any).rpc(fn, { sql });
+  const { data, error } = await (supabaseAdmin as any).rpc("tvcc_exec_sql", { sql });
   if (error) throw new Error(error.message);
-  return data;
+  return (data ?? []) as any[];
 }
 
 type AgentCommandResult = {

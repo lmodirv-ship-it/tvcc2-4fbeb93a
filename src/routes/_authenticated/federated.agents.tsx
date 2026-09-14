@@ -151,7 +151,7 @@ function AgentsPage() {
                   <TableBody>
                     {serverCmds.map((c) => (
                       <TableRow key={c.id}>
-                        <TableCell dir="ltr" className="font-mono text-xs">{c.command}</TableCell>
+                        <TableCell dir="ltr" className="font-mono text-xs">{c.action}</TableCell>
                         <TableCell><Badge variant="outline">{c.status}</Badge></TableCell>
                         <TableCell className="text-xs text-muted-foreground">{new Date(c.created_at).toLocaleString("ar")}</TableCell>
                       </TableRow>

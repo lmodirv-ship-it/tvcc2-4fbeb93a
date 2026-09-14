@@ -79,7 +79,7 @@ export const startSiteClone = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     await supabase.from("server_commands").insert({
       server_id: data.targetServerId,
-      command: "site_clone",
+      action: "site_clone",
       args: { clone_id: clone.id, website_id: data.websiteId, new_domain: data.newDomain ?? null },
       status: "pending",
       created_by: userId,
@@ -135,7 +135,7 @@ export const runFederatedQuery = createServerFn({ method: "POST" })
       for (const sid of serverIds) {
         await supabase.from("server_commands").insert({
           server_id: sid,
-          command: "multi_sql",
+          action: "multi_sql",
           args: { query_id: row.id, sql: data.sql },
           status: "pending",
           created_by: userId,
@@ -186,7 +186,7 @@ export const deployBlueprint = createServerFn({ method: "POST" })
       if (w.server_id) {
         await supabase.from("server_commands").insert({
           server_id: w.server_id,
-          command: "blueprint_apply",
+          action: "blueprint_apply",
           args: { blueprint_id: bp.id, website_id: w.id, schema_sql: bp.schema_sql },
           status: "pending",
           created_by: userId,
@@ -206,7 +206,7 @@ export const getAgentsData = createServerFn({ method: "GET" })
     const [servers, configs, commands, nginx, snapshots, websites] = await Promise.all([
       supabase.from("servers").select("id, name, hostname, status, agent_version, last_seen_at").order("name"),
       supabase.from("agent_configs").select("*"),
-      supabase.from("server_commands").select("id, server_id, command, status, created_at").order("created_at", { ascending: false }).limit(100),
+      supabase.from("server_commands").select("id, server_id, action, status, created_at").order("created_at", { ascending: false }).limit(100),
       supabase.from("nginx_configs").select("id, server_id, website_id, file_path, status, version, updated_at").order("updated_at", { ascending: false }),
       supabase.from("site_snapshots").select("*").order("created_at", { ascending: false }),
       supabase.from("websites").select("id, name, domain, server_id, status"),
@@ -240,7 +240,7 @@ export const saveAgentConfig = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     await supabase.from("server_commands").insert({
       server_id: data.serverId,
-      command: "agent_config_set",
+      action: "agent_config_set",
       args: { heartbeat_interval_sec: data.heartbeatIntervalSec, allowed_commands: data.allowedCommands, autostart: data.autostart },
       status: "pending",
       created_by: userId,
@@ -288,7 +288,7 @@ export const saveNginxConfig = createServerFn({ method: "POST" })
     }
     await supabase.from("server_commands").insert({
       server_id: data.serverId,
-      command: "nginx_write",
+      action: "nginx_write",
       args: { config_id: row.id, file_path: data.filePath, content: data.content, test_first: true, rollback_on_fail: true },
       status: "pending",
       created_by: userId,
@@ -312,7 +312,7 @@ export const createSiteSnapshot = createServerFn({ method: "POST" })
     }
     await supabase.from("server_commands").insert({
       server_id: site.server_id,
-      command: "site_snapshot",
+      action: "site_snapshot",
       args: { website_id: data.websiteId, domain: site.domain, slots: 2 },
       status: "pending",
       created_by: userId,
@@ -336,7 +336,7 @@ export const rollbackSiteSnapshot = createServerFn({ method: "POST" })
     if (!snap?.server_id) throw new Error("لا توجد نسخة قديمة لهذا الموقع");
     await supabase.from("server_commands").insert({
       server_id: snap.server_id,
-      command: "site_rollback",
+      action: "site_rollback",
       args: { website_id: data.websiteId, snapshot_id: snap.id, path: snap.path },
       status: "pending",
       created_by: userId,

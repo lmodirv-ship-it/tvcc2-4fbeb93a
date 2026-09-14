@@ -21,6 +21,7 @@ import {
   connectDatabaseAgent, getDbStudioData, provisionSiteIdentities, queueDbStudioAction, runDbStudioQuery,
 } from "@/lib/dbstudio.functions";
 import { TableEditor } from "@/components/dbstudio/TableEditor";
+import { TemplateLibrary } from "@/components/dbstudio/TemplateLibrary";
 
 export const Route = createFileRoute("/_authenticated/federated/db")({
   component: DbStudioPage,
@@ -38,6 +39,7 @@ type Section = { id: string; label: string; icon: typeof Database };
 const sections: Section[] = [
   { id: "overview", label: "نظرة عامة", icon: Gauge },
   { id: "tables", label: "محرر الجداول", icon: Table2 },
+  { id: "templates", label: "نماذج الجداول", icon: Layers3 },
   { id: "sql", label: "محرر SQL", icon: Code2 },
   { id: "schema", label: "المخطط والعلاقات", icon: Network },
   { id: "auth", label: "المصادقة", icon: Users },
@@ -122,6 +124,7 @@ function SectionContent({ section, data, selected, connection, server, actionMut
   if (section === "sql" || section === "assistant") return <SqlPanel selected={selected} runQuery={runQuery} invalidate={invalidate} assistant={section === "assistant"} />;
   if (section === "sites") return <SitesPanel data={data} selected={selected} provisionMutation={provisionMutation} />;
   if (section === "tables") return <TableEditor databaseId={selected.id} hasAgent={Boolean(selected.server_id)} />;
+  if (section === "templates") return <TemplateLibrary databaseId={selected.id} hasAgent={Boolean(selected.server_id)} />;
   if (section === "activity") return <ActivityPanel data={data} />;
   if (section === "backups") return <BackupsPanel data={data} selected={selected} mutation={actionMutation} />;
   if (section === "integrations") return <IntegrationsPanel data={data} selected={selected} connection={connection} server={server} mutation={actionMutation} />;

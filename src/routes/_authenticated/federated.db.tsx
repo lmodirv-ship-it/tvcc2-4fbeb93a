@@ -18,7 +18,7 @@ import { Switch } from "@/components/ui/switch";
 import { Textarea } from "@/components/ui/textarea";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import {
-  connectDatabaseAgent, getDbStudioData, linkDatabaseServer, provisionSiteIdentities, queueDbStudioAction, runDbStudioQuery,
+  connectDatabaseAgent, getDbStudioData, linkDatabaseServer, provisionSiteIdentities, queueDbStudioAction, runDbStudioQuery, getQueryHistory,
 } from "@/lib/dbstudio.functions";
 import { TableEditor } from "@/components/dbstudio/TableEditor";
 import { TemplateLibrary } from "@/components/dbstudio/TemplateLibrary";
@@ -332,12 +332,109 @@ function Overview({ data, selected, connection, server, actionMutation }: any) {
   </div>;
 }
 
+const SQL_SNIPPETS: [string, string][] = [
+  ["كل الجداول", "SELECT table_name, table_type\nFROM information_schema.tables\nWHERE table_schema = 'public'\nORDER BY table_name;"],
+  ["أكبر الجداول", "SELECT relname AS table_name, n_live_tup AS rows\nFROM pg_stat_user_tables\nORDER BY n_live_tup DESC\nLIMIT 20;"],
+  ["أعمدة جدول", "SELECT column_name, data_type, is_nullable, column_default\nFROM information_schema.columns\nWHERE table_schema = 'public' AND table_name = 'websites'\nORDER BY ordinal_position;"],
+  ["سياسات RLS", "SELECT schemaname, tablename, policyname, cmd\nFROM pg_policies\nWHERE schemaname = 'public'\nORDER BY tablename;"],
+  ["حجم القاعدة", "SELECT pg_size_pretty(pg_database_size(current_database())) AS size;"],
+];
+
 function SqlPanel({ selected, runQuery, invalidate, assistant }: any) {
+  const internal = selected.db_kind === "internal";
   const [sql, setSql] = useState(assistant ? "-- اكتب طلبك ثم حوّله إلى SQL\nSELECT current_database(), now();" : "SELECT * FROM information_schema.tables\nWHERE table_schema = 'public'\nLIMIT 100;");
   const [confirm, setConfirm] = useState(false);
-  const mutation = useMutation({ mutationFn: () => runQuery({ data: { databaseId: selected.id, sql, confirmWrite: confirm, title: assistant ? "مساعد SQL" : "SQL Studio" } }), onSuccess: () => { toast.success("دخل الاستعلام مركز المهام"); invalidate(); }, onError: (e) => toast.error(e.message) });
-  return <div className="space-y-4"><div><h2 className="text-2xl font-bold">{assistant ? "مساعد SQL" : "محرر SQL"}</h2><p className="text-muted-foreground">التنفيذ عبر الوكيل على {selected.name}. القراءة فقط افتراضياً.</p></div><Textarea value={sql} onChange={(e) => setSql(e.target.value)} dir="ltr" className="min-h-[330px] font-mono" /><div className="flex flex-wrap items-center gap-3"><Switch checked={confirm} onCheckedChange={setConfirm} id="confirm-write" /><label htmlFor="confirm-write" className="text-sm">تأكيد السماح بالكتابة لهذا الاستعلام</label><Button className="mr-auto" disabled={mutation.isPending} onClick={() => mutation.mutate()}>{mutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <Play className="size-4" />}تنفيذ</Button></div></div>;
+  const [result, setResult] = useState<{ rows: any[]; durationMs: number } | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const historyFn = useServerFn(getQueryHistory);
+  const history = useQuery({ queryKey: ["sql-history", selected.id], queryFn: () => historyFn({ data: { databaseId: selected.id } }) });
+
+  const mutation = useMutation({
+    mutationFn: () => runQuery({ data: { databaseId: selected.id, sql, confirmWrite: confirm, title: assistant ? "مساعد SQL" : "SQL Studio" } }),
+    onSuccess: (res: any) => {
+      setError(null);
+      if (res?.direct) {
+        setResult({ rows: res.rows ?? [], durationMs: res.durationMs ?? 0 });
+        toast.success(`تم التنفيذ — ${res.rowCount ?? 0} صف في ${res.durationMs ?? 0}ms`);
+      } else {
+        setResult(null);
+        toast.success("دخل الاستعلام مركز المهام لدى الوكيل");
+      }
+      history.refetch();
+      invalidate();
+    },
+    onError: (e: any) => { setResult(null); setError(e.message); toast.error(e.message); },
+  });
+
+  const run = () => { if (!mutation.isPending) mutation.mutate(); };
+  const columns = result?.rows?.length ? Object.keys(result.rows[0] ?? {}) : [];
+  const exportCsv = () => {
+    if (!result?.rows?.length) return;
+    const esc = (v: any) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+    const csv = [columns.join(","), ...result.rows.map((r) => columns.map((c) => esc(typeof r[c] === "object" ? JSON.stringify(r[c]) : r[c])).join(","))].join("\n");
+    const url = URL.createObjectURL(new Blob([csv], { type: "text/csv;charset=utf-8" }));
+    const a = document.createElement("a"); a.href = url; a.download = `query-${Date.now()}.csv`; a.click(); URL.revokeObjectURL(url);
+  };
+
+  return <div className="space-y-4">
+    <div className="flex flex-wrap items-start justify-between gap-3">
+      <div>
+        <h2 className="text-2xl font-bold">{assistant ? "مساعد SQL" : "محرر SQL"}</h2>
+        <p className="text-muted-foreground">{internal ? "تنفيذ مباشر على " + selected.name + " بصلاحيات المالك/المدير — القراءة والكتابة." : "تنفيذ عبر مركز مهام الوكيل على " + selected.name + "."}</p>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {SQL_SNIPPETS.map(([label, snippet]) => (
+          <Button key={label} size="sm" variant="outline" onClick={() => setSql(snippet)}>{label}</Button>
+        ))}
+      </div>
+    </div>
+    <Textarea
+      value={sql}
+      onChange={(e) => setSql(e.target.value)}
+      onKeyDown={(e) => { if ((e.ctrlKey || e.metaKey) && e.key === "Enter") { e.preventDefault(); run(); } }}
+      dir="ltr"
+      className="min-h-[260px] font-mono"
+    />
+    <div className="flex flex-wrap items-center gap-3">
+      <Switch checked={confirm} onCheckedChange={setConfirm} id="confirm-write" />
+      <label htmlFor="confirm-write" className="text-sm">تأكيد السماح بالكتابة لهذا الاستعلام</label>
+      <span className="text-xs text-muted-foreground">Ctrl/⌘ + Enter للتنفيذ</span>
+      {result && <Button size="sm" variant="outline" onClick={exportCsv}><Download className="size-4" />تصدير CSV</Button>}
+      <Button className="mr-auto" disabled={mutation.isPending} onClick={run}>{mutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <Play className="size-4" />}تنفيذ</Button>
+    </div>
+
+    {error && <Card className="border-destructive"><CardContent className="p-4 text-sm text-destructive" dir="ltr">{error}</CardContent></Card>}
+
+    {result && <Card>
+      <CardHeader className="flex-row items-center justify-between gap-3 space-y-0">
+        <CardTitle>النتيجة</CardTitle>
+        <span className="text-sm text-muted-foreground">{result.rows.length} صف · {result.durationMs}ms</span>
+      </CardHeader>
+      <CardContent className="overflow-x-auto p-0">
+        {result.rows.length ? <table className="w-full text-sm" dir="ltr">
+          <thead><tr className="border-b border-border text-left">{columns.map((c) => <th key={c} className="whitespace-nowrap p-3 font-mono text-xs">{c}</th>)}</tr></thead>
+          <tbody>{result.rows.slice(0, 200).map((row, i) => (
+            <tr key={i} className="border-b border-border/60">{columns.map((c) => <td key={c} className="max-w-[320px] truncate p-3 font-mono text-xs">{typeof row[c] === "object" && row[c] !== null ? JSON.stringify(row[c]) : String(row[c] ?? "—")}</td>)}</tr>
+          ))}</tbody>
+        </table> : <p className="p-4 text-muted-foreground">نُفِّذ الاستعلام بنجاح دون صفوف مُعادة.</p>}
+      </CardContent>
+    </Card>}
+
+    <Card>
+      <CardHeader><CardTitle>سجل الاستعلامات</CardTitle></CardHeader>
+      <CardContent className="space-y-2">
+        {(history.data ?? []).length ? (history.data as any[]).map((row) => (
+          <div key={row.id} className="flex items-center gap-3 border-b border-border/60 pb-2 text-sm">
+            <Badge variant={statusTone(row.status)}>{row.mode}</Badge>
+            <code className="flex-1 truncate font-mono text-xs" dir="ltr">{row.sql_text}</code>
+            <Button size="sm" variant="ghost" onClick={() => setSql(row.sql_text)}>استرجاع</Button>
+          </div>
+        )) : <p className="text-muted-foreground">لا يوجد سجل بعد.</p>}
+      </CardContent>
+    </Card>
+  </div>;
 }
+
 
 function SitesPanel({ data, selected, provisionMutation }: any) {
   const rows = data.siteDatabases.filter((row: any) => row.database_id === selected.id);

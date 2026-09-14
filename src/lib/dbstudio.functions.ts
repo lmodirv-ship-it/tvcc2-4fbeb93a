@@ -210,10 +210,40 @@ export const runDbStudioQuery = createServerFn({ method: "POST" })
     const { data: db } = await supabase.from("databases").select("*").eq("id", data.databaseId).single();
     if (!db) throw new Error("القاعدة غير موجودة");
     if (isInternalDb(db)) {
-      if (write) throw new Error("على قاعدة TVCC الأساسية استخدم محرّر الجداول أو DDL للكتابة — SQL الحر للقراءة فقط");
-      const rows = await runInternalSql(sql);
-      return { command: internalCommand("db_query", { database_id: db.id, sql, read_only: true }, { rows }), historyId: null };
+      if (/vault_secret/i.test(sql)) throw new Error("جداول الأسرار محميّة ولا تُقرأ أو تُعدَّل من محرر SQL");
+      const started = Date.now();
+      let rows: any[] = [];
+      let failure: string | null = null;
+      try {
+        rows = await runInternalSql(sql);
+      } catch (e: any) {
+        failure = e?.message ?? "فشل تنفيذ الاستعلام";
+      }
+      const duration = Date.now() - started;
+      await supabase.from("query_history").insert({
+        owner_id: userId,
+        database_id: db.id,
+        title: data.title ?? null,
+        sql_text: sql,
+        mode: write ? "write" : "read",
+        target_kind: "database",
+        target_ids: [db.id],
+        targets_count: 1,
+        status: failure ? "failed" : "completed",
+        confirmed_write: Boolean(data.confirmWrite),
+      });
+      await audit(supabase, userId, "db_query", db.id, { mode: write ? "write" : "read", direct: true, duration_ms: duration, failed: Boolean(failure) });
+      if (failure) throw new Error(failure);
+      return {
+        command: internalCommand("db_query", { database_id: db.id, sql, read_only: !write }, { rows, duration_ms: duration, row_count: rows.length }),
+        historyId: null,
+        direct: true,
+        rows,
+        rowCount: rows.length,
+        durationMs: duration,
+      };
     }
+
     if (!db.server_id) throw new Error("لا يوجد وكيل مرتبط بهذه القاعدة");
     const { data: history, error } = await supabase.from("query_history").insert({
       owner_id: userId,
@@ -778,4 +808,20 @@ export const linkDatabaseServer = createServerFn({ method: "POST" })
     if (error) throw new Error(error.message);
     await audit(supabase, userId, "database_link_server", data.databaseId, { server_id: data.serverId });
     return { ok: true };
+  });
+
+/** سجل آخر استعلامات SQL لهذه القاعدة. */
+export const getQueryHistory = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { databaseId: string }) => input)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+    const { data: rows } = await supabase
+      .from("query_history")
+      .select("id,title,sql_text,mode,status,created_at")
+      .eq("database_id", data.databaseId)
+      .order("created_at", { ascending: false })
+      .limit(25);
+    return rows ?? [];
   });

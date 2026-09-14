@@ -53,6 +53,21 @@ function pct(v: number | null | undefined) {
   return v == null ? "—" : `${Math.round(v)}%`;
 }
 
+function fmtBytes(n: number | null | undefined) {
+  if (n == null) return "—";
+  if (n >= 1e12) return `${(n / 1e12).toFixed(1)}TB`;
+  if (n >= 1e9) return `${(n / 1e9).toFixed(1)}GB`;
+  if (n >= 1e6) return `${(n / 1e6).toFixed(1)}MB`;
+  return `${Math.round(n / 1e3)}KB`;
+}
+
+function fmtUptime(sec: number | null | undefined) {
+  if (sec == null) return "—";
+  const d = Math.floor(sec / 86400);
+  const h = Math.floor((sec % 86400) / 3600);
+  return d > 0 ? `${d}d ${h}h` : `${h}h ${Math.floor((sec % 3600) / 60)}m`;
+}
+
 function statusBadge(status: string) {
   const ok = status === "online" || status === "completed" || status === "success";
   const warn = status === "warning" || status === "running" || status === "pending";
@@ -242,7 +257,34 @@ function AgentsPage() {
 
   const instance = (id: string) => ((data.instances ?? []) as any[]).find((i) => i.server_id === id);
   const healthOf = (id: string) => ((data.health ?? {}) as any)[id];
+  const metricsOf = (id: string) => ((data.metrics ?? {}) as any)[id];
   const queueOf = (id: string) => ((data.queued ?? {}) as any)[id] ?? { pending: 0, running: 0 };
+
+  // لا نعرض النسخ المؤرشفة/المدموجة في الجدول (منع تكرار نفس السيرفر)
+  const visibleServers = filteredServers.filter((s) => !s.duplicate_of && s.status !== "archived");
+
+  const exportCsv = () => {
+    const header = ["id", "name", "hostname", "public_ip", "status", "agents", "link_quality", "cpu%", "ram", "disk", "sites", "verified"];
+    const lines = visibleServers.map((s) => {
+      const agents: any[] = ((data.agents ?? {}) as any)[s.id] ?? [];
+      const main = agents.find((a) => a.agent_key === "main") ?? agents[0];
+      const m = metricsOf(s.id);
+      return [
+        s.id, s.name, s.hostname ?? "", s.public_ip ?? "", s.status, agents.length,
+        main?.link_quality ?? "", m?.cpu_percent ?? "",
+        m?.mem_used_mb != null ? `${(m.mem_used_mb / 1024).toFixed(1)}/${((m.mem_total_mb ?? 0) / 1024).toFixed(1)}GB` : "",
+        m?.disk_used_gb != null ? `${m.disk_used_gb}/${m.disk_total_gb}GB` : "",
+        ((data.sitesPer ?? {}) as any)[s.id] ?? 0, main?.verified_at ? "yes" : "no",
+      ].join(",");
+    });
+    const blob = new Blob(["\uFEFF" + header.join(",") + "\n" + lines.join("\n")], { type: "text/csv;charset=utf-8" });
+    const a = document.createElement("a");
+    a.href = URL.createObjectURL(blob);
+    a.download = `servers-${new Date().toISOString().slice(0, 10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(a.href);
+    toast.success("صُدّر ملف CSV");
+  };
 
   const serverSites = activeId ? (data.websites as any[]).filter((w) => w.server_id === activeId) : [];
   const serverNginx = activeId ? (data.nginx as any[]).filter((n) => n.server_id === activeId) : [];

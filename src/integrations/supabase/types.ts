@@ -296,7 +296,10 @@ export type Database = {
       }
       agent_jobs: {
         Row: {
+          cancelled_at: string | null
           created_at: string
+          current_step: string | null
+          error: string | null
           finished_at: string | null
           id: string
           kind: string
@@ -308,12 +311,16 @@ export type Database = {
           server_id: string
           started_at: string | null
           status: string
+          steps_total: number
           title: string
           updated_at: string
           website_id: string | null
         }
         Insert: {
+          cancelled_at?: string | null
           created_at?: string
+          current_step?: string | null
+          error?: string | null
           finished_at?: string | null
           id?: string
           kind?: string
@@ -325,12 +332,16 @@ export type Database = {
           server_id: string
           started_at?: string | null
           status?: string
+          steps_total?: number
           title: string
           updated_at?: string
           website_id?: string | null
         }
         Update: {
+          cancelled_at?: string | null
           created_at?: string
+          current_step?: string | null
+          error?: string | null
           finished_at?: string | null
           id?: string
           kind?: string
@@ -342,6 +353,7 @@ export type Database = {
           server_id?: string
           started_at?: string | null
           status?: string
+          steps_total?: number
           title?: string
           updated_at?: string
           website_id?: string | null
@@ -917,15 +929,150 @@ export type Database = {
           },
         ]
       }
+      alert_rules: {
+        Row: {
+          channel: string
+          comparator: string
+          created_at: string
+          for_seconds: number
+          id: string
+          is_active: boolean
+          last_fired_at: string | null
+          metric: string
+          name: string
+          owner_id: string
+          scope: string
+          server_id: string | null
+          severity: string
+          threshold: number
+          updated_at: string
+        }
+        Insert: {
+          channel?: string
+          comparator?: string
+          created_at?: string
+          for_seconds?: number
+          id?: string
+          is_active?: boolean
+          last_fired_at?: string | null
+          metric: string
+          name: string
+          owner_id?: string
+          scope?: string
+          server_id?: string | null
+          severity?: string
+          threshold: number
+          updated_at?: string
+        }
+        Update: {
+          channel?: string
+          comparator?: string
+          created_at?: string
+          for_seconds?: number
+          id?: string
+          is_active?: boolean
+          last_fired_at?: string | null
+          metric?: string
+          name?: string
+          owner_id?: string
+          scope?: string
+          server_id?: string | null
+          severity?: string
+          threshold?: number
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "alert_rules_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      audit_log: {
+        Row: {
+          action: string
+          actor_email: string | null
+          actor_id: string | null
+          after_data: Json | null
+          before_data: Json | null
+          created_at: string
+          id: string
+          ip: string | null
+          owner_id: string
+          resource: string | null
+          resource_id: string | null
+          server_id: string | null
+          severity: string
+          user_agent: string | null
+          website_id: string | null
+        }
+        Insert: {
+          action: string
+          actor_email?: string | null
+          actor_id?: string | null
+          after_data?: Json | null
+          before_data?: Json | null
+          created_at?: string
+          id?: string
+          ip?: string | null
+          owner_id?: string
+          resource?: string | null
+          resource_id?: string | null
+          server_id?: string | null
+          severity?: string
+          user_agent?: string | null
+          website_id?: string | null
+        }
+        Update: {
+          action?: string
+          actor_email?: string | null
+          actor_id?: string | null
+          after_data?: Json | null
+          before_data?: Json | null
+          created_at?: string
+          id?: string
+          ip?: string | null
+          owner_id?: string
+          resource?: string | null
+          resource_id?: string | null
+          server_id?: string | null
+          severity?: string
+          user_agent?: string | null
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "audit_log_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "audit_log_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       backup_schedules: {
         Row: {
           backup_type: string
+          copies: number
           created_at: string
           dest_path: string | null
+          encrypt: boolean
+          group_id: string | null
           id: string
           is_active: boolean
           label: string | null
           last_run_at: string | null
+          last_verify_at: string | null
           next_run_at: string | null
           notify_on_failure: boolean
           owner_id: string
@@ -934,16 +1081,21 @@ export type Database = {
           server_id: string | null
           target_server_id: string | null
           updated_at: string
+          verify_status: string | null
           website_id: string | null
         }
         Insert: {
           backup_type?: string
+          copies?: number
           created_at?: string
           dest_path?: string | null
+          encrypt?: boolean
+          group_id?: string | null
           id?: string
           is_active?: boolean
           label?: string | null
           last_run_at?: string | null
+          last_verify_at?: string | null
           next_run_at?: string | null
           notify_on_failure?: boolean
           owner_id: string
@@ -952,16 +1104,21 @@ export type Database = {
           server_id?: string | null
           target_server_id?: string | null
           updated_at?: string
+          verify_status?: string | null
           website_id?: string | null
         }
         Update: {
           backup_type?: string
+          copies?: number
           created_at?: string
           dest_path?: string | null
+          encrypt?: boolean
+          group_id?: string | null
           id?: string
           is_active?: boolean
           label?: string | null
           last_run_at?: string | null
+          last_verify_at?: string | null
           next_run_at?: string | null
           notify_on_failure?: boolean
           owner_id?: string
@@ -970,9 +1127,17 @@ export type Database = {
           server_id?: string | null
           target_server_id?: string | null
           updated_at?: string
+          verify_status?: string | null
           website_id?: string | null
         }
         Relationships: [
+          {
+            foreignKeyName: "backup_schedules_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "site_groups"
+            referencedColumns: ["id"]
+          },
           {
             foreignKeyName: "backup_schedules_server_id_fkey"
             columns: ["server_id"]
@@ -1437,17 +1602,22 @@ export type Database = {
           env_key: string | null
           host: string | null
           id: string
+          is_primary: boolean
           last_error: string | null
+          last_migration_at: string | null
           last_sync_at: string | null
           linked_database_id: string | null
+          migration_status: string
           name: string
           owner_id: string
           password_hash: string | null
           port: number | null
+          rows_count: number | null
           server_id: string | null
           size_mb: number | null
           status: string
           sync_mode: string
+          tables_count: number | null
           updated_at: string
           website_id: string | null
         }
@@ -1461,17 +1631,22 @@ export type Database = {
           env_key?: string | null
           host?: string | null
           id?: string
+          is_primary?: boolean
           last_error?: string | null
+          last_migration_at?: string | null
           last_sync_at?: string | null
           linked_database_id?: string | null
+          migration_status?: string
           name: string
           owner_id: string
           password_hash?: string | null
           port?: number | null
+          rows_count?: number | null
           server_id?: string | null
           size_mb?: number | null
           status?: string
           sync_mode?: string
+          tables_count?: number | null
           updated_at?: string
           website_id?: string | null
         }
@@ -1485,17 +1660,22 @@ export type Database = {
           env_key?: string | null
           host?: string | null
           id?: string
+          is_primary?: boolean
           last_error?: string | null
+          last_migration_at?: string | null
           last_sync_at?: string | null
           linked_database_id?: string | null
+          migration_status?: string
           name?: string
           owner_id?: string
           password_hash?: string | null
           port?: number | null
+          rows_count?: number | null
           server_id?: string | null
           size_mb?: number | null
           status?: string
           sync_mode?: string
+          tables_count?: number | null
           updated_at?: string
           website_id?: string | null
         }
@@ -4234,6 +4414,71 @@ export type Database = {
           },
         ]
       }
+      query_history: {
+        Row: {
+          created_at: string
+          error: string | null
+          failed_count: number
+          finished_at: string | null
+          group_id: string | null
+          id: string
+          mode: string
+          owner_id: string
+          results: Json | null
+          sql_text: string
+          status: string
+          success_count: number
+          target_ids: Json
+          target_kind: string
+          targets_count: number
+          took_ms: number | null
+        }
+        Insert: {
+          created_at?: string
+          error?: string | null
+          failed_count?: number
+          finished_at?: string | null
+          group_id?: string | null
+          id?: string
+          mode?: string
+          owner_id?: string
+          results?: Json | null
+          sql_text: string
+          status?: string
+          success_count?: number
+          target_ids?: Json
+          target_kind?: string
+          targets_count?: number
+          took_ms?: number | null
+        }
+        Update: {
+          created_at?: string
+          error?: string | null
+          failed_count?: number
+          finished_at?: string | null
+          group_id?: string | null
+          id?: string
+          mode?: string
+          owner_id?: string
+          results?: Json | null
+          sql_text?: string
+          status?: string
+          success_count?: number
+          target_ids?: Json
+          target_kind?: string
+          targets_count?: number
+          took_ms?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "query_history_group_id_fkey"
+            columns: ["group_id"]
+            isOneToOne: false
+            referencedRelation: "site_groups"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       recovery_points: {
         Row: {
           created_at: string
@@ -5878,8 +6123,10 @@ export type Database = {
         Row: {
           backup_type: string
           completed_at: string | null
+          copy_index: number
           created_at: string
           dest_path: string | null
+          encrypted: boolean
           error_message: string | null
           id: string
           is_latest: boolean
@@ -5890,13 +6137,16 @@ export type Database = {
           status: string
           storage_path: string | null
           target_server_id: string | null
+          verified_at: string | null
           website_id: string | null
         }
         Insert: {
           backup_type?: string
           completed_at?: string | null
+          copy_index?: number
           created_at?: string
           dest_path?: string | null
+          encrypted?: boolean
           error_message?: string | null
           id?: string
           is_latest?: boolean
@@ -5907,13 +6157,16 @@ export type Database = {
           status?: string
           storage_path?: string | null
           target_server_id?: string | null
+          verified_at?: string | null
           website_id?: string | null
         }
         Update: {
           backup_type?: string
           completed_at?: string | null
+          copy_index?: number
           created_at?: string
           dest_path?: string | null
+          encrypted?: boolean
           error_message?: string | null
           id?: string
           is_latest?: boolean
@@ -5924,6 +6177,7 @@ export type Database = {
           status?: string
           storage_path?: string | null
           target_server_id?: string | null
+          verified_at?: string | null
           website_id?: string | null
         }
         Relationships: [
@@ -6221,30 +6475,42 @@ export type Database = {
           color: string
           created_at: string
           description: string | null
+          group_key: string | null
+          group_kind: string
           icon: string
           id: string
+          is_auto: boolean
           name: string
           owner_id: string
+          sort_order: number
           updated_at: string
         }
         Insert: {
           color?: string
           created_at?: string
           description?: string | null
+          group_key?: string | null
+          group_kind?: string
           icon?: string
           id?: string
+          is_auto?: boolean
           name: string
           owner_id: string
+          sort_order?: number
           updated_at?: string
         }
         Update: {
           color?: string
           created_at?: string
           description?: string | null
+          group_key?: string | null
+          group_kind?: string
           icon?: string
           id?: string
+          is_auto?: boolean
           name?: string
           owner_id?: string
+          sort_order?: number
           updated_at?: string
         }
         Relationships: []

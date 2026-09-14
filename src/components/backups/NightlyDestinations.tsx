@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { toast } from "sonner";
@@ -23,6 +23,18 @@ const copyStyle = (s: string) =>
     : s === "failed"
       ? "bg-destructive/20 text-destructive border-destructive/40"
       : "bg-muted text-muted-foreground border-border";
+
+const pctStyle = (p?: number | null) =>
+  p == null
+    ? "bg-muted text-muted-foreground border-border"
+    : p >= 90
+      ? "bg-destructive/20 text-destructive border-destructive/40"
+      : p >= 75
+        ? "bg-warning/20 text-warning border-warning/40"
+        : "bg-success/20 text-success border-success/40";
+
+const fmtMb = (mb?: number | null) =>
+  mb == null ? "—" : mb >= 1024 ? `${(mb / 1024).toFixed(1)} GB` : `${Math.round(mb)} MB`;
 
 const fmtSize = (b?: number | null) =>
   !b ? "—" : b > 1024 * 1024 * 1024
@@ -94,6 +106,21 @@ export function NightlyDestinations() {
     },
     onError: (e: any) => toast.error(e?.message || "تعذّر التشغيل"),
   });
+
+  // تشغيل تلقائي بدون تدخل: أي وجهة جاهزة لم تعمل منذ 24 ساعة تُشغَّل تلقائياً.
+  const autoFired = useRef<Set<string>>(new Set());
+  useEffect(() => {
+    for (const d of destinations) {
+      if (!d.ready || autoFired.current.has(d.id)) continue;
+      const last = d.last_run_at ? new Date(d.last_run_at).getTime() : 0;
+      if (Date.now() - last < 24 * 3600 * 1000) continue;
+      autoFired.current.add(d.id);
+      runNow({ data: { id: d.id } })
+        .then(() => { toast.success(`تشغيل تلقائي للنسخ: ${d.name}`); invalidate(); })
+        .catch(() => autoFired.current.delete(d.id));
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [destinations]);
 
   const exportCsv = () => {
     const header = "domain,first_status,first_size,current_status,current_updated\n";
@@ -172,6 +199,10 @@ export function NightlyDestinations() {
                   <TableHead>الوجهة</TableHead>
                   <TableHead>السيرفر</TableHead>
                   <TableHead>المسار</TableHead>
+                  <TableHead>الذاكرة (مستعملة / حرة)</TableHead>
+                  <TableHead>التخزين (ممتلئ / فارغ)</TableHead>
+                  <TableHead>التفاعل</TableHead>
+                  <TableHead>سرعة الاستجابة</TableHead>
                   <TableHead>آخر تشغيل</TableHead>
                   <TableHead>مفعّل</TableHead>
                   <TableHead />
@@ -183,6 +214,33 @@ export function NightlyDestinations() {
                     <TableCell className="text-xs font-medium">{d.name}</TableCell>
                     <TableCell className="text-xs" dir="ltr">{d.username}@{d.host}:{d.port}</TableCell>
                     <TableCell className="text-xs" dir="ltr">{d.base_path}</TableCell>
+                    <TableCell className="text-xs whitespace-nowrap">
+                      {d.metrics?.mem_total_mb ? (
+                        <>
+                          <span className="tabular-nums">{fmtMb(d.metrics.mem_used_mb)} / {fmtMb(d.metrics.mem_free_mb)}</span>
+                          <Badge variant="outline" className={`mr-1 text-[10px] ${pctStyle(d.metrics.mem_percent)}`}>{d.metrics.mem_percent}%</Badge>
+                        </>
+                      ) : "—"}
+                    </TableCell>
+                    <TableCell className="text-xs whitespace-nowrap">
+                      {d.metrics?.disk_total_gb ? (
+                        <>
+                          <span className="tabular-nums">{d.metrics.disk_used_gb ?? 0} / {d.metrics.disk_free_gb} GB</span>
+                          <Badge variant="outline" className={`mr-1 text-[10px] ${pctStyle(d.metrics.disk_percent)}`}>{d.metrics.disk_percent}%</Badge>
+                        </>
+                      ) : "—"}
+                    </TableCell>
+                    <TableCell className="text-xs whitespace-nowrap">
+                      <Badge variant="outline" className={d.agent_online ? "bg-success/20 text-success border-success/40 text-[10px]" : "bg-destructive/20 text-destructive border-destructive/40 text-[10px]"}>
+                        {d.agent_online ? "متفاعل" : "غير متفاعل"}
+                      </Badge>
+                      {d.metrics?.link_quality != null && (
+                        <span className="text-muted-foreground mr-1">{d.metrics.link_quality}%</span>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-xs whitespace-nowrap tabular-nums">
+                      {d.metrics?.latency_ms != null ? `${Math.round(d.metrics.latency_ms)} ms` : "—"}
+                    </TableCell>
                     <TableCell className="text-xs">
                       {d.last_run_at ? new Date(d.last_run_at).toLocaleString("ar") : "—"}
                       {d.last_run_summary?.queued != null && (
@@ -200,8 +258,17 @@ export function NightlyDestinations() {
                     </TableCell>
                     <TableCell className="text-left">
                       <div className="flex gap-1 justify-end">
-                        <Button size="sm" variant="outline" onClick={() => run.mutate(d.id)} disabled={run.isPending}>
-                          <Play className="w-3 h-3 ml-1" /> تشغيل الآن
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          title={d.ready ? "يعمل تلقائياً كل 24 ساعة" : !d.is_enabled ? "الوجهة غير مفعّلة" : "لا يوجد وكيل متصل على سيرفر الوجهة"}
+                          className={d.ready
+                            ? "border-success/50 bg-success/15 text-success hover:bg-success/25"
+                            : "border-destructive/50 bg-destructive/15 text-destructive hover:bg-destructive/25"}
+                          onClick={() => run.mutate(d.id)}
+                          disabled={run.isPending}
+                        >
+                          {run.isPending ? <Loader2 className="w-3 h-3 animate-spin ml-1" /> : <Play className="w-3 h-3 ml-1" />} تشغيل الآن
                         </Button>
                         <Button
                           size="sm"

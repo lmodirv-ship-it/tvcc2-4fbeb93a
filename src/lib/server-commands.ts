@@ -13,6 +13,7 @@ export const COMMAND_WHITELIST = [
   "disk_usage",
   "write_config",
   "site_backup",
+  "site_archive",
   "site_restore",
   "db_dump",
   "db_import",

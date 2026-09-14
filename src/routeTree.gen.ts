@@ -129,6 +129,7 @@ import { Route as ApiPublicHnServiceCatalogRouteImport } from './routes/api/publ
 import { Route as ApiPublicHnRlsVerifyRouteImport } from './routes/api/public/hn-rls.verify'
 import { Route as ApiPublicCoreIngestRouteImport } from './routes/api/public/core.ingest'
 import { Route as ApiPublicBackupsRunDueRouteImport } from './routes/api/public/backups/run-due'
+import { Route as ApiPublicBackupsNightlyRouteImport } from './routes/api/public/backups/nightly'
 import { Route as ApiPublicHnIdentityCodeRouteImport } from './routes/api/public/hn/identity.$code'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -777,6 +778,11 @@ const ApiPublicBackupsRunDueRoute = ApiPublicBackupsRunDueRouteImport.update({
   path: '/api/public/backups/run-due',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicBackupsNightlyRoute = ApiPublicBackupsNightlyRouteImport.update({
+  id: '/api/public/backups/nightly',
+  path: '/api/public/backups/nightly',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicHnIdentityCodeRoute = ApiPublicHnIdentityCodeRouteImport.update({
   id: '/api/public/hn/identity/$code',
   path: '/api/public/hn/identity/$code',
@@ -883,6 +889,7 @@ export interface FileRoutesByFullPath {
   '/editor/': typeof AuthenticatedEditorIndexRoute
   '/federated/': typeof AuthenticatedFederatedIndexRoute
   '/servers/': typeof AuthenticatedServersIndexRoute
+  '/api/public/backups/nightly': typeof ApiPublicBackupsNightlyRoute
   '/api/public/backups/run-due': typeof ApiPublicBackupsRunDueRoute
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hn-rls/verify': typeof ApiPublicHnRlsVerifyRoute
@@ -1003,6 +1010,7 @@ export interface FileRoutesByTo {
   '/editor': typeof AuthenticatedEditorIndexRoute
   '/federated': typeof AuthenticatedFederatedIndexRoute
   '/servers': typeof AuthenticatedServersIndexRoute
+  '/api/public/backups/nightly': typeof ApiPublicBackupsNightlyRoute
   '/api/public/backups/run-due': typeof ApiPublicBackupsRunDueRoute
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hn-rls/verify': typeof ApiPublicHnRlsVerifyRoute
@@ -1127,6 +1135,7 @@ export interface FileRoutesById {
   '/_authenticated/editor/': typeof AuthenticatedEditorIndexRoute
   '/_authenticated/federated/': typeof AuthenticatedFederatedIndexRoute
   '/_authenticated/servers/': typeof AuthenticatedServersIndexRoute
+  '/api/public/backups/nightly': typeof ApiPublicBackupsNightlyRoute
   '/api/public/backups/run-due': typeof ApiPublicBackupsRunDueRoute
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hn-rls/verify': typeof ApiPublicHnRlsVerifyRoute
@@ -1251,6 +1260,7 @@ export interface FileRouteTypes {
     | '/editor/'
     | '/federated/'
     | '/servers/'
+    | '/api/public/backups/nightly'
     | '/api/public/backups/run-due'
     | '/api/public/core/ingest'
     | '/api/public/hn-rls/verify'
@@ -1371,6 +1381,7 @@ export interface FileRouteTypes {
     | '/editor'
     | '/federated'
     | '/servers'
+    | '/api/public/backups/nightly'
     | '/api/public/backups/run-due'
     | '/api/public/core/ingest'
     | '/api/public/hn-rls/verify'
@@ -1494,6 +1505,7 @@ export interface FileRouteTypes {
     | '/_authenticated/editor/'
     | '/_authenticated/federated/'
     | '/_authenticated/servers/'
+    | '/api/public/backups/nightly'
     | '/api/public/backups/run-due'
     | '/api/public/core/ingest'
     | '/api/public/hn-rls/verify'
@@ -1535,6 +1547,7 @@ export interface RootRouteChildren {
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicSiteConfigRoute: typeof ApiPublicSiteConfigRoute
   ApiPublicVisitsRoute: typeof ApiPublicVisitsRoute
+  ApiPublicBackupsNightlyRoute: typeof ApiPublicBackupsNightlyRoute
   ApiPublicBackupsRunDueRoute: typeof ApiPublicBackupsRunDueRoute
   ApiPublicCoreIngestRoute: typeof ApiPublicCoreIngestRoute
   ApiPublicHnRlsVerifyRoute: typeof ApiPublicHnRlsVerifyRoute
@@ -2400,6 +2413,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicBackupsRunDueRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/backups/nightly': {
+      id: '/api/public/backups/nightly'
+      path: '/api/public/backups/nightly'
+      fullPath: '/api/public/backups/nightly'
+      preLoaderRoute: typeof ApiPublicBackupsNightlyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hn/identity/$code': {
       id: '/api/public/hn/identity/$code'
       path: '/api/public/hn/identity/$code'
@@ -2648,6 +2668,7 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicSiteConfigRoute: ApiPublicSiteConfigRoute,
   ApiPublicVisitsRoute: ApiPublicVisitsRoute,
+  ApiPublicBackupsNightlyRoute: ApiPublicBackupsNightlyRoute,
   ApiPublicBackupsRunDueRoute: ApiPublicBackupsRunDueRoute,
   ApiPublicCoreIngestRoute: ApiPublicCoreIngestRoute,
   ApiPublicHnRlsVerifyRoute: ApiPublicHnRlsVerifyRoute,

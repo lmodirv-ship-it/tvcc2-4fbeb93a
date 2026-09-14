@@ -269,7 +269,12 @@ function BackupsPage() {
           <TabsTrigger value="backups"><Archive className="w-3 h-3 ml-1" /> النسخ الاحتياطية</TabsTrigger>
           <TabsTrigger value="schedules"><Clock className="w-3 h-3 ml-1" /> الجدولة التلقائية</TabsTrigger>
           <TabsTrigger value="databases"><Database className="w-3 h-3 ml-1" /> قواعد البيانات</TabsTrigger>
+          <TabsTrigger value="nightly"><Clock className="w-3 h-3 ml-1" /> النسخ الليلي للمواقع</TabsTrigger>
         </TabsList>
+
+        <TabsContent value="nightly" className="pt-4">
+          <NightlyDestinations />
+        </TabsContent>
 
 
         <TabsContent value="backups" className="pt-4">

@@ -8,7 +8,7 @@ export const listSiteTransfers = createServerFn({ method: "POST" })
     const sb = context.supabase as any;
     const since = new Date(Date.now() - 7 * 24 * 3600 * 1000).toISOString();
 
-    const [{ data: sites }, { data: copies }, { data: tasks }, { data: checks }] = await Promise.all([
+    const [{ data: sites }, { data: copies }, { data: tasks }, { data: checks }, { data: links }, { data: agents }, { data: dests }] = await Promise.all([
       sb
         .from("websites")
         .select("id, name, domain, site_code, status, verified, is_active, last_checked_at, updated_at")

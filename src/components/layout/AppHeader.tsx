@@ -13,10 +13,16 @@ import { LANGUAGES } from "@/i18n";
 export function AppHeader() {
   const [email, setEmail] = useState<string>("");
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email || ""));
   }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate({ to: "/auth" });
+  };
 
   const initial = (email || "A").charAt(0).toUpperCase();
   const dir = (LANGUAGES.find((l) => l.code === i18n.language)?.dir ?? "rtl") as "rtl" | "ltr";

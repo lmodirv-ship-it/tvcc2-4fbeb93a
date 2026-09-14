@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/sidebar";
 import { usePermissions } from "@/hooks/use-permissions";
 import { usePlatformPageRules } from "@/hooks/use-platform-pages";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { exportDashboardHtml } from "@/lib/html-export";
 import { useTranslation } from "react-i18next";

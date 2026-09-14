@@ -10,7 +10,7 @@ export const getCheckoutPaymentAccount = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { data } = await (supabaseAdmin as any)
       .from("payment_accounts")
-      .select("id,label,bank_name,holder_name,account_number,rib,iban,swift,currency,gateway_url,notes")
+      .select("id,label,bank_name,holder,account_number,rib,iban,swift,currency,gateway_url,notes")
       .eq("is_active", true)
       .order("is_default", { ascending: false })
       .limit(1)

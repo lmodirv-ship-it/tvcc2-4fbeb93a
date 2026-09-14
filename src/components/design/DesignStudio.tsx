@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
+import { THEME_STORAGE_KEY } from "@/lib/themes";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Label } from "@/components/ui/label";
@@ -58,6 +59,13 @@ export function DesignStudio() {
     try {
       await save({ data: tokens });
       cacheDesignTokens(tokens);
+      // the saved brand identity becomes the active look: drop any previously
+      // picked theme so the colors survive a reload
+      try {
+        window.localStorage.removeItem(THEME_STORAGE_KEY);
+      } catch {
+        /* ignore */
+      }
       applyDesignTokens(tokens);
       toast.success("تم حفظ هوية التصميم وتطبيقها على كامل المنصة");
     } catch (e: any) {

@@ -75,7 +75,7 @@ export const getMyHosting = createServerFn({ method: "POST" })
     const [{ data: quotas }, { data: grants }, { data: domains }, { data: replicas }, { data: tenants }] =
       await Promise.all([
         sb.from("storage_quotas").select("*").eq("owner_id", uid),
-        sb.from("subscription_servers").select("*, server:servers(id,name,host,role,status)").eq("owner_id", uid),
+        sb.from("subscription_servers").select("*, server:servers(id,name,hostname,role,status)").eq("owner_id", uid),
         sb.from("hn_domains").select("*").eq("owner_id", uid).order("created_at", { ascending: false }),
         sb.from("file_replicas").select("*").eq("owner_id", uid).order("updated_at", { ascending: false }).limit(50),
         sb.from("hosting_tenants").select("*").eq("owner_id", uid),
@@ -314,7 +314,7 @@ export const replicateFile = createServerFn({ method: "POST" })
 
     const { data: grants } = await sb
       .from("subscription_servers")
-      .select("server_id, role, server:servers(id,role,host)")
+      .select("server_id, role, server:servers(id,role,hostname)")
       .eq("subscription_id", sub.id);
     const { replicaPlan } = await import("./hosting.server");
     const pool = (grants ?? []).map((g: any) => ({ id: g.server_id, role: g.server?.role ?? g.role }));

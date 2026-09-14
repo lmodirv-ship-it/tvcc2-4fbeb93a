@@ -272,8 +272,10 @@ export const evaluateServerHealth = createServerFn({ method: "POST" })
     if (!server) throw new Error("السيرفر غير موجود");
 
     const cpu = Number(metric?.cpu_percent ?? 0);
-    const mem = Number(metric?.memory_percent ?? 0);
-    const disk = Number(metric?.disk_percent ?? 0);
+    const pct = (used?: number | null, total?: number | null) =>
+      total && Number(total) > 0 ? Math.round((Number(used ?? 0) / Number(total)) * 100) : 0;
+    const mem = pct(metric?.mem_used_mb, metric?.mem_total_mb);
+    const disk = pct(metric?.disk_used_gb, metric?.disk_total_gb);
     const servicesDown = (services ?? []).filter((s: any) => s.status && s.status !== "running" && s.status !== "active").length;
     const portsDown = (ports ?? []).filter((p: any) => p.status && p.status !== "open").length;
     const lastSeen = server.last_seen_at ? new Date(server.last_seen_at).getTime() : 0;

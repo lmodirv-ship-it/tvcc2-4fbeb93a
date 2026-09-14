@@ -258,13 +258,12 @@ export function TableEditor({ databaseId, hasAgent = true }: { databaseId: strin
                 <p className="px-2 py-1 text-[10px] font-semibold uppercase text-muted-foreground">{visibleTables.length} جدولاً</p>
                 {visibleTables.length ? visibleTables.map((item: any) => (
                   <button key={item.name} onClick={() => openTable(item.name)} className={`group flex w-full items-center gap-2 rounded px-2 py-1.5 text-right text-xs transition-colors hover:bg-sidebar-accent ${table === item.name ? "bg-sidebar-accent text-sidebar-accent-foreground" : "text-sidebar-foreground"}`}>
-                    <Table2 className={`size-3.5 shrink-0 ${table === item.name ? "text-primary" : "text-muted-foreground"}`} />
-                    <span className="shrink-0 rounded bg-muted px-1 py-0.5 font-mono text-[10px] text-muted-foreground" dir="ltr">{tableCode(schema, item.name)}</span>
                     <span className="min-w-0 flex-1 truncate font-mono" dir="ltr">{item.name}</span>
                     {item.rls_enabled ? <Shield className="size-3 text-success" /> : item.kind === "table" ? <ShieldAlert className="size-3 text-warning" /> : null}
                     <Star className={`size-3 opacity-0 group-hover:opacity-100 ${favorites.includes(item.name) ? "fill-primary text-primary opacity-100" : "text-muted-foreground"}`} onClick={(e) => { e.stopPropagation(); setFavorites((prev) => prev.includes(item.name) ? prev.filter((n) => n !== item.name) : [...prev, item.name]); }} />
                   </button>
                 )) : <p className="p-4 text-center text-xs text-muted-foreground">{tablesCmd ? "لا توجد جداول" : "بانتظار قائمة الجداول…"}</p>}
+
               </div>
               <div className="border-t p-2"><AgentHint command={tablesCmd} /></div>
             </>

@@ -83,8 +83,11 @@ import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes
 import { Route as AuthenticatedServersServerIdRouteImport } from './routes/_authenticated/servers.$serverId'
 import { Route as AuthenticatedManaraKeyRouteImport } from './routes/_authenticated/manara.$key'
 import { Route as AuthenticatedFederatedSqlRouteImport } from './routes/_authenticated/federated.sql'
+import { Route as AuthenticatedFederatedPitrRouteImport } from './routes/_authenticated/federated.pitr'
 import { Route as AuthenticatedFederatedMeshRouteImport } from './routes/_authenticated/federated.mesh'
+import { Route as AuthenticatedFederatedHealingRouteImport } from './routes/_authenticated/federated.healing'
 import { Route as AuthenticatedFederatedFleetRouteImport } from './routes/_authenticated/federated.fleet'
+import { Route as AuthenticatedFederatedAssetsRouteImport } from './routes/_authenticated/federated.assets'
 import { Route as AuthenticatedEditorUsersRouteImport } from './routes/_authenticated/editor.users'
 import { Route as AuthenticatedEditorSubscriptionsRouteImport } from './routes/_authenticated/editor.subscriptions'
 import { Route as AuthenticatedEditorSocialRouteImport } from './routes/_authenticated/editor.social'
@@ -511,16 +514,34 @@ const AuthenticatedFederatedSqlRoute =
     path: '/sql',
     getParentRoute: () => AuthenticatedFederatedRoute,
   } as any)
+const AuthenticatedFederatedPitrRoute =
+  AuthenticatedFederatedPitrRouteImport.update({
+    id: '/pitr',
+    path: '/pitr',
+    getParentRoute: () => AuthenticatedFederatedRoute,
+  } as any)
 const AuthenticatedFederatedMeshRoute =
   AuthenticatedFederatedMeshRouteImport.update({
     id: '/mesh',
     path: '/mesh',
     getParentRoute: () => AuthenticatedFederatedRoute,
   } as any)
+const AuthenticatedFederatedHealingRoute =
+  AuthenticatedFederatedHealingRouteImport.update({
+    id: '/healing',
+    path: '/healing',
+    getParentRoute: () => AuthenticatedFederatedRoute,
+  } as any)
 const AuthenticatedFederatedFleetRoute =
   AuthenticatedFederatedFleetRouteImport.update({
     id: '/fleet',
     path: '/fleet',
+    getParentRoute: () => AuthenticatedFederatedRoute,
+  } as any)
+const AuthenticatedFederatedAssetsRoute =
+  AuthenticatedFederatedAssetsRouteImport.update({
+    id: '/assets',
+    path: '/assets',
     getParentRoute: () => AuthenticatedFederatedRoute,
   } as any)
 const AuthenticatedEditorUsersRoute =
@@ -809,8 +830,11 @@ export interface FileRoutesByFullPath {
   '/editor/social': typeof AuthenticatedEditorSocialRoute
   '/editor/subscriptions': typeof AuthenticatedEditorSubscriptionsRoute
   '/editor/users': typeof AuthenticatedEditorUsersRoute
+  '/federated/assets': typeof AuthenticatedFederatedAssetsRoute
   '/federated/fleet': typeof AuthenticatedFederatedFleetRoute
+  '/federated/healing': typeof AuthenticatedFederatedHealingRoute
   '/federated/mesh': typeof AuthenticatedFederatedMeshRoute
+  '/federated/pitr': typeof AuthenticatedFederatedPitrRoute
   '/federated/sql': typeof AuthenticatedFederatedSqlRoute
   '/manara/$key': typeof AuthenticatedManaraKeyRoute
   '/servers/$serverId': typeof AuthenticatedServersServerIdRoute
@@ -922,8 +946,11 @@ export interface FileRoutesByTo {
   '/editor/social': typeof AuthenticatedEditorSocialRoute
   '/editor/subscriptions': typeof AuthenticatedEditorSubscriptionsRoute
   '/editor/users': typeof AuthenticatedEditorUsersRoute
+  '/federated/assets': typeof AuthenticatedFederatedAssetsRoute
   '/federated/fleet': typeof AuthenticatedFederatedFleetRoute
+  '/federated/healing': typeof AuthenticatedFederatedHealingRoute
   '/federated/mesh': typeof AuthenticatedFederatedMeshRoute
+  '/federated/pitr': typeof AuthenticatedFederatedPitrRoute
   '/federated/sql': typeof AuthenticatedFederatedSqlRoute
   '/manara/$key': typeof AuthenticatedManaraKeyRoute
   '/servers/$serverId': typeof AuthenticatedServersServerIdRoute
@@ -1038,8 +1065,11 @@ export interface FileRoutesById {
   '/_authenticated/editor/social': typeof AuthenticatedEditorSocialRoute
   '/_authenticated/editor/subscriptions': typeof AuthenticatedEditorSubscriptionsRoute
   '/_authenticated/editor/users': typeof AuthenticatedEditorUsersRoute
+  '/_authenticated/federated/assets': typeof AuthenticatedFederatedAssetsRoute
   '/_authenticated/federated/fleet': typeof AuthenticatedFederatedFleetRoute
+  '/_authenticated/federated/healing': typeof AuthenticatedFederatedHealingRoute
   '/_authenticated/federated/mesh': typeof AuthenticatedFederatedMeshRoute
+  '/_authenticated/federated/pitr': typeof AuthenticatedFederatedPitrRoute
   '/_authenticated/federated/sql': typeof AuthenticatedFederatedSqlRoute
   '/_authenticated/manara/$key': typeof AuthenticatedManaraKeyRoute
   '/_authenticated/servers/$serverId': typeof AuthenticatedServersServerIdRoute
@@ -1154,8 +1184,11 @@ export interface FileRouteTypes {
     | '/editor/social'
     | '/editor/subscriptions'
     | '/editor/users'
+    | '/federated/assets'
     | '/federated/fleet'
+    | '/federated/healing'
     | '/federated/mesh'
+    | '/federated/pitr'
     | '/federated/sql'
     | '/manara/$key'
     | '/servers/$serverId'
@@ -1267,8 +1300,11 @@ export interface FileRouteTypes {
     | '/editor/social'
     | '/editor/subscriptions'
     | '/editor/users'
+    | '/federated/assets'
     | '/federated/fleet'
+    | '/federated/healing'
     | '/federated/mesh'
+    | '/federated/pitr'
     | '/federated/sql'
     | '/manara/$key'
     | '/servers/$serverId'
@@ -1382,8 +1418,11 @@ export interface FileRouteTypes {
     | '/_authenticated/editor/social'
     | '/_authenticated/editor/subscriptions'
     | '/_authenticated/editor/users'
+    | '/_authenticated/federated/assets'
     | '/_authenticated/federated/fleet'
+    | '/_authenticated/federated/healing'
     | '/_authenticated/federated/mesh'
+    | '/_authenticated/federated/pitr'
     | '/_authenticated/federated/sql'
     | '/_authenticated/manara/$key'
     | '/_authenticated/servers/$serverId'
@@ -1976,6 +2015,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFederatedSqlRouteImport
       parentRoute: typeof AuthenticatedFederatedRoute
     }
+    '/_authenticated/federated/pitr': {
+      id: '/_authenticated/federated/pitr'
+      path: '/pitr'
+      fullPath: '/federated/pitr'
+      preLoaderRoute: typeof AuthenticatedFederatedPitrRouteImport
+      parentRoute: typeof AuthenticatedFederatedRoute
+    }
     '/_authenticated/federated/mesh': {
       id: '/_authenticated/federated/mesh'
       path: '/mesh'
@@ -1983,11 +2029,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFederatedMeshRouteImport
       parentRoute: typeof AuthenticatedFederatedRoute
     }
+    '/_authenticated/federated/healing': {
+      id: '/_authenticated/federated/healing'
+      path: '/healing'
+      fullPath: '/federated/healing'
+      preLoaderRoute: typeof AuthenticatedFederatedHealingRouteImport
+      parentRoute: typeof AuthenticatedFederatedRoute
+    }
     '/_authenticated/federated/fleet': {
       id: '/_authenticated/federated/fleet'
       path: '/fleet'
       fullPath: '/federated/fleet'
       preLoaderRoute: typeof AuthenticatedFederatedFleetRouteImport
+      parentRoute: typeof AuthenticatedFederatedRoute
+    }
+    '/_authenticated/federated/assets': {
+      id: '/_authenticated/federated/assets'
+      path: '/assets'
+      fullPath: '/federated/assets'
+      preLoaderRoute: typeof AuthenticatedFederatedAssetsRouteImport
       parentRoute: typeof AuthenticatedFederatedRoute
     }
     '/_authenticated/editor/users': {
@@ -2290,15 +2350,21 @@ const AuthenticatedEditorRouteWithChildren =
   AuthenticatedEditorRoute._addFileChildren(AuthenticatedEditorRouteChildren)
 
 interface AuthenticatedFederatedRouteChildren {
+  AuthenticatedFederatedAssetsRoute: typeof AuthenticatedFederatedAssetsRoute
   AuthenticatedFederatedFleetRoute: typeof AuthenticatedFederatedFleetRoute
+  AuthenticatedFederatedHealingRoute: typeof AuthenticatedFederatedHealingRoute
   AuthenticatedFederatedMeshRoute: typeof AuthenticatedFederatedMeshRoute
+  AuthenticatedFederatedPitrRoute: typeof AuthenticatedFederatedPitrRoute
   AuthenticatedFederatedSqlRoute: typeof AuthenticatedFederatedSqlRoute
 }
 
 const AuthenticatedFederatedRouteChildren: AuthenticatedFederatedRouteChildren =
   {
+    AuthenticatedFederatedAssetsRoute: AuthenticatedFederatedAssetsRoute,
     AuthenticatedFederatedFleetRoute: AuthenticatedFederatedFleetRoute,
+    AuthenticatedFederatedHealingRoute: AuthenticatedFederatedHealingRoute,
     AuthenticatedFederatedMeshRoute: AuthenticatedFederatedMeshRoute,
+    AuthenticatedFederatedPitrRoute: AuthenticatedFederatedPitrRoute,
     AuthenticatedFederatedSqlRoute: AuthenticatedFederatedSqlRoute,
   }
 

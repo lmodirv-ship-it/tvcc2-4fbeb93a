@@ -3588,6 +3588,165 @@ export type Database = {
           },
         ]
       }
+      platform_page_links: {
+        Row: {
+          created_at: string
+          id: string
+          link_type: string
+          note: string | null
+          page_id: string
+          target_name: string | null
+          target_page_id: string | null
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          link_type?: string
+          note?: string | null
+          page_id: string
+          target_name?: string | null
+          target_page_id?: string | null
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          link_type?: string
+          note?: string | null
+          page_id?: string
+          target_name?: string | null
+          target_page_id?: string | null
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_page_links_page_id_fkey"
+            columns: ["page_id"]
+            isOneToOne: false
+            referencedRelation: "platform_pages"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_page_links_target_page_id_fkey"
+            columns: ["target_page_id"]
+            isOneToOne: false
+            referencedRelation: "platform_pages"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_pages: {
+        Row: {
+          code: string | null
+          created_at: string
+          description_ar: string | null
+          enabled: boolean
+          icon: string | null
+          id: string
+          is_public: boolean
+          min_role: Database["public"]["Enums"]["app_role"]
+          name_ar: string
+          name_en: string | null
+          name_fr: string | null
+          page_key: string
+          route_path: string
+          section: string
+          show_in_sidebar: boolean
+          sort_order: number
+          updated_at: string
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          description_ar?: string | null
+          enabled?: boolean
+          icon?: string | null
+          id?: string
+          is_public?: boolean
+          min_role?: Database["public"]["Enums"]["app_role"]
+          name_ar: string
+          name_en?: string | null
+          name_fr?: string | null
+          page_key: string
+          route_path: string
+          section?: string
+          show_in_sidebar?: boolean
+          sort_order?: number
+          updated_at?: string
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          description_ar?: string | null
+          enabled?: boolean
+          icon?: string | null
+          id?: string
+          is_public?: boolean
+          min_role?: Database["public"]["Enums"]["app_role"]
+          name_ar?: string
+          name_en?: string | null
+          name_fr?: string | null
+          page_key?: string
+          route_path?: string
+          section?: string
+          show_in_sidebar?: boolean
+          sort_order?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      platform_settings: {
+        Row: {
+          address: string | null
+          created_at: string
+          default_language: string
+          dns_records: Json
+          id: string
+          maintenance_mode: boolean
+          notes: string | null
+          official_domain: string | null
+          phone: string | null
+          singleton: boolean
+          social_links: Json
+          support_email: string | null
+          updated_at: string
+          whatsapp: string | null
+        }
+        Insert: {
+          address?: string | null
+          created_at?: string
+          default_language?: string
+          dns_records?: Json
+          id?: string
+          maintenance_mode?: boolean
+          notes?: string | null
+          official_domain?: string | null
+          phone?: string | null
+          singleton?: boolean
+          social_links?: Json
+          support_email?: string | null
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Update: {
+          address?: string | null
+          created_at?: string
+          default_language?: string
+          dns_records?: Json
+          id?: string
+          maintenance_mode?: boolean
+          notes?: string | null
+          official_domain?: string | null
+          phone?: string | null
+          singleton?: boolean
+          social_links?: Json
+          support_email?: string | null
+          updated_at?: string
+          whatsapp?: string | null
+        }
+        Relationships: []
+      }
       port_links: {
         Row: {
           auto_start: boolean

@@ -5,7 +5,7 @@ import { useServerFn } from "@tanstack/react-start";
 import {
   Activity, ArchiveRestore, Boxes, Braces, Cable, CheckCircle2, CloudCog, Code2,
   Database, Download, Eye, FileClock, FolderTree, Gauge, HardDrive, KeyRound,
-  Layers3, Link2, Loader2, LockKeyhole, Network, Play, Radio, RefreshCw, Search,
+  Layers3, Link2, Loader2, LockKeyhole, Network, PanelRightClose, PanelRightOpen, Play, Radio, RefreshCw, Search,
   Settings2, ShieldCheck, Table2, Upload, Users, WandSparkles,
 } from "lucide-react";
 import { toast } from "sonner";

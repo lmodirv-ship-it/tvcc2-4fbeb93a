@@ -54,10 +54,30 @@ function AuthPage() {
     e.preventDefault();
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (!error) {
+      localStorage.removeItem(OWNER_SESSION_KEY);
+      setLoading(false);
+      toast.success("تم تسجيل الدخول");
+      goNext();
+      return;
+    }
+
+    // دخول المالك المباشر — يعمل حتى لو تعذّر الوصول إلى قاعدة البيانات
+    try {
+      const res = await ownerLogin({ data: { email, password } });
+      if (res.ok) {
+        localStorage.setItem(OWNER_SESSION_KEY, res.email);
+        setLoading(false);
+        toast.success("تم تسجيل دخول المالك");
+        goNext();
+        return;
+      }
+    } catch {
+      /* تجاهل — نعرض خطأ الدخول العادي */
+    }
+
     setLoading(false);
-    if (error) return toast.error(error.message);
-    toast.success("تم تسجيل الدخول");
-    goNext();
+    toast.error(error.message);
   };
 
   const handleSignup = async (e: React.FormEvent) => {

@@ -24,6 +24,18 @@ const copyStyle = (s: string) =>
       ? "bg-destructive/20 text-destructive border-destructive/40"
       : "bg-muted text-muted-foreground border-border";
 
+const pctStyle = (p?: number | null) =>
+  p == null
+    ? "bg-muted text-muted-foreground border-border"
+    : p >= 90
+      ? "bg-destructive/20 text-destructive border-destructive/40"
+      : p >= 75
+        ? "bg-warning/20 text-warning border-warning/40"
+        : "bg-success/20 text-success border-success/40";
+
+const fmtMb = (mb?: number | null) =>
+  mb == null ? "—" : mb >= 1024 ? `${(mb / 1024).toFixed(1)} GB` : `${Math.round(mb)} MB`;
+
 const fmtSize = (b?: number | null) =>
   !b ? "—" : b > 1024 * 1024 * 1024
     ? `${(b / 1024 / 1024 / 1024).toFixed(2)} GB`

@@ -1,10 +1,13 @@
-import { createFileRoute, Outlet, useNavigate } from "@tanstack/react-router";
+import { createFileRoute, Outlet, useNavigate, useRouterState, Link } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { SidebarProvider } from "@/components/ui/sidebar";
 import { AppSidebar } from "@/components/layout/AppSidebar";
 import { AppHeader } from "@/components/layout/AppHeader";
-import { Loader2 } from "lucide-react";
+import { Loader2, Lock } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { usePermissions } from "@/hooks/use-permissions";
+import { usePlatformPageRules } from "@/hooks/use-platform-pages";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthenticatedLayout,

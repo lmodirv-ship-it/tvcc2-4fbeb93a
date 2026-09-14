@@ -493,3 +493,114 @@ export const importTableCsv = createServerFn({ method: "POST" })
     await audit(supabase, userId, "pg_import_csv", db.id, { command_id: command.id, schema, table, columns: header });
     return command;
   });
+
+/* ============================================================
+   مكتبة نماذج الجداول — معاينة وتطبيق واستخراج
+   ============================================================ */
+
+/** قائمة النماذج الجاهزة (بدون SQL). */
+export const listDbTemplates = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+    const { DB_TEMPLATES, templateSummary } = await import("./db-templates");
+    return DB_TEMPLATES.map(templateSummary);
+  });
+
+type TemplateOptions = {
+  templateId: string;
+  schema?: string;
+  prefix?: string;
+  rls?: boolean;
+  seeds?: boolean;
+  tables?: string[];
+};
+
+/** معاينة أوامر النموذج قبل أي تنفيذ (لا يلمس القاعدة). */
+export const previewTemplate = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: TemplateOptions) => input)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+    const { buildTemplateSql, getTemplate, templateSummary } = await import("./db-templates");
+    const template = getTemplate(data.templateId);
+    const statements = buildTemplateSql(template, {
+      schema: data.schema, prefix: data.prefix, rls: data.rls, seeds: data.seeds, tables: data.tables,
+    });
+    return { summary: templateSummary(template), statements, sql: statements.join(";\n") + ";" };
+  });
+
+/** تطبيق النموذج على القاعدة عبر الوكيل (يتطلب تأكيداً صريحاً). */
+export const applyTemplate = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: TemplateOptions & { confirm: boolean }) => input)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+    if (!data.confirm) throw new Error("تطبيق النموذج يحتاج تأكيداً صريحاً");
+    const db = await dbOrThrow(supabase, data.databaseId as unknown as string);
+    const { buildTemplateSql, getTemplate } = await import("./db-templates");
+    const template = getTemplate(data.templateId);
+    const schema = ident(data.schema ?? "public", "المخطط");
+    const statements = buildTemplateSql(template, {
+      schema, prefix: data.prefix, rls: data.rls, seeds: data.seeds, tables: data.tables,
+    });
+    const command = await queueCommand(supabase, userId, db.server_id, "pg_ddl", {
+      ...baseArgs(db), schema, kind: "apply_template", template_id: template.id,
+      statements, sql: statements.join(";\n") + ";", read_only: false,
+    });
+    await audit(supabase, userId, `template_apply_${template.id}`, db.id, {
+      command_id: command.id, schema, tables: template.tables.length, statements: statements.length,
+    });
+    return command;
+  });
+
+/** فحص التوافق: يطلب من الوكيل قائمة الجداول الحالية ويُرجع أسماء جداول النموذج المتوقعة. */
+export const inspectTemplateDiff = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { databaseId: string; templateId: string; schema?: string; prefix?: string }) => input)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+    const db = await dbOrThrow(supabase, data.databaseId);
+    const { getTemplate, templateTableName } = await import("./db-templates");
+    const template = getTemplate(data.templateId);
+    const schema = ident(data.schema ?? "public", "المخطط");
+    const prefix = data.prefix ? `${ident(data.prefix, "البادئة").replace(/_?$/, "_")}` : "";
+    const expected = template.tables.map((tbl) => templateTableName(prefix, tbl.name));
+    const sql = `select c.relname as name, coalesce(s.n_live_tup,0) as rows
+                 from pg_class c join pg_namespace n on n.oid = c.relnamespace
+                 left join pg_stat_user_tables s on s.relid = c.oid
+                 where n.nspname = '${schema}' and c.relkind in ('r','p') order by 1`;
+    const command = await queueCommand(supabase, userId, db.server_id, "pg_meta", {
+      ...baseArgs(db), mode: "tables", schema, template_id: template.id, sql, read_only: true,
+    });
+    return { command, expected, schema };
+  });
+
+/** استخراج نموذج من قاعدة قائمة: يطلب بنية المخطط كاملاً من الوكيل. */
+export const extractTemplate = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { databaseId: string; schema?: string }) => input)
+  .handler(async ({ data, context }) => {
+    const { supabase, userId } = context;
+    await assertAdmin(supabase, userId);
+    const db = await dbOrThrow(supabase, data.databaseId);
+    const schema = ident(data.schema ?? "public", "المخطط");
+    const sql = `select c.relname as table_name, a.attname as column_name,
+                        format_type(a.atttypid, a.atttypmod) as data_type,
+                        a.attnotnull as not_null, pg_get_expr(d.adbin, d.adrelid) as default_value
+                 from pg_class c
+                 join pg_namespace n on n.oid = c.relnamespace
+                 join pg_attribute a on a.attrelid = c.oid and a.attnum > 0 and not a.attisdropped
+                 left join pg_attrdef d on d.adrelid = c.oid and d.adnum = a.attnum
+                 where n.nspname = '${schema}' and c.relkind in ('r','p')
+                 order by c.relname, a.attnum`;
+    const command = await queueCommand(supabase, userId, db.server_id, "pg_meta", {
+      ...baseArgs(db), mode: "extract_template", schema, sql, read_only: true,
+    });
+    await audit(supabase, userId, "template_extract", db.id, { command_id: command.id, schema });
+    return command;
+  });

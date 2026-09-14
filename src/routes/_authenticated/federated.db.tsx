@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
@@ -69,7 +69,12 @@ function DbStudioPage() {
   const [section, setSection] = useState("overview");
   const [databaseId, setDatabaseId] = useState("");
   const [search, setSearch] = useState("");
+  const mainRef = useRef<HTMLDivElement>(null);
   const client = useQueryClient();
+
+  useEffect(() => {
+    mainRef.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [section]);
   const fetchStudio = useServerFn(getDbStudioData);
   const connect = useServerFn(connectDatabaseAgent);
   const action = useServerFn(queueDbStudioAction);
@@ -111,9 +116,9 @@ function DbStudioPage() {
         <div className="mx-auto grid max-w-[1600px] grid-cols-1">
           <aside className="border-b border-border bg-card/35 p-3">
             <div className="relative mb-3"><Search className="absolute right-3 top-2.5 size-4 text-muted-foreground" /><Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="بحث" className="pr-9" /></div>
-            <nav className="grid grid-cols-1 gap-1">{sections.filter((item) => item.label.includes(search)).map((item) => <Button key={item.id} variant={section === item.id ? "secondary" : "ghost"} className="justify-start" onClick={() => setSection(item.id)}><item.icon className="size-4" />{item.label}</Button>)}</nav>
+            <nav className="grid grid-cols-1 gap-1">{sections.filter((item) => item.label.includes(search)).map((item) => <Button key={item.id} variant={section === item.id ? "secondary" : "ghost"} className="justify-start" onClick={() => setSection(item.id)}><item.icon className="size-4 shrink-0" />{item.label}</Button>)}</nav>
           </aside>
-          <main className="min-w-0 space-y-4 p-4 md:p-6">
+          <main ref={mainRef} className="min-w-0 space-y-4 p-4 md:p-6">
             {!selected ? <EmptyState /> : <SectionContent section={section} data={data} selected={selected} connection={connection} server={server} actionMutation={actionMutation} provisionMutation={provisionMutation} runQuery={runQuery} invalidate={invalidate} />}
           </main>
 

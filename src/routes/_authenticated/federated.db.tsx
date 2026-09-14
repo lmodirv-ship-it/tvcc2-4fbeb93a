@@ -207,21 +207,26 @@ function latestCommand(commands: any[], selectedId: string, action: string) {
   return commands.find((row: any) => row.action === action && (row.args?.database_id === selectedId || !row.args?.database_id));
 }
 
-function LivePanel({ spec, data, selected, mutation }: { spec: SectionSpec; data: any; selected: any; mutation: any }) {
+function LivePanel({ spec, sectionId, data, selected, mutation }: { spec: SectionSpec; sectionId: string; data: any; selected: any; mutation: any }) {
   const command = latestCommand(data.commands, selected.id, spec.action);
   const payload = pickPayload(command?.output, spec.paths);
+  const internal = selected.db_kind === "internal";
   const buttons: [string, string, typeof Database][] = [[`قراءة ${spec.title}`, spec.action, spec.icon], ...(spec.extras ?? [])];
   return <div className="space-y-5">
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div><h2 className="text-2xl font-bold">{spec.title}</h2><p className="text-muted-foreground">{spec.description}</p></div>
       <div className="flex flex-wrap gap-2">{buttons.map(([label, action, Icon]) => (
-        <Button key={action} variant={action === spec.action ? "default" : "outline"} disabled={mutation.isPending} onClick={() => mutation.mutate({ action })}>
+        <Button key={action} variant={action === spec.action ? "default" : "outline"} disabled={mutation.isPending || internal} onClick={() => mutation.mutate({ action })}>
           {mutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <Icon className="size-4" />}{label}
         </Button>
       ))}</div>
     </div>
-    <CommandStatus command={command} />
-    {payload ? <PayloadView payload={payload} columns={spec.columns} /> : <EmptyPanel text={spec.empty} />}
+    {internal
+      ? <InsightView databaseId={selected.id} section={sectionId} />
+      : <>
+          <CommandStatus command={command} />
+          {payload ? <PayloadView payload={payload} columns={spec.columns} /> : <EmptyPanel text={spec.empty} />}
+        </>}
   </div>;
 }
 

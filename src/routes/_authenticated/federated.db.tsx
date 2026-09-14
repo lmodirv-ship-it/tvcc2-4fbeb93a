@@ -20,6 +20,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/comp
 import {
   connectDatabaseAgent, getDbStudioData, provisionSiteIdentities, queueDbStudioAction, runDbStudioQuery,
 } from "@/lib/dbstudio.functions";
+import { TableEditor } from "@/components/dbstudio/TableEditor";
 
 export const Route = createFileRoute("/_authenticated/federated/db")({
   component: DbStudioPage,

@@ -327,6 +327,15 @@ export function NightlyDestinations() {
                         </Button>
                         <Button
                           size="sm"
+                          variant="outline"
+                          title="تحميل سكريبت سيرفر التخزين (إنشاء المجلدات + تحليل مواقع السيرفر)"
+                          onClick={() => downloadScript.mutate(d.id)}
+                          disabled={downloadScript.isPending}
+                        >
+                          {downloadScript.isPending ? <Loader2 className="w-3 h-3 animate-spin ml-1" /> : <FileCode className="w-3 h-3 ml-1" />} سكريبت السيرفر
+                        </Button>
+                        <Button
+                          size="sm"
                           variant="ghost"
                           onClick={async () => {
                             if (!confirm(`حذف الوجهة «${d.name}»؟ لن تُحذف أي نسخة على السيرفر.`)) return;

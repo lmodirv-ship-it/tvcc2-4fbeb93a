@@ -3,7 +3,7 @@ import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import {
-  getAgentsData, saveAgentConfig, getNginxConfig, saveNginxConfig,
+  getAgentsData, saveAgentConfig, getNginxConfig, saveNginxConfig, mergeDuplicateServer,
   createSiteSnapshot, rollbackSiteSnapshot,
 } from "@/lib/federated.functions";
 import { setAgentCapability, dispatchAgentCommand, createAgentJob } from "@/lib/agent-roles.functions";
@@ -18,7 +18,9 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Bot, Loader2, Save, FileCode2, Copy, Play, Plus, Activity, RefreshCw, ExternalLink, Trash2 } from "lucide-react";
+import { Bot, Loader2, Save, FileCode2, Copy, Play, Plus, Activity, RefreshCw, ExternalLink, Trash2, SlidersHorizontal, ShieldCheck, GitMerge, ChevronDown, ChevronLeft, Download, Signal } from "lucide-react";
+import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
+import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/federated/agents")({

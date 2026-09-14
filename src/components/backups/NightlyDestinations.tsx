@@ -286,13 +286,19 @@ export function NightlyDestinations() {
                       ) : "—"}
                     </TableCell>
                     <TableCell className="text-xs whitespace-nowrap">
-                      <Badge variant="outline" className={d.agent_online ? "bg-success/20 text-success border-success/40 text-[10px]" : "bg-destructive/20 text-destructive border-destructive/40 text-[10px]"}>
-                        {d.agent_online ? "متفاعل" : "غير متفاعل"}
+                      <Badge variant="outline" className={d.link?.live ? "bg-success/20 text-success border-success/40 text-[10px]" : "bg-destructive/20 text-destructive border-destructive/40 text-[10px]"}>
+                        {d.link?.live ? "خط اتصال حي" : d.agent_online ? "متفاعل" : "غير متفاعل"}
                       </Badge>
+                      {d.link?.last_ping_at && (
+                        <span className="text-muted-foreground mr-1" dir="ltr">
+                          {new Date(d.link.last_ping_at).toLocaleTimeString("ar")}
+                        </span>
+                      )}
                       {d.metrics?.link_quality != null && (
                         <span className="text-muted-foreground mr-1">{d.metrics.link_quality}%</span>
                       )}
                     </TableCell>
+
                     <TableCell className="text-xs whitespace-nowrap tabular-nums">
                       {d.metrics?.latency_ms != null ? `${Math.round(d.metrics.latency_ms)} ms` : "—"}
                     </TableCell>

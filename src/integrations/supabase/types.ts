@@ -7684,6 +7684,86 @@ export type Database = {
           },
         ]
       }
+      storage_link_beacons: {
+        Row: {
+          agent_version: string | null
+          base_path: string | null
+          created_at: string
+          destination_id: string | null
+          disk_free_gb: number | null
+          disk_total_gb: number | null
+          domains_count: number | null
+          folders_count: number | null
+          hostname: string | null
+          id: string
+          last_ping_at: string
+          latency_ms: number | null
+          load_avg: number | null
+          mem_free_mb: number | null
+          mem_total_mb: number | null
+          owner_id: string
+          payload: Json
+          sites_found: number | null
+          status: string
+          updated_at: string
+          uptime_seconds: number | null
+        }
+        Insert: {
+          agent_version?: string | null
+          base_path?: string | null
+          created_at?: string
+          destination_id?: string | null
+          disk_free_gb?: number | null
+          disk_total_gb?: number | null
+          domains_count?: number | null
+          folders_count?: number | null
+          hostname?: string | null
+          id?: string
+          last_ping_at?: string
+          latency_ms?: number | null
+          load_avg?: number | null
+          mem_free_mb?: number | null
+          mem_total_mb?: number | null
+          owner_id: string
+          payload?: Json
+          sites_found?: number | null
+          status?: string
+          updated_at?: string
+          uptime_seconds?: number | null
+        }
+        Update: {
+          agent_version?: string | null
+          base_path?: string | null
+          created_at?: string
+          destination_id?: string | null
+          disk_free_gb?: number | null
+          disk_total_gb?: number | null
+          domains_count?: number | null
+          folders_count?: number | null
+          hostname?: string | null
+          id?: string
+          last_ping_at?: string
+          latency_ms?: number | null
+          load_avg?: number | null
+          mem_free_mb?: number | null
+          mem_total_mb?: number | null
+          owner_id?: string
+          payload?: Json
+          sites_found?: number | null
+          status?: string
+          updated_at?: string
+          uptime_seconds?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "storage_link_beacons_destination_id_fkey"
+            columns: ["destination_id"]
+            isOneToOne: false
+            referencedRelation: "backup_destinations"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       storage_quotas: {
         Row: {
           created_at: string

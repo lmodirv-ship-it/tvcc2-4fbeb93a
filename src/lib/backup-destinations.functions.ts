@@ -83,8 +83,19 @@ export const listBackupDestinations = createServerFn({ method: "POST" })
       };
     });
 
-    return { destinations: enriched, copies: copies ?? [] };
+    const { data: beacons } = await sb
+      .from("storage_link_beacons")
+      .select("destination_id, hostname, base_path, status, last_ping_at, latency_ms, domains_count, folders_count, sites_found, disk_total_gb, disk_free_gb, mem_total_mb, mem_free_mb, uptime_seconds");
+    const freshPing = Date.now() - 11 * 60 * 1000;
+    const withLink = enriched.map((d) => {
+      const b = ((beacons ?? []) as any[]).find((x) => x.destination_id === d.id) ?? null;
+      const live = !!b?.last_ping_at && new Date(b.last_ping_at).getTime() > freshPing;
+      return { ...d, link: b ? { ...b, live } : null };
+    });
+
+    return { destinations: withLink, copies: copies ?? [] };
   });
+
 
 export const saveBackupDestination = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])

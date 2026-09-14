@@ -1250,6 +1250,20 @@ task_loop() {
   done
 }
 
+# ---- CLI: ./tvcc-agent.sh install | preflight | uninstall ----
+case "\${1:-run}" in
+  preflight) preflight; exit $? ;;
+  install)
+    preflight || exit 1
+    if command -v systemctl >/dev/null 2>&1; then install_systemd; exit 0; fi
+    echo "systemd unavailable — starting in background"
+    nohup "$0" run >"/var/log/tvcc-agent-\${TVCC_AGENT_KEY}.log" 2>&1 &
+    exit 0 ;;
+  uninstall)
+    systemctl disable --now "tvcc-agent@\${TVCC_AGENT_KEY}.service" >/dev/null 2>&1 || true
+    echo "agent \${TVCC_AGENT_KEY} stopped"; exit 0 ;;
+esac
+
 task_loop &
 TVCC_TASK_PID=$!
 trap 'kill $TVCC_TASK_PID 2>/dev/null || true' EXIT

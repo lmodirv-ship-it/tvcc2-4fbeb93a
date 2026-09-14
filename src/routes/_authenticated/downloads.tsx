@@ -58,6 +58,8 @@ function DownloadsPage() {
   const fetchServers = useServerFn(listServers);
   const fetchInstall = useServerFn(getAgentInstall);
   const [serverId, setServerId] = useState<string>("");
+  const [agentKey, setAgentKey] = useState<string>("main");
+  const [agentRole, setAgentRole] = useState<string>("main");
   const [install, setInstall] = useState<{ command: string; scriptUrl: string; script?: string } | null>(null);
   const [loading, setLoading] = useState(false);
 
@@ -70,7 +72,7 @@ function DownloadsPage() {
     if (!serverId) return toast.error("اختر سيرفراً أولاً");
     setLoading(true);
     try {
-      const res: any = await fetchInstall({ data: { serverId, origin: window.location.origin } });
+      const res: any = await fetchInstall({ data: { serverId, origin: window.location.origin, agentKey, agentRole } });
       setInstall({ command: res.install, scriptUrl: "", script: res.script });
       toast.success("تم توليد أمر التثبيت");
     } catch (e: any) {
@@ -130,10 +132,29 @@ function DownloadsPage() {
                     ))}
                   </SelectContent>
                 </Select>
+                <Select
+                  value={agentRole}
+                  onValueChange={(v) => {
+                    setAgentRole(v);
+                    setAgentKey(v);
+                  }}
+                >
+                  <SelectTrigger className="w-56"><SelectValue placeholder="دور الوكيل" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="main">وكيل رئيسي (تحكم عام)</SelectItem>
+                    <SelectItem value="db">قواعد البيانات</SelectItem>
+                    <SelectItem value="web">المواقع و Nginx</SelectItem>
+                    <SelectItem value="backup">النسخ الاحتياطية</SelectItem>
+                    <SelectItem value="monitor">المراقبة فقط</SelectItem>
+                    <SelectItem value="healer">الإحياء الذاتي</SelectItem>
+                    <SelectItem value="security">الأمان</SelectItem>
+                  </SelectContent>
+                </Select>
                 <Button onClick={buildInstall} disabled={loading}>
                   {loading ? "جارٍ التوليد..." : "توليد أمر التثبيت"}
                 </Button>
               </div>
+
 
               {install && (
                 <div className="space-y-3">

@@ -109,7 +109,9 @@
     "bridge": "Pont & stockage",
     "domain_settings": "Réglages du domaine",
     "publish_sync": "Publication unifiée",
-    "manara": "Manara"
+    "manara": "Manara",
+    "fed_docker": "Conteneurs (Docker)",
+    "fed_nginx": "Routage (Nginx)"
   },
   "dashboard": {
     "title": "Tableau de bord",

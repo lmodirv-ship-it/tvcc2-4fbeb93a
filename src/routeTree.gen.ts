@@ -85,9 +85,11 @@ import { Route as AuthenticatedServersServerIdRouteImport } from './routes/_auth
 import { Route as AuthenticatedManaraKeyRouteImport } from './routes/_authenticated/manara.$key'
 import { Route as AuthenticatedFederatedSqlRouteImport } from './routes/_authenticated/federated.sql'
 import { Route as AuthenticatedFederatedPitrRouteImport } from './routes/_authenticated/federated.pitr'
+import { Route as AuthenticatedFederatedNginxRouteImport } from './routes/_authenticated/federated.nginx'
 import { Route as AuthenticatedFederatedMeshRouteImport } from './routes/_authenticated/federated.mesh'
 import { Route as AuthenticatedFederatedHealingRouteImport } from './routes/_authenticated/federated.healing'
 import { Route as AuthenticatedFederatedFleetRouteImport } from './routes/_authenticated/federated.fleet'
+import { Route as AuthenticatedFederatedDockerRouteImport } from './routes/_authenticated/federated.docker'
 import { Route as AuthenticatedFederatedDbRouteImport } from './routes/_authenticated/federated.db'
 import { Route as AuthenticatedFederatedAssetsRouteImport } from './routes/_authenticated/federated.assets'
 import { Route as AuthenticatedFederatedAgentsRouteImport } from './routes/_authenticated/federated.agents'
@@ -529,6 +531,12 @@ const AuthenticatedFederatedPitrRoute =
     path: '/pitr',
     getParentRoute: () => AuthenticatedFederatedRoute,
   } as any)
+const AuthenticatedFederatedNginxRoute =
+  AuthenticatedFederatedNginxRouteImport.update({
+    id: '/nginx',
+    path: '/nginx',
+    getParentRoute: () => AuthenticatedFederatedRoute,
+  } as any)
 const AuthenticatedFederatedMeshRoute =
   AuthenticatedFederatedMeshRouteImport.update({
     id: '/mesh',
@@ -545,6 +553,12 @@ const AuthenticatedFederatedFleetRoute =
   AuthenticatedFederatedFleetRouteImport.update({
     id: '/fleet',
     path: '/fleet',
+    getParentRoute: () => AuthenticatedFederatedRoute,
+  } as any)
+const AuthenticatedFederatedDockerRoute =
+  AuthenticatedFederatedDockerRouteImport.update({
+    id: '/docker',
+    path: '/docker',
     getParentRoute: () => AuthenticatedFederatedRoute,
   } as any)
 const AuthenticatedFederatedDbRoute =
@@ -854,9 +868,11 @@ export interface FileRoutesByFullPath {
   '/federated/agents': typeof AuthenticatedFederatedAgentsRoute
   '/federated/assets': typeof AuthenticatedFederatedAssetsRoute
   '/federated/db': typeof AuthenticatedFederatedDbRoute
+  '/federated/docker': typeof AuthenticatedFederatedDockerRoute
   '/federated/fleet': typeof AuthenticatedFederatedFleetRoute
   '/federated/healing': typeof AuthenticatedFederatedHealingRoute
   '/federated/mesh': typeof AuthenticatedFederatedMeshRoute
+  '/federated/nginx': typeof AuthenticatedFederatedNginxRoute
   '/federated/pitr': typeof AuthenticatedFederatedPitrRoute
   '/federated/sql': typeof AuthenticatedFederatedSqlRoute
   '/manara/$key': typeof AuthenticatedManaraKeyRoute
@@ -972,9 +988,11 @@ export interface FileRoutesByTo {
   '/federated/agents': typeof AuthenticatedFederatedAgentsRoute
   '/federated/assets': typeof AuthenticatedFederatedAssetsRoute
   '/federated/db': typeof AuthenticatedFederatedDbRoute
+  '/federated/docker': typeof AuthenticatedFederatedDockerRoute
   '/federated/fleet': typeof AuthenticatedFederatedFleetRoute
   '/federated/healing': typeof AuthenticatedFederatedHealingRoute
   '/federated/mesh': typeof AuthenticatedFederatedMeshRoute
+  '/federated/nginx': typeof AuthenticatedFederatedNginxRoute
   '/federated/pitr': typeof AuthenticatedFederatedPitrRoute
   '/federated/sql': typeof AuthenticatedFederatedSqlRoute
   '/manara/$key': typeof AuthenticatedManaraKeyRoute
@@ -1094,9 +1112,11 @@ export interface FileRoutesById {
   '/_authenticated/federated/agents': typeof AuthenticatedFederatedAgentsRoute
   '/_authenticated/federated/assets': typeof AuthenticatedFederatedAssetsRoute
   '/_authenticated/federated/db': typeof AuthenticatedFederatedDbRoute
+  '/_authenticated/federated/docker': typeof AuthenticatedFederatedDockerRoute
   '/_authenticated/federated/fleet': typeof AuthenticatedFederatedFleetRoute
   '/_authenticated/federated/healing': typeof AuthenticatedFederatedHealingRoute
   '/_authenticated/federated/mesh': typeof AuthenticatedFederatedMeshRoute
+  '/_authenticated/federated/nginx': typeof AuthenticatedFederatedNginxRoute
   '/_authenticated/federated/pitr': typeof AuthenticatedFederatedPitrRoute
   '/_authenticated/federated/sql': typeof AuthenticatedFederatedSqlRoute
   '/_authenticated/manara/$key': typeof AuthenticatedManaraKeyRoute
@@ -1216,9 +1236,11 @@ export interface FileRouteTypes {
     | '/federated/agents'
     | '/federated/assets'
     | '/federated/db'
+    | '/federated/docker'
     | '/federated/fleet'
     | '/federated/healing'
     | '/federated/mesh'
+    | '/federated/nginx'
     | '/federated/pitr'
     | '/federated/sql'
     | '/manara/$key'
@@ -1334,9 +1356,11 @@ export interface FileRouteTypes {
     | '/federated/agents'
     | '/federated/assets'
     | '/federated/db'
+    | '/federated/docker'
     | '/federated/fleet'
     | '/federated/healing'
     | '/federated/mesh'
+    | '/federated/nginx'
     | '/federated/pitr'
     | '/federated/sql'
     | '/manara/$key'
@@ -1455,9 +1479,11 @@ export interface FileRouteTypes {
     | '/_authenticated/federated/agents'
     | '/_authenticated/federated/assets'
     | '/_authenticated/federated/db'
+    | '/_authenticated/federated/docker'
     | '/_authenticated/federated/fleet'
     | '/_authenticated/federated/healing'
     | '/_authenticated/federated/mesh'
+    | '/_authenticated/federated/nginx'
     | '/_authenticated/federated/pitr'
     | '/_authenticated/federated/sql'
     | '/_authenticated/manara/$key'
@@ -2066,6 +2092,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedFederatedPitrRouteImport
       parentRoute: typeof AuthenticatedFederatedRoute
     }
+    '/_authenticated/federated/nginx': {
+      id: '/_authenticated/federated/nginx'
+      path: '/nginx'
+      fullPath: '/federated/nginx'
+      preLoaderRoute: typeof AuthenticatedFederatedNginxRouteImport
+      parentRoute: typeof AuthenticatedFederatedRoute
+    }
     '/_authenticated/federated/mesh': {
       id: '/_authenticated/federated/mesh'
       path: '/mesh'
@@ -2085,6 +2118,13 @@ declare module '@tanstack/react-router' {
       path: '/fleet'
       fullPath: '/federated/fleet'
       preLoaderRoute: typeof AuthenticatedFederatedFleetRouteImport
+      parentRoute: typeof AuthenticatedFederatedRoute
+    }
+    '/_authenticated/federated/docker': {
+      id: '/_authenticated/federated/docker'
+      path: '/docker'
+      fullPath: '/federated/docker'
+      preLoaderRoute: typeof AuthenticatedFederatedDockerRouteImport
       parentRoute: typeof AuthenticatedFederatedRoute
     }
     '/_authenticated/federated/db': {
@@ -2411,9 +2451,11 @@ interface AuthenticatedFederatedRouteChildren {
   AuthenticatedFederatedAgentsRoute: typeof AuthenticatedFederatedAgentsRoute
   AuthenticatedFederatedAssetsRoute: typeof AuthenticatedFederatedAssetsRoute
   AuthenticatedFederatedDbRoute: typeof AuthenticatedFederatedDbRoute
+  AuthenticatedFederatedDockerRoute: typeof AuthenticatedFederatedDockerRoute
   AuthenticatedFederatedFleetRoute: typeof AuthenticatedFederatedFleetRoute
   AuthenticatedFederatedHealingRoute: typeof AuthenticatedFederatedHealingRoute
   AuthenticatedFederatedMeshRoute: typeof AuthenticatedFederatedMeshRoute
+  AuthenticatedFederatedNginxRoute: typeof AuthenticatedFederatedNginxRoute
   AuthenticatedFederatedPitrRoute: typeof AuthenticatedFederatedPitrRoute
   AuthenticatedFederatedSqlRoute: typeof AuthenticatedFederatedSqlRoute
   AuthenticatedFederatedIndexRoute: typeof AuthenticatedFederatedIndexRoute
@@ -2424,9 +2466,11 @@ const AuthenticatedFederatedRouteChildren: AuthenticatedFederatedRouteChildren =
     AuthenticatedFederatedAgentsRoute: AuthenticatedFederatedAgentsRoute,
     AuthenticatedFederatedAssetsRoute: AuthenticatedFederatedAssetsRoute,
     AuthenticatedFederatedDbRoute: AuthenticatedFederatedDbRoute,
+    AuthenticatedFederatedDockerRoute: AuthenticatedFederatedDockerRoute,
     AuthenticatedFederatedFleetRoute: AuthenticatedFederatedFleetRoute,
     AuthenticatedFederatedHealingRoute: AuthenticatedFederatedHealingRoute,
     AuthenticatedFederatedMeshRoute: AuthenticatedFederatedMeshRoute,
+    AuthenticatedFederatedNginxRoute: AuthenticatedFederatedNginxRoute,
     AuthenticatedFederatedPitrRoute: AuthenticatedFederatedPitrRoute,
     AuthenticatedFederatedSqlRoute: AuthenticatedFederatedSqlRoute,
     AuthenticatedFederatedIndexRoute: AuthenticatedFederatedIndexRoute,

@@ -156,7 +156,7 @@ export const assignWebsiteServer = createServerFn({ method: "POST" })
 /** Returns the agent token + a ready-to-paste install command. Shown to the owner only. */
 export const getAgentInstall = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { serverId: string; origin: string }) => input)
+  .inputValidator((input: { serverId: string; origin: string; agentKey?: string; agentRole?: string }) => input)
   .handler(async ({ data, context }) => {
     const sb = context.supabase as any;
     const { data: server } = await sb.from("servers").select("id").eq("id", data.serverId).maybeSingle();
@@ -165,13 +165,21 @@ export const getAgentInstall = createServerFn({ method: "POST" })
     const secret = process.env["SERVERS_INGEST_SECRET"];
     if (!secret) throw new Error("SERVERS_INGEST_SECRET غير مُهيّأ");
 
+    const ROLES = ["main", "db", "web", "backup", "monitor", "healer", "security"];
+    const agentKey = /^[a-z0-9_-]{1,24}$/.test(data.agentKey ?? "") ? data.agentKey! : "main";
+    const agentRole = ROLES.includes(data.agentRole ?? "") ? data.agentRole! : agentKey === "main" ? "main" : "monitor";
+
     const token = deriveAgentToken(secret, data.serverId);
     const origin = /^https?:\/\/[^\s/]+$/.test(data.origin) ? data.origin : "https://tvcc.hnpay.live";
     const endpoint = `${origin}/api/public/servers/heartbeat`;
 
     const script = buildAgentScript(data.serverId, token, endpoint);
 
-    const install = `curl -fsSL -o /usr/local/bin/tvcc-agent.sh '${origin}/api/public/servers/agent?id=${data.serverId}&token=${token}' && chmod +x /usr/local/bin/tvcc-agent.sh && nohup /usr/local/bin/tvcc-agent.sh >/var/log/tvcc-agent.log 2>&1 &`;
+    const install = [
+      `curl -fsSL -o /usr/local/bin/tvcc-agent.sh '${origin}/api/public/servers/agent?id=${data.serverId}&token=${token}'`,
+      `chmod +x /usr/local/bin/tvcc-agent.sh`,
+      `TVCC_AGENT_KEY=${agentKey} TVCC_AGENT_ROLE=${agentRole} /usr/local/bin/tvcc-agent.sh install`,
+    ].join(" && ");
 
-    return { token, endpoint, script, install };
+    return { token, endpoint, script, install, agentKey, agentRole };
   });

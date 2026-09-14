@@ -331,7 +331,11 @@ run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
       vpn_peer_remove) echo "[dry-run] wg set $(GET interface) peer $(GET public_key) remove" ;;
       vpn_status)      echo "[dry-run] wg show $(GET interface)" ;;
 
+      docker_*|nginx_vhost_*|nginx_cert_*|nginx_access_log|nginx_error_log|nginx_stats)
+        echo "[dry-run] $ACTION args=$ARGS (no change applied)" ;;
+
       *) echo "[dry-run] unsupported action: $ACTION"; return 127 ;;
+
 
     esac
     return 0
@@ -943,16 +947,172 @@ EOF2
         "$(ss -tulpn 2>/dev/null | awk 'NR>1{print $5}' | tr '\\n' ',' | head -c 2000)" \\
         "$(df -h / | tail -1)" ;;
 
+    docker_ps)
+      command -v docker >/dev/null 2>&1 || { echo "docker is not installed"; return 2; }
+      docker ps -a --no-trunc --format '{"id":"{{.ID}}","name":"{{.Names}}","image":"{{.Image}}","state":"{{.State}}","status":"{{.Status}}","ports":"{{.Ports}}","created":"{{.CreatedAt}}","size":"{{.Size}}"}' 2>&1 ;;
+    docker_stats)
+      command -v docker >/dev/null 2>&1 || { echo "docker is not installed"; return 2; }
+      docker stats --no-stream --format '{"id":"{{.ID}}","name":"{{.Name}}","cpu":"{{.CPUPerc}}","mem":"{{.MemUsage}}","mem_pct":"{{.MemPerc}}","net":"{{.NetIO}}","block":"{{.BlockIO}}","pids":"{{.PIDs}}"}' 2>&1 ;;
+    docker_images)
+      command -v docker >/dev/null 2>&1 || { echo "docker is not installed"; return 2; }
+      docker images --format '{"id":"{{.ID}}","repo":"{{.Repository}}","tag":"{{.Tag}}","size":"{{.Size}}","created":"{{.CreatedSince}}"}' 2>&1 ;;
+    docker_networks)
+      docker network ls --format '{"id":"{{.ID}}","name":"{{.Name}}","driver":"{{.Driver}}","scope":"{{.Scope}}"}' 2>&1 ;;
+    docker_volumes)
+      docker volume ls --format '{"name":"{{.Name}}","driver":"{{.Driver}}","mount":"{{.Mountpoint}}"}' 2>&1 ;;
+    docker_logs)
+      C="$(GET container)"; N="$(GET lines)"; [ -n "$C" ] || { echo "container required"; return 2; }
+      docker logs --tail "\${N:-200}" "$C" 2>&1 | tail -c 20000 ;;
+    docker_action)
+      C="$(GET container)"; A="$(GET op)"
+      case "$A" in start|stop|restart|pause|unpause) ;; *) echo "invalid op"; return 2 ;; esac
+      docker "$A" "$C" 2>&1 && echo "$A ok: $C" ;;
+    docker_exec)
+      C="$(GET container)"; CMD="$(GET cmd)"; [ -n "$C" ] || { echo "container required"; return 2; }
+      docker exec "$C" sh -lc "$CMD" 2>&1 | tail -c 20000 ;;
+    docker_pull)
+      IMG="$(GET image)"; [ -n "$IMG" ] || { echo "image required"; return 2; }
+      docker pull "$IMG" 2>&1 | tail -20 ;;
+    docker_rm)
+      C="$(GET container)"; F="$(GET force)"
+      [ -n "$C" ] || { echo "container required"; return 2; }
+      if [ "$F" = "true" ]; then docker rm -f "$C" 2>&1; else docker rm "$C" 2>&1; fi ;;
+    docker_compose_read)
+      P="$(GET path)"; P="\${P:-/opt/tvcc/docker-compose.yml}"
+      case "$P" in /opt/*|/srv/*|/home/*|/etc/tvcc/*) ;; *) echo "refused: path outside allowed roots"; return 2 ;; esac
+      [ -f "$P" ] && cat "$P" || echo "compose file not found: $P" ;;
+    docker_compose_write)
+      P="$(GET path)"; P="\${P:-/opt/tvcc/docker-compose.yml}"
+      case "$P" in /opt/*|/srv/*|/home/*|/etc/tvcc/*) ;; *) echo "refused: path outside allowed roots"; return 2 ;; esac
+      mkdir -p "$(dirname "$P")"
+      [ -f "$P" ] && cp -f "$P" "$P.tvcc-bak"
+      echo "$ARGS" | python3 -c 'import sys,json;d=json.load(sys.stdin);open(d.get("path") or "/opt/tvcc/docker-compose.yml","w").write(d.get("content",""))'
+      (docker compose -f "$P" config >/dev/null 2>&1 || docker-compose -f "$P" config >/dev/null 2>&1) \\
+        && echo "compose written and validated: $P" \\
+        || { [ -f "$P.tvcc-bak" ] && cp -f "$P.tvcc-bak" "$P"; echo "compose invalid — rolled back"; return 3; } ;;
+    docker_compose_up)
+      P="$(GET path)"; P="\${P:-/opt/tvcc/docker-compose.yml}"
+      (docker compose -f "$P" up -d 2>&1 || docker-compose -f "$P" up -d 2>&1) | tail -30 ;;
+    docker_compose_down)
+      P="$(GET path)"; P="\${P:-/opt/tvcc/docker-compose.yml}"
+      (docker compose -f "$P" down 2>&1 || docker-compose -f "$P" down 2>&1) | tail -30 ;;
+    docker_create)
+      printf '%s' "$ARGS" > /tmp/tvcc-docker-args.json
+      cat > /tmp/tvcc-docker-build.py <<'PYC'
+import json, shlex
+d = json.load(open("/tmp/tvcc-docker-args.json"))
+args = ["docker", "run", "-d", "--restart", d.get("restart") or "unless-stopped"]
+if d.get("name"): args += ["--name", d["name"]]
+for p in (d.get("ports") or []): args += ["-p", str(p)]
+for v in (d.get("volumes") or []): args += ["-v", str(v)]
+for k, val in (d.get("env") or {}).items(): args += ["-e", "%s=%s" % (k, val)]
+if d.get("network"): args += ["--network", d["network"]]
+args.append(d.get("image") or "")
+if d.get("command"): args += shlex.split(d["command"])
+print(" ".join(shlex.quote(a) for a in args if a))
+PYC
+      RUNCMD=$(python3 /tmp/tvcc-docker-build.py) || { echo "invalid container spec"; return 2; }
+      echo "$RUNCMD"
+      sh -lc "$RUNCMD" 2>&1 | tail -5 ;;
+
+    docker_prune)
+      docker system prune -f 2>&1 | tail -10 ;;
+
+    nginx_vhost_list)
+      AV=/etc/nginx/sites-available; EN=/etc/nginx/sites-enabled
+      [ -d "$AV" ] || AV=/etc/nginx/conf.d
+      for F in "$AV"/*; do
+        [ -f "$F" ] || continue
+        NAME=$(basename "$F")
+        ENABLED=false; [ -e "$EN/$NAME" ] && ENABLED=true
+        [ "$AV" = "/etc/nginx/conf.d" ] && ENABLED=true
+        SN=$(grep -m1 -E '^[[:space:]]*server_name' "$F" 2>/dev/null | sed 's/.*server_name//; s/;//' | xargs || true)
+        PR=$(grep -m1 -E 'proxy_pass' "$F" 2>/dev/null | sed 's/.*proxy_pass//; s/;//' | xargs || true)
+        SSL=false; grep -q 'ssl_certificate' "$F" 2>/dev/null && SSL=true
+        MT=$(stat -c %y "$F" 2>/dev/null | cut -d. -f1)
+        printf '{"file":"%s","path":"%s","server_name":"%s","proxy_pass":"%s","enabled":%s,"ssl":%s,"modified":"%s"}\\n' \\
+          "$NAME" "$F" "$SN" "$PR" "$ENABLED" "$SSL" "$MT"
+      done ;;
+    nginx_vhost_read)
+      F="$(GET file)"; P="/etc/nginx/sites-available/$F"
+      [ -f "$P" ] || P="/etc/nginx/conf.d/$F"
+      [ -f "$P" ] || { echo "vhost not found: $F"; return 2; }
+      cat "$P" ;;
+    nginx_vhost_write)
+      F="$(GET file)"; [ -n "$F" ] || { echo "file required"; return 2; }
+      case "$F" in */*|..*) echo "refused: invalid file name"; return 2 ;; esac
+      D=/etc/nginx/sites-available; [ -d "$D" ] || D=/etc/nginx/conf.d
+      P="$D/$F"
+      [ -f "$P" ] && cp -f "$P" "/var/backups/tvcc/nginx-$F-$(date +%Y%m%d%H%M%S).bak"
+      [ -f "$P" ] && cp -f "$P" "$P.tvcc-prev"
+      echo "$ARGS" | python3 -c 'import sys,json,os;d=json.load(sys.stdin);base=d.get("dir") or "/etc/nginx/sites-available";base=base if os.path.isdir(base) else "/etc/nginx/conf.d";open(os.path.join(base,d["file"]),"w").write(d.get("content",""))'
+      if nginx -t 2>&1; then
+        systemctl reload nginx 2>&1 && echo "vhost saved and nginx reloaded: $F"
+      else
+        [ -f "$P.tvcc-prev" ] && cp -f "$P.tvcc-prev" "$P" || rm -f "$P"
+        nginx -t >/dev/null 2>&1 && systemctl reload nginx >/dev/null 2>&1
+        echo "config test failed — rolled back automatically"; return 3
+      fi ;;
+    nginx_vhost_enable)
+      F="$(GET file)"; ln -sf "/etc/nginx/sites-available/$F" "/etc/nginx/sites-enabled/$F"
+      nginx -t 2>&1 && systemctl reload nginx && echo "enabled $F" ;;
+    nginx_vhost_disable)
+      F="$(GET file)"; rm -f "/etc/nginx/sites-enabled/$F"
+      nginx -t 2>&1 && systemctl reload nginx && echo "disabled $F" ;;
+    nginx_vhost_delete)
+      F="$(GET file)"; case "$F" in */*|..*) echo "refused"; return 2 ;; esac
+      [ -f "/etc/nginx/sites-available/$F" ] && cp -f "/etc/nginx/sites-available/$F" "/var/backups/tvcc/nginx-deleted-$F-$(date +%s).bak"
+      rm -f "/etc/nginx/sites-enabled/$F" "/etc/nginx/sites-available/$F" "/etc/nginx/conf.d/$F"
+      nginx -t 2>&1 && systemctl reload nginx && echo "deleted $F" ;;
+    nginx_cert_list)
+      for C in /etc/letsencrypt/live/*/fullchain.pem /etc/tvcc/ssl/*/fullchain.pem; do
+        [ -f "$C" ] || continue
+        DN=$(basename "$(dirname "$C")")
+        END=$(openssl x509 -enddate -noout -in "$C" 2>/dev/null | cut -d= -f2)
+        ISS=$(openssl x509 -issuer -noout -in "$C" 2>/dev/null | sed 's/issuer=//')
+        printf '{"domain":"%s","expires":"%s","issuer":"%s","path":"%s"}\\n' "$DN" "$END" "$ISS" "$C"
+      done ;;
+    nginx_cert_issue)
+      D="$(GET domain)"; EM="$(GET email)"
+      [ -n "$D" ] || { echo "domain required"; return 2; }
+      command -v certbot >/dev/null 2>&1 || (apt-get update -y >/dev/null 2>&1; apt-get install -y certbot python3-certbot-nginx >/dev/null 2>&1 || true)
+      if [ -n "$EM" ]; then
+        certbot --nginx -d "$D" --non-interactive --agree-tos -m "$EM" 2>&1 | tail -12
+      else
+        certbot --nginx -d "$D" --non-interactive --agree-tos --register-unsafely-without-email 2>&1 | tail -12
+      fi ;;
+    nginx_cert_renew)
+      certbot renew --quiet 2>&1 | tail -20; echo "renew pass finished" ;;
+    nginx_access_log)
+      F="$(GET file)"; N="$(GET lines)"; Q="$(GET grep)"
+      P="\${F:-/var/log/nginx/access.log}"
+      [ -f "$P" ] || { echo "log not found: $P"; return 2; }
+      if [ -n "$Q" ]; then grep -a -- "$Q" "$P" | tail -n "\${N:-200}"; else tail -n "\${N:-200}" "$P"; fi ;;
+    nginx_error_log)
+      N="$(GET lines)"; tail -n "\${N:-200}" /var/log/nginx/error.log 2>&1 ;;
+    nginx_stats)
+      P=/var/log/nginx/access.log
+      [ -f "$P" ] || { echo "access log not found"; return 2; }
+      T=$(wc -l < "$P")
+      printf 'total_requests=%s\\n' "$T"
+      printf 'status_4xx=%s\\n' "$(awk '{print $9}' "$P" | grep -c '^4' || true)"
+      printf 'status_5xx=%s\\n' "$(awk '{print $9}' "$P" | grep -c '^5' || true)"
+      echo "top_hosts:"; awk '{print $1}' "$P" | sort | uniq -c | sort -rn | head -10
+      echo "top_paths:"; awk '{print $7}' "$P" | sort | uniq -c | sort -rn | head -10 ;;
+
     *) echo "unsupported action: $ACTION"; return 127 ;;
+
   esac
 
 }
 
 install_systemd() {
-  cat > /etc/systemd/system/tvcc-agent.service <<'EOF'
+  # Templated unit: one service per agent key -> tvcc-agent@main, tvcc-agent@db, ...
+  cat > /etc/systemd/system/tvcc-agent@.service <<'EOF'
 [Unit]
-Description=TVCC Agent
-After=network.target
+Description=TVCC Agent (%i)
+After=network-online.target
+Wants=network-online.target
 
 [Service]
 Type=simple
@@ -960,16 +1120,55 @@ ExecStart=/usr/local/bin/tvcc-agent.sh
 Restart=always
 RestartSec=10
 User=root
+Environment="TVCC_AGENT_KEY=%i"
+EnvironmentFile=-/etc/tvcc/agent-%i.env
 Environment="TVCC_BACKUP_DIR=/var/backups/tvcc"
+StandardOutput=append:/var/log/tvcc-agent-%i.log
+StandardError=append:/var/log/tvcc-agent-%i.log
 
 [Install]
 WantedBy=multi-user.target
 EOF
-  systemctl daemon-reload
-  systemctl enable tvcc-agent.service
-  systemctl start tvcc-agent.service
-  echo "systemd service installed and started"
+
+  mkdir -p /etc/tvcc
+  printf 'TVCC_AGENT_ROLE=%s\n' "\${TVCC_AGENT_ROLE}" > "/etc/tvcc/agent-\${TVCC_AGENT_KEY}.env"
+  chmod 600 "/etc/tvcc/agent-\${TVCC_AGENT_KEY}.env"
+
+  cat > /etc/logrotate.d/tvcc-agent <<'EOF'
+/var/log/tvcc-agent*.log {
+  daily
+  rotate 7
+  size 20M
+  missingok
+  notifempty
+  copytruncate
+  compress
 }
+EOF
+
+  # Legacy single-instance unit is replaced by the templated one.
+  if systemctl list-unit-files 2>/dev/null | grep -q '^tvcc-agent.service'; then
+    systemctl disable --now tvcc-agent.service >/dev/null 2>&1 || true
+    rm -f /etc/systemd/system/tvcc-agent.service
+  fi
+
+  systemctl daemon-reload
+  systemctl enable "tvcc-agent@\${TVCC_AGENT_KEY}.service"
+  systemctl restart "tvcc-agent@\${TVCC_AGENT_KEY}.service"
+  echo "systemd service tvcc-agent@\${TVCC_AGENT_KEY} installed and started"
+}
+
+preflight() {
+  local PROBLEMS=""
+  [ "$(id -u)" = "0" ] || PROBLEMS="\${PROBLEMS}root required; "
+  command -v curl >/dev/null 2>&1 || PROBLEMS="\${PROBLEMS}curl missing; "
+  command -v python3 >/dev/null 2>&1 || PROBLEMS="\${PROBLEMS}python3 missing; "
+  command -v openssl >/dev/null 2>&1 || PROBLEMS="\${PROBLEMS}openssl missing; "
+  command -v systemctl >/dev/null 2>&1 || echo "warn: systemd not found — agent will run in foreground mode"
+  if [ -n "$PROBLEMS" ]; then echo "preflight failed: $PROBLEMS"; return 1; fi
+  echo "preflight ok (key=\${TVCC_AGENT_KEY} role=\${TVCC_AGENT_ROLE})"
+}
+
 
 restore_services() { # bring every registered unit back up after a reboot
   local REPORT="" OKC=0 FAILC=0
@@ -1050,6 +1249,20 @@ task_loop() {
     TVCC_PENDING_RESULTS="$RESULTS"
   done
 }
+
+# ---- CLI: ./tvcc-agent.sh install | preflight | uninstall ----
+case "\${1:-run}" in
+  preflight) preflight; exit $? ;;
+  install)
+    preflight || exit 1
+    if command -v systemctl >/dev/null 2>&1; then install_systemd; exit 0; fi
+    echo "systemd unavailable — starting in background"
+    nohup "$0" run >"/var/log/tvcc-agent-\${TVCC_AGENT_KEY}.log" 2>&1 &
+    exit 0 ;;
+  uninstall)
+    systemctl disable --now "tvcc-agent@\${TVCC_AGENT_KEY}.service" >/dev/null 2>&1 || true
+    echo "agent \${TVCC_AGENT_KEY} stopped"; exit 0 ;;
+esac
 
 task_loop &
 TVCC_TASK_PID=$!

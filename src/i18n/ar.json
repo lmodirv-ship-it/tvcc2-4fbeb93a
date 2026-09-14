@@ -109,7 +109,9 @@
     "bridge": "الجسر والتخزين",
     "domain_settings": "إعدادات النطاق",
     "publish_sync": "توحيد النشر",
-    "manara": "منارة"
+    "manara": "منارة",
+    "fed_docker": "إدارة الحاويات",
+    "fed_nginx": "الواجهة والتوجيه"
   },
   "dashboard": {
     "title": "لوحة التحكم",

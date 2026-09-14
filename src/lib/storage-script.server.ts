@@ -168,7 +168,7 @@ async function runTask(task, docRoots) {
   }
 
   const stamp = new Date().toISOString().replace(/[:.]/g, '-');
-  const root = docRoots.get(task.domain);
+  const root = docRoots.get(host) || docRoots.get(task.domain);
 
   if (root && fs.existsSync(root)) {
     const file = path.join(dir, 'site-' + stamp + '.tar.gz');

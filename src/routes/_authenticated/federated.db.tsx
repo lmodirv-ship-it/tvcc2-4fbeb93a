@@ -110,15 +110,42 @@ function DbStudioPage() {
           </div>
         </header>
 
-        <div className="mx-auto grid max-w-[1600px] grid-cols-1">
-          <aside className="border-b border-border bg-card/35 p-3">
-            <div className="relative mb-3"><Search className="absolute right-3 top-2.5 size-4 text-muted-foreground" /><Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="بحث" className="pr-9" /></div>
-            <nav className="grid grid-cols-1 gap-1">{sections.filter((item) => item.label.includes(search)).map((item) => <Button key={item.id} variant={section === item.id ? "secondary" : "ghost"} className="justify-start" onClick={() => setSection(item.id)}><item.icon className="size-4 shrink-0" />{item.label}</Button>)}</nav>
+        <div className="mx-auto flex max-w-[1600px] items-start">
+          <aside className={cn("sticky top-0 shrink-0 border-border bg-card/35 p-2 transition-all duration-300", navOpen ? "w-56 border-l" : "w-14 border-l")}>
+            <div className="mb-2 flex items-center justify-between">
+              {navOpen && <span className="px-2 text-xs font-medium text-muted-foreground">الأقسام</span>}
+              <Button variant="ghost" size="icon" className="size-8" onClick={() => setNavOpen((v) => !v)} aria-label={navOpen ? "طيّ" : "توسيع"}>
+                {navOpen ? <PanelRightOpen className="size-4" /> : <PanelRightClose className="size-4" />}
+              </Button>
+            </div>
+            {navOpen && (
+              <div className="relative mb-2">
+                <Search className="absolute right-3 top-2 size-4 text-muted-foreground" />
+                <Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="بحث" className="h-8 pr-8 text-xs" />
+              </div>
+            )}
+            <nav className="flex flex-col gap-0.5">
+              {sections.filter((item) => navOpen ? item.label.includes(search) : true).map((item) => (
+                <Tooltip key={item.id} delayDuration={400}>
+                  <TooltipTrigger asChild>
+                    <Button
+                      variant={section === item.id ? "secondary" : "ghost"}
+                      size="sm"
+                      className={cn("h-auto min-h-[34px] justify-start gap-2 px-2 py-1.5 text-xs", !navOpen && "justify-center px-1")}
+                      onClick={() => { setSection(item.id); setNavOpen(false); }}
+                    >
+                      <item.icon className="size-4 shrink-0" />
+                      {navOpen && <span className="truncate">{item.label}</span>}
+                    </Button>
+                  </TooltipTrigger>
+                  {!navOpen && <TooltipContent side="left"><p>{item.label}</p></TooltipContent>}
+                </Tooltip>
+              ))}
+            </nav>
           </aside>
-          <main className="min-w-0 space-y-4 p-4 md:p-6">
+          <main className="min-w-0 flex-1 space-y-4 p-4 md:p-6">
             {!selected ? <EmptyState /> : <SectionContent section={section} data={data} selected={selected} connection={connection} server={server} actionMutation={actionMutation} provisionMutation={provisionMutation} runQuery={runQuery} invalidate={invalidate} />}
           </main>
-
         </div>
       </div>
     </TooltipProvider>

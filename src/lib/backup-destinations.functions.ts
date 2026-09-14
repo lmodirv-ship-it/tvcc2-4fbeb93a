@@ -99,6 +99,8 @@ export const saveBackupDestination = createServerFn({ method: "POST" })
       basePath: string;
       isEnabled: boolean;
       notes?: string | null;
+      storageServerId?: string | null;
+      scope?: "all" | "verified";
     }) => input,
   )
   .handler(async ({ data, context }) => {

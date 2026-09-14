@@ -113,6 +113,7 @@ export const Route = createFileRoute("/api/public/servers/commands")({
           if (!cmd) continue;
 
           const args = (cmd.args ?? {}) as Record<string, unknown>;
+          const websiteId = cmd.website_id ?? (typeof args.website_id === "string" ? args.website_id : null);
           const databaseId = typeof args.database_id === "string" ? args.database_id : null;
           const historyId = typeof args.history_id === "string" ? args.history_id : null;
           if (historyId) {

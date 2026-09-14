@@ -519,6 +519,11 @@ function WebsitesPage() {
                       </TableCell>
                       <TableCell>
                         <div className="flex items-center gap-1">
+                          {(w as any).site_code === "S222222" && (
+                            <Button size="sm" variant="outline" className="h-7 px-2 text-xs border-primary/40 text-primary hover:bg-primary/10 gap-1" asChild>
+                              <Link to="/federated/db">محرّر القاعدة</Link>
+                            </Button>
+                          )}
                           <Button size="icon" variant="ghost" className="w-8 h-8" title="ربط">
                             <Link2 className="w-3.5 h-3.5" />
                           </Button>

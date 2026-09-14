@@ -9,7 +9,8 @@ export const INSIGHT_SECTIONS = [
 ] as const;
 export type InsightSection = (typeof INSIGHT_SECTIONS)[number];
 
-export type InsightGroup = { title: string; description?: string; columns: string[]; rows: Record<string, unknown>[] };
+export type Cell = string | number | boolean | null;
+export type InsightGroup = { title: string; description?: string; columns: string[]; rows: Record<string, Cell>[] };
 export type InsightStat = { label: string; value: string | number; tone?: "ok" | "warn" | "bad" };
 export type InsightResult = { available: boolean; reason?: string; stats: InsightStat[]; groups: InsightGroup[] };
 
@@ -25,7 +26,15 @@ async function safe(sql: string): Promise<any[]> {
 }
 
 function group(title: string, rows: any[], columns: string[], description?: string): InsightGroup {
-  return { title, description, columns, rows };
+  const clean = rows.map((row) => {
+    const out: Record<string, Cell> = {};
+    for (const c of columns) {
+      const v = row?.[c];
+      out[c] = v === null || v === undefined ? null : typeof v === "object" ? JSON.stringify(v) : (v as Cell);
+    }
+    return out;
+  });
+  return { title, description, columns, rows: clean };
 }
 
 const Q = {

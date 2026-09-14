@@ -7,14 +7,15 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { getDbInsights } from "@/lib/dbsections.functions";
+import type { Cell, InsightGroup, InsightResult, InsightStat } from "@/lib/dbsections.functions";
 
 type Props = { databaseId: string; section: string; title?: string };
 
 const toneClass = (tone?: string) =>
   tone === "bad" ? "text-destructive" : tone === "warn" ? "text-amber-500" : tone === "ok" ? "text-primary" : "";
 
-function csvDownload(name: string, columns: string[], rows: Record<string, unknown>[]) {
-  const esc = (v: unknown) => `"${String(v ?? "").replace(/"/g, '""')}"`;
+function csvDownload(name: string, columns: string[], rows: Record<string, Cell>[]) {
+  const esc = (v: Cell) => `"${String(v ?? "").replace(/"/g, '""')}"`;
   const csv = [columns.join(","), ...rows.map((r) => columns.map((c) => esc(r[c])).join(","))].join("\n");
   const url = URL.createObjectURL(new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8" }));
   const a = document.createElement("a");
@@ -38,7 +39,7 @@ export function InsightView({ databaseId, section, title }: Props) {
   if (query.error) {
     return <Card className="border-destructive"><CardContent className="p-4 text-sm text-destructive">{(query.error as Error).message}</CardContent></Card>;
   }
-  const data = query.data;
+  const data = query.data as InsightResult | undefined;
   if (!data?.available) {
     return <Card><CardContent className="flex items-center gap-2 p-4 text-sm text-muted-foreground"><AlertTriangle className="size-4" />{data?.reason ?? "لا تتوفر قراءة مباشرة لهذا القسم."}</CardContent></Card>;
   }
@@ -59,7 +60,7 @@ export function InsightView({ databaseId, section, title }: Props) {
 
       {data.stats.length > 0 && (
         <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-          {data.stats.map((stat) => (
+          {data.stats.map((stat: InsightStat) => (
             <Card key={stat.label}>
               <CardContent className="p-4">
                 <p className="text-sm text-muted-foreground">{stat.label}</p>
@@ -70,7 +71,7 @@ export function InsightView({ databaseId, section, title }: Props) {
         </div>
       )}
 
-      {data.groups.map((grp) => {
+      {data.groups.map((grp: InsightGroup) => {
         const rows = q ? grp.rows.filter((row) => grp.columns.some((c) => String(row[c] ?? "").toLowerCase().includes(q))) : grp.rows;
         return (
           <Card key={grp.title}>

@@ -161,6 +161,7 @@ export const queueDbStudioAction = createServerFn({ method: "POST" })
     await assertAdmin(supabase, userId);
     if (!DB_ACTIONS.includes(data.action)) throw new Error("أمر قاعدة البيانات غير مسموح");
     const { data: db } = await supabase.from("databases").select("*").eq("id", data.databaseId).single();
+    if (isInternalDb(db)) throw new Error("قاعدة TVCC الأساسية لا تحتاج إلى أوامر وكيل — استخدم محرّر الجداول أو SQL");
     if (!db?.server_id) throw new Error("لا يوجد سيرفر مرتبط لتنفيذ العملية");
     const command = await queueCommand(supabase, userId, db.server_id, data.action, {
       database_id: db.id,

@@ -3,7 +3,7 @@ import {
   LayoutDashboard, Globe, Users, CreditCard, UserCog, Activity, Settings,
   Code2, LogOut, Wand2, FolderOpen, LayoutTemplate, Radio, ListChecks, Plug,
   Smartphone, KeyRound, Server, ShieldCheck, BadgeCheck, Bell, FileCog, LifeBuoy, ClipboardCheck,
-  FileBarChart, Wallet, Boxes, Brain, Film, HardDrive, MessageSquare, History, NotebookPen, Archive, Network, Share2, ScrollText, ShieldAlert, GitBranch, Zap, Download, Link2, Cloud, Globe2, Fingerprint, Rocket,
+  FileBarChart, Wallet, Boxes, Brain, Film, HardDrive, MessageSquare, History, NotebookPen, Archive, Network, Share2, ScrollText, ShieldAlert, GitBranch, Zap, Download, Link2, Cloud, Globe2, Fingerprint, Rocket, Radar, Database, Shield, HeartPulse, Package, Bot,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -45,6 +45,18 @@ const coreItems = [
   { titleKey: "sidebar.core_hub", url: "/core-hub", icon: Brain },
   { titleKey: "sidebar.video_studio", url: "/video-studio", icon: Film },
   { titleKey: "sidebar.blog", url: "/blog-manager", icon: NotebookPen },
+];
+
+const fedItems = [
+  { titleKey: "sidebar.fed_overview", url: "/federated", icon: Radar },
+  { titleKey: "sidebar.fed_fleet", url: "/federated/fleet", icon: Globe },
+  { titleKey: "sidebar.fed_sql", url: "/federated/sql", icon: Database },
+  { titleKey: "sidebar.fed_mesh", url: "/federated/mesh", icon: Shield },
+  { titleKey: "sidebar.fed_pitr", url: "/federated/pitr", icon: History },
+  { titleKey: "sidebar.fed_healing", url: "/federated/healing", icon: HeartPulse },
+  { titleKey: "sidebar.fed_assets", url: "/federated/assets", icon: Package },
+  { titleKey: "sidebar.fed_db", url: "/federated/db", icon: Database },
+  { titleKey: "sidebar.fed_agents", url: "/federated/agents", icon: Bot },
 ];
 
 const aiItems = [
@@ -178,6 +190,7 @@ export function AppSidebar() {
       <SidebarContent className="px-2 py-3">
         {[
           { label: t("sidebar.core"), items: coreItems },
+          { label: t("sidebar.federated"), items: fedItems },
           { label: t("sidebar.ai"), items: aiItems },
           { label: t("sidebar.operations"), items: opsItems },
           { label: t("sidebar.admin"), items: adminItems },

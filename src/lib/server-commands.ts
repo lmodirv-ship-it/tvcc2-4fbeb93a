@@ -87,6 +87,22 @@ export const COMMAND_WHITELIST = [
   "site_autostore",
   "autostore_scan",
   "agent_sync_all",
+  "blueprint_apply",
+  "site_clone",
+  "multi_sql",
+  "pitr_restore",
+  "nginx_read",
+  "nginx_write",
+  "nginx_test",
+  "nginx_reload",
+  "site_snapshot",
+  "site_rollback",
+  "agent_config_set",
+  "proc_list",
+  "db_provision",
+  "db_query",
+  "db_policy",
+  "pooler_config",
 ] as const;
 
 
@@ -94,6 +110,20 @@ export const COMMAND_WHITELIST = [
 export type CommandAction = (typeof COMMAND_WHITELIST)[number];
 
 export const COMMAND_LABELS: Record<string, string> = {
+  blueprint_apply: "تطبيق القالب الأم",
+  site_clone: "استنساخ موقع",
+  multi_sql: "استعلام SQL جماعي",
+  pitr_restore: "استعادة نقطة زمنية",
+  nginx_read: "قراءة إعدادات Nginx",
+  nginx_write: "كتابة إعدادات Nginx مع فحص",
+  site_snapshot: "لقطة موقع",
+  site_rollback: "استعادة نسخة موقع",
+  agent_config_set: "تحديث إعدادات الوكيل",
+  proc_list: "قائمة عمليات السيرفر",
+  db_provision: "تجهيز قاعدة بيانات",
+  db_query: "استعلام قاعدة بيانات",
+  db_policy: "سياسة قاعدة بيانات",
+  pooler_config: "إعداد تجميع الاتصالات",
   site_autostore: "تخزين تلقائي للموقع",
   autostore_scan: "فحص التخزين التلقائي",
   agent_sync_all: "مزامنة شاملة للوكيل",

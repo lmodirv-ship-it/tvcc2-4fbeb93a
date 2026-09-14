@@ -42,18 +42,16 @@ export const saveBackupDestination = createServerFn({ method: "POST" })
 
     let secretId: string | null = null;
     if (data.password && data.password.trim()) {
-      const { encryptSecret, maskSecret } = await import("@/lib/vault-crypto.server");
+      const { encryptSecret } = await import("@/lib/vault-crypto.server");
       const { ciphertext, iv } = encryptSecret(data.password.trim());
       const { data: secret, error: secretError } = await sb
         .from("vault_secrets")
         .insert({
           owner_id: context.userId,
           name: `backup-dest-${data.host}-${Date.now()}`,
-          kind: "ssh_password",
+          category: "ssh_password",
           description: `كلمة سر وجهة النسخ: ${data.name}`,
-          encrypted_value: ciphertext,
-          iv,
-          masked_value: maskSecret(data.password.trim()),
+          value_encrypted: `${iv}:${ciphertext}`,
         })
         .select("id")
         .maybeSingle();

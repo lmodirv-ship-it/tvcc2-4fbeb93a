@@ -49,13 +49,14 @@ async function claimPending(admin: any, serverId: string) {
     if (!ref) continue;
     const { data: secret } = await admin
       .from("vault_secrets")
-      .select("encrypted_value, iv")
+      .select("value_encrypted")
       .eq("id", ref)
       .maybeSingle();
-    if (!secret) continue;
+    if (!secret?.value_encrypted) continue;
     try {
       const { decryptSecret } = await import("@/lib/vault-crypto.server");
-      cmd.args = { ...cmd.args, target_password: decryptSecret(secret.encrypted_value, secret.iv) };
+      const [iv, ciphertext] = String(secret.value_encrypted).split(":");
+      cmd.args = { ...cmd.args, target_password: decryptSecret(ciphertext, iv) };
       delete cmd.args.secret_ref;
     } catch {
       /* تجاهل سرّاً تعذّر فكّه */

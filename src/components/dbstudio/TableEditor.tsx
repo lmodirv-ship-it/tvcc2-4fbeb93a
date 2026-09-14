@@ -286,7 +286,7 @@ export function TableEditor({ databaseId, hasAgent = true }: { databaseId: strin
               <button key={name} onClick={() => openTable(name)} dir="ltr" className={`group flex h-8 min-w-48 max-w-72 items-center gap-1.5 border-l px-2 text-[11px] ${table === name ? "border-t-2 border-t-primary bg-card text-foreground" : "bg-muted/20 text-muted-foreground hover:bg-muted/50"}`}>
                 <Table2 className="size-3 shrink-0" />
                 <span className="shrink-0 rounded bg-primary/10 px-1 font-mono text-[9px] text-primary" dir="ltr">{codeByTable[name]}</span>
-                <span className="flex-1 truncate text-left font-mono" dir="ltr">{name}</span>
+                <span className="flex-1 overflow-hidden whitespace-nowrap font-mono text-left" dir="ltr" style={{ direction: "ltr", textOverflow: "ellipsis" }}>{name}</span>
                 <X className="size-3 shrink-0 opacity-50 hover:text-destructive hover:opacity-100" onClick={(e) => { e.stopPropagation(); closeTable(name); }} />
               </button>
             ))}

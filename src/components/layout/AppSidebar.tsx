@@ -111,10 +111,12 @@ const adminItems = [
 
 function SidebarLink({ item, active }: { item: typeof coreItems[number]; active: boolean }) {
   const { t, i18n } = useTranslation();
-  const { setOpenMobile, isMobile } = useSidebar();
+  const { setOpenMobile, isMobile, setOpen } = useSidebar();
 
   const handleClick = () => {
     if (isMobile) setOpenMobile(false);
+    // طيّ الشريط الجانبي تلقائياً إلى الأيقونات عند اختيار أي صفحة من لوحة التحكم.
+    setOpen(false);
   };
 
   return (

@@ -11,6 +11,7 @@ import {
   ArrowLeftRight, AlertTriangle, CheckCircle2, Activity,
 } from "lucide-react";
 import { getTopology } from "@/lib/topology.functions";
+import { SiteCoverage } from "@/components/relations/SiteCoverage";
 
 export const Route = createFileRoute("/_authenticated/topology")({
   component: TopologyPage,
@@ -95,10 +96,15 @@ function TopologyPage() {
           <Tabs defaultValue="map" dir="rtl">
             <TabsList>
               <TabsTrigger value="map">الخريطة</TabsTrigger>
+              <TabsTrigger value="coverage">تغطية المواقع</TabsTrigger>
               <TabsTrigger value="agents">صحة الوكلاء</TabsTrigger>
               <TabsTrigger value="links">الروابط</TabsTrigger>
               <TabsTrigger value="orphans">مواقع بلا سيرفر ({t?.orphanSites ?? 0})</TabsTrigger>
             </TabsList>
+
+            <TabsContent value="coverage" className="pt-4">
+              <SiteCoverage />
+            </TabsContent>
 
             <TabsContent value="map" className="space-y-4 pt-4">
               {(data?.nodes ?? []).length === 0 && (

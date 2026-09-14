@@ -23,6 +23,7 @@ import {
 import { TableEditor } from "@/components/dbstudio/TableEditor";
 import { TemplateLibrary } from "@/components/dbstudio/TemplateLibrary";
 import { EntityRelations } from "@/components/relations/EntityRelations";
+import { InsightView } from "@/components/dbstudio/InsightView";
 import { cn } from "@/lib/utils";
 
 
@@ -159,12 +160,12 @@ function SectionContent({ section, data, selected, connection, server, actionMut
   if (section === "sites") return <SitesPanel data={data} selected={selected} provisionMutation={provisionMutation} />;
   if (section === "tables") return <TableEditor databaseId={selected.id} hasAgent={Boolean(selected.server_id) || selected.db_kind === "internal"} />;
   if (section === "templates") return <TemplateLibrary databaseId={selected.id} hasAgent={Boolean(selected.server_id) || selected.db_kind === "internal"} />;
-  if (section === "activity") return <ActivityPanel data={data} />;
+  if (section === "activity") return <ActivityPanel data={data} selected={selected} />;
   if (section === "backups") return <BackupsPanel data={data} selected={selected} mutation={actionMutation} />;
   if (section === "integrations") return <IntegrationsPanel data={data} selected={selected} connection={connection} server={server} mutation={actionMutation} />;
   if (section === "settings") return <SettingsPanel data={data} selected={selected} connection={connection} server={server} mutation={actionMutation} invalidate={invalidate} />;
   const spec = SECTION_SPECS[section] ?? SECTION_SPECS.monitoring!;
-  return <LivePanel spec={spec} data={data} selected={selected} mutation={actionMutation} />;
+  return <LivePanel spec={spec} sectionId={section} data={data} selected={selected} mutation={actionMutation} />;
 }
 
 type SectionSpec = {
@@ -207,21 +208,26 @@ function latestCommand(commands: any[], selectedId: string, action: string) {
   return commands.find((row: any) => row.action === action && (row.args?.database_id === selectedId || !row.args?.database_id));
 }
 
-function LivePanel({ spec, data, selected, mutation }: { spec: SectionSpec; data: any; selected: any; mutation: any }) {
+function LivePanel({ spec, sectionId, data, selected, mutation }: { spec: SectionSpec; sectionId: string; data: any; selected: any; mutation: any }) {
   const command = latestCommand(data.commands, selected.id, spec.action);
   const payload = pickPayload(command?.output, spec.paths);
+  const internal = selected.db_kind === "internal";
   const buttons: [string, string, typeof Database][] = [[`قراءة ${spec.title}`, spec.action, spec.icon], ...(spec.extras ?? [])];
   return <div className="space-y-5">
     <div className="flex flex-wrap items-start justify-between gap-3">
       <div><h2 className="text-2xl font-bold">{spec.title}</h2><p className="text-muted-foreground">{spec.description}</p></div>
       <div className="flex flex-wrap gap-2">{buttons.map(([label, action, Icon]) => (
-        <Button key={action} variant={action === spec.action ? "default" : "outline"} disabled={mutation.isPending} onClick={() => mutation.mutate({ action })}>
+        <Button key={action} variant={action === spec.action ? "default" : "outline"} disabled={mutation.isPending || internal} onClick={() => mutation.mutate({ action })}>
           {mutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <Icon className="size-4" />}{label}
         </Button>
       ))}</div>
     </div>
-    <CommandStatus command={command} />
-    {payload ? <PayloadView payload={payload} columns={spec.columns} /> : <EmptyPanel text={spec.empty} />}
+    {internal
+      ? <InsightView databaseId={selected.id} section={sectionId} />
+      : <>
+          <CommandStatus command={command} />
+          {payload ? <PayloadView payload={payload} columns={spec.columns} /> : <EmptyPanel text={spec.empty} />}
+        </>}
   </div>;
 }
 
@@ -357,6 +363,7 @@ function Overview({ data, selected, connection, server, actionMutation }: any) {
     <section className="flex flex-wrap items-start justify-between gap-4"><div><p className="text-sm text-muted-foreground">{selected.db_kind === "internal" ? "قاعدة منصة TVCC الداخلية — وصول مباشر بدون وكيل" : selected.db_kind === "local" ? "قاعدة محلية عبر وكيل TVCC" : "قاعدة سحابية"}</p><h2 className="text-3xl font-bold">{selected.name}</h2><p className="mt-1 font-mono text-sm text-muted-foreground">{selected.host}:{selected.port} / {selected.db_name}</p></div><div className="flex gap-2"><Badge variant={statusTone(server?.status)}>{selected.db_kind === "internal" ? "داخلية" : server?.status ?? "لا يوجد سيرفر"}</Badge><Badge variant={statusTone(connection?.status)}>{selected.db_kind === "internal" ? "متصلة" : connection?.status ?? "غير مقترن"}</Badge></div></section>
     <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">{stats.map(([label, value, Icon]: any) => <Card key={label}><CardContent className="flex items-center gap-3 p-4"><Icon className="size-8 text-primary" /><div><p className="text-sm text-muted-foreground">{label}</p><p className="text-2xl font-bold">{value}</p></div></CardContent></Card>)}</div>
     <Card><CardHeader><CardTitle>التحكم السريع</CardTitle></CardHeader><CardContent className="flex flex-wrap gap-2"><Button onClick={() => actionMutation.mutate({ action: "db_discover" })}><RefreshCw className="size-4" />اكتشاف المزايا</Button><Button variant="outline" onClick={() => actionMutation.mutate({ action: "db_sync" })}><CloudCog className="size-4" />مزامنة</Button><Button variant="outline" onClick={() => actionMutation.mutate({ action: "backup_run" })}><Download className="size-4" />نسخة احتياطية</Button><Button variant="outline" onClick={() => actionMutation.mutate({ action: "advisor_scan" })}><ShieldCheck className="size-4" />فحص الأمان</Button></CardContent></Card>
+    {selected.db_kind === "internal" && <InsightView databaseId={selected.id} section="overview" title="قراءة حيّة من القاعدة" />}
     <EntityRelations databaseId={selected.id} serverId={selected.server_id ?? null} websiteId={selected.website_id ?? null} />
     <Card><CardHeader><CardTitle>آخر مهام الوكيل</CardTitle></CardHeader><CardContent><div className="space-y-2">{recent.length ? recent.map((row: any) => <div key={row.id} className="flex items-center justify-between border-b border-border py-2 text-sm"><span className="font-mono">{row.action}</span><Badge variant={statusTone(row.status)}>{row.status}</Badge></div>) : <p className="text-muted-foreground">لا توجد مهام بعد.</p>}</div></CardContent></Card>
   </div>;
@@ -472,6 +479,12 @@ function SitesPanel({ data, selected, provisionMutation }: any) {
   return <div className="space-y-4"><div className="flex flex-wrap justify-between gap-3"><div><h2 className="text-2xl font-bold">هوية تخزين موحّدة لكل موقع</h2><p className="text-muted-foreground">مخطط بيانات وملف خادم يحملان معرف الموقع نفسه.</p></div><Button disabled={provisionMutation.isPending} onClick={() => provisionMutation.mutate()}>{provisionMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <FolderTree className="size-4" />}تهيئة جميع المواقع</Button></div><div className="grid gap-3 sm:grid-cols-3"><Stat label="المواقع" value={data.websites.length} /><Stat label="تمت جدولتها" value={rows.length} /><Stat label="جاهزة" value={ready} /></div><Card><CardContent className="overflow-x-auto p-0"><table className="w-full text-sm"><thead><tr className="border-b border-border text-right"><th className="p-3">المعرف</th><th className="p-3">المخطط</th><th className="p-3">مسار الخادم</th><th className="p-3">الحالة</th></tr></thead><tbody>{rows.slice(0, 100).map((row: any) => <tr key={row.id} className="border-b border-border/60"><td className="p-3 font-mono">{row.site_code ?? "—"}</td><td className="p-3 font-mono">{row.schema_name ?? "—"}</td><td className="p-3 font-mono" dir="ltr">{row.server_path ?? "—"}</td><td className="p-3"><Badge variant={statusTone(row.provisioning_status)}>{row.provisioning_status}</Badge></td></tr>)}</tbody></table></CardContent></Card></div>;
 }
 
-function ActivityPanel({ data }: any) { return <div className="space-y-4"><h2 className="text-2xl font-bold">سجل النشاط</h2>{data.audits.map((row: any) => <Card key={row.id}><CardContent className="flex flex-wrap items-center justify-between gap-3 p-4"><div><p className="font-medium">{row.action}</p><p className="text-xs text-muted-foreground">{new Date(row.created_at).toLocaleString("ar")}</p></div><Badge variant="outline">{row.resource_id?.slice(0, 8)}</Badge></CardContent></Card>)}</div>; }
+function ActivityPanel({ data, selected }: any) {
+  if (selected?.db_kind === "internal") return <div className="space-y-4">
+    <div><h2 className="text-2xl font-bold">سجل النشاط</h2><p className="text-muted-foreground">كل عملية على المنصة: من فعلها، على ماذا، ومتى.</p></div>
+    <InsightView databaseId={selected.id} section="activity" />
+  </div>;
+  return <div className="space-y-4"><h2 className="text-2xl font-bold">سجل النشاط</h2>{data.audits.map((row: any) => <Card key={row.id}><CardContent className="flex flex-wrap items-center justify-between gap-3 p-4"><div><p className="font-medium">{row.action}</p><p className="text-xs text-muted-foreground">{new Date(row.created_at).toLocaleString("ar")}</p></div><Badge variant="outline">{row.resource_id?.slice(0, 8)}</Badge></CardContent></Card>)}</div>;
+}
 function Stat({ label, value }: { label: string; value: number }) { return <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{label}</p><p className="text-2xl font-bold">{value}</p></CardContent></Card>; }
 function EmptyState() { return <div className="grid min-h-[50vh] place-items-center text-center"><div><Database className="mx-auto mb-3 size-12 text-muted-foreground" /><h2 className="text-xl font-bold">لا توجد قاعدة محددة</h2><p className="text-muted-foreground">سجّل قاعدة ثم اربطها بوكيل TVCC.</p></div></div>; }

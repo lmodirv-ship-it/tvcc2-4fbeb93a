@@ -23,6 +23,7 @@ import {
 import { TableEditor } from "@/components/dbstudio/TableEditor";
 import { TemplateLibrary } from "@/components/dbstudio/TemplateLibrary";
 import { EntityRelations } from "@/components/relations/EntityRelations";
+import { cn } from "@/lib/utils";
 
 
 export const Route = createFileRoute("/_authenticated/federated/db")({

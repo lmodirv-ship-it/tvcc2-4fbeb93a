@@ -43,7 +43,9 @@ function AuthenticatedLayout() {
         <div className="flex-1 flex flex-col">
           <AppHeader />
           <main className="flex-1 p-6">
-            <Outlet />
+            <PageGuard>
+              <Outlet />
+            </PageGuard>
           </main>
         </div>
       </div>

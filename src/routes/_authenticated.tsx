@@ -18,8 +18,8 @@ function AuthenticatedLayout() {
   const navigate = useNavigate();
   const [ready, setReady] = useState(false);
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  // مركز قواعد البيانات يحتاج الشريط الجانبي مفتوحاً دائماً (لا يُطوى إلى أيقونات).
-  const forceSidebarOpen = pathname.startsWith("/federated/db");
+  // سلوك الشريط الجانبي الافتراضي في كل الصفحات (يمكن طيّه إلى أيقونات).
+  void pathname;
 
   useEffect(() => {
     const { data: { subscription } } = supabase.auth.onAuthStateChange((_e, s) => {
@@ -41,7 +41,7 @@ function AuthenticatedLayout() {
   }
 
   return (
-    <SidebarProvider open={forceSidebarOpen ? true : undefined}>
+    <SidebarProvider>
       <div className="min-h-screen flex w-full min-w-0 overflow-x-hidden">
         <AppSidebar />
         <div className="min-w-0 flex-1 flex flex-col">

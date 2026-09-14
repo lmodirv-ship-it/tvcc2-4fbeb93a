@@ -1,4 +1,6 @@
 import { NightlyDestinations } from "@/components/backups/NightlyDestinations";
+import { SiteTransfersTable } from "@/components/backups/SiteTransfersTable";
+
 import { createFileRoute } from "@tanstack/react-router";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";

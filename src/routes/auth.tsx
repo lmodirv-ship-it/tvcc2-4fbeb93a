@@ -10,6 +10,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import tvccLogo from "@/assets/tvcc-logo.asset.json";
+import { useServerFn } from "@tanstack/react-start";
+import { ownerSignIn } from "@/lib/owner-auth.functions";
+import { OWNER_SESSION_KEY } from "@/hooks/use-roles";
 
 /** Only same-origin relative paths are accepted as a post-auth destination. */
 function safeNext(value: unknown): string | undefined {
@@ -33,6 +36,7 @@ function AuthPage() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [fullName, setFullName] = useState("");
+  const ownerLogin = useServerFn(ownerSignIn);
 
   const goNext = () => {
     if (next) {
@@ -54,10 +58,30 @@ function AuthPage() {
     e.preventDefault();
     setLoading(true);
     const { error } = await supabase.auth.signInWithPassword({ email, password });
+    if (!error) {
+      localStorage.removeItem(OWNER_SESSION_KEY);
+      setLoading(false);
+      toast.success("تم تسجيل الدخول");
+      goNext();
+      return;
+    }
+
+    // دخول المالك المباشر — يعمل حتى لو تعذّر الوصول إلى قاعدة البيانات
+    try {
+      const res = await ownerLogin({ data: { email, password } });
+      if (res.ok) {
+        localStorage.setItem(OWNER_SESSION_KEY, res.email);
+        setLoading(false);
+        toast.success("تم تسجيل دخول المالك");
+        goNext();
+        return;
+      }
+    } catch {
+      /* تجاهل — نعرض خطأ الدخول العادي */
+    }
+
     setLoading(false);
-    if (error) return toast.error(error.message);
-    toast.success("تم تسجيل الدخول");
-    goNext();
+    toast.error(error.message);
   };
 
   const handleSignup = async (e: React.FormEvent) => {

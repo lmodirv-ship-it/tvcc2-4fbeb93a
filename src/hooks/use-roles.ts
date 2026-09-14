@@ -14,6 +14,14 @@ export function isPermanentOwnerEmail(email?: string | null) {
   return PERMANENT_OWNER_EMAILS.includes((email || "").toLowerCase());
 }
 
+/** علامة جلسة المالك المباشرة (الجلسة الحقيقية محفوظة في كوكي آمن على الخادم). */
+export const OWNER_SESSION_KEY = "tvcc-owner-email";
+
+export function getLocalOwnerEmail(): string {
+  if (typeof window === "undefined") return "";
+  return localStorage.getItem(OWNER_SESSION_KEY) || "";
+}
+
 export function useRoles() {
   const { data, isLoading } = useQuery({
     queryKey: ["my-roles"],
@@ -21,7 +29,11 @@ export function useRoles() {
     queryFn: async () => {
       const { data: auth } = await supabase.auth.getUser();
       const user = auth.user;
-      if (!user) return { email: "", roles: [] as string[] };
+      if (!user) {
+        const ownerEmail = getLocalOwnerEmail();
+        if (ownerEmail) return { email: ownerEmail, roles: ["system_owner"] };
+        return { email: "", roles: [] as string[] };
+      }
       const { data: rows } = await supabase.from("user_roles").select("role").eq("user_id", user.id);
       return { email: user.email || "", roles: (rows || []).map((r) => r.role as string) };
     },

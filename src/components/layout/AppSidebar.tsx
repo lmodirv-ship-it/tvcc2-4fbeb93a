@@ -10,6 +10,8 @@ import {
   SidebarMenu, SidebarMenuButton, SidebarMenuItem, SidebarHeader, SidebarFooter,
   useSidebar,
 } from "@/components/ui/sidebar";
+import { usePermissions } from "@/hooks/use-permissions";
+import { usePlatformPageRules } from "@/hooks/use-platform-pages";
 import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { exportDashboardHtml } from "@/lib/html-export";
@@ -128,6 +130,8 @@ export function AppSidebar() {
   const { t } = useTranslation();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
+  const { primaryRole } = usePermissions();
+  const { isVisible } = usePlatformPageRules();
   const [lang, setLang] = useState<AppLang>(i18n.language as AppLang);
 
   useEffect(() => {
@@ -184,9 +188,11 @@ export function AppSidebar() {
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {section.items.map((item) => (
-                  <SidebarLink key={item.url} item={item} active={isActive(item.url)} />
-                ))}
+                {section.items
+                  .filter((item) => primaryRole === "system_owner" || isVisible(item.url, primaryRole))
+                  .map((item) => (
+                    <SidebarLink key={item.url} item={item} active={isActive(item.url)} />
+                  ))}
                 {section.items === coreItems && (
                   <SidebarMenuItem>
                     <SidebarMenuButton

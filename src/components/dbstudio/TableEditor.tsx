@@ -171,6 +171,15 @@ export function TableEditor({ databaseId, hasAgent = true }: { databaseId: strin
     setEdits((prev) => ({ ...prev, [id]: { ...(prev[id] ?? {}), [key]: value } }));
   };
 
+  if (!hasAgent) {
+    return (
+      <div className="rounded-lg border border-dashed p-6 text-sm text-muted-foreground">
+        هذه القاعدة غير مرتبطة بسيرفر عليه وكيل TVCC، لذلك لا يمكن قراءة الجداول أو تعديلها.
+        اربط القاعدة بسيرفر يعمل عليه الوكيل من تبويب «الإعدادات»، ثم عُد إلى محرر الجداول.
+      </div>
+    );
+  }
+
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-start justify-between gap-3">

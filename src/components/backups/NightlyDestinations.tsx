@@ -231,8 +231,17 @@ export function NightlyDestinations() {
                     </TableCell>
                     <TableCell className="text-left">
                       <div className="flex gap-1 justify-end">
-                        <Button size="sm" variant="outline" onClick={() => run.mutate(d.id)} disabled={run.isPending}>
-                          <Play className="w-3 h-3 ml-1" /> تشغيل الآن
+                        <Button
+                          size="sm"
+                          variant="outline"
+                          title={d.ready ? "يعمل تلقائياً كل 24 ساعة" : !d.is_enabled ? "الوجهة غير مفعّلة" : "لا يوجد وكيل متصل على سيرفر الوجهة"}
+                          className={d.ready
+                            ? "border-success/50 bg-success/15 text-success hover:bg-success/25"
+                            : "border-destructive/50 bg-destructive/15 text-destructive hover:bg-destructive/25"}
+                          onClick={() => run.mutate(d.id)}
+                          disabled={run.isPending}
+                        >
+                          {run.isPending ? <Loader2 className="w-3 h-3 animate-spin ml-1" /> : <Play className="w-3 h-3 ml-1" />} تشغيل الآن
                         </Button>
                         <Button
                           size="sm"

@@ -189,7 +189,7 @@ export const runBackupDestinationNow = createServerFn({ method: "POST" })
     const sb = context.supabase as any;
     const { data: dest } = await sb
       .from("backup_destinations")
-      .select("id, owner_id, name, host, username, port, base_path, secret_id, is_enabled")
+      .select("id, owner_id, name, host, username, port, base_path, secret_id, is_enabled, storage_server_id, scope")
       .eq("id", data.id)
       .maybeSingle();
     if (!dest) throw new Error("الوجهة غير موجودة");
@@ -198,4 +198,43 @@ export const runBackupDestinationNow = createServerFn({ method: "POST" })
     const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
     const { runNightlyBackupForDestination } = await import("@/lib/nightly-backup.server");
     return runNightlyBackupForDestination(supabaseAdmin as any, dest);
+  });
+
+/** سيرفرات المالك لاختيار سيرفر التخزين. */
+export const listOwnerServers = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const { data } = await (context.supabase as any)
+      .from("servers")
+      .select("id, name, hostname, public_ip, private_ip, status")
+      .order("name");
+    return { servers: (data ?? []) as any[] };
+  });
+
+/** توليد سكريبت Node.js الخاص بسيرفر التخزين (إنشاء المجلدات + تحليل المواقع). */
+export const getStorageScript = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((input: { destinationId: string; baseUrl: string }) => input)
+  .handler(async ({ data, context }) => {
+    const { data: dest } = await (context.supabase as any)
+      .from("backup_destinations")
+      .select("id, owner_id, base_path")
+      .eq("id", data.destinationId)
+      .maybeSingle();
+    if (!dest) throw new Error("الوجهة غير موجودة");
+    if (dest.owner_id !== context.userId) throw new Error("غير مصرح");
+
+    const secret = process.env["NIGHTLY_BACKUP_SECRET"] ?? "";
+    if (!secret) throw new Error("مفتاح النسخ الليلي غير مضبوط");
+
+    const { buildStorageScript } = await import("@/lib/storage-script.server");
+    return {
+      filename: "tvcc-storage.js",
+      script: buildStorageScript({
+        baseUrl: data.baseUrl.replace(/\/+$/, ""),
+        secret,
+        destinationId: dest.id,
+        basePath: dest.base_path,
+      }),
+    };
   });

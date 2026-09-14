@@ -111,7 +111,7 @@ function DbStudioPage() {
         <div className="mx-auto grid max-w-[1600px] grid-cols-1 lg:grid-cols-[192px_minmax(0,1fr)]">
           <aside className="border-b border-border bg-card/35 p-3 lg:min-h-[calc(100vh-70px)] lg:border-b-0 lg:border-l">
             <div className="relative mb-3"><Search className="absolute right-3 top-2.5 size-4 text-muted-foreground" /><Input value={search} onChange={(e) => setSearch(e.target.value)} placeholder="بحث" className="pr-9" /></div>
-            <nav className="grid grid-cols-2 gap-1 sm:grid-cols-4 lg:grid-cols-1">{sections.filter((item) => item.label.includes(search)).map((item) => <Button key={item.id} variant={section === item.id ? "secondary" : "ghost"} className="justify-start" onClick={() => setSection(item.id)}><item.icon className="size-4" />{item.label}</Button>)}</nav>
+            <nav className="grid grid-cols-1 gap-1">{sections.filter((item) => item.label.includes(search)).map((item) => <Button key={item.id} variant={section === item.id ? "secondary" : "ghost"} className="justify-start" onClick={() => setSection(item.id)}><item.icon className="size-4" />{item.label}</Button>)}</nav>
           </aside>
           <main className="min-w-0 space-y-4 p-4 md:p-6">
             {selected && <EntityRelations databaseId={selected.id} serverId={selected.server_id ?? null} websiteId={selected.website_id ?? null} />}

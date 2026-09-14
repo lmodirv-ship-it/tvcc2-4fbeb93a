@@ -509,6 +509,7 @@ export const listDbTemplates = createServerFn({ method: "GET" })
   });
 
 type TemplateOptions = {
+  databaseId: string;
   templateId: string;
   schema?: string;
   prefix?: string;
@@ -540,7 +541,7 @@ export const applyTemplate = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     await assertAdmin(supabase, userId);
     if (!data.confirm) throw new Error("تطبيق النموذج يحتاج تأكيداً صريحاً");
-    const db = await dbOrThrow(supabase, data.databaseId as unknown as string);
+    const db = await dbOrThrow(supabase, data.databaseId);
     const { buildTemplateSql, getTemplate } = await import("./db-templates");
     const template = getTemplate(data.templateId);
     const schema = ident(data.schema ?? "public", "المخطط");

@@ -18,7 +18,7 @@ export const getFederatedOverview = createServerFn({ method: "GET" })
       supabase.from("websites").select("id, name, domain, status, server_id, manara_code"),
       supabase
         .from("server_metrics")
-        .select("server_id, cpu_percent, mem_used_bytes, mem_total_bytes, disk_used_bytes, disk_total_bytes, created_at")
+        .select("server_id, cpu_percent, mem_used_mb, mem_total_mb, disk_used_gb, disk_total_gb, created_at")
         .order("created_at", { ascending: false })
         .limit(200),
       supabase.from("federated_alerts").select("*").is("resolved_at", null).order("created_at", { ascending: false }).limit(50),
@@ -82,7 +82,9 @@ export const startSiteClone = createServerFn({ method: "POST" })
       action: "site_clone",
       args: { clone_id: clone.id, website_id: data.websiteId, new_domain: data.newDomain ?? null },
       status: "pending",
-      created_by: userId,
+      owner_id: userId,
+      requested_by: userId,
+      dry_run: false,
     });
     return clone;
   });
@@ -138,7 +140,9 @@ export const runFederatedQuery = createServerFn({ method: "POST" })
           action: "multi_sql",
           args: { query_id: row.id, sql: data.sql },
           status: "pending",
-          created_by: userId,
+          owner_id: userId,
+        requested_by: userId,
+        dry_run: false,
         });
       }
     }
@@ -189,7 +193,9 @@ export const deployBlueprint = createServerFn({ method: "POST" })
           action: "blueprint_apply",
           args: { blueprint_id: bp.id, website_id: w.id, schema_sql: bp.schema_sql },
           status: "pending",
-          created_by: userId,
+          owner_id: userId,
+        requested_by: userId,
+        dry_run: false,
         });
       }
       created++;
@@ -243,7 +249,9 @@ export const saveAgentConfig = createServerFn({ method: "POST" })
       action: "agent_config_set",
       args: { heartbeat_interval_sec: data.heartbeatIntervalSec, allowed_commands: data.allowedCommands, autostart: data.autostart },
       status: "pending",
-      created_by: userId,
+      owner_id: userId,
+      requested_by: userId,
+      dry_run: false,
     });
     return row;
   });
@@ -291,7 +299,9 @@ export const saveNginxConfig = createServerFn({ method: "POST" })
       action: "nginx_write",
       args: { config_id: row.id, file_path: data.filePath, content: data.content, test_first: true, rollback_on_fail: true },
       status: "pending",
-      created_by: userId,
+      owner_id: userId,
+      requested_by: userId,
+      dry_run: false,
     });
     return row;
   });
@@ -315,7 +325,9 @@ export const createSiteSnapshot = createServerFn({ method: "POST" })
       action: "site_snapshot",
       args: { website_id: data.websiteId, domain: site.domain, slots: 2 },
       status: "pending",
-      created_by: userId,
+      owner_id: userId,
+      requested_by: userId,
+      dry_run: false,
     });
     const { data: row, error } = await supabase
       .from("site_snapshots")
@@ -339,7 +351,9 @@ export const rollbackSiteSnapshot = createServerFn({ method: "POST" })
       action: "site_rollback",
       args: { website_id: data.websiteId, snapshot_id: snap.id, path: snap.path },
       status: "pending",
-      created_by: userId,
+      owner_id: userId,
+      requested_by: userId,
+      dry_run: false,
     });
     return { ok: true };
   });

@@ -31,8 +31,8 @@ function FederatedOverviewPage() {
 
   const metrics = Object.values(data.metrics) as any[];
   const avgCpu = metrics.length ? Math.round(metrics.reduce((s, m) => s + (m.cpu_percent ?? 0), 0) / metrics.length) : 0;
-  const avgMem = metrics.length ? Math.round(metrics.reduce((s, m) => s + pct(m.mem_used_bytes, m.mem_total_bytes), 0) / metrics.length) : 0;
-  const avgDisk = metrics.length ? Math.round(metrics.reduce((s, m) => s + pct(m.disk_used_bytes, m.disk_total_bytes), 0) / metrics.length) : 0;
+  const avgMem = metrics.length ? Math.round(metrics.reduce((s, m) => s + pct(m.mem_used_mb, m.mem_total_mb), 0) / metrics.length) : 0;
+  const avgDisk = metrics.length ? Math.round(metrics.reduce((s, m) => s + pct(m.disk_used_gb, m.disk_total_gb), 0) / metrics.length) : 0;
 
   return (
     <div className="p-6 space-y-6" dir="rtl">

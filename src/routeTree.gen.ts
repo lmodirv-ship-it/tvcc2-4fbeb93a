@@ -128,8 +128,10 @@ import { Route as ApiPublicHnAnnounceRouteImport } from './routes/api/public/hn/
 import { Route as ApiPublicHnServiceCatalogRouteImport } from './routes/api/public/hn-service/catalog'
 import { Route as ApiPublicHnRlsVerifyRouteImport } from './routes/api/public/hn-rls.verify'
 import { Route as ApiPublicCoreIngestRouteImport } from './routes/api/public/core.ingest'
+import { Route as ApiPublicBackupsTasksRouteImport } from './routes/api/public/backups/tasks'
 import { Route as ApiPublicBackupsScanReportRouteImport } from './routes/api/public/backups/scan-report'
 import { Route as ApiPublicBackupsRunDueRouteImport } from './routes/api/public/backups/run-due'
+import { Route as ApiPublicBackupsReportRouteImport } from './routes/api/public/backups/report'
 import { Route as ApiPublicBackupsNightlyRouteImport } from './routes/api/public/backups/nightly'
 import { Route as ApiPublicBackupsLinkRouteImport } from './routes/api/public/backups/link'
 import { Route as ApiPublicBackupsInventoryRouteImport } from './routes/api/public/backups/inventory'
@@ -776,6 +778,11 @@ const ApiPublicCoreIngestRoute = ApiPublicCoreIngestRouteImport.update({
   path: '/api/public/core/ingest',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicBackupsTasksRoute = ApiPublicBackupsTasksRouteImport.update({
+  id: '/api/public/backups/tasks',
+  path: '/api/public/backups/tasks',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicBackupsScanReportRoute =
   ApiPublicBackupsScanReportRouteImport.update({
     id: '/api/public/backups/scan-report',
@@ -785,6 +792,11 @@ const ApiPublicBackupsScanReportRoute =
 const ApiPublicBackupsRunDueRoute = ApiPublicBackupsRunDueRouteImport.update({
   id: '/api/public/backups/run-due',
   path: '/api/public/backups/run-due',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicBackupsReportRoute = ApiPublicBackupsReportRouteImport.update({
+  id: '/api/public/backups/report',
+  path: '/api/public/backups/report',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicBackupsNightlyRoute = ApiPublicBackupsNightlyRouteImport.update({
@@ -912,8 +924,10 @@ export interface FileRoutesByFullPath {
   '/api/public/backups/inventory': typeof ApiPublicBackupsInventoryRoute
   '/api/public/backups/link': typeof ApiPublicBackupsLinkRoute
   '/api/public/backups/nightly': typeof ApiPublicBackupsNightlyRoute
+  '/api/public/backups/report': typeof ApiPublicBackupsReportRoute
   '/api/public/backups/run-due': typeof ApiPublicBackupsRunDueRoute
   '/api/public/backups/scan-report': typeof ApiPublicBackupsScanReportRoute
+  '/api/public/backups/tasks': typeof ApiPublicBackupsTasksRoute
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hn-rls/verify': typeof ApiPublicHnRlsVerifyRoute
   '/api/public/hn-service/catalog': typeof ApiPublicHnServiceCatalogRoute
@@ -1036,8 +1050,10 @@ export interface FileRoutesByTo {
   '/api/public/backups/inventory': typeof ApiPublicBackupsInventoryRoute
   '/api/public/backups/link': typeof ApiPublicBackupsLinkRoute
   '/api/public/backups/nightly': typeof ApiPublicBackupsNightlyRoute
+  '/api/public/backups/report': typeof ApiPublicBackupsReportRoute
   '/api/public/backups/run-due': typeof ApiPublicBackupsRunDueRoute
   '/api/public/backups/scan-report': typeof ApiPublicBackupsScanReportRoute
+  '/api/public/backups/tasks': typeof ApiPublicBackupsTasksRoute
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hn-rls/verify': typeof ApiPublicHnRlsVerifyRoute
   '/api/public/hn-service/catalog': typeof ApiPublicHnServiceCatalogRoute
@@ -1164,8 +1180,10 @@ export interface FileRoutesById {
   '/api/public/backups/inventory': typeof ApiPublicBackupsInventoryRoute
   '/api/public/backups/link': typeof ApiPublicBackupsLinkRoute
   '/api/public/backups/nightly': typeof ApiPublicBackupsNightlyRoute
+  '/api/public/backups/report': typeof ApiPublicBackupsReportRoute
   '/api/public/backups/run-due': typeof ApiPublicBackupsRunDueRoute
   '/api/public/backups/scan-report': typeof ApiPublicBackupsScanReportRoute
+  '/api/public/backups/tasks': typeof ApiPublicBackupsTasksRoute
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hn-rls/verify': typeof ApiPublicHnRlsVerifyRoute
   '/api/public/hn-service/catalog': typeof ApiPublicHnServiceCatalogRoute
@@ -1292,8 +1310,10 @@ export interface FileRouteTypes {
     | '/api/public/backups/inventory'
     | '/api/public/backups/link'
     | '/api/public/backups/nightly'
+    | '/api/public/backups/report'
     | '/api/public/backups/run-due'
     | '/api/public/backups/scan-report'
+    | '/api/public/backups/tasks'
     | '/api/public/core/ingest'
     | '/api/public/hn-rls/verify'
     | '/api/public/hn-service/catalog'
@@ -1416,8 +1436,10 @@ export interface FileRouteTypes {
     | '/api/public/backups/inventory'
     | '/api/public/backups/link'
     | '/api/public/backups/nightly'
+    | '/api/public/backups/report'
     | '/api/public/backups/run-due'
     | '/api/public/backups/scan-report'
+    | '/api/public/backups/tasks'
     | '/api/public/core/ingest'
     | '/api/public/hn-rls/verify'
     | '/api/public/hn-service/catalog'
@@ -1543,8 +1565,10 @@ export interface FileRouteTypes {
     | '/api/public/backups/inventory'
     | '/api/public/backups/link'
     | '/api/public/backups/nightly'
+    | '/api/public/backups/report'
     | '/api/public/backups/run-due'
     | '/api/public/backups/scan-report'
+    | '/api/public/backups/tasks'
     | '/api/public/core/ingest'
     | '/api/public/hn-rls/verify'
     | '/api/public/hn-service/catalog'
@@ -1588,8 +1612,10 @@ export interface RootRouteChildren {
   ApiPublicBackupsInventoryRoute: typeof ApiPublicBackupsInventoryRoute
   ApiPublicBackupsLinkRoute: typeof ApiPublicBackupsLinkRoute
   ApiPublicBackupsNightlyRoute: typeof ApiPublicBackupsNightlyRoute
+  ApiPublicBackupsReportRoute: typeof ApiPublicBackupsReportRoute
   ApiPublicBackupsRunDueRoute: typeof ApiPublicBackupsRunDueRoute
   ApiPublicBackupsScanReportRoute: typeof ApiPublicBackupsScanReportRoute
+  ApiPublicBackupsTasksRoute: typeof ApiPublicBackupsTasksRoute
   ApiPublicCoreIngestRoute: typeof ApiPublicCoreIngestRoute
   ApiPublicHnRlsVerifyRoute: typeof ApiPublicHnRlsVerifyRoute
   ApiPublicHnServiceCatalogRoute: typeof ApiPublicHnServiceCatalogRoute
@@ -2447,6 +2473,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCoreIngestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/backups/tasks': {
+      id: '/api/public/backups/tasks'
+      path: '/api/public/backups/tasks'
+      fullPath: '/api/public/backups/tasks'
+      preLoaderRoute: typeof ApiPublicBackupsTasksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/backups/scan-report': {
       id: '/api/public/backups/scan-report'
       path: '/api/public/backups/scan-report'
@@ -2459,6 +2492,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/backups/run-due'
       fullPath: '/api/public/backups/run-due'
       preLoaderRoute: typeof ApiPublicBackupsRunDueRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/backups/report': {
+      id: '/api/public/backups/report'
+      path: '/api/public/backups/report'
+      fullPath: '/api/public/backups/report'
+      preLoaderRoute: typeof ApiPublicBackupsReportRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/backups/nightly': {
@@ -2733,8 +2773,10 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicBackupsInventoryRoute: ApiPublicBackupsInventoryRoute,
   ApiPublicBackupsLinkRoute: ApiPublicBackupsLinkRoute,
   ApiPublicBackupsNightlyRoute: ApiPublicBackupsNightlyRoute,
+  ApiPublicBackupsReportRoute: ApiPublicBackupsReportRoute,
   ApiPublicBackupsRunDueRoute: ApiPublicBackupsRunDueRoute,
   ApiPublicBackupsScanReportRoute: ApiPublicBackupsScanReportRoute,
+  ApiPublicBackupsTasksRoute: ApiPublicBackupsTasksRoute,
   ApiPublicCoreIngestRoute: ApiPublicCoreIngestRoute,
   ApiPublicHnRlsVerifyRoute: ApiPublicHnRlsVerifyRoute,
   ApiPublicHnServiceCatalogRoute: ApiPublicHnServiceCatalogRoute,

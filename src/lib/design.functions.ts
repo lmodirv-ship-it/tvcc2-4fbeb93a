@@ -17,9 +17,12 @@ export const saveDesignIdentity = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
 
-    const { data: allowed } = await supabase.rpc("has_role", { _user_id: userId, _role: "admin" });
-    const { data: owner } = await supabase.rpc("has_role", { _user_id: userId, _role: "system_owner" });
-    if (!allowed && !owner) throw new Error("صلاحيات غير كافية لتعديل هوية التصميم");
+    const { data: roles, error: rolesError } = await supabase
+      .from("user_roles")
+      .select("role")
+      .eq("user_id", userId)
+      .in("role", ["admin", "system_owner"]);
+    if (rolesError || !roles?.length) throw new Error("صلاحيات غير كافية لتعديل هوية التصميم");
 
     const payload = {
       theme_id: data.theme_id ?? null,

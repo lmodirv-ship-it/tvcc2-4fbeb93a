@@ -56,7 +56,8 @@ export function NightlyDestinations() {
   const bySite = useMemo(() => {
     const map = new Map<string, { domain: string; first?: any; current?: any }>();
     for (const c of copies) {
-      const entry = map.get(c.domain) ?? { domain: c.domain };
+      const entry: { domain: string; first?: any; current?: any } =
+        map.get(c.domain) ?? { domain: c.domain };
       if (c.copy_kind === "first") entry.first = c;
       else entry.current = c;
       map.set(c.domain, entry);

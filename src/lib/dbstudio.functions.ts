@@ -202,12 +202,13 @@ export const runDbStudioQuery = createServerFn({ method: "POST" })
     if (write && !data.confirmWrite) throw new Error("هذا الاستعلام يغيّر البيانات؛ فعّل تأكيد الكتابة أولاً");
     if (DESTRUCTIVE_SQL.test(sql) && !data.confirmWrite) throw new Error("الاستعلام المدمّر يحتاج تأكيداً صريحاً");
     const { data: db } = await supabase.from("databases").select("*").eq("id", data.databaseId).single();
+    if (!db) throw new Error("القاعدة غير موجودة");
     if (isInternalDb(db)) {
       if (write) throw new Error("على قاعدة TVCC الأساسية استخدم محرّر الجداول أو DDL للكتابة — SQL الحر للقراءة فقط");
       const rows = await runInternalSql(sql);
       return { command: internalCommand("db_query", { database_id: db.id, sql, read_only: true }, { rows }), historyId: null };
     }
-    if (!db?.server_id) throw new Error("لا يوجد وكيل مرتبط بهذه القاعدة");
+    if (!db.server_id) throw new Error("لا يوجد وكيل مرتبط بهذه القاعدة");
     const { data: history, error } = await supabase.from("query_history").insert({
       owner_id: userId,
       database_id: db.id,

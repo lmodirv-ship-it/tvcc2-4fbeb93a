@@ -57,6 +57,16 @@ export function AppHeader() {
 
       <LanguageSwitcher />
 
+      <button
+        onClick={handleLogout}
+        aria-label={t("common.logout") as string}
+        title={t("common.logout") as string}
+        className="h-9 px-3 rounded-lg bg-secondary/60 hover:bg-secondary flex items-center gap-2 text-xs font-medium text-muted-foreground"
+      >
+        <LogOut className="w-4 h-4" />
+        <span className="hidden md:inline">{t("common.logout")}</span>
+      </button>
+
       <Link to="/settings" aria-label={t("header.settings") as string} className="relative w-9 h-9 rounded-lg bg-secondary/60 hover:bg-secondary flex items-center justify-center">
         <SettingsIcon className="w-4 h-4 text-muted-foreground" />
       </Link>

@@ -94,13 +94,14 @@ function DbStudioPage() {
             <div className="flex items-center gap-2"><Database className="size-6 text-primary" /><h1 className="text-xl font-bold">مركز قواعد البيانات</h1></div>
             <Select value={selectedId} onValueChange={setDatabaseId}>
               <SelectTrigger className="mr-auto w-[290px]"><SelectValue placeholder="اختر قاعدة" /></SelectTrigger>
-              <SelectContent>{data?.databases.map((db: any) => <SelectItem key={db.id} value={db.id}>{db.name} · {db.db_kind === "local" ? "محلية" : "سحابية"}</SelectItem>)}</SelectContent>
+              <SelectContent>{data?.databases.map((db: any) => <SelectItem key={db.id} value={db.id}>{db.name} · {db.db_kind === "internal" ? "داخلية TVCC" : db.db_kind === "local" ? "محلية" : "سحابية"}</SelectItem>)}</SelectContent>
             </Select>
             <Badge variant={statusTone(connection?.status ?? selected?.status)}>{connection?.status ?? selected?.status ?? "غير معروف"}</Badge>
+            {selected?.db_kind === "internal" && <Badge variant="default">داخلية TVCC</Badge>}
             <Button variant="outline" size="icon" onClick={() => query.refetch()} aria-label="تحديث"><RefreshCw className="size-4" /></Button>
-            <Button disabled={!selectedId || connectMutation.isPending || connection?.status === "connected"} onClick={() => connectMutation.mutate()}>
+            <Button disabled={!selectedId || selected?.db_kind === "internal" || connectMutation.isPending || connection?.status === "connected"} onClick={() => connectMutation.mutate()}>
               {connectMutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <Cable className="size-4" />}
-              {connection?.status === "connected" ? "CONNECTED" : "ربط الوكيل"}
+              {selected?.db_kind === "internal" ? "بدون وكيل" : connection?.status === "connected" ? "CONNECTED" : "ربط الوكيل"}
             </Button>
           </div>
         </header>
@@ -123,8 +124,8 @@ function SectionContent({ section, data, selected, connection, server, actionMut
   if (section === "overview") return <Overview data={data} selected={selected} connection={connection} server={server} actionMutation={actionMutation} />;
   if (section === "sql" || section === "assistant") return <SqlPanel selected={selected} runQuery={runQuery} invalidate={invalidate} assistant={section === "assistant"} />;
   if (section === "sites") return <SitesPanel data={data} selected={selected} provisionMutation={provisionMutation} />;
-  if (section === "tables") return <TableEditor databaseId={selected.id} hasAgent={Boolean(selected.server_id)} />;
-  if (section === "templates") return <TemplateLibrary databaseId={selected.id} hasAgent={Boolean(selected.server_id)} />;
+  if (section === "tables") return <TableEditor databaseId={selected.id} hasAgent={Boolean(selected.server_id) || selected.db_kind === "internal"} />;
+  if (section === "templates") return <TemplateLibrary databaseId={selected.id} hasAgent={Boolean(selected.server_id) || selected.db_kind === "internal"} />;
   if (section === "activity") return <ActivityPanel data={data} />;
   if (section === "backups") return <BackupsPanel data={data} selected={selected} mutation={actionMutation} />;
   if (section === "integrations") return <IntegrationsPanel data={data} selected={selected} connection={connection} server={server} mutation={actionMutation} />;

@@ -19,6 +19,53 @@ async function assertAdmin(supabase: any, userId: string) {
   if (!ok) throw new Error("إدارة قواعد البيانات متاحة للمالك والمدير فقط");
 }
 
+const PROTECTED_TABLES = new Set([
+  "user_roles", "profiles", "audit_log", "security_events", "vault_secrets", "vault_secret_versions",
+  "server_commands", "agent_instances", "agent_jobs", "agent_job_steps", "agent_configs", "agent_roles",
+  "agent_role_bindings", "agent_capabilities", "agent_installers",
+]);
+
+function isInternalDb(db: any) {
+  return db?.db_kind === "internal";
+}
+
+function isProtectedTable(schema: string, table: string) {
+  if (["auth", "storage", "realtime", "supabase_functions", "vault", "pg_catalog", "information_schema"].includes(schema)) return true;
+  return schema === "public" && PROTECTED_TABLES.has(table);
+}
+
+async function runInternalSql(sql: string): Promise<any[]> {
+  const { supabaseAdmin } = await import("@/integrations/supabase/client.server");
+  const { data, error } = await (supabaseAdmin as any).rpc("tvcc_exec_sql", { sql });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as any[];
+}
+
+type AgentCommandResult = {
+  id: string;
+  action: string;
+  args: Record<string, any> | null;
+  status: string;
+  output: any;
+  exit_code: number | null;
+  created_at: string;
+  completed_at: string | null;
+};
+
+function internalCommand(action: string, args: Record<string, unknown>, output: unknown): AgentCommandResult {
+  const now = new Date().toISOString();
+  return {
+    id: `internal-${action}-${Date.now()}`,
+    action,
+    args,
+    status: "completed",
+    output,
+    exit_code: 0,
+    created_at: now,
+    completed_at: now,
+  };
+}
+
 async function queueCommand(supabase: any, userId: string, serverId: string, action: DbAction, args: Record<string, unknown>) {
   const { data, error } = await supabase
     .from("server_commands")
@@ -66,9 +113,14 @@ export const getDbStudioData = createServerFn({ method: "GET" })
       supabase.from("audit_log").select("id,action,resource_id,severity,after_data,created_at").eq("resource", "databases").order("created_at", { ascending: false }).limit(40),
       supabase.from("site_backups").select("id,website_id,server_id,status,backup_type,size_bytes,verified_at,created_at").order("created_at", { ascending: false }).limit(40),
     ]);
-    const selected = (databases.data ?? []).find((row) => row.id === data.databaseId) ?? databases.data?.[0] ?? null;
+    const sortedDatabases = [...(databases.data ?? [])].sort((a: any, b: any) => {
+      if (a.db_kind === "internal" && b.db_kind !== "internal") return -1;
+      if (a.db_kind !== "internal" && b.db_kind === "internal") return 1;
+      return String(a.name).localeCompare(String(b.name));
+    });
+    const selected = sortedDatabases.find((row) => row.id === data.databaseId) ?? sortedDatabases[0] ?? null;
     return {
-      databases: databases.data ?? [], connections: connections.data ?? [], servers: servers.data ?? [],
+      databases: sortedDatabases, connections: connections.data ?? [], servers: servers.data ?? [],
       siteDatabases: siteDatabases.data ?? [], websites: websites.data ?? [], history: history.data ?? [],
       commands: commands.data ?? [], audits: audits.data ?? [], backups: backups.data ?? [], selected,
     };
@@ -81,6 +133,7 @@ export const connectDatabaseAgent = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     await assertAdmin(supabase, userId);
     const { data: db } = await supabase.from("databases").select("*").eq("id", data.databaseId).single();
+    if (isInternalDb(db)) throw new Error("قاعدة TVCC الأساسية تعمل مباشرة دون وكيل");
     if (!db?.server_id) throw new Error("اربط القاعدة بسيرفر عليه وكيل TVCC أولاً");
     const pairingCode = randomBytes(4).toString("hex").toUpperCase();
     const pairingHash = createHash("sha256").update(pairingCode).digest("hex");
@@ -118,6 +171,7 @@ export const queueDbStudioAction = createServerFn({ method: "POST" })
     await assertAdmin(supabase, userId);
     if (!DB_ACTIONS.includes(data.action)) throw new Error("أمر قاعدة البيانات غير مسموح");
     const { data: db } = await supabase.from("databases").select("*").eq("id", data.databaseId).single();
+    if (isInternalDb(db)) throw new Error("قاعدة TVCC الأساسية لا تحتاج إلى أوامر وكيل — استخدم محرّر الجداول أو SQL");
     if (!db?.server_id) throw new Error("لا يوجد سيرفر مرتبط لتنفيذ العملية");
     const command = await queueCommand(supabase, userId, db.server_id, data.action, {
       database_id: db.id,
@@ -147,7 +201,13 @@ export const runDbStudioQuery = createServerFn({ method: "POST" })
     if (write && !data.confirmWrite) throw new Error("هذا الاستعلام يغيّر البيانات؛ فعّل تأكيد الكتابة أولاً");
     if (DESTRUCTIVE_SQL.test(sql) && !data.confirmWrite) throw new Error("الاستعلام المدمّر يحتاج تأكيداً صريحاً");
     const { data: db } = await supabase.from("databases").select("*").eq("id", data.databaseId).single();
-    if (!db?.server_id) throw new Error("لا يوجد وكيل مرتبط بهذه القاعدة");
+    if (!db) throw new Error("القاعدة غير موجودة");
+    if (isInternalDb(db)) {
+      if (write) throw new Error("على قاعدة TVCC الأساسية استخدم محرّر الجداول أو DDL للكتابة — SQL الحر للقراءة فقط");
+      const rows = await runInternalSql(sql);
+      return { command: internalCommand("db_query", { database_id: db.id, sql, read_only: true }, { rows }), historyId: null };
+    }
+    if (!db.server_id) throw new Error("لا يوجد وكيل مرتبط بهذه القاعدة");
     const { data: history, error } = await supabase.from("query_history").insert({
       owner_id: userId,
       database_id: db.id,
@@ -240,7 +300,7 @@ export const EDITOR_ACTIONS = ["pg_meta", "pg_rows", "pg_write", "pg_ddl", "db_p
 async function dbOrThrow(supabase: any, databaseId: string) {
   const { data: db } = await supabase.from("databases").select("*").eq("id", databaseId).single();
   if (!db) throw new Error("القاعدة غير موجودة");
-  if (!db.server_id) throw new Error("القاعدة غير مرتبطة بسيرفر عليه وكيل TVCC");
+  if (!db.server_id && !isInternalDb(db)) throw new Error("القاعدة غير مرتبطة بسيرفر عليه وكيل TVCC");
   return db;
 }
 
@@ -315,6 +375,12 @@ export const readCatalog = createServerFn({ method: "POST" })
                from pg_policy p join pg_class c on c.oid = p.polrelid join pg_namespace n on n.oid = c.relnamespace
                where n.nspname = '${schema ?? "public"}' ${table ? `and c.relname = '${table}'` : ""}
              ) t order by name`;
+    if (isInternalDb(db)) {
+      const rows = await runInternalSql(sql);
+      return internalCommand(data.mode === "policies" ? "db_policy" : "pg_meta", {
+        database_id: db.id, mode: data.mode, schema: schema ?? "public", table: table ?? null, sql, read_only: true,
+      }, { rows });
+    }
     return queueCommand(supabase, userId, db.server_id, data.mode === "policies" ? "db_policy" : "pg_meta", {
       ...baseArgs(db), mode: data.mode, schema: schema ?? "public", table: table ?? null, sql, read_only: true,
     });
@@ -350,6 +416,15 @@ export const readTableRows = createServerFn({ method: "POST" })
     const orderSql = data.sort?.column ? `order by "${ident(data.sort.column, "العمود")}" ${data.sort.dir === "desc" ? "desc" : "asc"}` : "";
     const sql = `select * from "${schema}"."${table}" ${whereSql} ${orderSql} limit ${pageSize} offset ${(page - 1) * pageSize}`;
     const countSql = `select count(*)::bigint as total from "${schema}"."${table}" ${whereSql}`;
+    if (isInternalDb(db)) {
+      if (isProtectedTable(schema, table)) throw new Error("لا يمكن قراءة هذا الجدول من خلال المحرّر");
+      const rows = await runInternalSql(sql);
+      const countRows = await runInternalSql(countSql);
+      const total = Number((countRows[0] as any)?.total ?? 0);
+      return internalCommand("pg_rows", {
+        database_id: db.id, schema, table, page, page_size: pageSize, sql, count_sql: countSql, read_only: true,
+      }, { rows, total });
+    }
     return queueCommand(supabase, userId, db.server_id, "pg_rows", {
       ...baseArgs(db), schema, table, page, page_size: pageSize, sql, count_sql: countSql, read_only: true,
     });
@@ -392,6 +467,18 @@ export const writeTableRows = createServerFn({ method: "POST" })
       statements.push(`delete from "${schema}"."${table}" where "${pk}"::text = ${lit(String(id))}`);
     }
     if (!statements.length) throw new Error("لا توجد تغييرات للحفظ");
+    if (isInternalDb(db)) {
+      if (isProtectedTable(schema, table)) throw new Error("لا يمكن تعديل هذا الجدول من خلال المحرّر");
+      await runInternalSql(statements.join(";\n"));
+      const command = internalCommand("pg_write", {
+        database_id: db.id, schema, table, statements, sql: statements.join(";\n"), read_only: false,
+      }, { affected: statements.length });
+      await audit(supabase, userId, "pg_write", db.id, {
+        command_id: command.id, schema, table,
+        inserts: data.inserts?.length ?? 0, updates: data.updates?.length ?? 0, deletes: data.deletes?.length ?? 0,
+      });
+      return command;
+    }
     const command = await queueCommand(supabase, userId, db.server_id, "pg_write", {
       ...baseArgs(db), schema, table, statements, sql: statements.join(";\n"), read_only: false,
     });
@@ -464,6 +551,15 @@ export const applyTableDdl = createServerFn({ method: "POST" })
         ? `create policy "${name}" on "${schema}"."${table}" for insert to ${role} with check (${using})`
         : `create policy "${name}" on "${schema}"."${table}" for ${cmd.toLowerCase()} to ${role} using (${using})`);
     }
+    if (isInternalDb(db)) {
+      if (isProtectedTable(schema, table)) throw new Error("لا يمكن تعديل هذا الجدول من خلال المحرّر");
+      await runInternalSql(statements.join(";\n"));
+      const command = internalCommand("pg_ddl", {
+        database_id: db.id, schema, table, kind: data.kind, statements, sql: statements.join(";\n"), read_only: false,
+      }, { affected: statements.length });
+      await audit(supabase, userId, `pg_ddl_${data.kind}`, db.id, { command_id: command.id, schema, table, statements });
+      return command;
+    }
     const command = await queueCommand(supabase, userId, db.server_id, "pg_ddl", {
       ...baseArgs(db), schema, table, kind: data.kind, statements, sql: statements.join(";\n"), read_only: false,
     });
@@ -487,6 +583,23 @@ export const importTableCsv = createServerFn({ method: "POST" })
     if (csv.length > 2_000_000) throw new Error("حجم CSV كبير جداً — قسّمه إلى دفعات");
     const header = csv.split(/\r?\n/)[0]!.split(",").map((c) => c.trim().replace(/^"|"$/g, ""));
     header.forEach((c) => ident(c, "العمود"));
+    if (isInternalDb(db)) {
+      if (isProtectedTable(schema, table)) throw new Error("لا يمكن الاستيراد إلى هذا الجدول");
+      const lines = csv.split(/\r?\n/).slice(1).filter(Boolean);
+      const lit = (value: string) => value === "" || value.toLowerCase() === "null" ? "null" : `'${value.replace(/'/g, "''")}'`;
+      const inserts: string[] = [];
+      for (const line of lines) {
+        const values = line.split(",").map((c) => c.trim().replace(/^"|"$/g, ""));
+        if (values.length !== header.length) continue;
+        inserts.push(`insert into "${schema}"."${table}" (${header.map((c) => `"${c}"`).join(", ")}) values (${values.map(lit).join(", ")})`);
+      }
+      if (inserts.length) await runInternalSql(inserts.join(";\n"));
+      const command = internalCommand("pg_import_csv", {
+        database_id: db.id, schema, table, columns: header, read_only: false,
+      }, { inserted: inserts.length });
+      await audit(supabase, userId, "pg_import_csv", db.id, { command_id: command.id, schema, table, columns: header });
+      return command;
+    }
     const command = await queueCommand(supabase, userId, db.server_id, "pg_import_csv", {
       ...baseArgs(db), schema, table, columns: header, csv, read_only: false,
     });
@@ -548,6 +661,17 @@ export const applyTemplate = createServerFn({ method: "POST" })
     const statements = buildTemplateSql(template, {
       schema, prefix: data.prefix, rls: data.rls, seeds: data.seeds, tables: data.tables,
     });
+    if (isInternalDb(db)) {
+      await runInternalSql(statements.join(";\n") + ";");
+      const command = internalCommand("pg_ddl", {
+        database_id: db.id, schema, kind: "apply_template", template_id: template.id,
+        statements, sql: statements.join(";\n") + ";", read_only: false,
+      }, { affected: statements.length });
+      await audit(supabase, userId, `template_apply_${template.id}`, db.id, {
+        command_id: command.id, schema, tables: template.tables.length, statements: statements.length,
+      });
+      return command;
+    }
     const command = await queueCommand(supabase, userId, db.server_id, "pg_ddl", {
       ...baseArgs(db), schema, kind: "apply_template", template_id: template.id,
       statements, sql: statements.join(";\n") + ";", read_only: false,
@@ -575,6 +699,11 @@ export const inspectTemplateDiff = createServerFn({ method: "POST" })
                  from pg_class c join pg_namespace n on n.oid = c.relnamespace
                  left join pg_stat_user_tables s on s.relid = c.oid
                  where n.nspname = '${schema}' and c.relkind in ('r','p') order by 1`;
+    if (isInternalDb(db)) {
+      const rows = await runInternalSql(sql);
+      const command = internalCommand("pg_meta", { database_id: db.id, mode: "tables", schema, template_id: template.id, sql, read_only: true }, { rows });
+      return { command, expected, schema };
+    }
     const command = await queueCommand(supabase, userId, db.server_id, "pg_meta", {
       ...baseArgs(db), mode: "tables", schema, template_id: template.id, sql, read_only: true,
     });
@@ -599,6 +728,12 @@ export const extractTemplate = createServerFn({ method: "POST" })
                  left join pg_attrdef d on d.adrelid = c.oid and d.adnum = a.attnum
                  where n.nspname = '${schema}' and c.relkind in ('r','p')
                  order by c.relname, a.attnum`;
+    if (isInternalDb(db)) {
+      const rows = await runInternalSql(sql);
+      const command = internalCommand("pg_meta", { database_id: db.id, mode: "extract_template", schema, sql, read_only: true }, { rows });
+      await audit(supabase, userId, "template_extract", db.id, { command_id: command.id, schema });
+      return command;
+    }
     const command = await queueCommand(supabase, userId, db.server_id, "pg_meta", {
       ...baseArgs(db), mode: "extract_template", schema, sql, read_only: true,
     });
@@ -613,6 +748,8 @@ export const linkDatabaseServer = createServerFn({ method: "POST" })
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context;
     await assertAdmin(supabase, userId);
+    const { data: db } = await supabase.from("databases").select("db_kind").eq("id", data.databaseId).single();
+    if (db?.db_kind === "internal") throw new Error("قاعدة TVCC الأساسية لا تُربط بسيرفر");
     if (data.serverId) {
       const { data: server } = await supabase.from("servers").select("id").eq("id", data.serverId).single();
       if (!server) throw new Error("السيرفر غير موجود");

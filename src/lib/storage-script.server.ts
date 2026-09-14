@@ -182,11 +182,11 @@ async function runTask(task, docRoots) {
   fs.mkdirSync(mirror, { recursive: true });
   if (has('wget')) {
     sh('wget --mirror --convert-links --adjust-extension --page-requisites --no-parent -q -e robots=off -P ' +
-      q(mirror) + ' https://' + task.domain + ' 2>/dev/null');
+      q(mirror) + ' https://' + host + ' 2>/dev/null');
   }
   if (isEmptyDir(mirror)) {
-    const ok = await saveSinglePage(task.domain, mirror);
-    if (!ok) return { status: 'failed', size: null, error: 'تعذر الوصول إلى ' + task.domain };
+    const ok = await saveSinglePage(host, mirror);
+    if (!ok) return { status: 'failed', size: null, error: 'تعذر الوصول إلى ' + host };
   }
   return { status: 'completed', size: dirSize(dir), note: 'remote_fetch' };
 }

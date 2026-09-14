@@ -7738,6 +7738,21 @@ export type Database = {
         }
         Relationships: []
       }
+      tvcc_probe: {
+        Row: {
+          id: number
+          name: string | null
+        }
+        Insert: {
+          id?: number
+          name?: string | null
+        }
+        Update: {
+          id?: number
+          name?: string | null
+        }
+        Relationships: []
+      }
       tvcc_service_links: {
         Row: {
           created_at: string

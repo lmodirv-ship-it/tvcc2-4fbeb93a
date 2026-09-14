@@ -1,4 +1,5 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { timingSafeEqual } from "crypto";
 
 async function pingDomain(domain: string) {
   const started = Date.now();
@@ -22,8 +23,15 @@ export const Route = createFileRoute("/api/public/hooks/health-check")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const apikey = request.headers.get("apikey");
-        if (!apikey || apikey !== process.env.SUPABASE_PUBLISHABLE_KEY) {
+        // Server-only shared secret (never the publishable key, which ships to browsers).
+        const expected = process.env["HEALTHCHECK_CRON_SECRET"];
+        if (!expected) return new Response("Not configured", { status: 500 });
+        const url = new URL(request.url);
+        const provided =
+          request.headers.get("x-tvcc-secret") ?? url.searchParams.get("secret") ?? "";
+        const a = Buffer.from(provided);
+        const b = Buffer.from(expected);
+        if (a.length !== b.length || !timingSafeEqual(a, b)) {
           return new Response("Unauthorized", { status: 401 });
         }
         const { supabaseAdmin } = await import("@/integrations/supabase/client.server");

@@ -128,6 +128,8 @@ export function AppSidebar() {
   const { t } = useTranslation();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   const navigate = useNavigate();
+  const { primaryRole } = usePermissions();
+  const { isVisible } = usePlatformPageRules();
   const [lang, setLang] = useState<AppLang>(i18n.language as AppLang);
 
   useEffect(() => {

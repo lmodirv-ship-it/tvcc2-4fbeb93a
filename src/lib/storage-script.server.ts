@@ -56,9 +56,15 @@ function has(bin) { return !!sh('command -v ' + bin).trim(); }
 function q(s) { return "'" + String(s).replace(/'/g, "'\\\\''") + "'"; }
 
 /* ---------- مجلدات النسخ ---------- */
+function clean(d) {
+  return String(d || '').trim().replace(/^https?:\\/\\//i, '').replace(/[\\/\\\\]+$/, '').replace(/[\\/\\\\]/g, '_');
+}
+
 function ensureFolders(domains) {
   let created = 0;
-  for (const d of domains) {
+  for (const raw of domains) {
+    const d = clean(raw);
+    if (!d) continue;
     for (const kind of ['first', 'current']) {
       const dir = path.join(BASE, d, kind);
       if (fs.existsSync(dir)) continue;

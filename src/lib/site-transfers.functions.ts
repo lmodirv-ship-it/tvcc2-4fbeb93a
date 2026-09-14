@@ -89,6 +89,9 @@ export const listSiteTransfers = createServerFn({ method: "POST" })
         last_checked_at: s.last_checked_at,
         tasks_count: t.length,
         last_task: t[0] ?? null,
+        has_agent: siteHasAgent.get(s.id) === true,
+        has_destination: hasDestination,
+        ready: siteHasAgent.get(s.id) === true && hasDestination && s.is_active !== false,
       };
     });
 

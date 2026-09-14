@@ -532,6 +532,15 @@ export const applyTableDdl = createServerFn({ method: "POST" })
         ? `create policy "${name}" on "${schema}"."${table}" for insert to ${role} with check (${using})`
         : `create policy "${name}" on "${schema}"."${table}" for ${cmd.toLowerCase()} to ${role} using (${using})`);
     }
+    if (isInternalDb(db)) {
+      if (isProtectedTable(schema, table)) throw new Error("لا يمكن تعديل هذا الجدول من خلال المحرّر");
+      await runInternalSql(statements.join(";\n"));
+      const command = internalCommand("pg_ddl", {
+        database_id: db.id, schema, table, kind: data.kind, statements, sql: statements.join(";\n"), read_only: false,
+      }, { affected: statements.length });
+      await audit(supabase, userId, `pg_ddl_${data.kind}`, db.id, { command_id: command.id, schema, table, statements });
+      return command;
+    }
     const command = await queueCommand(supabase, userId, db.server_id, "pg_ddl", {
       ...baseArgs(db), schema, table, kind: data.kind, statements, sql: statements.join(";\n"), read_only: false,
     });

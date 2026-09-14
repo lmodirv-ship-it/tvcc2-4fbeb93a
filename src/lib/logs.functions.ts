@@ -38,7 +38,7 @@ export const getUnifiedLogs = createServerFn({ method: "GET" })
     const sb = context.supabase as any;
     const lim = 200;
 
-    const [activity, ops, commands, alerts, notifs, storage, health, servers, websites] = await Promise.all([
+    const [activity, ops, commands, alerts, notifs, storage, health, security, servers, websites] = await Promise.all([
       safe(sb.from("activity_log").select("*").order("created_at", { ascending: false }).limit(lim)),
       safe(sb.from("operation_log").select("*").order("created_at", { ascending: false }).limit(lim)),
       safe(sb.from("server_commands").select("*").order("created_at", { ascending: false }).limit(lim)),
@@ -46,6 +46,7 @@ export const getUnifiedLogs = createServerFn({ method: "GET" })
       safe(sb.from("notification_logs").select("*").order("created_at", { ascending: false }).limit(lim)),
       safe(sb.from("storage_events").select("*").order("created_at", { ascending: false }).limit(lim)),
       safe(sb.from("site_health_checks").select("*").order("checked_at", { ascending: false }).limit(lim)),
+      safe(sb.from("security_events").select("*").order("created_at", { ascending: false }).limit(lim)),
       safe(sb.from("servers").select("id, name, hostname")),
       safe(sb.from("websites").select("id, name, domain")),
     ]);
@@ -154,6 +155,23 @@ export const getUnifiedLogs = createServerFn({ method: "GET" })
           .join(" · "),
         serverId: null,
         websiteId: r["website_id"] ?? null,
+      });
+    }
+
+    for (const r of security) {
+      entries.push({
+        id: `security:${r["id"]}`,
+        at: r["created_at"],
+        source: "security",
+        level: (r["success"] === false
+          ? "error"
+          : r["severity"] === "critical"
+            ? "warning"
+            : "info") as LogEntry["level"],
+        title: `${r["category"]} · ${r["action"]}`,
+        detail: [r["actor_email"], r["resource"], r["resource_id"]].filter(Boolean).join(" · "),
+        serverId: r["resource"] === "servers" ? (r["resource_id"] ?? null) : null,
+        websiteId: r["resource"] === "websites" ? (r["resource_id"] ?? null) : null,
       });
     }
 

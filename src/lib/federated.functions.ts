@@ -346,6 +346,11 @@ export const mergeDuplicateServer = createServerFn({ method: "POST" })
       .update({ duplicate_of: data.primaryId, status: "archived" })
       .eq("id", data.duplicateId);
     if (error) throw new Error(error.message);
+    const { logSecurityEvent } = await import("./security-log.server");
+    await logSecurityEvent(supabase, userId, {
+      category: "server_command", action: "merge_duplicate_server", resource: "servers",
+      resourceId: data.duplicateId, severity: "critical", details: { primary_id: data.primaryId },
+    });
     return { ok: true };
   });
 
@@ -476,6 +481,11 @@ export const rollbackSiteSnapshot = createServerFn({ method: "POST" })
       owner_id: userId,
       requested_by: userId,
       dry_run: false,
+    });
+    const { logSecurityEvent } = await import("./security-log.server");
+    await logSecurityEvent(supabase, userId, {
+      category: "website", action: "site_rollback", resource: "websites",
+      resourceId: data.websiteId, severity: "critical", details: { snapshot_id: snap.id },
     });
     return { ok: true };
   });

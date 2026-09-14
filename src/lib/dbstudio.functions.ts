@@ -37,6 +37,15 @@ async function audit(supabase: any, userId: string, action: string, resourceId: 
     resource_id: resourceId,
     after_data: after,
   });
+  const { logSecurityEvent } = await import("./security-log.server");
+  await logSecurityEvent(supabase, userId, {
+    category: "database",
+    action,
+    resource: "databases",
+    resourceId,
+    severity: /drop|truncate|restore|import|delete/i.test(action) ? "critical" : "info",
+    details: after,
+  });
 }
 
 export const getDbStudioData = createServerFn({ method: "GET" })

@@ -121,25 +121,173 @@ function SectionContent({ section, data, selected, connection, server, actionMut
   if (section === "sql" || section === "assistant") return <SqlPanel selected={selected} runQuery={runQuery} invalidate={invalidate} assistant={section === "assistant"} />;
   if (section === "sites") return <SitesPanel data={data} selected={selected} provisionMutation={provisionMutation} />;
   if (section === "activity") return <ActivityPanel data={data} />;
-  if (section === "backups") return <ActionPanel title="النسخ والاستعادة" description="نسخ مشفرة، تحقق من السلامة، واستعادة عبر الوكيل." actions={[ ["نسخة الآن", "backup_run", Download], ["تحقق", "backup_verify", CheckCircle2], ["استعادة", "backup_restore", ArchiveRestore] ]} mutation={actionMutation} />;
-  if (section === "transfer") return <ActionPanel title="الاستيراد والتصدير الكامل" description="المهام الطويلة تعمل في مركز المهام ويمكن استئنافها." actions={[ ["تصدير كامل", "db_export", Download], ["استيراد كامل", "db_import_full", Upload] ]} mutation={actionMutation} />;
-  if (section === "sync") return <ActionPanel title="المزامنة والترحيل" description="مزامنة محلية وسحابية مع كشف التعارضات دون الكتابة فوق تغييرات أحدث." actions={[ ["مزامنة الآن", "db_sync", RefreshCw], ["بدء ترحيل", "db_migrate", CloudCog] ]} mutation={actionMutation} />;
-  const mapped: Record<string, [string, string, typeof Database, string]> = {
-    tables: ["محرر الجداول", "pg_rows", Table2, "استكشاف الجداول والصفوف من خلال الوكيل. وضع القراءة هو الافتراضي."],
-    schema: ["المخطط والعلاقات", "pg_meta", Network, "الجداول والأعمدة والمفاتيح والعلاقات والفهارس."],
-    auth: ["المصادقة", "auth_users", Users, "المستخدمون ومزوّدو الدخول والسياسات المرتبطة."],
-    storage: ["التخزين", "storage_list", HardDrive, "الحاويات والملفات والسياسات والاستهلاك."],
-    functions: ["الدوال", "edge_functions_list", Braces, "الدوال والوظائف والإصدارات والسجلات."],
-    realtime: ["Realtime", "realtime_inspect", Radio, "القنوات والجداول المنشورة والاتصالات الحية."],
-    advisors: ["المستشارون", "advisor_scan", ShieldCheck, "فحص الأمان والأداء مع توصيات قابلة للتنفيذ."],
-    monitoring: ["المراقبة", "db_discover", Activity, "الصحة والاتصالات والذاكرة والحجم والاستعلامات."],
-    integrations: ["الاتصالات", "db_discover", Link2, "حالة الوكيل والنفق والقاعدة المحلية والسحابية."],
-    health: ["الصحة والحدود", "db_discover", Gauge, "الحجم والاتصالات والحدود ونقاط الاختناق."],
-    secrets: ["الأسرار والمفاتيح", "db_discover", LockKeyhole, "تُعرض أسماء الأسرار وحالتها فقط؛ القيم تبقى داخل الخزنة."],
-    settings: ["إعدادات المشروع", "db_discover", Settings2, "إعدادات الاتصال والمخطط والمنافذ والربط بالوكيل."],
-  };
-  const item = mapped[section] ?? mapped.monitoring;
-  return <ActionPanel title={item[0]} description={item[3]} actions={[["تحديث البيانات", item[1], item[2]]]} mutation={actionMutation} />;
+  if (section === "backups") return <BackupsPanel data={data} selected={selected} mutation={actionMutation} />;
+  if (section === "integrations") return <IntegrationsPanel data={data} selected={selected} connection={connection} server={server} mutation={actionMutation} />;
+  if (section === "settings") return <SettingsPanel selected={selected} connection={connection} server={server} mutation={actionMutation} />;
+  const spec = SECTION_SPECS[section] ?? SECTION_SPECS.monitoring!;
+  return <LivePanel spec={spec} data={data} selected={selected} mutation={actionMutation} />;
+}
+
+type SectionSpec = {
+  title: string; description: string; action: DbActionId; icon: typeof Database;
+  extras?: [string, DbActionId, typeof Database][];
+  paths: string[]; columns?: string[]; empty: string;
+};
+type DbActionId = string;
+
+const SECTION_SPECS: Record<string, SectionSpec> = {
+  tables: { title: "محرر الجداول", description: "الجداول والصفوف كما قرأها الوكيل من القاعدة الفعلية. القراءة هي الوضع الافتراضي.", action: "pg_meta", icon: Table2, extras: [["قراءة صفوف", "pg_rows", Eye]], paths: ["tables", "rows", "result", "data"], columns: ["schema", "name", "rows", "size"], empty: "لم تُقرأ الجداول بعد — اضغط «قراءة الجداول» ليجلبها الوكيل." },
+  schema: { title: "المخطط والعلاقات", description: "الأعمدة والمفاتيح والعلاقات والفهارس كما هي في القاعدة.", action: "pg_meta", icon: Network, paths: ["columns", "relations", "schema", "tables", "result"], empty: "لا يوجد مخطط محفوظ بعد." },
+  auth: { title: "المصادقة", description: "المستخدمون ومزوّدو الدخول في القاعدة الهدف.", action: "auth_users", icon: Users, paths: ["users", "result", "data"], columns: ["email", "role", "last_sign_in_at", "created_at"], empty: "لم تُجلب حسابات القاعدة بعد." },
+  storage: { title: "التخزين", description: "الحاويات والملفات والاستهلاك الفعلي.", action: "storage_list", icon: HardDrive, paths: ["buckets", "objects", "result", "data"], columns: ["name", "public", "objects", "size"], empty: "لا توجد بيانات تخزين بعد." },
+  functions: { title: "الدوال", description: "الدوال والوظائف المنشورة وإصداراتها.", action: "edge_functions_list", icon: Braces, paths: ["functions", "result", "data"], columns: ["name", "version", "status", "updated_at"], empty: "لم تُجلب قائمة الدوال بعد." },
+  realtime: { title: "Realtime", description: "القنوات والجداول المنشورة والاتصالات الحية.", action: "realtime_inspect", icon: Radio, paths: ["channels", "publications", "result", "data"], empty: "لا توجد بيانات بث حي بعد." },
+  advisors: { title: "المستشارون", description: "نتائج فحص الأمان والأداء مع توصيات قابلة للتنفيذ.", action: "advisor_scan", icon: ShieldCheck, paths: ["findings", "issues", "result", "data"], columns: ["level", "title", "detail"], empty: "لم يُجرَ فحص بعد." },
+  monitoring: { title: "المراقبة", description: "الصحة والاتصالات والذاكرة وحجم القاعدة.", action: "db_discover", icon: Activity, paths: ["metrics", "stats", "result", "data"], empty: "لا توجد قياسات بعد." },
+  health: { title: "الصحة والحدود", description: "الحجم والاتصالات والحدود ونقاط الاختناق.", action: "db_discover", icon: Gauge, paths: ["limits", "health", "metrics", "result"], empty: "لا توجد بيانات صحة بعد." },
+  secrets: { title: "الأسرار والمفاتيح", description: "تُعرض الأسماء والحالة فقط — القيم لا تغادر الخزنة أبداً.", action: "db_discover", icon: LockKeyhole, paths: ["secrets", "env_keys", "result"], columns: ["name", "status", "updated_at"], empty: "لا توجد أسرار مكتشفة على هذه القاعدة." },
+  sync: { title: "المزامنة والترحيل", description: "مزامنة محلية وسحابية مع كشف التعارضات دون الكتابة فوق تغييرات أحدث.", action: "db_sync", icon: RefreshCw, extras: [["بدء ترحيل", "db_migrate", CloudCog]], paths: ["synced", "conflicts", "result", "data"], empty: "لم تُنفَّذ مزامنة بعد." },
+  transfer: { title: "الاستيراد والتصدير الكامل", description: "مهام طويلة تعمل في الخلفية ويمكن استئنافها.", action: "db_export", icon: Download, extras: [["استيراد كامل", "db_import_full", Upload]], paths: ["files", "artifacts", "result", "data"], empty: "لا توجد عمليات تصدير أو استيراد بعد." },
+};
+
+function pickPayload(output: unknown, paths: string[]) {
+  if (!output) return null;
+  let parsed: any = output;
+  if (typeof parsed === "string") { try { parsed = JSON.parse(parsed); } catch { return { text: parsed }; } }
+  if (Array.isArray(parsed)) return { rows: parsed };
+  if (typeof parsed !== "object") return { text: String(parsed) };
+  for (const key of paths) {
+    const value = parsed[key];
+    if (Array.isArray(value) && value.length) return { rows: value };
+    if (value && typeof value === "object") return { fields: value };
+  }
+  return { fields: parsed };
+}
+
+function latestCommand(commands: any[], selectedId: string, action: string) {
+  return commands.find((row: any) => row.action === action && (row.args?.database_id === selectedId || !row.args?.database_id));
+}
+
+function LivePanel({ spec, data, selected, mutation }: { spec: SectionSpec; data: any; selected: any; mutation: any }) {
+  const command = latestCommand(data.commands, selected.id, spec.action);
+  const payload = pickPayload(command?.output, spec.paths);
+  const buttons: [string, string, typeof Database][] = [[`قراءة ${spec.title}`, spec.action, spec.icon], ...(spec.extras ?? [])];
+  return <div className="space-y-5">
+    <div className="flex flex-wrap items-start justify-between gap-3">
+      <div><h2 className="text-2xl font-bold">{spec.title}</h2><p className="text-muted-foreground">{spec.description}</p></div>
+      <div className="flex flex-wrap gap-2">{buttons.map(([label, action, Icon]) => (
+        <Button key={action} variant={action === spec.action ? "default" : "outline"} disabled={mutation.isPending} onClick={() => mutation.mutate({ action })}>
+          {mutation.isPending ? <Loader2 className="size-4 animate-spin" /> : <Icon className="size-4" />}{label}
+        </Button>
+      ))}</div>
+    </div>
+    <CommandStatus command={command} />
+    {payload ? <PayloadView payload={payload} columns={spec.columns} /> : <EmptyPanel text={spec.empty} />}
+  </div>;
+}
+
+function CommandStatus({ command }: { command: any }) {
+  if (!command) return null;
+  const done = command.completed_at ? new Date(command.completed_at) : command.created_at ? new Date(command.created_at) : null;
+  return <Card><CardContent className="flex flex-wrap items-center gap-4 p-4 text-sm">
+    <Badge variant={statusTone(command.status)}>{command.status}</Badge>
+    <span className="font-mono text-muted-foreground">{command.action}</span>
+    {done && <span className="text-muted-foreground">آخر تحديث: {done.toLocaleString("ar")}</span>}
+    {typeof command.exit_code === "number" && <span className="text-muted-foreground">رمز الخروج: {command.exit_code}</span>}
+    {command.status === "pending" && <span className="flex items-center gap-2 text-muted-foreground"><Loader2 className="size-4 animate-spin" />بانتظار التقاط الوكيل للمهمة</span>}
+  </CardContent></Card>;
+}
+
+function PayloadView({ payload, columns }: { payload: any; columns?: string[] }) {
+  if (payload.text) return <Card><CardContent className="p-4"><pre dir="ltr" className="max-h-[520px] overflow-auto whitespace-pre-wrap font-mono text-xs">{payload.text}</pre></CardContent></Card>;
+  if (payload.rows?.length) {
+    const keys = columns?.filter((key) => key in (payload.rows[0] ?? {})) ?? [];
+    const headers = keys.length ? keys : Object.keys(payload.rows[0] ?? {}).slice(0, 8);
+    return <Card><CardContent className="overflow-x-auto p-0"><table className="w-full text-sm">
+      <thead><tr className="border-b border-border text-right">{headers.map((h) => <th key={h} className="p-3 font-medium">{h}</th>)}</tr></thead>
+      <tbody>{payload.rows.slice(0, 200).map((row: any, index: number) => <tr key={index} className="border-b border-border/60">{headers.map((h) => <td key={h} className="p-3 font-mono text-xs" dir="ltr">{formatCell(row[h])}</td>)}</tr>)}</tbody>
+    </table></CardContent></Card>;
+  }
+  const entries = Object.entries(payload.fields ?? {});
+  if (!entries.length) return <EmptyPanel text="النتيجة فارغة." />;
+  return <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{entries.slice(0, 24).map(([key, value]) => (
+    <Card key={key}><CardContent className="p-4"><p className="text-sm text-muted-foreground">{key}</p><p className="mt-1 break-all font-mono text-sm" dir="ltr">{formatCell(value)}</p></CardContent></Card>
+  ))}</div>;
+}
+
+function formatCell(value: unknown) {
+  if (value === null || value === undefined) return "—";
+  if (typeof value === "object") return JSON.stringify(value).slice(0, 120);
+  return String(value);
+}
+
+function EmptyPanel({ text }: { text: string }) {
+  return <Card><CardContent className="grid min-h-40 place-items-center p-6 text-center text-muted-foreground">{text}</CardContent></Card>;
+}
+
+function BackupsPanel({ data, selected, mutation }: any) {
+  const rows = data.backups ?? [];
+  const verified = rows.filter((row: any) => row.verified_at).length;
+  return <div className="space-y-5">
+    <div className="flex flex-wrap items-start justify-between gap-3">
+      <div><h2 className="text-2xl font-bold">النسخ والاستعادة</h2><p className="text-muted-foreground">نسخ مشفّرة على {selected.name} مع تحقق من السلامة واستعادة عبر الوكيل.</p></div>
+      <div className="flex flex-wrap gap-2">
+        <Button disabled={mutation.isPending} onClick={() => mutation.mutate({ action: "backup_run" })}><Download className="size-4" />نسخة الآن</Button>
+        <Button variant="outline" disabled={mutation.isPending} onClick={() => mutation.mutate({ action: "backup_verify" })}><CheckCircle2 className="size-4" />تحقق</Button>
+        <Button variant="outline" disabled={mutation.isPending} onClick={() => mutation.mutate({ action: "backup_restore" })}><ArchiveRestore className="size-4" />استعادة</Button>
+      </div>
+    </div>
+    <div className="grid gap-3 sm:grid-cols-3"><Stat label="النسخ المسجّلة" value={rows.length} /><Stat label="تم التحقق منها" value={verified} /><Stat label="المواقع المرتبطة" value={data.siteDatabases.filter((row: any) => row.database_id === selected.id).length} /></div>
+    {rows.length ? <Card><CardContent className="overflow-x-auto p-0"><table className="w-full text-sm">
+      <thead><tr className="border-b border-border text-right"><th className="p-3">النوع</th><th className="p-3">الحالة</th><th className="p-3">الحجم</th><th className="p-3">التحقق</th><th className="p-3">التاريخ</th></tr></thead>
+      <tbody>{rows.map((row: any) => <tr key={row.id} className="border-b border-border/60">
+        <td className="p-3">{row.backup_type ?? "—"}</td><td className="p-3"><Badge variant={statusTone(row.status)}>{row.status}</Badge></td>
+        <td className="p-3 font-mono text-xs">{row.size_bytes ? `${(row.size_bytes / 1048576).toFixed(1)} MB` : "—"}</td>
+        <td className="p-3">{row.verified_at ? <CheckCircle2 className="size-4 text-primary" /> : "—"}</td>
+        <td className="p-3 text-xs text-muted-foreground">{new Date(row.created_at).toLocaleString("ar")}</td>
+      </tr>)}</tbody>
+    </table></CardContent></Card> : <EmptyPanel text="لا توجد نسخ احتياطية بعد — شغّل «نسخة الآن»." />}
+  </div>;
+}
+
+function IntegrationsPanel({ data, selected, connection, server, mutation }: any) {
+  const tunnel = latestCommand(data.commands, selected.id, "tunnel_status");
+  const rows: [string, string][] = [
+    ["نوع القاعدة", selected.db_kind === "local" ? "محلية عبر الوكيل" : "سحابية"],
+    ["المحرك", selected.db_type ?? "—"], ["العنوان", `${selected.host ?? "—"}:${selected.port ?? "—"}`],
+    ["اسم القاعدة", selected.db_name ?? "—"], ["السيرفر", server?.name ?? "غير مرتبط"],
+    ["إصدار الوكيل", server?.agent_version ?? "—"], ["آخر ظهور للوكيل", server?.last_seen_at ? new Date(server.last_seen_at).toLocaleString("ar") : "—"],
+    ["حالة الاقتران", connection?.status ?? "غير مقترن"], ["نوع الاتصال", connection?.connection_kind ?? "—"],
+    ["آخر خطأ", connection?.last_error ?? "لا يوجد"], ["حالة النفق", tunnel?.status ?? "لم يُفحص"],
+  ];
+  return <div className="space-y-5">
+    <div className="flex flex-wrap items-start justify-between gap-3">
+      <div><h2 className="text-2xl font-bold">الاتصالات</h2><p className="text-muted-foreground">حالة الوكيل والنفق والقاعدة المحلية والسحابية.</p></div>
+      <div className="flex flex-wrap gap-2">
+        <Button disabled={mutation.isPending} onClick={() => mutation.mutate({ action: "tunnel_status" })}><Cable className="size-4" />فحص النفق</Button>
+        <Button variant="outline" disabled={mutation.isPending} onClick={() => mutation.mutate({ action: "tunnel_setup" })}><Link2 className="size-4" />تهيئة النفق</Button>
+        <Button variant="outline" disabled={mutation.isPending} onClick={() => mutation.mutate({ action: "tunnel_drop" })}><LockKeyhole className="size-4" />إغلاق النفق</Button>
+      </div>
+    </div>
+    <Card><CardContent className="grid gap-0 p-0 sm:grid-cols-2">{rows.map(([label, value]) => (
+      <div key={label} className="flex items-center justify-between gap-3 border-b border-border/60 p-3 text-sm"><span className="text-muted-foreground">{label}</span><span className="truncate font-mono text-xs" dir="ltr">{value}</span></div>
+    ))}</CardContent></Card>
+    <CommandStatus command={tunnel} />
+  </div>;
+}
+
+function SettingsPanel({ selected, connection, server, mutation }: any) {
+  return <div className="space-y-5">
+    <div className="flex flex-wrap items-start justify-between gap-3">
+      <div><h2 className="text-2xl font-bold">إعدادات القاعدة</h2><p className="text-muted-foreground">بيانات الاتصال والربط بالوكيل. القيم الحسّاسة تبقى في الخزنة.</p></div>
+      <Button disabled={mutation.isPending} onClick={() => mutation.mutate({ action: "agent_update" })}><CloudCog className="size-4" />تحديث الوكيل</Button>
+    </div>
+    <div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">
+      {[["الاسم", selected.name], ["المعرف", selected.id], ["المحرك", selected.db_type], ["المضيف", selected.host], ["المنفذ", selected.port], ["القاعدة", selected.db_name], ["مفتاح البيئة", selected.env_key], ["أساسية", selected.is_primary ? "نعم" : "لا"], ["حالة الاقتران", connection?.status ?? selected.pairing_status ?? "—"], ["السيرفر", server?.name ?? "—"]].map(([label, value]: any) => (
+        <Card key={label}><CardContent className="p-4"><p className="text-sm text-muted-foreground">{label}</p><p className="mt-1 break-all font-mono text-sm" dir="ltr">{value ?? "—"}</p></CardContent></Card>
+      ))}
+    </div>
+  </div>;
 }
 
 function Overview({ data, selected, connection, server, actionMutation }: any) {
@@ -171,6 +319,5 @@ function SitesPanel({ data, selected, provisionMutation }: any) {
 }
 
 function ActivityPanel({ data }: any) { return <div className="space-y-4"><h2 className="text-2xl font-bold">سجل النشاط</h2>{data.audits.map((row: any) => <Card key={row.id}><CardContent className="flex flex-wrap items-center justify-between gap-3 p-4"><div><p className="font-medium">{row.action}</p><p className="text-xs text-muted-foreground">{new Date(row.created_at).toLocaleString("ar")}</p></div><Badge variant="outline">{row.resource_id?.slice(0, 8)}</Badge></CardContent></Card>)}</div>; }
-function ActionPanel({ title, description, actions, mutation }: any) { return <div className="space-y-5"><div><h2 className="text-2xl font-bold">{title}</h2><p className="text-muted-foreground">{description}</p></div><div className="grid gap-3 sm:grid-cols-2 xl:grid-cols-3">{actions.map(([label, action, Icon]: any) => <Card key={action}><CardContent className="flex min-h-40 flex-col justify-between gap-5 p-5"><Icon className="size-9 text-primary" /><div><p className="font-semibold">{label}</p><p className="mt-1 text-sm text-muted-foreground">تنفيذ آمن ومسجل عبر وكيل TVCC.</p></div><Button disabled={mutation.isPending} onClick={() => mutation.mutate({ action })}><Play className="size-4" />تشغيل</Button></CardContent></Card>)}</div></div>; }
 function Stat({ label, value }: { label: string; value: number }) { return <Card><CardContent className="p-4"><p className="text-sm text-muted-foreground">{label}</p><p className="text-2xl font-bold">{value}</p></CardContent></Card>; }
 function EmptyState() { return <div className="grid min-h-[50vh] place-items-center text-center"><div><Database className="mx-auto mb-3 size-12 text-muted-foreground" /><h2 className="text-xl font-bold">لا توجد قاعدة محددة</h2><p className="text-muted-foreground">سجّل قاعدة ثم اربطها بوكيل TVCC.</p></div></div>; }

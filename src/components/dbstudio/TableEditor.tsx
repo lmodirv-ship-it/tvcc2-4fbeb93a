@@ -37,7 +37,7 @@ const OPS: [string, string][] = [
 ];
 type FilterRow = { column: string; op: string; value: string };
 
-export function TableEditor({ databaseId }: { databaseId: string }) {
+export function TableEditor({ databaseId, hasAgent = true }: { databaseId: string; hasAgent?: boolean }) {
   const fetchCommands = useServerFn(getEditorCommands);
   const catalog = useServerFn(readCatalog);
   const rowsFn = useServerFn(readTableRows);

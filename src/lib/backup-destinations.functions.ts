@@ -22,8 +22,9 @@ export const listBackupDestinations = createServerFn({ method: "POST" })
       sb.from("agent_instances").select("server_id, status, last_heartbeat_at, poll_latency_ms, link_quality").limit(500),
     ]);
 
+    const destIds = new Set(((destinations ?? []) as any[]).map((d) => d.storage_server_id).filter(Boolean));
     const matched = ((servers ?? []) as any[]).filter((s) =>
-      hosts.has(String(s.hostname ?? "")) || hosts.has(String(s.public_ip ?? "")) || hosts.has(String(s.private_ip ?? "")),
+      destIds.has(s.id) || hosts.has(String(s.hostname ?? "")) || hosts.has(String(s.public_ip ?? "")) || hosts.has(String(s.private_ip ?? "")),
     );
 
     const metricsByServer = new Map<string, any>();
@@ -48,7 +49,10 @@ export const listBackupDestinations = createServerFn({ method: "POST" })
     const fresh = Date.now() - 10 * 60 * 1000;
     const enriched = ((destinations ?? []) as any[]).map((d) => {
       const host = String(d.host ?? "").trim();
-      const srv = matched.find((s) => s.hostname === host || s.public_ip === host || s.private_ip === host) ?? null;
+      const srv =
+        (d.storage_server_id ? matched.find((s) => s.id === d.storage_server_id) : null) ??
+        matched.find((s) => s.hostname === host || s.public_ip === host || s.private_ip === host) ??
+        null;
       const m = srv ? metricsByServer.get(srv.id) ?? null : null;
       const ag = srv ? agentByServer.get(srv.id) ?? null : null;
       const agentOnline = !!ag && ag.status === "online" && !!ag.last_heartbeat_at && new Date(ag.last_heartbeat_at).getTime() > fresh;

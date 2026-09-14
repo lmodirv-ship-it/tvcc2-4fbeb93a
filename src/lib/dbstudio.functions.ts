@@ -448,6 +448,18 @@ export const writeTableRows = createServerFn({ method: "POST" })
       statements.push(`delete from "${schema}"."${table}" where "${pk}"::text = ${lit(String(id))}`);
     }
     if (!statements.length) throw new Error("لا توجد تغييرات للحفظ");
+    if (isInternalDb(db)) {
+      if (isProtectedTable(schema, table)) throw new Error("لا يمكن تعديل هذا الجدول من خلال المحرّر");
+      await runInternalSql(statements.join(";\n"));
+      const command = internalCommand("pg_write", {
+        database_id: db.id, schema, table, statements, sql: statements.join(";\n"), read_only: false,
+      }, { affected: statements.length });
+      await audit(supabase, userId, "pg_write", db.id, {
+        command_id: command.id, schema, table,
+        inserts: data.inserts?.length ?? 0, updates: data.updates?.length ?? 0, deletes: data.deletes?.length ?? 0,
+      });
+      return command;
+    }
     const command = await queueCommand(supabase, userId, db.server_id, "pg_write", {
       ...baseArgs(db), schema, table, statements, sql: statements.join(";\n"), read_only: false,
     });

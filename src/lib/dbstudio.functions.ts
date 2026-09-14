@@ -25,6 +25,12 @@ const PROTECTED_TABLES = new Set([
   "agent_role_bindings", "agent_capabilities", "agent_installers",
 ]);
 
+/** جداول لا تُقرأ إطلاقاً من المحرّر (أسرار). */
+const SECRET_TABLES = new Set(["vault_secrets", "vault_secret_versions"]);
+function isSecretTable(schema: string, table: string) {
+  return schema === "public" && SECRET_TABLES.has(table);
+}
+
 function isInternalDb(db: any) {
   return db?.db_kind === "internal";
 }
@@ -417,7 +423,7 @@ export const readTableRows = createServerFn({ method: "POST" })
     const sql = `select * from "${schema}"."${table}" ${whereSql} ${orderSql} limit ${pageSize} offset ${(page - 1) * pageSize}`;
     const countSql = `select count(*)::bigint as total from "${schema}"."${table}" ${whereSql}`;
     if (isInternalDb(db)) {
-      if (isProtectedTable(schema, table)) throw new Error("لا يمكن قراءة هذا الجدول من خلال المحرّر");
+      if (isSecretTable(schema, table)) throw new Error("هذا الجدول يحتوي أسراراً ولا يمكن عرضه في المحرّر");
       const rows = await runInternalSql(sql);
       const countRows = await runInternalSql(countSql);
       const total = Number((countRows[0] as any)?.total ?? 0);

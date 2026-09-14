@@ -213,7 +213,10 @@ export function AppSidebar() {
                 {section.items === coreItems && (
                   <SidebarMenuItem>
                     <SidebarMenuButton
-                      onClick={handleExport}
+                      onClick={() => {
+                        handleExport();
+                        setOpen(false);
+                      }}
                       tooltip={t("sidebar.export_html")}
                       title={t("sidebar.export_html")}
                       className="text-primary"

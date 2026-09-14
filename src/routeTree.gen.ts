@@ -128,8 +128,10 @@ import { Route as ApiPublicHnAnnounceRouteImport } from './routes/api/public/hn/
 import { Route as ApiPublicHnServiceCatalogRouteImport } from './routes/api/public/hn-service/catalog'
 import { Route as ApiPublicHnRlsVerifyRouteImport } from './routes/api/public/hn-rls.verify'
 import { Route as ApiPublicCoreIngestRouteImport } from './routes/api/public/core.ingest'
+import { Route as ApiPublicBackupsScanReportRouteImport } from './routes/api/public/backups/scan-report'
 import { Route as ApiPublicBackupsRunDueRouteImport } from './routes/api/public/backups/run-due'
 import { Route as ApiPublicBackupsNightlyRouteImport } from './routes/api/public/backups/nightly'
+import { Route as ApiPublicBackupsInventoryRouteImport } from './routes/api/public/backups/inventory'
 import { Route as ApiPublicHnIdentityCodeRouteImport } from './routes/api/public/hn/identity.$code'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -773,6 +775,12 @@ const ApiPublicCoreIngestRoute = ApiPublicCoreIngestRouteImport.update({
   path: '/api/public/core/ingest',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicBackupsScanReportRoute =
+  ApiPublicBackupsScanReportRouteImport.update({
+    id: '/api/public/backups/scan-report',
+    path: '/api/public/backups/scan-report',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicBackupsRunDueRoute = ApiPublicBackupsRunDueRouteImport.update({
   id: '/api/public/backups/run-due',
   path: '/api/public/backups/run-due',
@@ -783,6 +791,12 @@ const ApiPublicBackupsNightlyRoute = ApiPublicBackupsNightlyRouteImport.update({
   path: '/api/public/backups/nightly',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicBackupsInventoryRoute =
+  ApiPublicBackupsInventoryRouteImport.update({
+    id: '/api/public/backups/inventory',
+    path: '/api/public/backups/inventory',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHnIdentityCodeRoute = ApiPublicHnIdentityCodeRouteImport.update({
   id: '/api/public/hn/identity/$code',
   path: '/api/public/hn/identity/$code',
@@ -889,8 +903,10 @@ export interface FileRoutesByFullPath {
   '/editor/': typeof AuthenticatedEditorIndexRoute
   '/federated/': typeof AuthenticatedFederatedIndexRoute
   '/servers/': typeof AuthenticatedServersIndexRoute
+  '/api/public/backups/inventory': typeof ApiPublicBackupsInventoryRoute
   '/api/public/backups/nightly': typeof ApiPublicBackupsNightlyRoute
   '/api/public/backups/run-due': typeof ApiPublicBackupsRunDueRoute
+  '/api/public/backups/scan-report': typeof ApiPublicBackupsScanReportRoute
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hn-rls/verify': typeof ApiPublicHnRlsVerifyRoute
   '/api/public/hn-service/catalog': typeof ApiPublicHnServiceCatalogRoute
@@ -1010,8 +1026,10 @@ export interface FileRoutesByTo {
   '/editor': typeof AuthenticatedEditorIndexRoute
   '/federated': typeof AuthenticatedFederatedIndexRoute
   '/servers': typeof AuthenticatedServersIndexRoute
+  '/api/public/backups/inventory': typeof ApiPublicBackupsInventoryRoute
   '/api/public/backups/nightly': typeof ApiPublicBackupsNightlyRoute
   '/api/public/backups/run-due': typeof ApiPublicBackupsRunDueRoute
+  '/api/public/backups/scan-report': typeof ApiPublicBackupsScanReportRoute
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hn-rls/verify': typeof ApiPublicHnRlsVerifyRoute
   '/api/public/hn-service/catalog': typeof ApiPublicHnServiceCatalogRoute
@@ -1135,8 +1153,10 @@ export interface FileRoutesById {
   '/_authenticated/editor/': typeof AuthenticatedEditorIndexRoute
   '/_authenticated/federated/': typeof AuthenticatedFederatedIndexRoute
   '/_authenticated/servers/': typeof AuthenticatedServersIndexRoute
+  '/api/public/backups/inventory': typeof ApiPublicBackupsInventoryRoute
   '/api/public/backups/nightly': typeof ApiPublicBackupsNightlyRoute
   '/api/public/backups/run-due': typeof ApiPublicBackupsRunDueRoute
+  '/api/public/backups/scan-report': typeof ApiPublicBackupsScanReportRoute
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
   '/api/public/hn-rls/verify': typeof ApiPublicHnRlsVerifyRoute
   '/api/public/hn-service/catalog': typeof ApiPublicHnServiceCatalogRoute
@@ -1260,8 +1280,10 @@ export interface FileRouteTypes {
     | '/editor/'
     | '/federated/'
     | '/servers/'
+    | '/api/public/backups/inventory'
     | '/api/public/backups/nightly'
     | '/api/public/backups/run-due'
+    | '/api/public/backups/scan-report'
     | '/api/public/core/ingest'
     | '/api/public/hn-rls/verify'
     | '/api/public/hn-service/catalog'
@@ -1381,8 +1403,10 @@ export interface FileRouteTypes {
     | '/editor'
     | '/federated'
     | '/servers'
+    | '/api/public/backups/inventory'
     | '/api/public/backups/nightly'
     | '/api/public/backups/run-due'
+    | '/api/public/backups/scan-report'
     | '/api/public/core/ingest'
     | '/api/public/hn-rls/verify'
     | '/api/public/hn-service/catalog'
@@ -1505,8 +1529,10 @@ export interface FileRouteTypes {
     | '/_authenticated/editor/'
     | '/_authenticated/federated/'
     | '/_authenticated/servers/'
+    | '/api/public/backups/inventory'
     | '/api/public/backups/nightly'
     | '/api/public/backups/run-due'
+    | '/api/public/backups/scan-report'
     | '/api/public/core/ingest'
     | '/api/public/hn-rls/verify'
     | '/api/public/hn-service/catalog'
@@ -1547,8 +1573,10 @@ export interface RootRouteChildren {
   Char91DotmcpChar93InvokeToolToolRoute: typeof Char91DotmcpChar93InvokeToolToolRoute
   ApiPublicSiteConfigRoute: typeof ApiPublicSiteConfigRoute
   ApiPublicVisitsRoute: typeof ApiPublicVisitsRoute
+  ApiPublicBackupsInventoryRoute: typeof ApiPublicBackupsInventoryRoute
   ApiPublicBackupsNightlyRoute: typeof ApiPublicBackupsNightlyRoute
   ApiPublicBackupsRunDueRoute: typeof ApiPublicBackupsRunDueRoute
+  ApiPublicBackupsScanReportRoute: typeof ApiPublicBackupsScanReportRoute
   ApiPublicCoreIngestRoute: typeof ApiPublicCoreIngestRoute
   ApiPublicHnRlsVerifyRoute: typeof ApiPublicHnRlsVerifyRoute
   ApiPublicHnServiceCatalogRoute: typeof ApiPublicHnServiceCatalogRoute
@@ -2406,6 +2434,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicCoreIngestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/backups/scan-report': {
+      id: '/api/public/backups/scan-report'
+      path: '/api/public/backups/scan-report'
+      fullPath: '/api/public/backups/scan-report'
+      preLoaderRoute: typeof ApiPublicBackupsScanReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/backups/run-due': {
       id: '/api/public/backups/run-due'
       path: '/api/public/backups/run-due'
@@ -2418,6 +2453,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/backups/nightly'
       fullPath: '/api/public/backups/nightly'
       preLoaderRoute: typeof ApiPublicBackupsNightlyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/backups/inventory': {
+      id: '/api/public/backups/inventory'
+      path: '/api/public/backups/inventory'
+      fullPath: '/api/public/backups/inventory'
+      preLoaderRoute: typeof ApiPublicBackupsInventoryRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/hn/identity/$code': {
@@ -2668,8 +2710,10 @@ const rootRouteChildren: RootRouteChildren = {
   Char91DotmcpChar93InvokeToolToolRoute: Char91DotmcpChar93InvokeToolToolRoute,
   ApiPublicSiteConfigRoute: ApiPublicSiteConfigRoute,
   ApiPublicVisitsRoute: ApiPublicVisitsRoute,
+  ApiPublicBackupsInventoryRoute: ApiPublicBackupsInventoryRoute,
   ApiPublicBackupsNightlyRoute: ApiPublicBackupsNightlyRoute,
   ApiPublicBackupsRunDueRoute: ApiPublicBackupsRunDueRoute,
+  ApiPublicBackupsScanReportRoute: ApiPublicBackupsScanReportRoute,
   ApiPublicCoreIngestRoute: ApiPublicCoreIngestRoute,
   ApiPublicHnRlsVerifyRoute: ApiPublicHnRlsVerifyRoute,
   ApiPublicHnServiceCatalogRoute: ApiPublicHnServiceCatalogRoute,

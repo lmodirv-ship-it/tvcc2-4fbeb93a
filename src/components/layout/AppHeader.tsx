@@ -1,7 +1,7 @@
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Input } from "@/components/ui/input";
-import { Search, Settings as SettingsIcon, Home } from "lucide-react";
-import { Link } from "@tanstack/react-router";
+import { Search, Settings as SettingsIcon, Home, LogOut } from "lucide-react";
+import { Link, useNavigate } from "@tanstack/react-router";
 import { useEffect, useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { useTranslation } from "react-i18next";
@@ -13,10 +13,16 @@ import { LANGUAGES } from "@/i18n";
 export function AppHeader() {
   const [email, setEmail] = useState<string>("");
   const { t, i18n } = useTranslation();
+  const navigate = useNavigate();
 
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => setEmail(data.user?.email || ""));
   }, []);
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    navigate({ to: "/auth" });
+  };
 
   const initial = (email || "A").charAt(0).toUpperCase();
   const dir = (LANGUAGES.find((l) => l.code === i18n.language)?.dir ?? "rtl") as "rtl" | "ltr";
@@ -50,6 +56,16 @@ export function AppHeader() {
       <ThemeSwitcher />
 
       <LanguageSwitcher />
+
+      <button
+        onClick={handleLogout}
+        aria-label={t("common.logout") as string}
+        title={t("common.logout") as string}
+        className="h-9 px-3 rounded-lg bg-secondary/60 hover:bg-secondary flex items-center gap-2 text-xs font-medium text-muted-foreground"
+      >
+        <LogOut className="w-4 h-4" />
+        <span className="hidden md:inline">{t("common.logout")}</span>
+      </button>
 
       <Link to="/settings" aria-label={t("header.settings") as string} className="relative w-9 h-9 rounded-lg bg-secondary/60 hover:bg-secondary flex items-center justify-center">
         <SettingsIcon className="w-4 h-4 text-muted-foreground" />

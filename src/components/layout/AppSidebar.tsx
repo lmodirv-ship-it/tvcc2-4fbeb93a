@@ -1,7 +1,7 @@
-import { Link, useRouterState, useNavigate } from "@tanstack/react-router";
+import { Link, useRouterState } from "@tanstack/react-router";
 import {
   LayoutDashboard, Globe, Users, CreditCard, UserCog, Activity, Settings,
-  Code2, LogOut, Wand2, FolderOpen, LayoutTemplate, Radio, ListChecks, Plug,
+  Code2, Wand2, FolderOpen, LayoutTemplate, Radio, ListChecks, Plug,
   Smartphone, KeyRound, Server, ShieldCheck, BadgeCheck, Bell, FileCog, LifeBuoy, ClipboardCheck,
   FileBarChart, Wallet, Boxes, Brain, Film, HardDrive, MessageSquare, History, NotebookPen, Archive, Network, Share2, ScrollText, ShieldAlert, GitBranch, Zap, Download, Link2, Cloud, Globe2, Fingerprint, Rocket, Radar, Database, Shield, HeartPulse, Package, Bot, Container,
 } from "lucide-react";
@@ -12,7 +12,6 @@ import {
 } from "@/components/ui/sidebar";
 import { usePermissions } from "@/hooks/use-permissions";
 import { usePlatformPageRules } from "@/hooks/use-platform-pages";
-import { supabase } from "@/integrations/supabase/client";
 import { toast } from "sonner";
 import { exportDashboardHtml } from "@/lib/html-export";
 import { useTranslation } from "react-i18next";
@@ -147,7 +146,6 @@ function SidebarLink({ item, active }: { item: typeof coreItems[number]; active:
 export function AppSidebar() {
   const { t } = useTranslation();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  const navigate = useNavigate();
   const { primaryRole } = usePermissions();
   const { isVisible } = usePlatformPageRules();
   const { setOpen } = useSidebar();
@@ -166,11 +164,6 @@ export function AppSidebar() {
   const side = langDef.dir === "rtl" ? "right" : "left";
 
   const isActive = (path: string) => pathname === path || pathname.startsWith(path + "/");
-
-  const handleLogout = async () => {
-    await supabase.auth.signOut();
-    navigate({ to: "/auth" });
-  };
 
   const handleExport = async () => {
     try {
@@ -235,16 +228,8 @@ export function AppSidebar() {
         ))}
       </SidebarContent>
 
-      <SidebarFooter className="border-t border-sidebar-border p-1.5">
-        <SidebarMenu>
-          <SidebarMenuItem>
-            <SidebarMenuButton onClick={handleLogout} className="h-7 min-h-7 py-0.5 text-xs gap-2 text-muted-foreground">
-              <LogOut className="w-3.5 h-3.5 shrink-0" />
-              <span className="truncate">{t("common.logout")}</span>
-            </SidebarMenuButton>
-          </SidebarMenuItem>
-        </SidebarMenu>
-      </SidebarFooter>
+      <SidebarFooter className="border-t border-sidebar-border p-1.5" />
+
     </Sidebar>
   );
 }

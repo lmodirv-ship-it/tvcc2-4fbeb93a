@@ -148,6 +148,7 @@ export function AppSidebar() {
   const navigate = useNavigate();
   const { primaryRole } = usePermissions();
   const { isVisible } = usePlatformPageRules();
+  const { setOpen } = useSidebar();
   const [lang, setLang] = useState<AppLang>(i18n.language as AppLang);
 
   useEffect(() => {

@@ -158,7 +158,8 @@ async function saveSinglePage(domain, dir) {
 }
 
 async function runTask(task, docRoots) {
-  const dir = task.remote_path || path.join(BASE, task.domain, task.copy_kind);
+  const host = clean(task.domain);
+  const dir = path.join(BASE, host, task.copy_kind);
   fs.mkdirSync(dir, { recursive: true });
 
   // النسخة الأولى تُكتب مرة واحدة فقط

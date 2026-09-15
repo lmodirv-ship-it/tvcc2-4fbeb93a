@@ -280,7 +280,9 @@ export const provisionSiteIdentities = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     await assertAdmin(supabase, userId);
     const { data: db } = await supabase.from("databases").select("*").eq("id", data.databaseId).single();
-    if (!db?.server_id) throw new Error("القاعدة غير مرتبطة بسيرفر");
+    if (!db) throw new Error("القاعدة غير موجودة");
+    const internal = isInternalDb(db);
+    if (!db.server_id && !internal) throw new Error("القاعدة غير مرتبطة بسيرفر");
     let query = supabase.from("websites").select("id,site_code,domain,server_id").not("site_code", "is", null);
     if (data.websiteIds?.length) query = query.in("id", data.websiteIds);
     const { data: sites } = await query.limit(500);

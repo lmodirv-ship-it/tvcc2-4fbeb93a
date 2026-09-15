@@ -129,6 +129,7 @@ import { Route as ApiPublicHnServiceCatalogRouteImport } from './routes/api/publ
 import { Route as ApiPublicHnRlsVerifyRouteImport } from './routes/api/public/hn-rls.verify'
 import { Route as ApiPublicDbsyncStateRouteImport } from './routes/api/public/dbsync/state'
 import { Route as ApiPublicDbsyncSchemaRouteImport } from './routes/api/public/dbsync/schema'
+import { Route as ApiPublicDbsyncPushRouteImport } from './routes/api/public/dbsync/push'
 import { Route as ApiPublicCoreIngestRouteImport } from './routes/api/public/core.ingest'
 import { Route as ApiPublicBackupsTasksRouteImport } from './routes/api/public/backups/tasks'
 import { Route as ApiPublicBackupsScanReportRouteImport } from './routes/api/public/backups/scan-report'
@@ -785,6 +786,11 @@ const ApiPublicDbsyncSchemaRoute = ApiPublicDbsyncSchemaRouteImport.update({
   path: '/api/public/dbsync/schema',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicDbsyncPushRoute = ApiPublicDbsyncPushRouteImport.update({
+  id: '/api/public/dbsync/push',
+  path: '/api/public/dbsync/push',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicCoreIngestRoute = ApiPublicCoreIngestRouteImport.update({
   id: '/api/public/core/ingest',
   path: '/api/public/core/ingest',
@@ -941,6 +947,7 @@ export interface FileRoutesByFullPath {
   '/api/public/backups/scan-report': typeof ApiPublicBackupsScanReportRoute
   '/api/public/backups/tasks': typeof ApiPublicBackupsTasksRoute
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
+  '/api/public/dbsync/push': typeof ApiPublicDbsyncPushRoute
   '/api/public/dbsync/schema': typeof ApiPublicDbsyncSchemaRoute
   '/api/public/dbsync/state': typeof ApiPublicDbsyncStateRoute
   '/api/public/hn-rls/verify': typeof ApiPublicHnRlsVerifyRoute
@@ -1069,6 +1076,7 @@ export interface FileRoutesByTo {
   '/api/public/backups/scan-report': typeof ApiPublicBackupsScanReportRoute
   '/api/public/backups/tasks': typeof ApiPublicBackupsTasksRoute
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
+  '/api/public/dbsync/push': typeof ApiPublicDbsyncPushRoute
   '/api/public/dbsync/schema': typeof ApiPublicDbsyncSchemaRoute
   '/api/public/dbsync/state': typeof ApiPublicDbsyncStateRoute
   '/api/public/hn-rls/verify': typeof ApiPublicHnRlsVerifyRoute
@@ -1201,6 +1209,7 @@ export interface FileRoutesById {
   '/api/public/backups/scan-report': typeof ApiPublicBackupsScanReportRoute
   '/api/public/backups/tasks': typeof ApiPublicBackupsTasksRoute
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
+  '/api/public/dbsync/push': typeof ApiPublicDbsyncPushRoute
   '/api/public/dbsync/schema': typeof ApiPublicDbsyncSchemaRoute
   '/api/public/dbsync/state': typeof ApiPublicDbsyncStateRoute
   '/api/public/hn-rls/verify': typeof ApiPublicHnRlsVerifyRoute
@@ -1333,6 +1342,7 @@ export interface FileRouteTypes {
     | '/api/public/backups/scan-report'
     | '/api/public/backups/tasks'
     | '/api/public/core/ingest'
+    | '/api/public/dbsync/push'
     | '/api/public/dbsync/schema'
     | '/api/public/dbsync/state'
     | '/api/public/hn-rls/verify'
@@ -1461,6 +1471,7 @@ export interface FileRouteTypes {
     | '/api/public/backups/scan-report'
     | '/api/public/backups/tasks'
     | '/api/public/core/ingest'
+    | '/api/public/dbsync/push'
     | '/api/public/dbsync/schema'
     | '/api/public/dbsync/state'
     | '/api/public/hn-rls/verify'
@@ -1592,6 +1603,7 @@ export interface FileRouteTypes {
     | '/api/public/backups/scan-report'
     | '/api/public/backups/tasks'
     | '/api/public/core/ingest'
+    | '/api/public/dbsync/push'
     | '/api/public/dbsync/schema'
     | '/api/public/dbsync/state'
     | '/api/public/hn-rls/verify'
@@ -1641,6 +1653,7 @@ export interface RootRouteChildren {
   ApiPublicBackupsScanReportRoute: typeof ApiPublicBackupsScanReportRoute
   ApiPublicBackupsTasksRoute: typeof ApiPublicBackupsTasksRoute
   ApiPublicCoreIngestRoute: typeof ApiPublicCoreIngestRoute
+  ApiPublicDbsyncPushRoute: typeof ApiPublicDbsyncPushRoute
   ApiPublicDbsyncSchemaRoute: typeof ApiPublicDbsyncSchemaRoute
   ApiPublicDbsyncStateRoute: typeof ApiPublicDbsyncStateRoute
   ApiPublicHnRlsVerifyRoute: typeof ApiPublicHnRlsVerifyRoute
@@ -2506,6 +2519,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicDbsyncSchemaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/dbsync/push': {
+      id: '/api/public/dbsync/push'
+      path: '/api/public/dbsync/push'
+      fullPath: '/api/public/dbsync/push'
+      preLoaderRoute: typeof ApiPublicDbsyncPushRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/core/ingest': {
       id: '/api/public/core/ingest'
       path: '/api/public/core/ingest'
@@ -2818,6 +2838,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicBackupsScanReportRoute: ApiPublicBackupsScanReportRoute,
   ApiPublicBackupsTasksRoute: ApiPublicBackupsTasksRoute,
   ApiPublicCoreIngestRoute: ApiPublicCoreIngestRoute,
+  ApiPublicDbsyncPushRoute: ApiPublicDbsyncPushRoute,
   ApiPublicDbsyncSchemaRoute: ApiPublicDbsyncSchemaRoute,
   ApiPublicDbsyncStateRoute: ApiPublicDbsyncStateRoute,
   ApiPublicHnRlsVerifyRoute: ApiPublicHnRlsVerifyRoute,

@@ -85,7 +85,7 @@ export async function runDueSchedules(sb: any, limit = 50) {
               serverId: row.server_id,
               websiteId: w.id,
               engineId: row.engine_id,
-              ctx: { ...baseCtx, domain: w.domain, siteName: w.name, rootPath: `/var/www/${w.domain}`, unit: undefined as any },
+              ctx: { ...baseCtx, domain: w.domain, siteName: w.name, rootPath: `/var/www/${w.domain}`, unit: undefined },
               dryRun: row.dry_run,
             });
           } catch { /* تخطّي الموقع الفاشل ومتابعة البقية */ }

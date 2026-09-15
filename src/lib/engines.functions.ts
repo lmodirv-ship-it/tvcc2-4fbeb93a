@@ -269,6 +269,7 @@ export const createEngineSchedule = createServerFn({ method: "POST" })
     intervalMinutes: number;
     dryRun?: boolean;
     label?: string;
+    allSites?: boolean;
   }) => i)
   .handler(async ({ data, context }) => {
     const sb = context.supabase as any;
@@ -285,8 +286,8 @@ export const createEngineSchedule = createServerFn({ method: "POST" })
         engine_id: engine.id,
         label: data.label ?? engine.label,
         server_id: data.serverId,
-        website_id: data.websiteId ?? null,
-        ctx: defaultContext(data.ctx) as any,
+        website_id: data.allSites ? null : (data.websiteId ?? null),
+        ctx: { ...defaultContext(data.ctx), allSites: data.allSites ?? false } as any,
         interval_minutes: minutes,
         dry_run: data.dryRun ?? false,
         is_active: true,

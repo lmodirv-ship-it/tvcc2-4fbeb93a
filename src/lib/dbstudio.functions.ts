@@ -280,7 +280,9 @@ export const provisionSiteIdentities = createServerFn({ method: "POST" })
     const { supabase, userId } = context;
     await assertAdmin(supabase, userId);
     const { data: db } = await supabase.from("databases").select("*").eq("id", data.databaseId).single();
-    if (!db?.server_id) throw new Error("القاعدة غير مرتبطة بسيرفر");
+    if (!db) throw new Error("القاعدة غير موجودة");
+    const internal = isInternalDb(db);
+    if (!db.server_id && !internal) throw new Error("القاعدة غير مرتبطة بسيرفر");
     let query = supabase.from("websites").select("id,site_code,domain,server_id").not("site_code", "is", null);
     if (data.websiteIds?.length) query = query.in("id", data.websiteIds);
     const { data: sites } = await query.limit(500);
@@ -289,11 +291,12 @@ export const provisionSiteIdentities = createServerFn({ method: "POST" })
       const safeCode = String(site.site_code).replace(/[^A-Za-z0-9_]/g, "_").toLowerCase();
       const schemaName = `site_${safeCode}`;
       const serverPath = `/srv/tvcc/sites/${site.site_code}`;
+      const targetServer = site.server_id ?? db.server_id ?? null;
       await supabase.from("site_databases").upsert({
         owner_id: userId,
         website_id: site.id,
         database_id: db.id,
-        server_id: site.server_id ?? db.server_id,
+        server_id: targetServer,
         connection_kind: db.db_kind === "local" ? "local" : "cloud",
         db_engine: db.db_type,
         db_name: db.db_name ?? "postgres",
@@ -302,18 +305,20 @@ export const provisionSiteIdentities = createServerFn({ method: "POST" })
         site_code: site.site_code,
         schema_name: schemaName,
         server_path: serverPath,
-        provisioning_status: "queued",
+        provisioning_status: targetServer ? "queued" : "registered",
         status: "pending",
       }, { onConflict: "site_code" });
-      await queueCommand(supabase, userId, site.server_id ?? db.server_id, "site_identity_provision", {
-        database_id: db.id,
-        website_id: site.id,
-        site_code: site.site_code,
-        schema_name: schemaName,
-        server_path: serverPath,
-        database: db.db_name ?? "postgres",
-        env_key: db.env_key,
-      });
+      if (targetServer) {
+        await queueCommand(supabase, userId, targetServer, "site_identity_provision", {
+          database_id: db.id,
+          website_id: site.id,
+          site_code: site.site_code,
+          schema_name: schemaName,
+          server_path: serverPath,
+          database: db.db_name ?? "postgres",
+          env_key: db.env_key,
+        });
+      }
       queued++;
     }
     await audit(supabase, userId, "site_identity_provision_bulk", db.id, { queued });

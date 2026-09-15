@@ -291,11 +291,12 @@ export const provisionSiteIdentities = createServerFn({ method: "POST" })
       const safeCode = String(site.site_code).replace(/[^A-Za-z0-9_]/g, "_").toLowerCase();
       const schemaName = `site_${safeCode}`;
       const serverPath = `/srv/tvcc/sites/${site.site_code}`;
+      const targetServer = site.server_id ?? db.server_id ?? null;
       await supabase.from("site_databases").upsert({
         owner_id: userId,
         website_id: site.id,
         database_id: db.id,
-        server_id: site.server_id ?? db.server_id,
+        server_id: targetServer,
         connection_kind: db.db_kind === "local" ? "local" : "cloud",
         db_engine: db.db_type,
         db_name: db.db_name ?? "postgres",
@@ -304,18 +305,20 @@ export const provisionSiteIdentities = createServerFn({ method: "POST" })
         site_code: site.site_code,
         schema_name: schemaName,
         server_path: serverPath,
-        provisioning_status: "queued",
+        provisioning_status: targetServer ? "queued" : "registered",
         status: "pending",
       }, { onConflict: "site_code" });
-      await queueCommand(supabase, userId, site.server_id ?? db.server_id, "site_identity_provision", {
-        database_id: db.id,
-        website_id: site.id,
-        site_code: site.site_code,
-        schema_name: schemaName,
-        server_path: serverPath,
-        database: db.db_name ?? "postgres",
-        env_key: db.env_key,
-      });
+      if (targetServer) {
+        await queueCommand(supabase, userId, targetServer, "site_identity_provision", {
+          database_id: db.id,
+          website_id: site.id,
+          site_code: site.site_code,
+          schema_name: schemaName,
+          server_path: serverPath,
+          database: db.db_name ?? "postgres",
+          env_key: db.env_key,
+        });
+      }
       queued++;
     }
     await audit(supabase, userId, "site_identity_provision_bulk", db.id, { queued });

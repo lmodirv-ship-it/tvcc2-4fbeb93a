@@ -156,6 +156,38 @@ export function EnginesPanel({ websites }: { websites: Array<{ id: string; name:
     }
   };
 
+  /** مراجعة وتشغيل كل مواقع السيرفر تلقائياً وبلا توقف. */
+  const autoAllSites = async () => {
+    if (!serverId) return toast.error("اختر سيرفراً أولاً");
+    const count = websites.filter((w) => w.server_id === serverId && w.domain).length;
+    if (!count) return toast.error("لا توجد مواقع مرتبطة بهذا السيرفر");
+    const minutes = Number(intervalMin) || 60;
+    setBusy(true);
+    try {
+      for (const engineId of ["health_heal", "site_up"]) {
+        const eng = ENGINES.find((x) => x.id === engineId)!;
+        await addSchedule({
+          data: {
+            engineId,
+            serverId,
+            websiteId: null,
+            ctx,
+            intervalMinutes: minutes,
+            dryRun,
+            allSites: true,
+            label: `${eng.label} — كل مواقع ${server?.name ?? "السيرفر"} (${count})`,
+          },
+        });
+      }
+      toast.success(`تم التفعيل: مراجعة وتشغيل ${count} موقعاً تلقائياً كل ${minutes} دقيقة`);
+      qc.invalidateQueries({ queryKey: ["engine-schedules"] });
+    } catch (e: any) {
+      toast.error(e?.message ?? "تعذّر التفعيل");
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const toggleSchedule = async (id: string, isActive: boolean) => {
     try {
       await patchSchedule({ data: { id, isActive } });
@@ -225,8 +257,11 @@ export function EnginesPanel({ websites }: { websites: Array<{ id: string; name:
           <div className="md:col-span-3 lg:col-span-6 flex items-center gap-3 pt-1">
             <Switch id="dry" checked={dryRun} onCheckedChange={setDryRun} />
             <Label htmlFor="dry" className="text-sm">محاكاة (Dry Run) — بدون تغيير فعلي على السيرفر</Label>
+            <Button size="sm" className="ms-auto" disabled={busy} onClick={autoAllSites}>
+              <Repeat className="w-4 h-4 ml-1" /> مراجعة وتشغيل كل المواقع تلقائياً
+            </Button>
             {serverId && (
-              <Badge variant={hasAgent ? "default" : "destructive"} className="ms-auto">
+              <Badge variant={hasAgent ? "default" : "destructive"}>
                 {hasAgent ? "وكيل متصل" : "لا يوجد وكيل مثبّت"}
               </Badge>
             )}

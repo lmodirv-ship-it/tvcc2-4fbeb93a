@@ -22,6 +22,7 @@ import {
 } from "@/lib/dbstudio.functions";
 import { TableEditor } from "@/components/dbstudio/TableEditor";
 import { TemplateLibrary } from "@/components/dbstudio/TemplateLibrary";
+import { SyncPanel } from "@/components/dbstudio/SyncPanel";
 import { EntityRelations } from "@/components/relations/EntityRelations";
 import { InsightView } from "@/components/dbstudio/InsightView";
 import { cn } from "@/lib/utils";

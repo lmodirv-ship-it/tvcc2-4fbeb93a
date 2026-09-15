@@ -243,3 +243,91 @@ async function linkRelations(
     }
   }
 }
+
+/* ── الجدولة الدورية ───────────────────────────────────────────── */
+
+export const listEngineSchedules = createServerFn({ method: "GET" })
+  .middleware([requireSupabaseAuth])
+  .handler(async ({ context }) => {
+    const sb = context.supabase as any;
+    const { data } = await sb
+      .from("engine_schedules")
+      .select("*")
+      .order("created_at", { ascending: false })
+      .limit(200);
+    return { schedules: data ?? [] };
+  });
+
+/** إنشاء جدولة دورية لمحرّك — تعمل تلقائياً بلا توقف حتى يوقفها المالك. */
+export const createEngineSchedule = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: {
+    engineId: string;
+    serverId: string;
+    websiteId?: string | null;
+    ctx: Partial<EngineContext>;
+    intervalMinutes: number;
+    dryRun?: boolean;
+    label?: string;
+  }) => i)
+  .handler(async ({ data, context }) => {
+    const sb = context.supabase as any;
+    await assertAdmin(sb, context.userId);
+    const engine = engineById(data.engineId);
+    if (!engine) throw new Error("محرّك غير معروف");
+    const minutes = Math.min(10080, Math.max(5, Math.round(data.intervalMinutes || 60)));
+
+    const { data: row, error } = await sb
+      .from("engine_schedules")
+      .insert({
+        owner_id: context.userId,
+        created_by: context.userId,
+        engine_id: engine.id,
+        label: data.label ?? engine.label,
+        server_id: data.serverId,
+        website_id: data.websiteId ?? null,
+        ctx: defaultContext(data.ctx) as any,
+        interval_minutes: minutes,
+        dry_run: data.dryRun ?? false,
+        is_active: true,
+        next_run_at: new Date().toISOString(),
+      })
+      .select("id")
+      .single();
+    if (error) throw new Error(error.message);
+    return { ok: true, id: row?.id };
+  });
+
+/** تشغيل/إيقاف جدولة أو تعديل مدّتها. */
+export const updateEngineSchedule = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: { id: string; isActive?: boolean; intervalMinutes?: number }) => i)
+  .handler(async ({ data, context }) => {
+    const sb = context.supabase as any;
+    await assertAdmin(sb, context.userId);
+    const patch: Record<string, unknown> = {};
+    if (typeof data.isActive === "boolean") {
+      patch["is_active"] = data.isActive;
+      if (data.isActive) patch["next_run_at"] = new Date().toISOString();
+    }
+    if (data.intervalMinutes)
+      patch["interval_minutes"] = Math.min(10080, Math.max(5, Math.round(data.intervalMinutes)));
+    const { error } = await sb.from("engine_schedules").update(patch).eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });
+
+/** تشغيل فوري للجدولة دون انتظار الدور. */
+export const runScheduleNow = createServerFn({ method: "POST" })
+  .middleware([requireSupabaseAuth])
+  .inputValidator((i: { id: string }) => i)
+  .handler(async ({ data, context }) => {
+    const sb = context.supabase as any;
+    await assertAdmin(sb, context.userId);
+    const { error } = await sb
+      .from("engine_schedules")
+      .update({ next_run_at: new Date().toISOString(), is_active: true })
+      .eq("id", data.id);
+    if (error) throw new Error(error.message);
+    return { ok: true };
+  });

@@ -28,12 +28,21 @@ const statusStyle = (s?: string | null) =>
         ? "bg-destructive/20 text-destructive border-destructive/40"
         : "bg-muted text-muted-foreground border-border";
 
+const ALL_KEY = "tvcc.siteTransfers.allActive";
+
 export function SiteTransfersTable() {
   const qc = useQueryClient();
   const load = useServerFn(listSiteTransfers);
   const createTask = useServerFn(createSiteTransferTask);
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
+  const [allActive, setAllActive] = useState(false);
+  const [running, setRunning] = useState(false);
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && localStorage.getItem(ALL_KEY) === "1") setAllActive(true);
+  }, []);
 
   const { data, isLoading, isFetching, refetch } = useQuery({
     queryKey: ["site-transfers"],

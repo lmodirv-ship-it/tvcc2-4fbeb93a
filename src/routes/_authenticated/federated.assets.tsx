@@ -72,12 +72,23 @@ function AssetsPage() {
         <div className="flex items-center gap-3">
           <Boxes className="w-7 h-7 text-primary" />
           <div>
-            <h1 className="text-2xl font-bold">الأصول والمجموعات</h1>
-            <p className="text-sm text-muted-foreground">جرد موحّد للمواقع والسيرفرات وقواعد البيانات مع تصنيف تلقائي</p>
+            <h1 className="text-2xl font-bold">محرّكات المنصة</h1>
+            <p className="text-sm text-muted-foreground">تشغيل المواقع والسيرفرات والنماذج المحلية عبر الوكيل، مع جرد موحّد للأصول</p>
           </div>
         </div>
         <Button variant="outline" onClick={exportCsv}><Download className="w-4 h-4 ml-1" /> تصدير CSV</Button>
       </div>
+
+      <Tabs defaultValue="engines">
+        <TabsList>
+          <TabsTrigger value="engines">المحرّكات</TabsTrigger>
+          <TabsTrigger value="inventory">الجرد والمجموعات</TabsTrigger>
+        </TabsList>
+        <TabsContent value="engines" className="pt-4">
+          <EnginesPanel websites={(data.websites as any[]).map((w) => ({ id: w.id, name: w.name, domain: w.domain, server_id: w.server_id }))} />
+        </TabsContent>
+        <TabsContent value="inventory" className="pt-4 space-y-6">
+
 
       <div className="grid gap-4 md:grid-cols-4">
         {[

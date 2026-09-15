@@ -68,14 +68,38 @@ export async function runDueSchedules(sb: any, limit = 50) {
     const next = new Date(Date.now() + minutes * 60_000).toISOString();
     try {
       if (!row.server_id) throw new Error("لا يوجد سيرفر مرتبط بالجدولة");
-      const queued = await queueEngineSteps(sb, {
-        ownerId: row.owner_id,
-        serverId: row.server_id,
-        websiteId: row.website_id,
-        engineId: row.engine_id,
-        ctx: row.ctx ?? {},
-        dryRun: row.dry_run,
-      });
+      const baseCtx = (row.ctx ?? {}) as Partial<EngineContext> & { allSites?: boolean };
+      let queued = 0;
+      if (baseCtx.allSites) {
+        // مراجعة وتشغيل كل مواقع السيرفر تلقائياً
+        const { data: sites } = await sb
+          .from("websites")
+          .select("id, name, domain")
+          .eq("server_id", row.server_id)
+          .limit(500);
+        for (const w of (sites ?? []) as Array<{ id: string; name: string; domain: string }>) {
+          if (!w.domain) continue;
+          try {
+            queued += await queueEngineSteps(sb, {
+              ownerId: row.owner_id,
+              serverId: row.server_id,
+              websiteId: w.id,
+              engineId: row.engine_id,
+              ctx: { ...baseCtx, domain: w.domain, siteName: w.name, rootPath: `/var/www/${w.domain}`, unit: undefined as any },
+              dryRun: row.dry_run,
+            });
+          } catch { /* تخطّي الموقع الفاشل ومتابعة البقية */ }
+        }
+      } else {
+        queued = await queueEngineSteps(sb, {
+          ownerId: row.owner_id,
+          serverId: row.server_id,
+          websiteId: row.website_id,
+          engineId: row.engine_id,
+          ctx: baseCtx,
+          dryRun: row.dry_run,
+        });
+      }
       await sb
         .from("engine_schedules")
         .update({

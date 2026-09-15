@@ -232,6 +232,7 @@ async function linkRelations(
         owner_id: userId,
         website_id: websiteId,
         name: "ai",
+        service_type: "ai",
         description: `نموذج محلي ${ctx.model} على ${ctx.domain}`,
         endpoint_url: `https://${ctx.domain}/ai/`,
         health_path: "/ai/api/tags",

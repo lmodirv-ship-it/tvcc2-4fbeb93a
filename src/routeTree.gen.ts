@@ -124,6 +124,7 @@ import { Route as ApiPublicManaraBadgeRouteImport } from './routes/api/public/ma
 import { Route as ApiPublicManaraAnnounceRouteImport } from './routes/api/public/manara/announce'
 import { Route as ApiPublicHubExportRouteImport } from './routes/api/public/hub/export'
 import { Route as ApiPublicHooksHealthCheckRouteImport } from './routes/api/public/hooks/health-check'
+import { Route as ApiPublicHooksEnginesTickRouteImport } from './routes/api/public/hooks/engines-tick'
 import { Route as ApiPublicHnAnnounceRouteImport } from './routes/api/public/hn/announce'
 import { Route as ApiPublicHnServiceCatalogRouteImport } from './routes/api/public/hn-service/catalog'
 import { Route as ApiPublicHnRlsVerifyRouteImport } from './routes/api/public/hn-rls.verify'
@@ -760,6 +761,12 @@ const ApiPublicHooksHealthCheckRoute =
     path: '/api/public/hooks/health-check',
     getParentRoute: () => rootRouteImport,
   } as any)
+const ApiPublicHooksEnginesTickRoute =
+  ApiPublicHooksEnginesTickRouteImport.update({
+    id: '/api/public/hooks/engines-tick',
+    path: '/api/public/hooks/engines-tick',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const ApiPublicHnAnnounceRoute = ApiPublicHnAnnounceRouteImport.update({
   id: '/api/public/hn/announce',
   path: '/api/public/hn/announce',
@@ -953,6 +960,7 @@ export interface FileRoutesByFullPath {
   '/api/public/hn-rls/verify': typeof ApiPublicHnRlsVerifyRoute
   '/api/public/hn-service/catalog': typeof ApiPublicHnServiceCatalogRoute
   '/api/public/hn/announce': typeof ApiPublicHnAnnounceRoute
+  '/api/public/hooks/engines-tick': typeof ApiPublicHooksEnginesTickRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/hub/export': typeof ApiPublicHubExportRoute
   '/api/public/manara/announce': typeof ApiPublicManaraAnnounceRoute
@@ -1082,6 +1090,7 @@ export interface FileRoutesByTo {
   '/api/public/hn-rls/verify': typeof ApiPublicHnRlsVerifyRoute
   '/api/public/hn-service/catalog': typeof ApiPublicHnServiceCatalogRoute
   '/api/public/hn/announce': typeof ApiPublicHnAnnounceRoute
+  '/api/public/hooks/engines-tick': typeof ApiPublicHooksEnginesTickRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/hub/export': typeof ApiPublicHubExportRoute
   '/api/public/manara/announce': typeof ApiPublicManaraAnnounceRoute
@@ -1215,6 +1224,7 @@ export interface FileRoutesById {
   '/api/public/hn-rls/verify': typeof ApiPublicHnRlsVerifyRoute
   '/api/public/hn-service/catalog': typeof ApiPublicHnServiceCatalogRoute
   '/api/public/hn/announce': typeof ApiPublicHnAnnounceRoute
+  '/api/public/hooks/engines-tick': typeof ApiPublicHooksEnginesTickRoute
   '/api/public/hooks/health-check': typeof ApiPublicHooksHealthCheckRoute
   '/api/public/hub/export': typeof ApiPublicHubExportRoute
   '/api/public/manara/announce': typeof ApiPublicManaraAnnounceRoute
@@ -1348,6 +1358,7 @@ export interface FileRouteTypes {
     | '/api/public/hn-rls/verify'
     | '/api/public/hn-service/catalog'
     | '/api/public/hn/announce'
+    | '/api/public/hooks/engines-tick'
     | '/api/public/hooks/health-check'
     | '/api/public/hub/export'
     | '/api/public/manara/announce'
@@ -1477,6 +1488,7 @@ export interface FileRouteTypes {
     | '/api/public/hn-rls/verify'
     | '/api/public/hn-service/catalog'
     | '/api/public/hn/announce'
+    | '/api/public/hooks/engines-tick'
     | '/api/public/hooks/health-check'
     | '/api/public/hub/export'
     | '/api/public/manara/announce'
@@ -1609,6 +1621,7 @@ export interface FileRouteTypes {
     | '/api/public/hn-rls/verify'
     | '/api/public/hn-service/catalog'
     | '/api/public/hn/announce'
+    | '/api/public/hooks/engines-tick'
     | '/api/public/hooks/health-check'
     | '/api/public/hub/export'
     | '/api/public/manara/announce'
@@ -1659,6 +1672,7 @@ export interface RootRouteChildren {
   ApiPublicHnRlsVerifyRoute: typeof ApiPublicHnRlsVerifyRoute
   ApiPublicHnServiceCatalogRoute: typeof ApiPublicHnServiceCatalogRoute
   ApiPublicHnAnnounceRoute: typeof ApiPublicHnAnnounceRoute
+  ApiPublicHooksEnginesTickRoute: typeof ApiPublicHooksEnginesTickRoute
   ApiPublicHooksHealthCheckRoute: typeof ApiPublicHooksHealthCheckRoute
   ApiPublicHubExportRoute: typeof ApiPublicHubExportRoute
   ApiPublicManaraAnnounceRoute: typeof ApiPublicManaraAnnounceRoute
@@ -2484,6 +2498,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicHooksHealthCheckRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/hooks/engines-tick': {
+      id: '/api/public/hooks/engines-tick'
+      path: '/api/public/hooks/engines-tick'
+      fullPath: '/api/public/hooks/engines-tick'
+      preLoaderRoute: typeof ApiPublicHooksEnginesTickRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/hn/announce': {
       id: '/api/public/hn/announce'
       path: '/api/public/hn/announce'
@@ -2844,6 +2865,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicHnRlsVerifyRoute: ApiPublicHnRlsVerifyRoute,
   ApiPublicHnServiceCatalogRoute: ApiPublicHnServiceCatalogRoute,
   ApiPublicHnAnnounceRoute: ApiPublicHnAnnounceRoute,
+  ApiPublicHooksEnginesTickRoute: ApiPublicHooksEnginesTickRoute,
   ApiPublicHooksHealthCheckRoute: ApiPublicHooksHealthCheckRoute,
   ApiPublicHubExportRoute: ApiPublicHubExportRoute,
   ApiPublicManaraAnnounceRoute: ApiPublicManaraAnnounceRoute,

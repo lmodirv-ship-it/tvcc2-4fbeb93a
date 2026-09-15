@@ -11,6 +11,7 @@ export type ScheduleRow = {
   ctx: Partial<EngineContext> | null;
   interval_minutes: number;
   dry_run: boolean;
+  run_count: number;
 };
 
 /** يُدرج خطوات المحرّك في طابور أوامر الوكيل ويعيد عددها. */
@@ -54,7 +55,7 @@ export async function runDueSchedules(sb: any, limit = 50) {
   const nowIso = new Date().toISOString();
   const { data: due, error } = await sb
     .from("engine_schedules")
-    .select("id, owner_id, engine_id, server_id, website_id, ctx, interval_minutes, dry_run")
+    .select("id, owner_id, engine_id, server_id, website_id, ctx, interval_minutes, dry_run, run_count")
     .eq("is_active", true)
     .lte("next_run_at", nowIso)
     .order("next_run_at", { ascending: true })
@@ -82,10 +83,9 @@ export async function runDueSchedules(sb: any, limit = 50) {
           next_run_at: next,
           last_status: "queued",
           last_error: null,
-          run_count: undefined,
+          run_count: (row.run_count ?? 0) + 1,
         })
         .eq("id", row.id);
-      await sb.rpc("noop").catch(() => {});
       results.push({ id: row.id, ok: true, queued });
     } catch (e: any) {
       await sb

@@ -10,6 +10,7 @@ import { Input } from "@/components/ui/input";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Tabs, TabsList, TabsTrigger, TabsContent } from "@/components/ui/tabs";
 import { Boxes, Download, Search } from "lucide-react";
+import { EnginesPanel } from "@/components/engines/EnginesPanel";
 import { toast } from "sonner";
 
 export const Route = createFileRoute("/_authenticated/federated/assets")({

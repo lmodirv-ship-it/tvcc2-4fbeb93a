@@ -1922,6 +1922,199 @@ export type Database = {
           },
         ]
       }
+      db_sync_batches: {
+        Row: {
+          created_at: string
+          duration_ms: number
+          error: string | null
+          id: string
+          owner_id: string
+          rows_applied: number
+          rows_sent: number
+          source_id: string
+          status: string
+          table_name: string
+        }
+        Insert: {
+          created_at?: string
+          duration_ms?: number
+          error?: string | null
+          id?: string
+          owner_id: string
+          rows_applied?: number
+          rows_sent?: number
+          source_id: string
+          status?: string
+          table_name: string
+        }
+        Update: {
+          created_at?: string
+          duration_ms?: number
+          error?: string | null
+          id?: string
+          owner_id?: string
+          rows_applied?: number
+          rows_sent?: number
+          source_id?: string
+          status?: string
+          table_name?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "db_sync_batches_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "db_sync_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      db_sync_sources: {
+        Row: {
+          created_at: string
+          database_name: string
+          host: string
+          id: string
+          interval_seconds: number
+          is_active: boolean
+          label: string
+          lag_seconds: number
+          last_beacon_at: string | null
+          mode: string
+          notes: string | null
+          owner_id: string
+          port: number
+          schema_name: string
+          server_id: string | null
+          status: string
+          updated_at: string
+          website_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          database_name?: string
+          host: string
+          id?: string
+          interval_seconds?: number
+          is_active?: boolean
+          label: string
+          lag_seconds?: number
+          last_beacon_at?: string | null
+          mode?: string
+          notes?: string | null
+          owner_id: string
+          port?: number
+          schema_name?: string
+          server_id?: string | null
+          status?: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          database_name?: string
+          host?: string
+          id?: string
+          interval_seconds?: number
+          is_active?: boolean
+          label?: string
+          lag_seconds?: number
+          last_beacon_at?: string | null
+          mode?: string
+          notes?: string | null
+          owner_id?: string
+          port?: number
+          schema_name?: string
+          server_id?: string | null
+          status?: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "db_sync_sources_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "db_sync_sources_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      db_sync_tables: {
+        Row: {
+          columns: Json
+          created_at: string
+          cursor_column: string | null
+          id: string
+          is_enabled: boolean
+          last_cursor: string | null
+          last_error: string | null
+          last_status: string
+          last_sync_at: string | null
+          local_rows: number
+          mirror_rows: number
+          owner_id: string
+          primary_key: string[]
+          source_id: string
+          strategy: string
+          table_name: string
+          updated_at: string
+        }
+        Insert: {
+          columns?: Json
+          created_at?: string
+          cursor_column?: string | null
+          id?: string
+          is_enabled?: boolean
+          last_cursor?: string | null
+          last_error?: string | null
+          last_status?: string
+          last_sync_at?: string | null
+          local_rows?: number
+          mirror_rows?: number
+          owner_id: string
+          primary_key?: string[]
+          source_id: string
+          strategy?: string
+          table_name: string
+          updated_at?: string
+        }
+        Update: {
+          columns?: Json
+          created_at?: string
+          cursor_column?: string | null
+          id?: string
+          is_enabled?: boolean
+          last_cursor?: string | null
+          last_error?: string | null
+          last_status?: string
+          last_sync_at?: string | null
+          local_rows?: number
+          mirror_rows?: number
+          owner_id?: string
+          primary_key?: string[]
+          source_id?: string
+          strategy?: string
+          table_name?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "db_sync_tables_source_id_fkey"
+            columns: ["source_id"]
+            isOneToOne: false
+            referencedRelation: "db_sync_sources"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       deployment_job_targets: {
         Row: {
           created_at: string

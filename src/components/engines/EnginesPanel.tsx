@@ -12,9 +12,18 @@ import { Textarea } from "@/components/ui/textarea";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Dialog, DialogContent, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Copy, Download, Play, Rocket, Terminal, Cpu } from "lucide-react";
+import { Copy, Download, Play, Rocket, Terminal, Cpu, Repeat, Pause } from "lucide-react";
 import { ENGINES, defaultContext, type Engine, type EngineContext } from "@/lib/engines";
-import { getEngineRuns, listEngineTargets, runEngine, runEngineBatch } from "@/lib/engines.functions";
+import {
+  getEngineRuns,
+  listEngineTargets,
+  runEngine,
+  runEngineBatch,
+  listEngineSchedules,
+  createEngineSchedule,
+  updateEngineSchedule,
+  runScheduleNow,
+} from "@/lib/engines.functions";
 
 export function EnginesPanel({ websites }: { websites: Array<{ id: string; name: string; domain: string; server_id: string | null }> }) {
   const qc = useQueryClient();
@@ -22,6 +31,10 @@ export function EnginesPanel({ websites }: { websites: Array<{ id: string; name:
   const fetchRuns = useServerFn(getEngineRuns);
   const runOne = useServerFn(runEngine);
   const runMany = useServerFn(runEngineBatch);
+  const fetchSchedules = useServerFn(listEngineSchedules);
+  const addSchedule = useServerFn(createEngineSchedule);
+  const patchSchedule = useServerFn(updateEngineSchedule);
+  const fireSchedule = useServerFn(runScheduleNow);
 
   const [serverId, setServerId] = useState("");
   const [websiteId, setWebsiteId] = useState("");
@@ -32,6 +45,7 @@ export function EnginesPanel({ websites }: { websites: Array<{ id: string; name:
   const [dryRun, setDryRun] = useState(false);
   const [open, setOpen] = useState<Engine | null>(null);
   const [busy, setBusy] = useState(false);
+  const [intervalMin, setIntervalMin] = useState("60");
 
   const { data: targets } = useQuery({ queryKey: ["engine-targets"], queryFn: () => fetchTargets(), refetchInterval: 60000 });
   const { data: runs } = useQuery({
@@ -40,6 +54,13 @@ export function EnginesPanel({ websites }: { websites: Array<{ id: string; name:
     enabled: !!serverId,
     refetchInterval: 10000,
   });
+
+  const { data: sched } = useQuery({
+    queryKey: ["engine-schedules"],
+    queryFn: () => fetchSchedules(),
+    refetchInterval: 20000,
+  });
+  const schedules = (sched?.schedules ?? []) as any[];
 
   const servers = (targets?.servers ?? []) as any[];
   const agents = (targets?.agents ?? []) as any[];
@@ -111,6 +132,40 @@ export function EnginesPanel({ websites }: { websites: Array<{ id: string; name:
     }
   };
 
+  const schedule = async (engine: Engine) => {
+    setBusy(true);
+    try {
+      await addSchedule({
+        data: {
+          engineId: engine.id,
+          serverId,
+          websiteId: websiteId || null,
+          ctx,
+          intervalMinutes: Number(intervalMin) || 60,
+          dryRun,
+          label: `${engine.label}${site?.domain ? ` — ${site.domain}` : ""}`,
+        },
+      });
+      toast.success(`تم تفعيل التشغيل الدوري كل ${Number(intervalMin) || 60} دقيقة — بلا توقف`);
+      setOpen(null);
+      qc.invalidateQueries({ queryKey: ["engine-schedules"] });
+    } catch (e: any) {
+      toast.error(e?.message ?? "تعذّر تفعيل الجدولة");
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const toggleSchedule = async (id: string, isActive: boolean) => {
+    try {
+      await patchSchedule({ data: { id, isActive } });
+      toast.success(isActive ? "استُؤنف التشغيل الدوري" : "أُوقف التشغيل الدوري");
+      qc.invalidateQueries({ queryKey: ["engine-schedules"] });
+    } catch (e: any) {
+      toast.error(e?.message ?? "تعذّر التحديث");
+    }
+  };
+
   const script = open ? open.script(ctx) : "";
 
   return (
@@ -163,6 +218,10 @@ export function EnginesPanel({ websites }: { websites: Array<{ id: string; name:
             <Label className="text-xs">مسار الموقع</Label>
             <Input value={rootPath} onChange={(e) => setRootPath(e.target.value)} placeholder={ctx.rootPath} dir="ltr" />
           </div>
+          <div className="space-y-1">
+            <Label className="text-xs">التكرار (دقيقة)</Label>
+            <Input value={intervalMin} onChange={(e) => setIntervalMin(e.target.value)} inputMode="numeric" />
+          </div>
           <div className="md:col-span-3 lg:col-span-6 flex items-center gap-3 pt-1">
             <Switch id="dry" checked={dryRun} onCheckedChange={setDryRun} />
             <Label htmlFor="dry" className="text-sm">محاكاة (Dry Run) — بدون تغيير فعلي على السيرفر</Label>
@@ -204,6 +263,73 @@ export function EnginesPanel({ websites }: { websites: Array<{ id: string; name:
           </Card>
         ))}
       </div>
+
+      <Card>
+        <CardHeader className="pb-2">
+          <CardTitle className="text-base flex items-center gap-2">
+            <Repeat className="w-4 h-4 text-primary" /> المحرّكات الدائمة (تشغيل دوري بلا توقف)
+          </CardTitle>
+        </CardHeader>
+        <CardContent>
+          {!schedules.length ? (
+            <p className="text-sm text-muted-foreground">
+              لا توجد جدولات بعد — افتح أي محرّك واضغط «تشغيل دوري» ليعمل تلقائياً بلا توقف.
+            </p>
+          ) : (
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>المحرّك</TableHead><TableHead>كل</TableHead><TableHead>الحالة</TableHead>
+                  <TableHead>آخر تشغيل</TableHead><TableHead>التشغيل القادم</TableHead><TableHead>مرات</TableHead><TableHead />
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {schedules.map((s) => (
+                  <TableRow key={s.id}>
+                    <TableCell className="text-xs">{s.label ?? s.engine_id}{s.dry_run ? " (محاكاة)" : ""}</TableCell>
+                    <TableCell className="text-xs">{s.interval_minutes} د</TableCell>
+                    <TableCell>
+                      <Badge variant={s.is_active ? "default" : "secondary"}>
+                        {s.is_active ? "يعمل" : "متوقف"}
+                      </Badge>
+                      {s.last_status === "failed" && (
+                        <Badge variant="destructive" className="ms-1 text-[10px]">خطأ</Badge>
+                      )}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {s.last_run_at ? new Date(s.last_run_at).toLocaleString("ar") : "—"}
+                    </TableCell>
+                    <TableCell className="text-xs text-muted-foreground">
+                      {s.next_run_at ? new Date(s.next_run_at).toLocaleString("ar") : "—"}
+                    </TableCell>
+                    <TableCell className="text-xs">{s.run_count ?? 0}</TableCell>
+                    <TableCell className="flex gap-1">
+                      <Button size="sm" variant="outline" onClick={() => toggleSchedule(s.id, !s.is_active)}>
+                        {s.is_active ? <Pause className="w-3.5 h-3.5" /> : <Play className="w-3.5 h-3.5" />}
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={async () => {
+                          try {
+                            await fireSchedule({ data: { id: s.id } });
+                            toast.success("سيبدأ التنفيذ خلال دقائق");
+                            qc.invalidateQueries({ queryKey: ["engine-schedules"] });
+                          } catch (e: any) {
+                            toast.error(e?.message ?? "تعذّر التشغيل");
+                          }
+                        }}
+                      >
+                        تشغيل الآن
+                      </Button>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          )}
+        </CardContent>
+      </Card>
 
       <Card>
         <CardHeader className="pb-2">
@@ -267,6 +393,9 @@ export function EnginesPanel({ websites }: { websites: Array<{ id: string; name:
                 تشغيل على كل مواقع السيرفر
               </Button>
             )}
+            <Button variant="secondary" disabled={busy} onClick={() => open && schedule(open)}>
+              <Repeat className="w-4 h-4 ml-1" /> تشغيل دوري كل {Number(intervalMin) || 60} دقيقة
+            </Button>
             <Button disabled={busy} onClick={() => open && execute(open)}>
               <Play className="w-4 h-4 ml-1" /> تشغيل عبر الوكيل
             </Button>

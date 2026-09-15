@@ -69,6 +69,36 @@ export function SiteTransfersTable() {
     }
   };
 
+  const activateAll = async () => {
+    if (running) return;
+    setAllActive(true);
+    localStorage.setItem(ALL_KEY, "1");
+    setRunning(true);
+    const targets = filtered;
+    setProgress({ done: 0, total: targets.length });
+    let ok = 0;
+    let fail = 0;
+    for (let i = 0; i < targets.length; i++) {
+      try {
+        await createTask({ data: { websiteId: targets[i].id, direction: "export" } });
+        ok += 1;
+      } catch {
+        fail += 1;
+      }
+      setProgress({ done: i + 1, total: targets.length });
+    }
+    setRunning(false);
+    setProgress(null);
+    qc.invalidateQueries({ queryKey: ["site-transfers"] });
+    toast.success(`تم تفعيل الكل — ${ok} مهمة${fail ? ` · ${fail} فشلت` : ""}`);
+  };
+
+  const deactivateAll = () => {
+    setAllActive(false);
+    localStorage.removeItem(ALL_KEY);
+    toast.info("تم تعطيل وضع «تفعيل الكل» يدوياً");
+  };
+
   const exportCsv = () => {
     const head = ["site_code", "domain", "name", "size_bytes", "uptime_7d", "checks_7d", "first", "current", "last_copy_at", "tasks"];
     const csv = [

@@ -144,6 +144,7 @@ function SectionContent({ section, data, selected, connection, server, actionMut
   if (section === "sites") return <SitesPanel data={data} selected={selected} provisionMutation={provisionMutation} />;
   if (section === "tables") return <TableEditor databaseId={selected.id} hasAgent={Boolean(selected.server_id) || selected.db_kind === "internal"} />;
   if (section === "templates") return <TemplateLibrary databaseId={selected.id} hasAgent={Boolean(selected.server_id) || selected.db_kind === "internal"} />;
+  if (section === "sync") return <SyncPanel />;
   if (section === "activity") return <ActivityPanel data={data} selected={selected} />;
   if (section === "backups") return <BackupsPanel data={data} selected={selected} mutation={actionMutation} />;
   if (section === "integrations") return <IntegrationsPanel data={data} selected={selected} connection={connection} server={server} mutation={actionMutation} />;

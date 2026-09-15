@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -28,12 +28,21 @@ const statusStyle = (s?: string | null) =>
         ? "bg-destructive/20 text-destructive border-destructive/40"
         : "bg-muted text-muted-foreground border-border";
 
+const ALL_KEY = "tvcc.siteTransfers.allActive";
+
 export function SiteTransfersTable() {
   const qc = useQueryClient();
   const load = useServerFn(listSiteTransfers);
   const createTask = useServerFn(createSiteTransferTask);
   const [q, setQ] = useState("");
   const [busy, setBusy] = useState<string | null>(null);
+  const [allActive, setAllActive] = useState(false);
+  const [running, setRunning] = useState(false);
+  const [progress, setProgress] = useState<{ done: number; total: number } | null>(null);
+
+  useEffect(() => {
+    if (typeof window !== "undefined" && localStorage.getItem(ALL_KEY) === "1") setAllActive(true);
+  }, []);
 
   const { data, isLoading, isFetching, refetch } = useQuery({
     queryKey: ["site-transfers"],
@@ -58,6 +67,36 @@ export function SiteTransfersTable() {
     } finally {
       setBusy(null);
     }
+  };
+
+  const activateAll = async () => {
+    if (running) return;
+    setAllActive(true);
+    localStorage.setItem(ALL_KEY, "1");
+    setRunning(true);
+    const targets = filtered;
+    setProgress({ done: 0, total: targets.length });
+    let ok = 0;
+    let fail = 0;
+    for (let i = 0; i < targets.length; i++) {
+      try {
+        await createTask({ data: { websiteId: targets[i].id, direction: "export" } });
+        ok += 1;
+      } catch {
+        fail += 1;
+      }
+      setProgress({ done: i + 1, total: targets.length });
+    }
+    setRunning(false);
+    setProgress(null);
+    qc.invalidateQueries({ queryKey: ["site-transfers"] });
+    toast.success(`تم تفعيل الكل — ${ok} مهمة${fail ? ` · ${fail} فشلت` : ""}`);
+  };
+
+  const deactivateAll = () => {
+    setAllActive(false);
+    localStorage.removeItem(ALL_KEY);
+    toast.info("تم تعطيل وضع «تفعيل الكل» يدوياً");
   };
 
   const exportCsv = () => {
@@ -87,6 +126,17 @@ export function SiteTransfersTable() {
             <Search className="w-3.5 h-3.5 absolute right-2.5 top-2.5 text-muted-foreground" />
             <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="بحث بالمعرف أو النطاق..." className="h-8 pr-8 text-xs w-52" />
           </div>
+          <Button
+            size="sm"
+            variant="outline"
+            className={`h-8 text-xs ${allActive ? "border-success/50 bg-success/20 text-success hover:bg-success/25" : ""}`}
+            title={allActive ? "الوضع مفعّل — اضغط لتعطيله يدوياً" : "تفعيل جميع المواقع وتنفيذ المهام"}
+            disabled={running}
+            onClick={() => (allActive ? deactivateAll() : activateAll())}
+          >
+            {running ? <Loader2 className="w-3.5 h-3.5 animate-spin ml-1" /> : <ListChecks className="w-3.5 h-3.5 ml-1" />}
+            {running && progress ? `${progress.done}/${progress.total}` : allActive ? "الكل مفعّل" : "تفعيل الكل"}
+          </Button>
           <Button size="sm" variant="outline" className="h-8" onClick={() => refetch()}>
             <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? "animate-spin" : ""}`} />
           </Button>
@@ -144,26 +194,34 @@ export function SiteTransfersTable() {
                   </TableCell>
                   <TableCell>
                     <div className="flex gap-1">
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        title={r.ready ? "جاهز للتشغيل التلقائي" : !r.has_agent ? "لا يوجد وكيل متصل على سيرفر الموقع" : !r.has_destination ? "لا توجد وجهة نسخ مفعّلة" : "الموقع غير مفعّل"}
-                        className={`h-7 text-[11px] ${r.ready ? "border-success/50 bg-success/15 text-success hover:bg-success/25" : "border-destructive/50 bg-destructive/15 text-destructive hover:bg-destructive/25"}`}
-                        disabled={busy === `${r.id}-export`}
-                        onClick={() => run(r.id, "export")}
-                      >
-                        {busy === `${r.id}-export` ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3 ml-1" />} تصدير
-                      </Button>
-                      <Button
-                        size="sm"
-                        variant="outline"
-                        title={r.ready ? "جاهز للتشغيل التلقائي" : !r.has_agent ? "لا يوجد وكيل متصل على سيرفر الموقع" : !r.has_destination ? "لا توجد وجهة نسخ مفعّلة" : "الموقع غير مفعّل"}
-                        className={`h-7 text-[11px] ${r.ready ? "border-success/50 bg-success/15 text-success hover:bg-success/25" : "border-destructive/50 bg-destructive/15 text-destructive hover:bg-destructive/25"}`}
-                        disabled={busy === `${r.id}-import`}
-                        onClick={() => run(r.id, "import")}
-                      >
-                        {busy === `${r.id}-import` ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3 ml-1" />} استيراد
-                      </Button>
+                      {(() => {
+                        const working =
+                          allActive ||
+                          r.ready ||
+                          busy === `${r.id}-export` ||
+                          busy === `${r.id}-import` ||
+                          ["pending", "running", "success"].includes(r.last_task?.status ?? "");
+                        const cls = `h-7 text-[11px] ${working ? "border-success/50 bg-success/15 text-success hover:bg-success/25" : "border-destructive/50 bg-destructive/15 text-destructive hover:bg-destructive/25"}`;
+                        const tip = allActive
+                          ? "مفعّل عبر «تفعيل الكل»"
+                          : working
+                            ? "يعمل — جاهز للتشغيل"
+                            : !r.has_agent
+                              ? "لا يوجد وكيل متصل على سيرفر الموقع"
+                              : !r.has_destination
+                                ? "لا توجد وجهة نسخ مفعّلة"
+                                : "الموقع غير مفعّل";
+                        return (
+                          <>
+                            <Button size="sm" variant="outline" title={tip} className={cls} disabled={busy === `${r.id}-export`} onClick={() => run(r.id, "export")}>
+                              {busy === `${r.id}-export` ? <Loader2 className="w-3 h-3 animate-spin" /> : <Download className="w-3 h-3 ml-1" />} تصدير
+                            </Button>
+                            <Button size="sm" variant="outline" title={tip} className={cls} disabled={busy === `${r.id}-import`} onClick={() => run(r.id, "import")}>
+                              {busy === `${r.id}-import` ? <Loader2 className="w-3 h-3 animate-spin" /> : <Upload className="w-3 h-3 ml-1" />} استيراد
+                            </Button>
+                          </>
+                        );
+                      })()}
                     </div>
                   </TableCell>
                 </TableRow>

@@ -156,6 +156,8 @@ function AssetsPage() {
           {websites.length > 150 && <p className="text-xs text-muted-foreground pt-3">تُعرض أول 150 نتيجة — استخدم البحث لتضييق النطاق.</p>}
         </CardContent>
       </Card>
+        </TabsContent>
+      </Tabs>
     </div>
   );
 }

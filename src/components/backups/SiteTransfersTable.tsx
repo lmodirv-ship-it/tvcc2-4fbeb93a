@@ -126,6 +126,17 @@ export function SiteTransfersTable() {
             <Search className="w-3.5 h-3.5 absolute right-2.5 top-2.5 text-muted-foreground" />
             <Input value={q} onChange={(e) => setQ(e.target.value)} placeholder="بحث بالمعرف أو النطاق..." className="h-8 pr-8 text-xs w-52" />
           </div>
+          <Button
+            size="sm"
+            variant="outline"
+            className={`h-8 text-xs ${allActive ? "border-success/50 bg-success/20 text-success hover:bg-success/25" : ""}`}
+            title={allActive ? "الوضع مفعّل — اضغط لتعطيله يدوياً" : "تفعيل جميع المواقع وتنفيذ المهام"}
+            disabled={running}
+            onClick={() => (allActive ? deactivateAll() : activateAll())}
+          >
+            {running ? <Loader2 className="w-3.5 h-3.5 animate-spin ml-1" /> : <ListChecks className="w-3.5 h-3.5 ml-1" />}
+            {running && progress ? `${progress.done}/${progress.total}` : allActive ? "الكل مفعّل" : "تفعيل الكل"}
+          </Button>
           <Button size="sm" variant="outline" className="h-8" onClick={() => refetch()}>
             <RefreshCw className={`w-3.5 h-3.5 ${isFetching ? "animate-spin" : ""}`} />
           </Button>

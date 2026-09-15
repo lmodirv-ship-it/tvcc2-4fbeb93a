@@ -126,39 +126,65 @@ function BackupsPage() {
 
   const rows = (data ?? []) as any[];
 
+  // إعادة المحاولة تلقائياً بعد 5 ثوانٍ عند أي توقف/فشل
+  const sleep = (ms: number) => new Promise((r) => setTimeout(r, ms));
+  const withRetry = async <T,>(label: string, fn: () => Promise<T>, attempts = 3): Promise<T | null> => {
+    for (let i = 1; i <= attempts; i++) {
+      try {
+        return await fn();
+      } catch (e) {
+        const msg = (e as Error).message || "خطأ غير معروف";
+        if (i === attempts) {
+          toast.error(`${label} فشل: ${msg}`);
+          return null;
+        }
+        toast.warning(`${label} توقّف (${msg}) — إعادة المحاولة بعد 5 ثوانٍ…`);
+        await sleep(5000);
+      }
+    }
+    return null;
+  };
+
   const downloadExport = async () => {
     if (!siteId) return toast.error("اختر موقعاً أولاً");
     setBusy(true);
-    try {
-      const payload = await doExport({ data: { websiteId: siteId } });
-      const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
-      const a = document.createElement("a");
-      a.href = URL.createObjectURL(blob);
-      a.download = `${(payload as any).site.domain}-export.json`;
-      a.click();
-      URL.revokeObjectURL(a.href);
-      toast.success("تم التصدير");
-    } catch (e) {
-      toast.error((e as Error).message);
-    } finally {
-      setBusy(false);
+    const payload = await withRetry("التصدير", () => doExport({ data: { websiteId: siteId } }));
+    if (payload) {
+      try {
+        const blob = new Blob([JSON.stringify(payload, null, 2)], { type: "application/json" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = `${(payload as any).site?.domain ?? "site"}-export.json`;
+        document.body.appendChild(a);
+        a.click();
+        a.remove();
+        setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+        toast.success("تم التصدير");
+      } catch (e) {
+        toast.error((e as Error).message);
+      }
     }
+    setBusy(false);
   };
 
   const uploadImport = async (file: File) => {
     setBusy(true);
+    let payload: any;
     try {
-      const payload = JSON.parse(await file.text());
-      const r: any = await doImport({ data: { payload } });
-      toast.success(`تم الاستيراد (${r.envCount} متغيّر بيئة)`);
+      payload = JSON.parse(await file.text());
+    } catch {
+      setBusy(false);
+      return toast.error("ملف الاستيراد ليس JSON صالحاً");
+    }
+    const r: any = await withRetry("الاستيراد", () => doImport({ data: { payload } }));
+    if (r) {
+      toast.success(`تم الاستيراد (${r.envCount ?? 0} متغيّر بيئة)`);
       qc.invalidateQueries({ queryKey: ["backup-sites"] });
       qc.invalidateQueries({ queryKey: ["operations"] });
-    } catch (e) {
-      toast.error((e as Error).message);
-    } finally {
-      setBusy(false);
     }
+    setBusy(false);
   };
+
 
   return (
     <div className="p-6 space-y-6">

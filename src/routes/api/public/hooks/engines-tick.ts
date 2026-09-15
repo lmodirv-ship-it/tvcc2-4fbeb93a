@@ -6,7 +6,8 @@ export const Route = createFileRoute("/api/public/hooks/engines-tick")({
   server: {
     handlers: {
       POST: async ({ request }) => {
-        const expected = process.env["ENGINES_CRON_SECRET"];
+        const expected =
+          process.env["ENGINES_TICK_SECRET"] ?? process.env["ENGINES_CRON_SECRET"];
         if (!expected) return new Response("Not configured", { status: 500 });
         const url = new URL(request.url);
         const provided =

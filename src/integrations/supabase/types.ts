@@ -2419,6 +2419,69 @@ export type Database = {
         }
         Relationships: []
       }
+      engine_schedules: {
+        Row: {
+          created_at: string
+          created_by: string | null
+          ctx: Json
+          dry_run: boolean
+          engine_id: string
+          id: string
+          interval_minutes: number
+          is_active: boolean
+          label: string | null
+          last_error: string | null
+          last_run_at: string | null
+          last_status: string | null
+          next_run_at: string
+          owner_id: string
+          run_count: number
+          server_id: string | null
+          updated_at: string
+          website_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          created_by?: string | null
+          ctx?: Json
+          dry_run?: boolean
+          engine_id: string
+          id?: string
+          interval_minutes?: number
+          is_active?: boolean
+          label?: string | null
+          last_error?: string | null
+          last_run_at?: string | null
+          last_status?: string | null
+          next_run_at?: string
+          owner_id: string
+          run_count?: number
+          server_id?: string | null
+          updated_at?: string
+          website_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          created_by?: string | null
+          ctx?: Json
+          dry_run?: boolean
+          engine_id?: string
+          id?: string
+          interval_minutes?: number
+          is_active?: boolean
+          label?: string | null
+          last_error?: string | null
+          last_run_at?: string | null
+          last_status?: string | null
+          next_run_at?: string
+          owner_id?: string
+          run_count?: number
+          server_id?: string | null
+          updated_at?: string
+          website_id?: string | null
+        }
+        Relationships: []
+      }
       entity_relations: {
         Row: {
           created_at: string

@@ -1,10 +1,10 @@
 import { createCipheriv, createDecipheriv, randomBytes, scryptSync } from "crypto";
 
 /** نفس اشتقاق مفتاح الخزنة المستخدم في server-ops حتى تُقرأ الأسرار نفسها. */
-const VAULT_FALLBACK_KEY = "tvcc-hn-groupe-vault-default-master-key-2026";
 
 function vaultKey() {
-  const key = process.env["VAULT_MASTER_KEY"] || VAULT_FALLBACK_KEY;
+  const key = process.env["VAULT_MASTER_KEY"];
+  if (!key) throw new Error("VAULT_MASTER_KEY غير مضبوط — الخزنة معطّلة حتى ضبط المفتاح");
   return scryptSync(key, "tvcc-vault-salt", 32);
 }
 

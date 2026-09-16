@@ -3,7 +3,7 @@ import { useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useServerFn } from "@tanstack/react-start";
 import { supabase } from "@/integrations/supabase/client";
-import { getCheckoutPaymentAccount } from "@/lib/payments.functions";
+import { getCheckoutPaymentAccount, createCheckoutOrder } from "@/lib/payments.functions";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -44,6 +44,7 @@ function CheckoutPage() {
   });
 
   const loadAccount = useServerFn(getCheckoutPaymentAccount);
+  const createOrder = useServerFn(createCheckoutOrder);
   const { data: account, isLoading } = useQuery({
     queryKey: ["payment-account-default"],
     queryFn: async () => {

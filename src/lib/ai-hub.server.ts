@@ -3,10 +3,10 @@
 import { AI_TOOLS } from "./ai-tools.server";
 import { createDecipheriv, scryptSync } from "crypto";
 
-const VAULT_FALLBACK_KEY = "tvcc-hn-groupe-vault-default-master-key-2026";
-
 function vaultDecrypt(ciphertext: string, iv: string): string {
-  const key = scryptSync(process.env["VAULT_MASTER_KEY"] || VAULT_FALLBACK_KEY, "tvcc-vault-salt", 32);
+  const master = process.env["VAULT_MASTER_KEY"];
+  if (!master) throw new Error("VAULT_MASTER_KEY غير مضبوط — الخزنة معطّلة حتى ضبط المفتاح");
+  const key = scryptSync(master, "tvcc-vault-salt", 32);
   const buf = Buffer.from(ciphertext, "base64");
   const decipher = createDecipheriv("aes-256-gcm", key, Buffer.from(iv, "base64"));
   decipher.setAuthTag(buf.subarray(0, 16));

@@ -781,8 +781,11 @@ export const revealVaultSecret = createServerFn({ method: "POST" })
     const sb = context.supabase as any;
     const { data: row, error } = await sb.from("vault_secrets").select("*").eq("id", data.id).maybeSingle();
     if (error || !row) throw new Error("السر غير موجود");
-    const plain = decryptSecret(row.encrypted_value, row.iv);
-    return { value: plain, name: row.name, kind: row.kind };
+    const packed = String(row.value_encrypted ?? "");
+    const sep = packed.indexOf(":");
+    if (sep < 0) throw new Error("تعذّر فك تشفير السر");
+    const plain = decryptSecret(packed.slice(sep + 1), packed.slice(0, sep));
+    return { value: plain, name: row.name, kind: row.category };
   });
 
 export const rotateVaultSecret = createServerFn({ method: "POST" })
@@ -793,7 +796,7 @@ export const rotateVaultSecret = createServerFn({ method: "POST" })
     const { ciphertext, iv } = encryptSecret(data.newValue);
     const { error } = await sb
       .from("vault_secrets")
-      .update({ encrypted_value: ciphertext, iv, masked_value: mask(data.newValue), updated_at: new Date().toISOString() })
+      .update({ value_encrypted: `${iv}:${ciphertext}`, last_rotated_at: new Date().toISOString(), updated_at: new Date().toISOString() })
       .eq("id", data.id);
     if (error) throw new Error(error.message);
 

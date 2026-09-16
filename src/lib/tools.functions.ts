@@ -61,7 +61,8 @@ export const getTool = createServerFn({ method: "POST" })
     const sb = context.supabase as any;
     let { data: tool } = await sb.from("platform_tools").select("*").eq("slug", data.slug).maybeSingle();
     if (!tool) {
-      const alt = await sb.from("platform_tools").select("*").or(`id.eq.${data.slug},code.eq.${data.slug}`).maybeSingle();
+      const isUuid = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(data.slug);
+      const alt = await sb.from("platform_tools").select("*").eq(isUuid ? "id" : "code", data.slug).maybeSingle();
       tool = alt.data;
     }
     if (!tool) return { tool: null, pages: [], installs: [], links: [], servers: [], commands: [] };

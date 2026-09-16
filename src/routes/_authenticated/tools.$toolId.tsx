@@ -66,6 +66,15 @@ function ToolDetail() {
   }
 
   const { tool, pages, installs, links, servers, commands } = query.data as any;
+  if (!tool) {
+    return (
+      <div className="p-8 text-center space-y-3" dir="rtl">
+        <h2 className="text-lg font-bold">الأداة غير موجودة</h2>
+        <p className="text-sm text-muted-foreground">لم نعثر على أداة بهذا المعرّف. ارجع إلى مركز الأدوات واختر أداة من القائمة.</p>
+        <Button asChild variant="outline" size="sm"><Link to="/tools">مركز الأدوات</Link></Button>
+      </div>
+    );
+  }
   const terminal = tool.install_cmd ? `sudo ${tool.install_cmd}` : "—";
   const mainPage = pages[0];
   const uiUrl = (i: any) => {

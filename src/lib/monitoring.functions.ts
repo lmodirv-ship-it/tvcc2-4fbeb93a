@@ -28,7 +28,9 @@ export const getMonitoringOverview = createServerFn({ method: "GET" })
         safe<any>(
           sb
             .from("engine_schedules")
-            .select("id,engine,server_id,website_id,interval_minutes,is_active,last_run_at,next_run_at,last_status,runs")
+            .select(
+              "id,engine_id,label,server_id,website_id,interval_minutes,is_active,last_run_at,next_run_at,last_status,run_count",
+            )
             .order("next_run_at", { ascending: true })
             .limit(200),
         ),

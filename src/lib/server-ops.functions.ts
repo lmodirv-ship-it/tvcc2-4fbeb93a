@@ -715,7 +715,7 @@ export const listVaultSecrets = createServerFn({ method: "POST" })
     const sb = context.supabase as any;
     let q = sb
       .from("vault_secrets")
-      .select("id, owner_id, server_id, website_id, name, kind, description, masked_value, expires_at, created_at, updated_at")
+      .select("id, owner_id, server_id, website_id, name, category, description, expires_at, created_at, updated_at")
       .order("created_at", { ascending: false });
     if (data?.serverId) q = q.eq("server_id", data.serverId);
     if (data?.websiteId) q = q.eq("website_id", data.websiteId);
@@ -748,11 +748,9 @@ export const createVaultSecret = createServerFn({ method: "POST" })
         server_id: data.serverId ?? null,
         website_id: data.websiteId ?? null,
         name: data.name,
-        kind: data.category ?? data.kind ?? "generic",
+        category: data.category ?? data.kind ?? "generic",
         description: data.description ?? null,
-        encrypted_value: ciphertext,
-        iv,
-        masked_value: mask(data.value),
+        value_encrypted: `${iv}:${ciphertext}`,
         expires_at: data.expiresAt ?? null,
       })
       .select("id")
@@ -762,8 +760,7 @@ export const createVaultSecret = createServerFn({ method: "POST" })
     await sb.from("vault_secret_versions").insert({
       owner_id: context.userId,
       secret_id: row?.id,
-      encrypted_value: ciphertext,
-      iv,
+      value_encrypted: `${iv}:${ciphertext}`,
       rotated_by: context.userId,
     });
 
@@ -784,8 +781,11 @@ export const revealVaultSecret = createServerFn({ method: "POST" })
     const sb = context.supabase as any;
     const { data: row, error } = await sb.from("vault_secrets").select("*").eq("id", data.id).maybeSingle();
     if (error || !row) throw new Error("السر غير موجود");
-    const plain = decryptSecret(row.encrypted_value, row.iv);
-    return { value: plain, name: row.name, kind: row.kind };
+    const packed = String(row.value_encrypted ?? "");
+    const sep = packed.indexOf(":");
+    if (sep < 0) throw new Error("تعذّر فك تشفير السر");
+    const plain = decryptSecret(packed.slice(sep + 1), packed.slice(0, sep));
+    return { value: plain, name: row.name, kind: row.category };
   });
 
 export const rotateVaultSecret = createServerFn({ method: "POST" })
@@ -796,15 +796,14 @@ export const rotateVaultSecret = createServerFn({ method: "POST" })
     const { ciphertext, iv } = encryptSecret(data.newValue);
     const { error } = await sb
       .from("vault_secrets")
-      .update({ encrypted_value: ciphertext, iv, masked_value: mask(data.newValue), updated_at: new Date().toISOString() })
+      .update({ value_encrypted: `${iv}:${ciphertext}`, last_rotated_at: new Date().toISOString(), updated_at: new Date().toISOString() })
       .eq("id", data.id);
     if (error) throw new Error(error.message);
 
     await sb.from("vault_secret_versions").insert({
       owner_id: context.userId,
       secret_id: data.id,
-      encrypted_value: ciphertext,
-      iv,
+      value_encrypted: `${iv}:${ciphertext}`,
       rotated_by: context.userId,
     });
 

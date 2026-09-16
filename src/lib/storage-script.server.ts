@@ -182,7 +182,7 @@ async function runTask(task, docRoots) {
   fs.mkdirSync(mirror, { recursive: true });
   if (has('wget')) {
     sh('wget --mirror --convert-links --adjust-extension --page-requisites --no-parent -q -e robots=off -P ' +
-      q(mirror) + ' https://' + host + ' 2>/dev/null');
+      q(mirror) + ' ' + q('https://' + host) + ' 2>/dev/null');
   }
   if (isEmptyDir(mirror)) {
     const ok = await saveSinglePage(host, mirror);

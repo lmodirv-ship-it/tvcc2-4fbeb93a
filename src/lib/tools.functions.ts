@@ -59,8 +59,12 @@ export const getTool = createServerFn({ method: "POST" })
   .inputValidator((input: { slug: string }) => input)
   .handler(async ({ data, context }) => {
     const sb = context.supabase as any;
-    const { data: tool } = await sb.from("platform_tools").select("*").eq("slug", data.slug).maybeSingle();
-    if (!tool) throw new Error("الأداة غير موجودة");
+    let { data: tool } = await sb.from("platform_tools").select("*").eq("slug", data.slug).maybeSingle();
+    if (!tool) {
+      const alt = await sb.from("platform_tools").select("*").or(`id.eq.${data.slug},code.eq.${data.slug}`).maybeSingle();
+      tool = alt.data;
+    }
+    if (!tool) return { tool: null, pages: [], installs: [], links: [], servers: [], commands: [] };
     const [pagesRes, installsRes, linksRes, serversRes, cmdRes] = await Promise.all([
       sb.from("platform_tool_pages").select("*").eq("tool_id", tool.id),
       sb.from("platform_tool_installs").select("*").eq("tool_id", tool.id),

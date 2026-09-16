@@ -75,6 +75,7 @@ import { Route as AuthenticatedAiChatRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
+import { Route as AuthenticatedToolsIndexRouteImport } from './routes/_authenticated/tools.index'
 import { Route as AuthenticatedServersIndexRouteImport } from './routes/_authenticated/servers.index'
 import { Route as AuthenticatedFederatedIndexRouteImport } from './routes/_authenticated/federated.index'
 import { Route as AuthenticatedEditorIndexRouteImport } from './routes/_authenticated/editor.index'
@@ -488,6 +489,11 @@ const Char91DotmcpChar93ListToolsRoute =
     path: '/.mcp/list-tools',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthenticatedToolsIndexRoute = AuthenticatedToolsIndexRouteImport.update({
+  id: '/tools/',
+  path: '/tools/',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedServersIndexRoute =
   AuthenticatedServersIndexRouteImport.update({
     id: '/servers/',
@@ -971,6 +977,7 @@ export interface FileRoutesByFullPath {
   '/editor/': typeof AuthenticatedEditorIndexRoute
   '/federated/': typeof AuthenticatedFederatedIndexRoute
   '/servers/': typeof AuthenticatedServersIndexRoute
+  '/tools/': typeof AuthenticatedToolsIndexRoute
   '/servers/$serverId/cockpit': typeof AuthenticatedServersServerIdCockpitRoute
   '/api/public/backups/inventory': typeof ApiPublicBackupsInventoryRoute
   '/api/public/backups/link': typeof ApiPublicBackupsLinkRoute
@@ -1105,6 +1112,7 @@ export interface FileRoutesByTo {
   '/editor': typeof AuthenticatedEditorIndexRoute
   '/federated': typeof AuthenticatedFederatedIndexRoute
   '/servers': typeof AuthenticatedServersIndexRoute
+  '/tools': typeof AuthenticatedToolsIndexRoute
   '/servers/$serverId/cockpit': typeof AuthenticatedServersServerIdCockpitRoute
   '/api/public/backups/inventory': typeof ApiPublicBackupsInventoryRoute
   '/api/public/backups/link': typeof ApiPublicBackupsLinkRoute
@@ -1243,6 +1251,7 @@ export interface FileRoutesById {
   '/_authenticated/editor/': typeof AuthenticatedEditorIndexRoute
   '/_authenticated/federated/': typeof AuthenticatedFederatedIndexRoute
   '/_authenticated/servers/': typeof AuthenticatedServersIndexRoute
+  '/_authenticated/tools/': typeof AuthenticatedToolsIndexRoute
   '/_authenticated/servers_/$serverId/cockpit': typeof AuthenticatedServersServerIdCockpitRoute
   '/api/public/backups/inventory': typeof ApiPublicBackupsInventoryRoute
   '/api/public/backups/link': typeof ApiPublicBackupsLinkRoute
@@ -1381,6 +1390,7 @@ export interface FileRouteTypes {
     | '/editor/'
     | '/federated/'
     | '/servers/'
+    | '/tools/'
     | '/servers/$serverId/cockpit'
     | '/api/public/backups/inventory'
     | '/api/public/backups/link'
@@ -1515,6 +1525,7 @@ export interface FileRouteTypes {
     | '/editor'
     | '/federated'
     | '/servers'
+    | '/tools'
     | '/servers/$serverId/cockpit'
     | '/api/public/backups/inventory'
     | '/api/public/backups/link'
@@ -1652,6 +1663,7 @@ export interface FileRouteTypes {
     | '/_authenticated/editor/'
     | '/_authenticated/federated/'
     | '/_authenticated/servers/'
+    | '/_authenticated/tools/'
     | '/_authenticated/servers_/$serverId/cockpit'
     | '/api/public/backups/inventory'
     | '/api/public/backups/link'
@@ -2206,6 +2218,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/.mcp/list-tools'
       preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/tools/': {
+      id: '/_authenticated/tools/'
+      path: '/tools'
+      fullPath: '/tools/'
+      preLoaderRoute: typeof AuthenticatedToolsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/servers/': {
       id: '/_authenticated/servers/'
@@ -2846,6 +2865,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDomainSettingsDomainRoute: typeof AuthenticatedDomainSettingsDomainRoute
   AuthenticatedServersServerIdRoute: typeof AuthenticatedServersServerIdRoute
   AuthenticatedServersIndexRoute: typeof AuthenticatedServersIndexRoute
+  AuthenticatedToolsIndexRoute: typeof AuthenticatedToolsIndexRoute
   AuthenticatedServersServerIdCockpitRoute: typeof AuthenticatedServersServerIdCockpitRoute
 }
 
@@ -2907,6 +2927,7 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
     AuthenticatedDomainSettingsDomainRoute,
   AuthenticatedServersServerIdRoute: AuthenticatedServersServerIdRoute,
   AuthenticatedServersIndexRoute: AuthenticatedServersIndexRoute,
+  AuthenticatedToolsIndexRoute: AuthenticatedToolsIndexRoute,
   AuthenticatedServersServerIdCockpitRoute:
     AuthenticatedServersServerIdCockpitRoute,
 }

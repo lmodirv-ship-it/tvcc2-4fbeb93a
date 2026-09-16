@@ -760,8 +760,7 @@ export const createVaultSecret = createServerFn({ method: "POST" })
     await sb.from("vault_secret_versions").insert({
       owner_id: context.userId,
       secret_id: row?.id,
-      encrypted_value: ciphertext,
-      iv,
+      value_encrypted: `${iv}:${ciphertext}`,
       rotated_by: context.userId,
     });
 

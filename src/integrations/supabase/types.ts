@@ -4164,6 +4164,57 @@ export type Database = {
           },
         ]
       }
+      monitoring_events: {
+        Row: {
+          created_at: string
+          event_type: string
+          id: string
+          message: string | null
+          metadata: Json
+          owner_id: string
+          server_id: string | null
+          status: string
+          website_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          event_type: string
+          id?: string
+          message?: string | null
+          metadata?: Json
+          owner_id: string
+          server_id?: string | null
+          status?: string
+          website_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          event_type?: string
+          id?: string
+          message?: string | null
+          metadata?: Json
+          owner_id?: string
+          server_id?: string | null
+          status?: string
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monitoring_events_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "monitoring_events_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       monitoring_keys: {
         Row: {
           created_at: string
@@ -8636,6 +8687,119 @@ export type Database = {
           role?: Database["public"]["Enums"]["app_role"]
         }
         Relationships: []
+      }
+      tvcc_node_links: {
+        Row: {
+          created_at: string
+          id: string
+          key_fingerprint: string | null
+          last_exchange_at: string | null
+          link_type: string
+          metadata: Json
+          owner_id: string
+          source_node_id: string
+          status: string
+          target_node_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          key_fingerprint?: string | null
+          last_exchange_at?: string | null
+          link_type?: string
+          metadata?: Json
+          owner_id: string
+          source_node_id: string
+          status?: string
+          target_node_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          key_fingerprint?: string | null
+          last_exchange_at?: string | null
+          link_type?: string
+          metadata?: Json
+          owner_id?: string
+          source_node_id?: string
+          status?: string
+          target_node_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tvcc_node_links_source_node_id_fkey"
+            columns: ["source_node_id"]
+            isOneToOne: false
+            referencedRelation: "tvcc_nodes"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "tvcc_node_links_target_node_id_fkey"
+            columns: ["target_node_id"]
+            isOneToOne: false
+            referencedRelation: "tvcc_nodes"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      tvcc_nodes: {
+        Row: {
+          base_url: string | null
+          created_at: string
+          id: string
+          key_fingerprint: string | null
+          label: string | null
+          last_beacon_at: string | null
+          metadata: Json
+          node_code: string
+          owner_id: string
+          server_id: string | null
+          status: string
+          updated_at: string
+          version: string | null
+        }
+        Insert: {
+          base_url?: string | null
+          created_at?: string
+          id?: string
+          key_fingerprint?: string | null
+          label?: string | null
+          last_beacon_at?: string | null
+          metadata?: Json
+          node_code: string
+          owner_id: string
+          server_id?: string | null
+          status?: string
+          updated_at?: string
+          version?: string | null
+        }
+        Update: {
+          base_url?: string | null
+          created_at?: string
+          id?: string
+          key_fingerprint?: string | null
+          label?: string | null
+          last_beacon_at?: string | null
+          metadata?: Json
+          node_code?: string
+          owner_id?: string
+          server_id?: string | null
+          status?: string
+          updated_at?: string
+          version?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "tvcc_nodes_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       tvcc_probe: {
         Row: {

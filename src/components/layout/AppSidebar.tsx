@@ -4,7 +4,7 @@ import {
   Code2, Wand2, FolderOpen, LayoutTemplate, Radio, ListChecks, Plug,
   Smartphone, KeyRound, Server, ShieldCheck, BadgeCheck, Bell, FileCog, LifeBuoy, ClipboardCheck,
   FileBarChart, Wallet, Boxes, Brain, Film, HardDrive, MessageSquare, History, NotebookPen, Archive, Network, Share2, ScrollText, ShieldAlert, GitBranch, Zap, Download, Link2, Cloud, Globe2, Fingerprint, Rocket, Radar, Database, Shield, HeartPulse, Package, Bot, Container,
-  PanelRightClose, PanelRightOpen, PanelLeftClose, PanelLeftOpen,
+  PanelRightClose, PanelRightOpen, PanelLeftClose, PanelLeftOpen, Wrench,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,
@@ -70,6 +70,7 @@ const aiItems = [
 
 const opsItems = [
   { titleKey: "sidebar.servers", url: "/servers", icon: HardDrive },
+  { titleKey: "sidebar.tools", url: "/tools", icon: Wrench },
   { titleKey: "sidebar.downloads", url: "/downloads", icon: Download },
   { titleKey: "sidebar.connect", url: "/connect", icon: Link2 },
   { titleKey: "sidebar.topology", url: "/topology", icon: Share2 },

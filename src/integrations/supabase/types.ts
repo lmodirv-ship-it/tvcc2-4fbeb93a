@@ -4992,6 +4992,255 @@ export type Database = {
         }
         Relationships: []
       }
+      platform_tool_installs: {
+        Row: {
+          access_url: string | null
+          created_at: string
+          id: string
+          installed: boolean
+          last_action: string | null
+          last_checked_at: string | null
+          last_command_id: string | null
+          last_output: string | null
+          port: number | null
+          server_id: string | null
+          status: string
+          tool_id: string
+          updated_at: string
+          version: string | null
+          website_id: string | null
+        }
+        Insert: {
+          access_url?: string | null
+          created_at?: string
+          id?: string
+          installed?: boolean
+          last_action?: string | null
+          last_checked_at?: string | null
+          last_command_id?: string | null
+          last_output?: string | null
+          port?: number | null
+          server_id?: string | null
+          status?: string
+          tool_id: string
+          updated_at?: string
+          version?: string | null
+          website_id?: string | null
+        }
+        Update: {
+          access_url?: string | null
+          created_at?: string
+          id?: string
+          installed?: boolean
+          last_action?: string | null
+          last_checked_at?: string | null
+          last_command_id?: string | null
+          last_output?: string | null
+          port?: number | null
+          server_id?: string | null
+          status?: string
+          tool_id?: string
+          updated_at?: string
+          version?: string | null
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_tool_installs_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_tool_installs_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "platform_tools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_tool_installs_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_tool_links: {
+        Row: {
+          created_at: string
+          id: string
+          note: string | null
+          related_tool_id: string
+          relation: string
+          tool_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          related_tool_id: string
+          relation?: string
+          tool_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          note?: string | null
+          related_tool_id?: string
+          relation?: string
+          tool_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_tool_links_related_tool_id_fkey"
+            columns: ["related_tool_id"]
+            isOneToOne: false
+            referencedRelation: "platform_tools"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "platform_tool_links_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "platform_tools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_tool_pages: {
+        Row: {
+          created_at: string
+          id: string
+          page_label: string | null
+          page_path: string
+          relation: string
+          tool_id: string
+          updated_at: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          page_label?: string | null
+          page_path: string
+          relation?: string
+          tool_id: string
+          updated_at?: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          page_label?: string | null
+          page_path?: string
+          relation?: string
+          tool_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "platform_tool_pages_tool_id_fkey"
+            columns: ["tool_id"]
+            isOneToOne: false
+            referencedRelation: "platform_tools"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      platform_tools: {
+        Row: {
+          category: string
+          code: string
+          created_at: string
+          default_port: number | null
+          detect_cmd: string | null
+          docker_image: string | null
+          enabled: boolean
+          icon: string | null
+          id: string
+          install_cmd: string | null
+          interface: string | null
+          license: string | null
+          name: string
+          notes: string | null
+          packages: string | null
+          paths: string | null
+          role_desc: string | null
+          services: string | null
+          slug: string
+          start_cmd: string | null
+          status_cmd: string | null
+          stop_cmd: string | null
+          tech: string | null
+          ui_sections: string | null
+          uninstall_cmd: string | null
+          updated_at: string
+          website: string | null
+        }
+        Insert: {
+          category: string
+          code: string
+          created_at?: string
+          default_port?: number | null
+          detect_cmd?: string | null
+          docker_image?: string | null
+          enabled?: boolean
+          icon?: string | null
+          id?: string
+          install_cmd?: string | null
+          interface?: string | null
+          license?: string | null
+          name: string
+          notes?: string | null
+          packages?: string | null
+          paths?: string | null
+          role_desc?: string | null
+          services?: string | null
+          slug: string
+          start_cmd?: string | null
+          status_cmd?: string | null
+          stop_cmd?: string | null
+          tech?: string | null
+          ui_sections?: string | null
+          uninstall_cmd?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Update: {
+          category?: string
+          code?: string
+          created_at?: string
+          default_port?: number | null
+          detect_cmd?: string | null
+          docker_image?: string | null
+          enabled?: boolean
+          icon?: string | null
+          id?: string
+          install_cmd?: string | null
+          interface?: string | null
+          license?: string | null
+          name?: string
+          notes?: string | null
+          packages?: string | null
+          paths?: string | null
+          role_desc?: string | null
+          services?: string | null
+          slug?: string
+          start_cmd?: string | null
+          status_cmd?: string | null
+          stop_cmd?: string | null
+          tech?: string | null
+          ui_sections?: string | null
+          uninstall_cmd?: string | null
+          updated_at?: string
+          website?: string | null
+        }
+        Relationships: []
+      }
       port_links: {
         Row: {
           auto_start: boolean

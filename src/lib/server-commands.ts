@@ -156,6 +156,7 @@ export const COMMAND_WHITELIST = [
   "pkg_upgrade",
   "shell_exec",
   "cockpit_install",
+  "tool_action",
 ] as const;
 
 
@@ -322,6 +323,7 @@ export const COMMAND_LABELS: Record<string, string> = {
   pkg_upgrade: "تثبيت تحديثات Ubuntu",
   shell_exec: "تنفيذ أمر طرفية",
   cockpit_install: "تثبيت وتشغيل Cockpit",
+  tool_action: "تشغيل أداة من مركز الأدوات",
 };
 
 

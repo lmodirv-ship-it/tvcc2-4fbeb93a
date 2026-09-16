@@ -111,7 +111,8 @@
     "publish_sync": "Publication unifiée",
     "manara": "Manara",
     "fed_docker": "Conteneurs (Docker)",
-    "fed_nginx": "Routage (Nginx)"
+    "fed_nginx": "Routage (Nginx)",
+    "tools": "Centre d'outils"
   },
   "dashboard": {
     "title": "Tableau de bord",

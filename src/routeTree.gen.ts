@@ -75,11 +75,13 @@ import { Route as AuthenticatedAiChatRouteImport } from './routes/_authenticated
 import { Route as AuthenticatedActivityRouteImport } from './routes/_authenticated/activity'
 import { Route as Char91DotwellKnownChar93OauthProtectedResourceRouteImport } from './routes/[.well-known]/oauth-protected-resource'
 import { Route as Char91DotmcpChar93ListToolsRouteImport } from './routes/[.mcp]/list-tools'
+import { Route as AuthenticatedToolsIndexRouteImport } from './routes/_authenticated/tools.index'
 import { Route as AuthenticatedServersIndexRouteImport } from './routes/_authenticated/servers.index'
 import { Route as AuthenticatedFederatedIndexRouteImport } from './routes/_authenticated/federated.index'
 import { Route as AuthenticatedEditorIndexRouteImport } from './routes/_authenticated/editor.index'
 import { Route as ApiPublicVisitsRouteImport } from './routes/api/public/visits'
 import { Route as ApiPublicSiteConfigRouteImport } from './routes/api/public/site-config'
+import { Route as AuthenticatedToolsToolIdRouteImport } from './routes/_authenticated/tools.$toolId'
 import { Route as AuthenticatedSettingsNotificationsRouteImport } from './routes/_authenticated/settings.notifications'
 import { Route as AuthenticatedServersServerIdRouteImport } from './routes/_authenticated/servers.$serverId'
 import { Route as AuthenticatedManaraKeyRouteImport } from './routes/_authenticated/manara.$key'
@@ -488,6 +490,11 @@ const Char91DotmcpChar93ListToolsRoute =
     path: '/.mcp/list-tools',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthenticatedToolsIndexRoute = AuthenticatedToolsIndexRouteImport.update({
+  id: '/tools/',
+  path: '/tools/',
+  getParentRoute: () => AuthenticatedRoute,
+} as any)
 const AuthenticatedServersIndexRoute =
   AuthenticatedServersIndexRouteImport.update({
     id: '/servers/',
@@ -516,6 +523,12 @@ const ApiPublicSiteConfigRoute = ApiPublicSiteConfigRouteImport.update({
   path: '/api/public/site-config',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedToolsToolIdRoute =
+  AuthenticatedToolsToolIdRouteImport.update({
+    id: '/tools/$toolId',
+    path: '/tools/$toolId',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const AuthenticatedSettingsNotificationsRoute =
   AuthenticatedSettingsNotificationsRouteImport.update({
     id: '/notifications',
@@ -966,11 +979,13 @@ export interface FileRoutesByFullPath {
   '/manara/$key': typeof AuthenticatedManaraKeyRoute
   '/servers/$serverId': typeof AuthenticatedServersServerIdRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/tools/$toolId': typeof AuthenticatedToolsToolIdRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/api/public/visits': typeof ApiPublicVisitsRoute
   '/editor/': typeof AuthenticatedEditorIndexRoute
   '/federated/': typeof AuthenticatedFederatedIndexRoute
   '/servers/': typeof AuthenticatedServersIndexRoute
+  '/tools/': typeof AuthenticatedToolsIndexRoute
   '/servers/$serverId/cockpit': typeof AuthenticatedServersServerIdCockpitRoute
   '/api/public/backups/inventory': typeof ApiPublicBackupsInventoryRoute
   '/api/public/backups/link': typeof ApiPublicBackupsLinkRoute
@@ -1100,11 +1115,13 @@ export interface FileRoutesByTo {
   '/manara/$key': typeof AuthenticatedManaraKeyRoute
   '/servers/$serverId': typeof AuthenticatedServersServerIdRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/tools/$toolId': typeof AuthenticatedToolsToolIdRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/api/public/visits': typeof ApiPublicVisitsRoute
   '/editor': typeof AuthenticatedEditorIndexRoute
   '/federated': typeof AuthenticatedFederatedIndexRoute
   '/servers': typeof AuthenticatedServersIndexRoute
+  '/tools': typeof AuthenticatedToolsIndexRoute
   '/servers/$serverId/cockpit': typeof AuthenticatedServersServerIdCockpitRoute
   '/api/public/backups/inventory': typeof ApiPublicBackupsInventoryRoute
   '/api/public/backups/link': typeof ApiPublicBackupsLinkRoute
@@ -1238,11 +1255,13 @@ export interface FileRoutesById {
   '/_authenticated/manara/$key': typeof AuthenticatedManaraKeyRoute
   '/_authenticated/servers/$serverId': typeof AuthenticatedServersServerIdRoute
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
+  '/_authenticated/tools/$toolId': typeof AuthenticatedToolsToolIdRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/api/public/visits': typeof ApiPublicVisitsRoute
   '/_authenticated/editor/': typeof AuthenticatedEditorIndexRoute
   '/_authenticated/federated/': typeof AuthenticatedFederatedIndexRoute
   '/_authenticated/servers/': typeof AuthenticatedServersIndexRoute
+  '/_authenticated/tools/': typeof AuthenticatedToolsIndexRoute
   '/_authenticated/servers_/$serverId/cockpit': typeof AuthenticatedServersServerIdCockpitRoute
   '/api/public/backups/inventory': typeof ApiPublicBackupsInventoryRoute
   '/api/public/backups/link': typeof ApiPublicBackupsLinkRoute
@@ -1376,11 +1395,13 @@ export interface FileRouteTypes {
     | '/manara/$key'
     | '/servers/$serverId'
     | '/settings/notifications'
+    | '/tools/$toolId'
     | '/api/public/site-config'
     | '/api/public/visits'
     | '/editor/'
     | '/federated/'
     | '/servers/'
+    | '/tools/'
     | '/servers/$serverId/cockpit'
     | '/api/public/backups/inventory'
     | '/api/public/backups/link'
@@ -1510,11 +1531,13 @@ export interface FileRouteTypes {
     | '/manara/$key'
     | '/servers/$serverId'
     | '/settings/notifications'
+    | '/tools/$toolId'
     | '/api/public/site-config'
     | '/api/public/visits'
     | '/editor'
     | '/federated'
     | '/servers'
+    | '/tools'
     | '/servers/$serverId/cockpit'
     | '/api/public/backups/inventory'
     | '/api/public/backups/link'
@@ -1647,11 +1670,13 @@ export interface FileRouteTypes {
     | '/_authenticated/manara/$key'
     | '/_authenticated/servers/$serverId'
     | '/_authenticated/settings/notifications'
+    | '/_authenticated/tools/$toolId'
     | '/api/public/site-config'
     | '/api/public/visits'
     | '/_authenticated/editor/'
     | '/_authenticated/federated/'
     | '/_authenticated/servers/'
+    | '/_authenticated/tools/'
     | '/_authenticated/servers_/$serverId/cockpit'
     | '/api/public/backups/inventory'
     | '/api/public/backups/link'
@@ -2207,6 +2232,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof Char91DotmcpChar93ListToolsRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/tools/': {
+      id: '/_authenticated/tools/'
+      path: '/tools'
+      fullPath: '/tools/'
+      preLoaderRoute: typeof AuthenticatedToolsIndexRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/_authenticated/servers/': {
       id: '/_authenticated/servers/'
       path: '/servers'
@@ -2241,6 +2273,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/api/public/site-config'
       preLoaderRoute: typeof ApiPublicSiteConfigRouteImport
       parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated/tools/$toolId': {
+      id: '/_authenticated/tools/$toolId'
+      path: '/tools/$toolId'
+      fullPath: '/tools/$toolId'
+      preLoaderRoute: typeof AuthenticatedToolsToolIdRouteImport
+      parentRoute: typeof AuthenticatedRoute
     }
     '/_authenticated/settings/notifications': {
       id: '/_authenticated/settings/notifications'
@@ -2845,7 +2884,9 @@ interface AuthenticatedRouteChildren {
   AuthenticatedWebsitesRoute: typeof AuthenticatedWebsitesRoute
   AuthenticatedDomainSettingsDomainRoute: typeof AuthenticatedDomainSettingsDomainRoute
   AuthenticatedServersServerIdRoute: typeof AuthenticatedServersServerIdRoute
+  AuthenticatedToolsToolIdRoute: typeof AuthenticatedToolsToolIdRoute
   AuthenticatedServersIndexRoute: typeof AuthenticatedServersIndexRoute
+  AuthenticatedToolsIndexRoute: typeof AuthenticatedToolsIndexRoute
   AuthenticatedServersServerIdCockpitRoute: typeof AuthenticatedServersServerIdCockpitRoute
 }
 
@@ -2906,7 +2947,9 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedDomainSettingsDomainRoute:
     AuthenticatedDomainSettingsDomainRoute,
   AuthenticatedServersServerIdRoute: AuthenticatedServersServerIdRoute,
+  AuthenticatedToolsToolIdRoute: AuthenticatedToolsToolIdRoute,
   AuthenticatedServersIndexRoute: AuthenticatedServersIndexRoute,
+  AuthenticatedToolsIndexRoute: AuthenticatedToolsIndexRoute,
   AuthenticatedServersServerIdCockpitRoute:
     AuthenticatedServersServerIdCockpitRoute,
 }

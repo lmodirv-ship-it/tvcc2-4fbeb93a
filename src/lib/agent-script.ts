@@ -338,6 +338,7 @@ run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
       pkg_upgrade)     echo "[dry-run] apt-get update && apt-get upgrade -y" ;;
       shell_exec)      echo "[dry-run] $(GET cmd)" ;;
       cockpit_install) echo "[dry-run] apt-get install cockpit -y && systemctl enable --now cockpit.socket" ;;
+      tool_action)     echo "[dry-run] tool $(GET slug) op=$(GET op)" ;;
 
       docker_*|nginx_vhost_*|nginx_cert_*|nginx_access_log|nginx_error_log|nginx_stats)
         echo "[dry-run] $ACTION args=$ARGS (no change applied)" ;;
@@ -360,6 +361,30 @@ run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
     pkg_updates)     apt-get update -qq && apt list --upgradable 2>/dev/null | head -500 ;;
     pkg_upgrade)     DEBIAN_FRONTEND=noninteractive apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y 2>&1 | tail -300 ;;
     cockpit_install) DEBIAN_FRONTEND=noninteractive apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install cockpit -y 2>&1 | tail -200; systemctl enable --now cockpit.socket 2>&1; ufw allow 9090/tcp >/dev/null 2>&1 || true; systemctl status cockpit.socket --no-pager 2>&1 | head -30 ;;
+    tool_action)
+      OP="$(GET op)"; SLUG="$(GET slug)"
+      DET="$(GET detect_cmd)"; INS="$(GET install_cmd)"; STA="$(GET start_cmd)"; STO="$(GET stop_cmd)"; STS="$(GET status_cmd)"; UNI="$(GET uninstall_cmd)"
+      TRUN() { [ -n "$1" ] || { echo "(no command defined)"; return 0; }; timeout 900 bash -lc "$1" 2>&1 | tail -c 20000; }
+      INSTALLED=1
+      if [ -n "$DET" ]; then bash -lc "$DET" >/dev/null 2>&1 && INSTALLED=0; fi
+      case "$OP" in
+        status)
+          if [ "$INSTALLED" = "0" ]; then echo "installed=yes"; TRUN "$STS"; else echo "installed=no"; fi ;;
+        install)
+          if [ "$INSTALLED" = "0" ]; then echo "already installed=$SLUG"; else DEBIAN_FRONTEND=noninteractive apt-get update -qq >/dev/null 2>&1 || true; TRUN "$INS"; fi
+          TRUN "$STA"; TRUN "$STS" ;;
+        uninstall)
+          TRUN "$UNI"; echo "removed=$SLUG" ;;
+        start|stop|restart)
+          if [ "$INSTALLED" != "0" ]; then echo "[auto-install] $SLUG"; DEBIAN_FRONTEND=noninteractive apt-get update -qq >/dev/null 2>&1 || true; TRUN "$INS"; fi
+          case "$OP" in
+            start) TRUN "$STA" ;;
+            stop)  TRUN "$STO" ;;
+            restart) TRUN "$STO"; TRUN "$STA" ;;
+          esac
+          TRUN "$STS" ;;
+        *) echo "invalid tool op"; return 2 ;;
+      esac ;;
     shell_exec)
       CMD="$(GET cmd)"; [ -n "$CMD" ] || { echo "command required"; return 2; }
       if echo "$CMD" | grep -Eiq '(^|[;&|])[[:space:]]*(rm[[:space:]]+-rf[[:space:]]+/(|\*)|mkfs([.]|[[:space:]])|shutdown|poweroff|reboot|passwd[[:space:]]+root|systemctl[[:space:]]+(stop|disable)[[:space:]]+tvcc-agent)'; then echo "blocked destructive command"; return 3; fi

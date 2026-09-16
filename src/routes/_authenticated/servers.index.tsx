@@ -16,7 +16,7 @@ import {
 } from "@/components/ui/dialog";
 import {
   Server, Plus, Loader2, Trash2, Cpu, MemoryStick, HardDrive, Terminal, Copy, RefreshCw, Brain,
-  Network, Settings2, Play, Rocket, Save, CheckSquare, Plug,
+  Network, Settings2, Play, Rocket, Save, CheckSquare, Plug, Gauge,
 } from "lucide-react";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Skeleton } from "@/components/ui/skeleton";
@@ -328,6 +328,9 @@ function ServersPage() {
                   <div className="flex gap-1 flex-wrap">
                     <Button asChild size="sm">
                       <Link to="/servers/$serverId" params={{ serverId: s.id }}>لوحة السيرفر</Link>
+                    </Button>
+                    <Button asChild size="sm" variant="outline">
+                      <Link to="/servers/$serverId/cockpit" params={{ serverId: s.id }}><Gauge className="w-3 h-3 ml-1" /> Cockpit</Link>
                     </Button>
                     <Button size="sm" variant="outline" onClick={() => setDetailId(s.id)}>التفاصيل</Button>
                     <Button

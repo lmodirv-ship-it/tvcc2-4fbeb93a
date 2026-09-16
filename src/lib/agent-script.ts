@@ -331,6 +331,13 @@ run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
       vpn_peer_add)    echo "[dry-run] wg set $(GET interface) peer $(GET public_key) allowed-ips $(GET allowed_ips)" ;;
       vpn_peer_remove) echo "[dry-run] wg set $(GET interface) peer $(GET public_key) remove" ;;
       vpn_status)      echo "[dry-run] wg show $(GET interface)" ;;
+      users_list)      echo "[dry-run] getent passwd" ;;
+      service_action)  echo "[dry-run] systemctl $(GET op) $(GET name)" ;;
+      pkg_list)        echo "[dry-run] dpkg-query -W" ;;
+      pkg_updates)     echo "[dry-run] apt-get update && apt list --upgradable" ;;
+      pkg_upgrade)     echo "[dry-run] apt-get update && apt-get upgrade -y" ;;
+      shell_exec)      echo "[dry-run] $(GET cmd)" ;;
+      cockpit_install) echo "[dry-run] apt-get install cockpit -y && systemctl enable --now cockpit.socket" ;;
 
       docker_*|nginx_vhost_*|nginx_cert_*|nginx_access_log|nginx_error_log|nginx_stats)
         echo "[dry-run] $ACTION args=$ARGS (no change applied)" ;;
@@ -347,6 +354,16 @@ run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
     service_status)  systemctl status "$(GET name)" --no-pager 2>&1 | head -40 ;;
     service_restart) systemctl restart "$(GET name)" && echo "restarted $(GET name)" ;;
     service_logs)    journalctl -u "$(GET name)" -n 200 --no-pager 2>&1 ;;
+    users_list)      getent passwd | awk -F: '$3 == 0 || $3 >= 1000 {print $1 "|uid=" $3 "|home=" $6 "|shell=" $7}' | head -300 ;;
+    service_action)  N="$(GET name)"; OP="$(GET op)"; case "$OP" in start|stop|restart|enable|disable) systemctl "$OP" "$N" 2>&1 ;; *) echo "invalid service operation"; return 2 ;; esac; systemctl is-active "$N" 2>&1 || true ;;
+    pkg_list)        dpkg-query -W -f='\${binary:Package}|\${Version}\\n' 2>/dev/null | head -1000 ;;
+    pkg_updates)     apt-get update -qq && apt list --upgradable 2>/dev/null | head -500 ;;
+    pkg_upgrade)     DEBIAN_FRONTEND=noninteractive apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get upgrade -y 2>&1 | tail -300 ;;
+    cockpit_install) DEBIAN_FRONTEND=noninteractive apt-get update -qq && DEBIAN_FRONTEND=noninteractive apt-get install cockpit -y 2>&1 | tail -200; systemctl enable --now cockpit.socket 2>&1; ufw allow 9090/tcp >/dev/null 2>&1 || true; systemctl status cockpit.socket --no-pager 2>&1 | head -30 ;;
+    shell_exec)
+      CMD="$(GET cmd)"; [ -n "$CMD" ] || { echo "command required"; return 2; }
+      if echo "$CMD" | grep -Eiq '(^|[;&|])[[:space:]]*(rm[[:space:]]+-rf[[:space:]]+/(|\*)|mkfs([.]|[[:space:]])|shutdown|poweroff|reboot|passwd[[:space:]]+root|systemctl[[:space:]]+(stop|disable)[[:space:]]+tvcc-agent)'; then echo "blocked destructive command"; return 3; fi
+      timeout 120 bash -lc "$CMD" 2>&1 | tail -c 20000 ;;
     nginx_test)      nginx -t 2>&1 ;;
     nginx_reload)    nginx -t && systemctl reload nginx && echo "nginx reloaded" ;;
     firewall_list)   ufw status numbered 2>&1 || iptables -L -n ;;

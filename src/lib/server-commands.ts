@@ -149,6 +149,13 @@ export const COMMAND_WHITELIST = [
   "nginx_access_log",
   "nginx_error_log",
   "nginx_stats",
+  "users_list",
+  "service_action",
+  "pkg_list",
+  "pkg_updates",
+  "pkg_upgrade",
+  "shell_exec",
+  "cockpit_install",
 ] as const;
 
 
@@ -308,6 +315,13 @@ export const COMMAND_LABELS: Record<string, string> = {
   nginx_access_log: "سجل الزيارات",
   nginx_error_log: "سجل الأخطاء",
   nginx_stats: "إحصاءات Nginx",
+  users_list: "حسابات النظام",
+  service_action: "إدارة خدمة Systemd",
+  pkg_list: "الحزم المثبتة",
+  pkg_updates: "فحص تحديثات Ubuntu",
+  pkg_upgrade: "تثبيت تحديثات Ubuntu",
+  shell_exec: "تنفيذ أمر طرفية",
+  cockpit_install: "تثبيت وتشغيل Cockpit",
 };
 
 
@@ -326,6 +340,9 @@ export const COMMAND_ARG: Record<string, { key: string; placeholder: string }> =
   site_stop: { key: "name", placeholder: "tvcc-site-example.com" },
   site_restart: { key: "name", placeholder: "tvcc-site-example.com" },
   site_logs: { key: "name", placeholder: "tvcc-site-example.com" },
+  users_list: { key: "filter", placeholder: "اسم المستخدم (اختياري)" },
+  service_action: { key: "name", placeholder: "nginx" },
+  shell_exec: { key: "cmd", placeholder: "systemctl status cockpit.socket" },
   watch_start: { key: "domain", placeholder: "example.com" },
   watch_stop: { key: "domain", placeholder: "example.com" },
 };
@@ -355,6 +372,7 @@ export const RISKY_COMMANDS: readonly string[] = [
   "docker_rm", "docker_prune", "docker_exec", "docker_compose_down",
   "docker_compose_write", "docker_create", "docker_action",
   "nginx_vhost_write", "nginx_vhost_delete", "nginx_vhost_disable", "nginx_cert_issue",
+  "pkg_upgrade", "shell_exec", "cockpit_install",
 ];
 
 export function commandCategory(action: string): CommandCategory {

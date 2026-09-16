@@ -14,7 +14,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { toast } from "sonner";
 import {
   ArrowRight, Cpu, MemoryStick, HardDrive, Activity, Network, Globe, Database, Shield,
-  Users, Terminal, Clock, Box, Loader2, Link2, Trash2, Play,
+  Users, Terminal, Clock, Box, Loader2, Link2, Trash2, Play, Gauge,
 } from "lucide-react";
 import {
   getServerDetail, setServerRole, grantServerAccess, revokeServerAccess,
@@ -135,6 +135,7 @@ function ServerDetailPage() {
           </div>
         </div>
         <div className="flex items-center gap-3">
+          <Button asChild variant="outline" size="sm"><Link to="/servers/$serverId/cockpit" params={{ serverId }}><Gauge className="w-4 h-4 ml-1" /> Cockpit</Link></Button>
           <div className="text-center">
             <div className={`text-2xl font-black ${healthTone}`}>{health}</div>
             <div className="text-[10px] text-muted-foreground">مؤشر الصحة</div>

@@ -210,3 +210,74 @@ Deno.serve(async () => {
 });
 `;
 }
+
+/** نبضة دورية من قاعدة السيرفر المحلي إلى المنصة — تبدأ المزامنة وتُظهر المصدر «متصل». */
+export function buildHeartbeatScript(opts: {
+  platformUrl: string;
+  sourceId: string;
+  secret: string;
+  schema: string;
+  intervalSeconds: number;
+  pgUrl: string;
+}): string {
+  const { platformUrl, sourceId, secret, schema, intervalSeconds, pgUrl } = opts;
+  return `#!/usr/bin/env node
+// tvcc-heartbeat.js — نبضة دورية من القاعدة المحلية إلى منصة TVCC
+// التشغيل الدائم:  nohup node tvcc-heartbeat.js &
+// دورة واحدة:      node tvcc-heartbeat.js --once
+// يتطلب node 18+ و psql. لا يحذف ولا يعدّل أي بيانات — قراءة فقط.
+
+const { execFileSync } = require("child_process");
+
+const PLATFORM = process.env.TVCC_URL || ${JSON.stringify(platformUrl)};
+const SOURCE_ID = process.env.TVCC_SOURCE_ID || ${JSON.stringify(sourceId)};
+const SECRET = process.env.TVCC_SECRET || ${JSON.stringify(secret)};
+const PGURL = process.env.TVCC_PGURL || ${JSON.stringify(pgUrl)};
+const SCHEMA = process.env.TVCC_SCHEMA || ${JSON.stringify(schema)};
+let INTERVAL = Number(process.env.TVCC_INTERVAL || ${intervalSeconds}) * 1000;
+const ONCE = process.argv.includes("--once");
+
+function log() { console.log.apply(console, [new Date().toISOString()].concat([].slice.call(arguments))); }
+
+function q(sql) {
+  const wrapped = "select coalesce(json_agg(t), '[]'::json)::text from (" + sql + ") t";
+  const out = execFileSync("psql", [PGURL, "-At", "-c", wrapped], { encoding: "utf8", maxBuffer: 64 * 1024 * 1024 });
+  return JSON.parse(out.trim() || "[]");
+}
+
+function counts() {
+  return q(
+    "select relname as \\"table\\", coalesce(n_live_tup,0)::bigint as rows from pg_stat_user_tables " +
+    "where schemaname = '" + SCHEMA + "' order by 1"
+  ).map(function (r) { return { table: r.table, rows: Number(r.rows) }; });
+}
+
+async function beat() {
+  const started = Date.now();
+  const rows = counts();
+  const res = await fetch(PLATFORM + "/api/public/dbsync/beat", {
+    method: "POST",
+    headers: { "Content-Type": "application/json", "x-tvcc-secret": SECRET },
+    body: JSON.stringify({
+      sourceId: SOURCE_ID,
+      counts: rows,
+      lagSeconds: Math.round((Date.now() - started) / 1000),
+    }),
+  });
+  const data = await res.json().catch(function () { return {}; });
+  if (!res.ok || !data.ok) throw new Error("HTTP " + res.status + " " + (data.error || ""));
+  if (data.interval_seconds) INTERVAL = data.interval_seconds * 1000;
+  log("نبضة مرسلة — جداول:", rows.length, "| مُحدَّث:", data.tablesUpdated, "| المصدر فعّال:", data.active);
+}
+
+async function main() {
+  while (true) {
+    try { await beat(); } catch (e) { log("فشل النبضة:", e.message); }
+    if (ONCE) return;
+    await new Promise(function (r) { setTimeout(r, INTERVAL); });
+  }
+}
+
+main();
+`;
+}

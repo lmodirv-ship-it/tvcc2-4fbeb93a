@@ -110,6 +110,8 @@ import { Route as AuthenticatedDomainSettingsDomainRouteImport } from './routes/
 import { Route as Char91DotmcpChar93InvokeToolToolRouteImport } from './routes/[.mcp]/invoke-tool/$tool'
 import { Route as DotlovableOauthConsentRouteImport } from './routes/[.]lovable.oauth.consent'
 import { Route as ApiPublicVideoIngestRouteImport } from './routes/api/public/video.ingest'
+import { Route as ApiPublicSiteHeartbeatRouteImport } from './routes/api/public/site/heartbeat'
+import { Route as ApiPublicSiteBadgeRouteImport } from './routes/api/public/site/badge'
 import { Route as ApiPublicServicesResultRouteImport } from './routes/api/public/services/result'
 import { Route as ApiPublicServicesRequestRouteImport } from './routes/api/public/services/request'
 import { Route as ApiPublicServersHeartbeatRouteImport } from './routes/api/public/servers.heartbeat'
@@ -131,6 +133,7 @@ import { Route as ApiPublicHnRlsVerifyRouteImport } from './routes/api/public/hn
 import { Route as ApiPublicDbsyncStateRouteImport } from './routes/api/public/dbsync/state'
 import { Route as ApiPublicDbsyncSchemaRouteImport } from './routes/api/public/dbsync/schema'
 import { Route as ApiPublicDbsyncPushRouteImport } from './routes/api/public/dbsync/push'
+import { Route as ApiPublicDbsyncBeatRouteImport } from './routes/api/public/dbsync/beat'
 import { Route as ApiPublicCoreIngestRouteImport } from './routes/api/public/core.ingest'
 import { Route as ApiPublicBackupsTasksRouteImport } from './routes/api/public/backups/tasks'
 import { Route as ApiPublicBackupsScanReportRouteImport } from './routes/api/public/backups/scan-report'
@@ -685,6 +688,16 @@ const ApiPublicVideoIngestRoute = ApiPublicVideoIngestRouteImport.update({
   path: '/api/public/video/ingest',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiPublicSiteHeartbeatRoute = ApiPublicSiteHeartbeatRouteImport.update({
+  id: '/api/public/site/heartbeat',
+  path: '/api/public/site/heartbeat',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicSiteBadgeRoute = ApiPublicSiteBadgeRouteImport.update({
+  id: '/api/public/site/badge',
+  path: '/api/public/site/badge',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ApiPublicServicesResultRoute = ApiPublicServicesResultRouteImport.update({
   id: '/api/public/services/result',
   path: '/api/public/services/result',
@@ -796,6 +809,11 @@ const ApiPublicDbsyncSchemaRoute = ApiPublicDbsyncSchemaRouteImport.update({
 const ApiPublicDbsyncPushRoute = ApiPublicDbsyncPushRouteImport.update({
   id: '/api/public/dbsync/push',
   path: '/api/public/dbsync/push',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiPublicDbsyncBeatRoute = ApiPublicDbsyncBeatRouteImport.update({
+  id: '/api/public/dbsync/beat',
+  path: '/api/public/dbsync/beat',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiPublicCoreIngestRoute = ApiPublicCoreIngestRouteImport.update({
@@ -954,6 +972,7 @@ export interface FileRoutesByFullPath {
   '/api/public/backups/scan-report': typeof ApiPublicBackupsScanReportRoute
   '/api/public/backups/tasks': typeof ApiPublicBackupsTasksRoute
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
+  '/api/public/dbsync/beat': typeof ApiPublicDbsyncBeatRoute
   '/api/public/dbsync/push': typeof ApiPublicDbsyncPushRoute
   '/api/public/dbsync/schema': typeof ApiPublicDbsyncSchemaRoute
   '/api/public/dbsync/state': typeof ApiPublicDbsyncStateRoute
@@ -975,6 +994,8 @@ export interface FileRoutesByFullPath {
   '/api/public/servers/heartbeat': typeof ApiPublicServersHeartbeatRoute
   '/api/public/services/request': typeof ApiPublicServicesRequestRoute
   '/api/public/services/result': typeof ApiPublicServicesResultRoute
+  '/api/public/site/badge': typeof ApiPublicSiteBadgeRoute
+  '/api/public/site/heartbeat': typeof ApiPublicSiteHeartbeatRoute
   '/api/public/video/ingest': typeof ApiPublicVideoIngestRoute
   '/api/public/hn/identity/$code': typeof ApiPublicHnIdentityCodeRoute
 }
@@ -1084,6 +1105,7 @@ export interface FileRoutesByTo {
   '/api/public/backups/scan-report': typeof ApiPublicBackupsScanReportRoute
   '/api/public/backups/tasks': typeof ApiPublicBackupsTasksRoute
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
+  '/api/public/dbsync/beat': typeof ApiPublicDbsyncBeatRoute
   '/api/public/dbsync/push': typeof ApiPublicDbsyncPushRoute
   '/api/public/dbsync/schema': typeof ApiPublicDbsyncSchemaRoute
   '/api/public/dbsync/state': typeof ApiPublicDbsyncStateRoute
@@ -1105,6 +1127,8 @@ export interface FileRoutesByTo {
   '/api/public/servers/heartbeat': typeof ApiPublicServersHeartbeatRoute
   '/api/public/services/request': typeof ApiPublicServicesRequestRoute
   '/api/public/services/result': typeof ApiPublicServicesResultRoute
+  '/api/public/site/badge': typeof ApiPublicSiteBadgeRoute
+  '/api/public/site/heartbeat': typeof ApiPublicSiteHeartbeatRoute
   '/api/public/video/ingest': typeof ApiPublicVideoIngestRoute
   '/api/public/hn/identity/$code': typeof ApiPublicHnIdentityCodeRoute
 }
@@ -1218,6 +1242,7 @@ export interface FileRoutesById {
   '/api/public/backups/scan-report': typeof ApiPublicBackupsScanReportRoute
   '/api/public/backups/tasks': typeof ApiPublicBackupsTasksRoute
   '/api/public/core/ingest': typeof ApiPublicCoreIngestRoute
+  '/api/public/dbsync/beat': typeof ApiPublicDbsyncBeatRoute
   '/api/public/dbsync/push': typeof ApiPublicDbsyncPushRoute
   '/api/public/dbsync/schema': typeof ApiPublicDbsyncSchemaRoute
   '/api/public/dbsync/state': typeof ApiPublicDbsyncStateRoute
@@ -1239,6 +1264,8 @@ export interface FileRoutesById {
   '/api/public/servers/heartbeat': typeof ApiPublicServersHeartbeatRoute
   '/api/public/services/request': typeof ApiPublicServicesRequestRoute
   '/api/public/services/result': typeof ApiPublicServicesResultRoute
+  '/api/public/site/badge': typeof ApiPublicSiteBadgeRoute
+  '/api/public/site/heartbeat': typeof ApiPublicSiteHeartbeatRoute
   '/api/public/video/ingest': typeof ApiPublicVideoIngestRoute
   '/api/public/hn/identity/$code': typeof ApiPublicHnIdentityCodeRoute
 }
@@ -1352,6 +1379,7 @@ export interface FileRouteTypes {
     | '/api/public/backups/scan-report'
     | '/api/public/backups/tasks'
     | '/api/public/core/ingest'
+    | '/api/public/dbsync/beat'
     | '/api/public/dbsync/push'
     | '/api/public/dbsync/schema'
     | '/api/public/dbsync/state'
@@ -1373,6 +1401,8 @@ export interface FileRouteTypes {
     | '/api/public/servers/heartbeat'
     | '/api/public/services/request'
     | '/api/public/services/result'
+    | '/api/public/site/badge'
+    | '/api/public/site/heartbeat'
     | '/api/public/video/ingest'
     | '/api/public/hn/identity/$code'
   fileRoutesByTo: FileRoutesByTo
@@ -1482,6 +1512,7 @@ export interface FileRouteTypes {
     | '/api/public/backups/scan-report'
     | '/api/public/backups/tasks'
     | '/api/public/core/ingest'
+    | '/api/public/dbsync/beat'
     | '/api/public/dbsync/push'
     | '/api/public/dbsync/schema'
     | '/api/public/dbsync/state'
@@ -1503,6 +1534,8 @@ export interface FileRouteTypes {
     | '/api/public/servers/heartbeat'
     | '/api/public/services/request'
     | '/api/public/services/result'
+    | '/api/public/site/badge'
+    | '/api/public/site/heartbeat'
     | '/api/public/video/ingest'
     | '/api/public/hn/identity/$code'
   id:
@@ -1615,6 +1648,7 @@ export interface FileRouteTypes {
     | '/api/public/backups/scan-report'
     | '/api/public/backups/tasks'
     | '/api/public/core/ingest'
+    | '/api/public/dbsync/beat'
     | '/api/public/dbsync/push'
     | '/api/public/dbsync/schema'
     | '/api/public/dbsync/state'
@@ -1636,6 +1670,8 @@ export interface FileRouteTypes {
     | '/api/public/servers/heartbeat'
     | '/api/public/services/request'
     | '/api/public/services/result'
+    | '/api/public/site/badge'
+    | '/api/public/site/heartbeat'
     | '/api/public/video/ingest'
     | '/api/public/hn/identity/$code'
   fileRoutesById: FileRoutesById
@@ -1666,6 +1702,7 @@ export interface RootRouteChildren {
   ApiPublicBackupsScanReportRoute: typeof ApiPublicBackupsScanReportRoute
   ApiPublicBackupsTasksRoute: typeof ApiPublicBackupsTasksRoute
   ApiPublicCoreIngestRoute: typeof ApiPublicCoreIngestRoute
+  ApiPublicDbsyncBeatRoute: typeof ApiPublicDbsyncBeatRoute
   ApiPublicDbsyncPushRoute: typeof ApiPublicDbsyncPushRoute
   ApiPublicDbsyncSchemaRoute: typeof ApiPublicDbsyncSchemaRoute
   ApiPublicDbsyncStateRoute: typeof ApiPublicDbsyncStateRoute
@@ -1687,6 +1724,8 @@ export interface RootRouteChildren {
   ApiPublicServersHeartbeatRoute: typeof ApiPublicServersHeartbeatRoute
   ApiPublicServicesRequestRoute: typeof ApiPublicServicesRequestRoute
   ApiPublicServicesResultRoute: typeof ApiPublicServicesResultRoute
+  ApiPublicSiteBadgeRoute: typeof ApiPublicSiteBadgeRoute
+  ApiPublicSiteHeartbeatRoute: typeof ApiPublicSiteHeartbeatRoute
   ApiPublicVideoIngestRoute: typeof ApiPublicVideoIngestRoute
   ApiPublicHnIdentityCodeRoute: typeof ApiPublicHnIdentityCodeRoute
 }
@@ -2400,6 +2439,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicVideoIngestRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/public/site/heartbeat': {
+      id: '/api/public/site/heartbeat'
+      path: '/api/public/site/heartbeat'
+      fullPath: '/api/public/site/heartbeat'
+      preLoaderRoute: typeof ApiPublicSiteHeartbeatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/site/badge': {
+      id: '/api/public/site/badge'
+      path: '/api/public/site/badge'
+      fullPath: '/api/public/site/badge'
+      preLoaderRoute: typeof ApiPublicSiteBadgeRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/api/public/services/result': {
       id: '/api/public/services/result'
       path: '/api/public/services/result'
@@ -2545,6 +2598,13 @@ declare module '@tanstack/react-router' {
       path: '/api/public/dbsync/push'
       fullPath: '/api/public/dbsync/push'
       preLoaderRoute: typeof ApiPublicDbsyncPushRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/public/dbsync/beat': {
+      id: '/api/public/dbsync/beat'
+      path: '/api/public/dbsync/beat'
+      fullPath: '/api/public/dbsync/beat'
+      preLoaderRoute: typeof ApiPublicDbsyncBeatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/public/core/ingest': {
@@ -2859,6 +2919,7 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicBackupsScanReportRoute: ApiPublicBackupsScanReportRoute,
   ApiPublicBackupsTasksRoute: ApiPublicBackupsTasksRoute,
   ApiPublicCoreIngestRoute: ApiPublicCoreIngestRoute,
+  ApiPublicDbsyncBeatRoute: ApiPublicDbsyncBeatRoute,
   ApiPublicDbsyncPushRoute: ApiPublicDbsyncPushRoute,
   ApiPublicDbsyncSchemaRoute: ApiPublicDbsyncSchemaRoute,
   ApiPublicDbsyncStateRoute: ApiPublicDbsyncStateRoute,
@@ -2880,6 +2941,8 @@ const rootRouteChildren: RootRouteChildren = {
   ApiPublicServersHeartbeatRoute: ApiPublicServersHeartbeatRoute,
   ApiPublicServicesRequestRoute: ApiPublicServicesRequestRoute,
   ApiPublicServicesResultRoute: ApiPublicServicesResultRoute,
+  ApiPublicSiteBadgeRoute: ApiPublicSiteBadgeRoute,
+  ApiPublicSiteHeartbeatRoute: ApiPublicSiteHeartbeatRoute,
   ApiPublicVideoIngestRoute: ApiPublicVideoIngestRoute,
   ApiPublicHnIdentityCodeRoute: ApiPublicHnIdentityCodeRoute,
 }

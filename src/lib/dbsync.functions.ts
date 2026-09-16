@@ -117,7 +117,7 @@ export const resyncSyncTable = createServerFn({ method: "POST" })
 
 export const getSyncScript = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { sourceId: string; kind: "script" | "edge"; pgUrl?: string }) => input)
+  .inputValidator((input: { sourceId: string; kind: "script" | "edge" | "heartbeat"; pgUrl?: string }) => input)
   .handler(async ({ data, context }) => {
     const { supabase, userId } = context as any;
     await assertAdmin(supabase, userId);
@@ -133,19 +133,39 @@ export const getSyncScript = createServerFn({ method: "POST" })
     if (!secret) throw new Error("مفتاح المزامنة غير مهيأ");
 
     const platformUrl = process.env["TVCC_PUBLIC_URL"] || "https://tvcc.hnpay.live";
-    const { buildEdgeFunction, buildSyncScript } = await import("./dbsync-script.server");
+    const { buildEdgeFunction, buildSyncScript, buildHeartbeatScript } = await import("./dbsync-script.server");
+    const pgUrl = data.pgUrl || `postgresql://postgres:postgres@${source.host}:5432/postgres`;
 
-    const content =
-      data.kind === "edge"
-        ? buildEdgeFunction({ platformUrl, sourceId: source.id, secret, schema: source.schema_name })
-        : buildSyncScript({
-            platformUrl,
-            sourceId: source.id,
-            secret,
-            schema: source.schema_name,
-            intervalSeconds: source.interval_seconds ?? 60,
-            pgUrl: data.pgUrl || `postgresql://postgres:postgres@${source.host}:5432/postgres`,
-          });
+    if (data.kind === "edge") {
+      return {
+        filename: "tvcc-sync-edge.ts",
+        content: buildEdgeFunction({ platformUrl, sourceId: source.id, secret, schema: source.schema_name }),
+      };
+    }
 
-    return { filename: data.kind === "edge" ? "tvcc-sync-edge.ts" : "tvcc-dbsync.js", content };
+    if (data.kind === "heartbeat") {
+      return {
+        filename: "tvcc-heartbeat.js",
+        content: buildHeartbeatScript({
+          platformUrl,
+          sourceId: source.id,
+          secret,
+          schema: source.schema_name,
+          intervalSeconds: source.interval_seconds ?? 60,
+          pgUrl,
+        }),
+      };
+    }
+
+    return {
+      filename: "tvcc-dbsync.js",
+      content: buildSyncScript({
+        platformUrl,
+        sourceId: source.id,
+        secret,
+        schema: source.schema_name,
+        intervalSeconds: source.interval_seconds ?? 60,
+        pgUrl,
+      }),
+    };
   });

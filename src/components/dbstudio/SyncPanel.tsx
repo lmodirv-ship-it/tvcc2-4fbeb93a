@@ -91,7 +91,7 @@ export function SyncPanel() {
   });
 
   const scriptMutation = useMutation({
-    mutationFn: (kind: "script" | "edge") =>
+    mutationFn: (kind: "script" | "edge" | "heartbeat") =>
       script({ data: { sourceId: activeSource!.id, kind, pgUrl: form.pgUrl || undefined } }),
     onSuccess: (res: any) => download(res.filename, res.content),
     onError: (e: any) => toast.error(e?.message ?? "تعذّر توليد الملف"),
@@ -218,6 +218,9 @@ export function SyncPanel() {
                 </Button>
                 <Button size="sm" variant="outline" className="h-8 text-xs" onClick={() => scriptMutation.mutate("edge")}>
                   <Download className="size-3.5" /> تنزيل دالة Edge
+                </Button>
+                <Button size="sm" variant="secondary" className="h-8 text-xs" onClick={() => scriptMutation.mutate("heartbeat")}>
+                  <Download className="size-3.5" /> تنزيل نبضة القاعدة المحلية
                 </Button>
               </div>
               <p className="text-[11px] leading-5 text-muted-foreground">

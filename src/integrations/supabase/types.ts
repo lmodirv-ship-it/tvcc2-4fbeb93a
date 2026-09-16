@@ -6778,6 +6778,69 @@ export type Database = {
           },
         ]
       }
+      site_agents: {
+        Row: {
+          beacons: number
+          created_at: string
+          id: string
+          key_hash: string | null
+          last_beacon_at: string | null
+          last_ip: string | null
+          meta: Json
+          owner_id: string
+          server_id: string | null
+          status: string
+          updated_at: string
+          version: string | null
+          website_id: string
+        }
+        Insert: {
+          beacons?: number
+          created_at?: string
+          id?: string
+          key_hash?: string | null
+          last_beacon_at?: string | null
+          last_ip?: string | null
+          meta?: Json
+          owner_id: string
+          server_id?: string | null
+          status?: string
+          updated_at?: string
+          version?: string | null
+          website_id: string
+        }
+        Update: {
+          beacons?: number
+          created_at?: string
+          id?: string
+          key_hash?: string | null
+          last_beacon_at?: string | null
+          last_ip?: string | null
+          meta?: Json
+          owner_id?: string
+          server_id?: string | null
+          status?: string
+          updated_at?: string
+          version?: string | null
+          website_id?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "site_agents_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "site_agents_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: true
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       site_backup_copies: {
         Row: {
           checksum: string | null

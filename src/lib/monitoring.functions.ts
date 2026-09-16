@@ -38,7 +38,7 @@ export const getMonitoringOverview = createServerFn({ method: "GET" })
         safe<any>(sb.from("websites").select("id,name,domain,site_code,status,is_active,server_id")),
         safe<any>(sb.from("servers").select("id,name,hostname,status,last_seen_at,role")),
         safe<any>(sb.from("agent_instances").select("id,server_id,status,last_seen_at,version,agent_role")),
-        safe<any>(sb.from("site_agents").select("website_id,status,version,last_beacon_at,beacons")),
+        safe<any>(sb.from("site_agents").select("website_id,status,version,last_beacon_at,beacons,updated_at")),
         safe<any>(
           sb
             .from("engine_schedules")
@@ -71,6 +71,14 @@ export const getMonitoringOverview = createServerFn({ method: "GET" })
         safe<any>(sb.from("monitoring_keys").select("website_id,server_id,key_type,fingerprint,version,rotated_at")),
       ]);
 
+
+    const events = await safe<any>(
+      sb
+        .from("monitoring_events")
+        .select("website_id,server_id,event_type,message,status,created_at")
+        .order("created_at", { ascending: false })
+        .limit(500),
+    );
 
     const fresh = (ts: any) => !!ts && now - Date.parse(ts) < WINDOW;
 
@@ -110,7 +118,15 @@ export const getMonitoringOverview = createServerFn({ method: "GET" })
           if (!groupBySite.has(m.website_id)) groupBySite.set(m.website_id, groupName.get(m.group_id) ?? "");
         }
         const checkBySite = new Map<string, any>();
-        for (const c of checks) if (!checkBySite.has(c.website_id)) checkBySite.set(c.website_id, c);
+        const checksBySite = new Map<string, any[]>();
+        for (const c of checks) {
+          if (!checkBySite.has(c.website_id)) checkBySite.set(c.website_id, c);
+          checksBySite.set(c.website_id, [...(checksBySite.get(c.website_id) ?? []), c]);
+        }
+        const eventBySite = new Map<string, any>();
+        for (const e of events) if (e.website_id && !eventBySite.has(e.website_id)) eventBySite.set(e.website_id, e);
+        const agentByServer = new Map<string, any>();
+        for (const a of agents) if (!agentByServer.has(a.server_id)) agentByServer.set(a.server_id, a);
         const svcBySite = new Map<string, any[]>();
         for (const s of services) svcBySite.set(s.website_id, [...(svcBySite.get(s.website_id) ?? []), s]);
         const schedBySite = new Map<string, any[]>();
@@ -127,6 +143,12 @@ export const getMonitoringOverview = createServerFn({ method: "GET" })
           const svc = svcBySite.get(w.id) ?? [];
           const sch = schedBySite.get(w.id) ?? [];
           const key = keyBySite.get(w.id);
+          const hist = checksBySite.get(w.id) ?? [];
+          const upCount = hist.filter((h: any) => h.status === "online" || (h.http_status ?? 0) < 400).length;
+          const uptime = hist.length ? Math.round((upCount / hist.length) * 100) : null;
+          const ev = eventBySite.get(w.id);
+          const srvAgent = w.server_id ? agentByServer.get(w.server_id) : null;
+          const beatAge = a?.last_beacon_at ? Math.round((now - Date.parse(a.last_beacon_at)) / 60000) : null;
           return {
             id: w.id,
             name: w.name,
@@ -153,10 +175,20 @@ export const getMonitoringOverview = createServerFn({ method: "GET" })
             version: a?.version ?? null,
             beacons: a?.beacons ?? 0,
             last_beacon_at: a?.last_beacon_at ?? null,
+            beat_age_min: beatAge,
+            uptime_pct: uptime,
+            checks_count: hist.length,
+            deploy_status: a?.status ?? null,
+            agent_version: srvAgent?.version ?? null,
+            agent_online: srvAgent ? fresh(srvAgent.last_seen_at) : false,
+            last_event: ev?.message ?? null,
+            last_event_status: ev?.status ?? null,
+            last_event_at: ev?.created_at ?? null,
           };
         });
       })(),
 
+      events,
       schedules,
       sources: sources.map((s) => ({ ...s, online: fresh(s.last_beacon_at) })),
       syncTables,

@@ -338,6 +338,7 @@ run_command() { # $1 = action, $2 = args json, $3 = dry_run -> prints output
       pkg_upgrade)     echo "[dry-run] apt-get update && apt-get upgrade -y" ;;
       shell_exec)      echo "[dry-run] $(GET cmd)" ;;
       cockpit_install) echo "[dry-run] apt-get install cockpit -y && systemctl enable --now cockpit.socket" ;;
+      tool_action)     echo "[dry-run] tool $(GET slug) op=$(GET op)" ;;
 
       docker_*|nginx_vhost_*|nginx_cert_*|nginx_access_log|nginx_error_log|nginx_stats)
         echo "[dry-run] $ACTION args=$ARGS (no change applied)" ;;

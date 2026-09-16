@@ -715,7 +715,7 @@ export const listVaultSecrets = createServerFn({ method: "POST" })
     const sb = context.supabase as any;
     let q = sb
       .from("vault_secrets")
-      .select("id, owner_id, server_id, website_id, name, kind, description, masked_value, expires_at, created_at, updated_at")
+      .select("id, owner_id, server_id, website_id, name, category, description, expires_at, created_at, updated_at")
       .order("created_at", { ascending: false });
     if (data?.serverId) q = q.eq("server_id", data.serverId);
     if (data?.websiteId) q = q.eq("website_id", data.websiteId);
@@ -748,11 +748,9 @@ export const createVaultSecret = createServerFn({ method: "POST" })
         server_id: data.serverId ?? null,
         website_id: data.websiteId ?? null,
         name: data.name,
-        kind: data.category ?? data.kind ?? "generic",
+        category: data.category ?? data.kind ?? "generic",
         description: data.description ?? null,
-        encrypted_value: ciphertext,
-        iv,
-        masked_value: mask(data.value),
+        value_encrypted: `${iv}:${ciphertext}`,
         expires_at: data.expiresAt ?? null,
       })
       .select("id")

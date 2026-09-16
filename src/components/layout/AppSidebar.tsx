@@ -4,7 +4,7 @@ import {
   Code2, Wand2, FolderOpen, LayoutTemplate, Radio, ListChecks, Plug,
   Smartphone, KeyRound, Server, ShieldCheck, BadgeCheck, Bell, FileCog, LifeBuoy, ClipboardCheck,
   FileBarChart, Wallet, Boxes, Brain, Film, HardDrive, MessageSquare, History, NotebookPen, Archive, Network, Share2, ScrollText, ShieldAlert, GitBranch, Zap, Download, Link2, Cloud, Globe2, Fingerprint, Rocket, Radar, Database, Shield, HeartPulse, Package, Bot, Container,
-  PanelRightClose, PanelRightOpen, PanelLeftClose, PanelLeftOpen,
+  PanelRightClose, PanelRightOpen, PanelLeftClose, PanelLeftOpen, Wrench,
 } from "lucide-react";
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupContent, SidebarGroupLabel,

@@ -86,6 +86,13 @@ function ToolDetail() {
         {tool.website && (
           <a href={tool.website} target="_blank" rel="noreferrer" className="text-xs text-primary hover:underline">الموقع الرسمي</a>
         )}
+        {mainPage && (
+          <Button size="sm" variant="secondary" asChild>
+            <a href={mainPage.page_path}>
+              <ExternalLink className="me-1 h-4 w-4" /> فتح {mainPage.page_label ?? "الصفحة المرتبطة"}
+            </a>
+          </Button>
+        )}
         <div className="ms-auto flex items-center gap-2">
           <Select value={serverId} onValueChange={setServerId}>
             <SelectTrigger className="h-8 w-56"><SelectValue placeholder="اختر سيرفراً" /></SelectTrigger>
@@ -170,11 +177,13 @@ function ToolDetail() {
                 <TableHead className="text-start">الحالة</TableHead>
                 <TableHead className="text-start">آخر إجراء</TableHead>
                 <TableHead className="text-start">آخر فحص</TableHead>
+                <TableHead className="text-start">الواجهة</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
               {installs.map((i: any) => {
                 const s = servers.find((x: any) => x.id === i.server_id);
+                const url = uiUrl(i);
                 return (
                   <TableRow key={i.id}>
                     <TableCell className="text-xs">{s?.name || s?.hostname || i.server_id}</TableCell>
@@ -185,11 +194,20 @@ function ToolDetail() {
                     </TableCell>
                     <TableCell className="text-xs">{i.last_action ?? "—"}</TableCell>
                     <TableCell className="text-xs">{i.last_checked_at ? new Date(i.last_checked_at).toLocaleString("ar") : "—"}</TableCell>
+                    <TableCell>
+                      {url ? (
+                        <Button size="sm" variant="outline" asChild>
+                          <a href={url} target="_blank" rel="noreferrer">
+                            <ExternalLink className="me-1 h-4 w-4" /> فتح
+                          </a>
+                        </Button>
+                      ) : <span className="text-xs text-muted-foreground">—</span>}
+                    </TableCell>
                   </TableRow>
                 );
               })}
               {!installs.length && (
-                <TableRow><TableCell colSpan={4} className="py-6 text-center text-xs text-muted-foreground">لم تُشغَّل الأداة على أي سيرفر بعد</TableCell></TableRow>
+                <TableRow><TableCell colSpan={5} className="py-6 text-center text-xs text-muted-foreground">لم تُشغَّل الأداة على أي سيرفر بعد</TableCell></TableRow>
               )}
             </TableBody>
           </Table>

@@ -10,6 +10,7 @@ import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Radio, Database, HardDrive, RefreshCw, ShieldCheck, Loader2, Wrench, Copyright } from "lucide-react";
 import { toast } from "sonner";
+import { MonitoringHub } from "@/components/monitoring/MonitoringHub";
 
 export const Route = createFileRoute("/_authenticated/monitoring")({
   component: MonitoringPage,
@@ -110,6 +111,7 @@ function MonitoringPage() {
 
   return (
     <div className="space-y-6" dir="rtl">
+      <MonitoringHub />
       <div className="flex items-start justify-between gap-3 flex-wrap">
         <div className="flex gap-2">
           <Button onClick={pingAll} variant="outline" className="gap-2">

@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { ArrowRight, Copy, Play, RefreshCw, Square, Trash2, Wrench } from "lucide-react";
+import { ArrowRight, Copy, ExternalLink, Play, RefreshCw, Square, Trash2, Wrench } from "lucide-react";
 import { getTool, runToolAction, refreshToolInstalls } from "@/lib/tools.functions";
 
 export const Route = createFileRoute("/_authenticated/tools/$toolId")({
@@ -67,6 +67,13 @@ function ToolDetail() {
 
   const { tool, pages, installs, links, servers, commands } = query.data as any;
   const terminal = tool.install_cmd ? `sudo ${tool.install_cmd}` : "—";
+  const mainPage = pages[0];
+  const uiUrl = (i: any) => {
+    if (i.access_url) return i.access_url;
+    const s = servers.find((x: any) => x.id === i.server_id);
+    const port = i.port ?? tool.default_port;
+    return s?.ip_address && port ? `http://${s.ip_address}:${port}` : null;
+  };
 
   return (
     <div className="space-y-4 p-4" dir="rtl">

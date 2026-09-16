@@ -142,7 +142,7 @@ import { Route as ApiPublicBackupsReportRouteImport } from './routes/api/public/
 import { Route as ApiPublicBackupsNightlyRouteImport } from './routes/api/public/backups/nightly'
 import { Route as ApiPublicBackupsLinkRouteImport } from './routes/api/public/backups/link'
 import { Route as ApiPublicBackupsInventoryRouteImport } from './routes/api/public/backups/inventory'
-import { Route as AuthenticatedServersServerIdCockpitRouteImport } from './routes/_authenticated/servers.$serverId.cockpit'
+import { Route as AuthenticatedServersServerIdCockpitRouteImport } from './routes/_authenticated/servers_.$serverId.cockpit'
 import { Route as ApiPublicHnIdentityCodeRouteImport } from './routes/api/public/hn/identity.$code'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -861,9 +861,9 @@ const ApiPublicBackupsInventoryRoute =
   } as any)
 const AuthenticatedServersServerIdCockpitRoute =
   AuthenticatedServersServerIdCockpitRouteImport.update({
-    id: '/cockpit',
-    path: '/cockpit',
-    getParentRoute: () => AuthenticatedServersServerIdRoute,
+    id: '/servers_/$serverId/cockpit',
+    path: '/servers/$serverId/cockpit',
+    getParentRoute: () => AuthenticatedRoute,
   } as any)
 const ApiPublicHnIdentityCodeRoute = ApiPublicHnIdentityCodeRouteImport.update({
   id: '/api/public/hn/identity/$code',
@@ -964,7 +964,7 @@ export interface FileRoutesByFullPath {
   '/federated/pitr': typeof AuthenticatedFederatedPitrRoute
   '/federated/sql': typeof AuthenticatedFederatedSqlRoute
   '/manara/$key': typeof AuthenticatedManaraKeyRoute
-  '/servers/$serverId': typeof AuthenticatedServersServerIdRouteWithChildren
+  '/servers/$serverId': typeof AuthenticatedServersServerIdRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/api/public/visits': typeof ApiPublicVisitsRoute
@@ -1098,7 +1098,7 @@ export interface FileRoutesByTo {
   '/federated/pitr': typeof AuthenticatedFederatedPitrRoute
   '/federated/sql': typeof AuthenticatedFederatedSqlRoute
   '/manara/$key': typeof AuthenticatedManaraKeyRoute
-  '/servers/$serverId': typeof AuthenticatedServersServerIdRouteWithChildren
+  '/servers/$serverId': typeof AuthenticatedServersServerIdRoute
   '/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/api/public/visits': typeof ApiPublicVisitsRoute
@@ -1236,14 +1236,14 @@ export interface FileRoutesById {
   '/_authenticated/federated/pitr': typeof AuthenticatedFederatedPitrRoute
   '/_authenticated/federated/sql': typeof AuthenticatedFederatedSqlRoute
   '/_authenticated/manara/$key': typeof AuthenticatedManaraKeyRoute
-  '/_authenticated/servers/$serverId': typeof AuthenticatedServersServerIdRouteWithChildren
+  '/_authenticated/servers/$serverId': typeof AuthenticatedServersServerIdRoute
   '/_authenticated/settings/notifications': typeof AuthenticatedSettingsNotificationsRoute
   '/api/public/site-config': typeof ApiPublicSiteConfigRoute
   '/api/public/visits': typeof ApiPublicVisitsRoute
   '/_authenticated/editor/': typeof AuthenticatedEditorIndexRoute
   '/_authenticated/federated/': typeof AuthenticatedFederatedIndexRoute
   '/_authenticated/servers/': typeof AuthenticatedServersIndexRoute
-  '/_authenticated/servers/$serverId/cockpit': typeof AuthenticatedServersServerIdCockpitRoute
+  '/_authenticated/servers_/$serverId/cockpit': typeof AuthenticatedServersServerIdCockpitRoute
   '/api/public/backups/inventory': typeof ApiPublicBackupsInventoryRoute
   '/api/public/backups/link': typeof ApiPublicBackupsLinkRoute
   '/api/public/backups/nightly': typeof ApiPublicBackupsNightlyRoute
@@ -1652,7 +1652,7 @@ export interface FileRouteTypes {
     | '/_authenticated/editor/'
     | '/_authenticated/federated/'
     | '/_authenticated/servers/'
-    | '/_authenticated/servers/$serverId/cockpit'
+    | '/_authenticated/servers_/$serverId/cockpit'
     | '/api/public/backups/inventory'
     | '/api/public/backups/link'
     | '/api/public/backups/nightly'
@@ -2676,12 +2676,12 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicBackupsInventoryRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/_authenticated/servers/$serverId/cockpit': {
-      id: '/_authenticated/servers/$serverId/cockpit'
-      path: '/cockpit'
+    '/_authenticated/servers_/$serverId/cockpit': {
+      id: '/_authenticated/servers_/$serverId/cockpit'
+      path: '/servers/$serverId/cockpit'
       fullPath: '/servers/$serverId/cockpit'
       preLoaderRoute: typeof AuthenticatedServersServerIdCockpitRouteImport
-      parentRoute: typeof AuthenticatedServersServerIdRoute
+      parentRoute: typeof AuthenticatedRoute
     }
     '/api/public/hn/identity/$code': {
       id: '/api/public/hn/identity/$code'
@@ -2789,21 +2789,6 @@ const AuthenticatedSettingsRouteWithChildren =
     AuthenticatedSettingsRouteChildren,
   )
 
-interface AuthenticatedServersServerIdRouteChildren {
-  AuthenticatedServersServerIdCockpitRoute: typeof AuthenticatedServersServerIdCockpitRoute
-}
-
-const AuthenticatedServersServerIdRouteChildren: AuthenticatedServersServerIdRouteChildren =
-  {
-    AuthenticatedServersServerIdCockpitRoute:
-      AuthenticatedServersServerIdCockpitRoute,
-  }
-
-const AuthenticatedServersServerIdRouteWithChildren =
-  AuthenticatedServersServerIdRoute._addFileChildren(
-    AuthenticatedServersServerIdRouteChildren,
-  )
-
 interface AuthenticatedRouteChildren {
   AuthenticatedActivityRoute: typeof AuthenticatedActivityRoute
   AuthenticatedAiChatRoute: typeof AuthenticatedAiChatRoute
@@ -2859,8 +2844,9 @@ interface AuthenticatedRouteChildren {
   AuthenticatedVideoStudioRoute: typeof AuthenticatedVideoStudioRoute
   AuthenticatedWebsitesRoute: typeof AuthenticatedWebsitesRoute
   AuthenticatedDomainSettingsDomainRoute: typeof AuthenticatedDomainSettingsDomainRoute
-  AuthenticatedServersServerIdRoute: typeof AuthenticatedServersServerIdRouteWithChildren
+  AuthenticatedServersServerIdRoute: typeof AuthenticatedServersServerIdRoute
   AuthenticatedServersIndexRoute: typeof AuthenticatedServersIndexRoute
+  AuthenticatedServersServerIdCockpitRoute: typeof AuthenticatedServersServerIdCockpitRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -2919,9 +2905,10 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
   AuthenticatedWebsitesRoute: AuthenticatedWebsitesRoute,
   AuthenticatedDomainSettingsDomainRoute:
     AuthenticatedDomainSettingsDomainRoute,
-  AuthenticatedServersServerIdRoute:
-    AuthenticatedServersServerIdRouteWithChildren,
+  AuthenticatedServersServerIdRoute: AuthenticatedServersServerIdRoute,
   AuthenticatedServersIndexRoute: AuthenticatedServersIndexRoute,
+  AuthenticatedServersServerIdCockpitRoute:
+    AuthenticatedServersServerIdCockpitRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

@@ -33,7 +33,10 @@ function ToolsPage() {
   const query = useQuery({ queryKey: ["tools-registry"], queryFn: () => fetchTools({ data: {} as any }) });
   const tools = query.data?.tools ?? [];
 
-  const categories = useMemo(() => Array.from(new Set(tools.map((t: any) => t.category))), [tools]);
+  const categories = useMemo<string[]>(
+    () => Array.from(new Set(tools.map((t: any) => String(t.category ?? "")))).filter(Boolean),
+    [tools],
+  );
   const rows = useMemo(
     () =>
       tools.filter((t: any) => {

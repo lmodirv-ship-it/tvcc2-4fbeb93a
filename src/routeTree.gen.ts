@@ -142,6 +142,7 @@ import { Route as ApiPublicBackupsReportRouteImport } from './routes/api/public/
 import { Route as ApiPublicBackupsNightlyRouteImport } from './routes/api/public/backups/nightly'
 import { Route as ApiPublicBackupsLinkRouteImport } from './routes/api/public/backups/link'
 import { Route as ApiPublicBackupsInventoryRouteImport } from './routes/api/public/backups/inventory'
+import { Route as AuthenticatedServersServerIdCockpitRouteImport } from './routes/_authenticated/servers_.$serverId.cockpit'
 import { Route as ApiPublicHnIdentityCodeRouteImport } from './routes/api/public/hn/identity.$code'
 
 const ResetPasswordRoute = ResetPasswordRouteImport.update({
@@ -858,6 +859,12 @@ const ApiPublicBackupsInventoryRoute =
     path: '/api/public/backups/inventory',
     getParentRoute: () => rootRouteImport,
   } as any)
+const AuthenticatedServersServerIdCockpitRoute =
+  AuthenticatedServersServerIdCockpitRouteImport.update({
+    id: '/servers_/$serverId/cockpit',
+    path: '/servers/$serverId/cockpit',
+    getParentRoute: () => AuthenticatedRoute,
+  } as any)
 const ApiPublicHnIdentityCodeRoute = ApiPublicHnIdentityCodeRouteImport.update({
   id: '/api/public/hn/identity/$code',
   path: '/api/public/hn/identity/$code',
@@ -964,6 +971,7 @@ export interface FileRoutesByFullPath {
   '/editor/': typeof AuthenticatedEditorIndexRoute
   '/federated/': typeof AuthenticatedFederatedIndexRoute
   '/servers/': typeof AuthenticatedServersIndexRoute
+  '/servers/$serverId/cockpit': typeof AuthenticatedServersServerIdCockpitRoute
   '/api/public/backups/inventory': typeof ApiPublicBackupsInventoryRoute
   '/api/public/backups/link': typeof ApiPublicBackupsLinkRoute
   '/api/public/backups/nightly': typeof ApiPublicBackupsNightlyRoute
@@ -1097,6 +1105,7 @@ export interface FileRoutesByTo {
   '/editor': typeof AuthenticatedEditorIndexRoute
   '/federated': typeof AuthenticatedFederatedIndexRoute
   '/servers': typeof AuthenticatedServersIndexRoute
+  '/servers/$serverId/cockpit': typeof AuthenticatedServersServerIdCockpitRoute
   '/api/public/backups/inventory': typeof ApiPublicBackupsInventoryRoute
   '/api/public/backups/link': typeof ApiPublicBackupsLinkRoute
   '/api/public/backups/nightly': typeof ApiPublicBackupsNightlyRoute
@@ -1234,6 +1243,7 @@ export interface FileRoutesById {
   '/_authenticated/editor/': typeof AuthenticatedEditorIndexRoute
   '/_authenticated/federated/': typeof AuthenticatedFederatedIndexRoute
   '/_authenticated/servers/': typeof AuthenticatedServersIndexRoute
+  '/_authenticated/servers_/$serverId/cockpit': typeof AuthenticatedServersServerIdCockpitRoute
   '/api/public/backups/inventory': typeof ApiPublicBackupsInventoryRoute
   '/api/public/backups/link': typeof ApiPublicBackupsLinkRoute
   '/api/public/backups/nightly': typeof ApiPublicBackupsNightlyRoute
@@ -1371,6 +1381,7 @@ export interface FileRouteTypes {
     | '/editor/'
     | '/federated/'
     | '/servers/'
+    | '/servers/$serverId/cockpit'
     | '/api/public/backups/inventory'
     | '/api/public/backups/link'
     | '/api/public/backups/nightly'
@@ -1504,6 +1515,7 @@ export interface FileRouteTypes {
     | '/editor'
     | '/federated'
     | '/servers'
+    | '/servers/$serverId/cockpit'
     | '/api/public/backups/inventory'
     | '/api/public/backups/link'
     | '/api/public/backups/nightly'
@@ -1640,6 +1652,7 @@ export interface FileRouteTypes {
     | '/_authenticated/editor/'
     | '/_authenticated/federated/'
     | '/_authenticated/servers/'
+    | '/_authenticated/servers_/$serverId/cockpit'
     | '/api/public/backups/inventory'
     | '/api/public/backups/link'
     | '/api/public/backups/nightly'
@@ -2663,6 +2676,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiPublicBackupsInventoryRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/servers_/$serverId/cockpit': {
+      id: '/_authenticated/servers_/$serverId/cockpit'
+      path: '/servers/$serverId/cockpit'
+      fullPath: '/servers/$serverId/cockpit'
+      preLoaderRoute: typeof AuthenticatedServersServerIdCockpitRouteImport
+      parentRoute: typeof AuthenticatedRoute
+    }
     '/api/public/hn/identity/$code': {
       id: '/api/public/hn/identity/$code'
       path: '/api/public/hn/identity/$code'
@@ -2826,6 +2846,7 @@ interface AuthenticatedRouteChildren {
   AuthenticatedDomainSettingsDomainRoute: typeof AuthenticatedDomainSettingsDomainRoute
   AuthenticatedServersServerIdRoute: typeof AuthenticatedServersServerIdRoute
   AuthenticatedServersIndexRoute: typeof AuthenticatedServersIndexRoute
+  AuthenticatedServersServerIdCockpitRoute: typeof AuthenticatedServersServerIdCockpitRoute
 }
 
 const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
@@ -2886,6 +2907,8 @@ const AuthenticatedRouteChildren: AuthenticatedRouteChildren = {
     AuthenticatedDomainSettingsDomainRoute,
   AuthenticatedServersServerIdRoute: AuthenticatedServersServerIdRoute,
   AuthenticatedServersIndexRoute: AuthenticatedServersIndexRoute,
+  AuthenticatedServersServerIdCockpitRoute:
+    AuthenticatedServersServerIdCockpitRoute,
 }
 
 const AuthenticatedRouteWithChildren = AuthenticatedRoute._addFileChildren(

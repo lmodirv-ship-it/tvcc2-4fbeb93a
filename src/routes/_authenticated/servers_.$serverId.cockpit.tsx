@@ -13,7 +13,7 @@ import { Progress } from "@/components/ui/progress";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { toast } from "sonner";
 
-export const Route = createFileRoute("/_authenticated/servers/$serverId/cockpit")({
+export const Route = createFileRoute("/_authenticated/servers_/$serverId/cockpit")({
   component: CockpitPage,
   head: () => ({ meta: [
     { title: "Cockpit للسيرفر — TVCC" },

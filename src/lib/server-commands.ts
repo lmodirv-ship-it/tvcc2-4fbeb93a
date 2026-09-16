@@ -156,6 +156,7 @@ export const COMMAND_WHITELIST = [
   "pkg_upgrade",
   "shell_exec",
   "cockpit_install",
+  "tool_action",
 ] as const;
 
 

@@ -9,6 +9,7 @@ import { Button } from "@/components/ui/button";
 import { usePermissions } from "@/hooks/use-permissions";
 import { usePlatformPageRules } from "@/hooks/use-platform-pages";
 import { getLocalOwnerEmail } from "@/hooks/use-roles";
+import { PageTools } from "@/components/tools/PageTools";
 
 export const Route = createFileRoute("/_authenticated")({
   component: AuthenticatedLayout,
@@ -46,9 +47,10 @@ function AuthenticatedLayout() {
         <AppSidebar />
         <div className="min-w-0 flex-1 flex flex-col">
           <AppHeader />
-          <main className="min-w-0 flex-1 p-6">
+          <main className="min-w-0 flex-1 space-y-4 p-6">
             <PageGuard>
               <Outlet />
+              <PageTools pagePath={pathname} />
             </PageGuard>
           </main>
         </div>

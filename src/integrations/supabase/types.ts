@@ -4104,6 +4104,234 @@ export type Database = {
           },
         ]
       }
+      monitoring_entities: {
+        Row: {
+          code: string | null
+          created_at: string
+          entity_type: string
+          id: string
+          label: string | null
+          last_beacon_at: string | null
+          meta: Json
+          owner_id: string
+          server_id: string | null
+          status: string
+          updated_at: string
+          website_id: string | null
+        }
+        Insert: {
+          code?: string | null
+          created_at?: string
+          entity_type: string
+          id?: string
+          label?: string | null
+          last_beacon_at?: string | null
+          meta?: Json
+          owner_id: string
+          server_id?: string | null
+          status?: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Update: {
+          code?: string | null
+          created_at?: string
+          entity_type?: string
+          id?: string
+          label?: string | null
+          last_beacon_at?: string | null
+          meta?: Json
+          owner_id?: string
+          server_id?: string | null
+          status?: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monitoring_entities_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "monitoring_entities_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      monitoring_keys: {
+        Row: {
+          created_at: string
+          enforced: boolean
+          fingerprint: string
+          grace_until: string | null
+          id: string
+          key_type: string
+          meta: Json
+          owner_id: string
+          previous_fingerprint: string | null
+          rotated_at: string
+          server_id: string | null
+          updated_at: string
+          version: number
+          website_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          enforced?: boolean
+          fingerprint: string
+          grace_until?: string | null
+          id?: string
+          key_type: string
+          meta?: Json
+          owner_id: string
+          previous_fingerprint?: string | null
+          rotated_at?: string
+          server_id?: string | null
+          updated_at?: string
+          version?: number
+          website_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          enforced?: boolean
+          fingerprint?: string
+          grace_until?: string | null
+          id?: string
+          key_type?: string
+          meta?: Json
+          owner_id?: string
+          previous_fingerprint?: string | null
+          rotated_at?: string
+          server_id?: string | null
+          updated_at?: string
+          version?: number
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monitoring_keys_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "monitoring_keys_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      monitoring_links: {
+        Row: {
+          created_at: string
+          id: string
+          meta: Json
+          owner_id: string
+          role: string
+          schedule_id: string | null
+          server_id: string | null
+          service_id: string | null
+          status: string
+          updated_at: string
+          website_id: string | null
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          meta?: Json
+          owner_id: string
+          role?: string
+          schedule_id?: string | null
+          server_id?: string | null
+          service_id?: string | null
+          status?: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          meta?: Json
+          owner_id?: string
+          role?: string
+          schedule_id?: string | null
+          server_id?: string | null
+          service_id?: string | null
+          status?: string
+          updated_at?: string
+          website_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "monitoring_links_server_id_fkey"
+            columns: ["server_id"]
+            isOneToOne: false
+            referencedRelation: "servers"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "monitoring_links_website_id_fkey"
+            columns: ["website_id"]
+            isOneToOne: false
+            referencedRelation: "websites"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      monitoring_metrics_daily: {
+        Row: {
+          active_sites: number
+          beacons: number
+          connected_sites: number
+          created_at: string
+          day: string
+          id: string
+          local_rows: number
+          mirror_rows: number
+          online_servers: number
+          owner_id: string
+          sites: number
+          updated_at: string
+        }
+        Insert: {
+          active_sites?: number
+          beacons?: number
+          connected_sites?: number
+          created_at?: string
+          day?: string
+          id?: string
+          local_rows?: number
+          mirror_rows?: number
+          online_servers?: number
+          owner_id: string
+          sites?: number
+          updated_at?: string
+        }
+        Update: {
+          active_sites?: number
+          beacons?: number
+          connected_sites?: number
+          created_at?: string
+          day?: string
+          id?: string
+          local_rows?: number
+          mirror_rows?: number
+          online_servers?: number
+          owner_id?: string
+          sites?: number
+          updated_at?: string
+        }
+        Relationships: []
+      }
       nginx_configs: {
         Row: {
           content: string

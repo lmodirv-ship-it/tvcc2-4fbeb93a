@@ -69,27 +69,27 @@ function CheckoutPage() {
       toast.error("سجّل الدخول أولاً لإتمام الطلب");
       return;
     }
+    if (!plan?.id) {
+      toast.error("اختر باقة أولاً");
+      return;
+    }
     setSaving(true);
-    const { data, error } = await supabase
-      .from("payment_orders")
-      .insert({
-        user_id: user.id,
-        account_id: account?.id ?? null,
-        plan_id: plan?.id ?? null,
-        plan_name: plan?.name_ar || plan?.name || "باقة",
-        amount,
-        currency: "USD",
-        billing_cycle: cycle,
-        buyer_name: name || null,
-        buyer_email: email || user.email,
-        method: "bank_transfer",
-      })
-      .select("reference")
-      .maybeSingle();
-    setSaving(false);
-    if (error) return toast.error(error.message);
-    setDone({ reference: (data as any)?.reference ?? "" });
-    toast.success("تم تسجيل طلبك");
+    try {
+      const r: any = await createOrder({
+        data: {
+          planId: plan.id as string,
+          cycle,
+          buyerName: name || null,
+          buyerEmail: email || user.email || null,
+        },
+      });
+      setDone({ reference: r?.reference ?? "" });
+      toast.success("تم تسجيل طلبك");
+    } catch (e: any) {
+      toast.error(e?.message || "تعذّر تسجيل الطلب");
+    } finally {
+      setSaving(false);
+    }
   };
 
   return (

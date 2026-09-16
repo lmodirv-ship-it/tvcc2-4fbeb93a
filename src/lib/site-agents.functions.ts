@@ -46,8 +46,8 @@ export const listSiteAgents = createServerFn({ method: "POST" })
       rows,
       totals: {
         sites: rows.length,
-        installed: rows.filter((r) => r.installed).length,
-        connected: rows.filter((r) => r.connected).length,
+        installed: rows.filter((r: any) => r.installed).length,
+        connected: rows.filter((r: any) => r.connected).length,
       },
     };
   });

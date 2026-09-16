@@ -6,11 +6,22 @@ import { createDecipheriv, scryptSync } from "crypto";
 function vaultDecrypt(ciphertext: string, iv: string): string {
   const master = process.env["VAULT_MASTER_KEY"];
   if (!master) throw new Error("VAULT_MASTER_KEY غير مضبوط — الخزنة معطّلة حتى ضبط المفتاح");
-  const key = scryptSync(master, "tvcc-vault-salt", 32);
+  const candidates = [master];
+  const legacy = process.env["VAULT_LEGACY_KEY"];
+  if (legacy) candidates.push(legacy);
   const buf = Buffer.from(ciphertext, "base64");
-  const decipher = createDecipheriv("aes-256-gcm", key, Buffer.from(iv, "base64"));
-  decipher.setAuthTag(buf.subarray(0, 16));
-  return Buffer.concat([decipher.update(buf.subarray(16)), decipher.final()]).toString("utf8");
+  let lastError: unknown;
+  for (const candidate of candidates) {
+    try {
+      const key = scryptSync(candidate, "tvcc-vault-salt", 32);
+      const decipher = createDecipheriv("aes-256-gcm", key, Buffer.from(iv, "base64"));
+      decipher.setAuthTag(buf.subarray(0, 16));
+      return Buffer.concat([decipher.update(buf.subarray(16)), decipher.final()]).toString("utf8");
+    } catch (e) {
+      lastError = e;
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error("تعذّر فك تشفير السر");
 }
 
 /** Vendor -> accepted secret names inside the vault (case-insensitive). */

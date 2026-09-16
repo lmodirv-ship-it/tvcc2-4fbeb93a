@@ -22,13 +22,30 @@ function encryptSecret(plain: string): { ciphertext: string; iv: string } {
   };
 }
 
+
+/** مفاتيح فك التشفير: المفتاح الحالي ثم مفتاح قديم اختياري من البيئة (للترحيل فقط). */
+function vaultKeys(): Buffer[] {
+  const keys: Buffer[] = [vaultKey()];
+  const legacy = process.env["VAULT_LEGACY_KEY"];
+  if (legacy) keys.push(scryptSync(legacy, "tvcc-vault-salt", 32));
+  return keys;
+}
+
 function decryptSecret(ciphertext: string, iv: string): string {
   const buf = Buffer.from(ciphertext, "base64");
   const authTag = buf.slice(0, 16);
   const encrypted = buf.slice(16);
-  const decipher = createDecipheriv("aes-256-gcm", vaultKey(), Buffer.from(iv, "base64"));
-  decipher.setAuthTag(authTag);
-  return Buffer.concat([decipher.update(encrypted), decipher.final()]).toString("utf8");
+  let lastError: unknown;
+  for (const key of vaultKeys()) {
+    try {
+      const decipher = createDecipheriv("aes-256-gcm", key, Buffer.from(iv, "base64"));
+      decipher.setAuthTag(authTag);
+      return Buffer.concat([decipher.update(encrypted), decipher.final()]).toString("utf8");
+    } catch (e) {
+      lastError = e;
+    }
+  }
+  throw lastError instanceof Error ? lastError : new Error("تعذّر فك تشفير السر");
 }
 
 function mask(value: string): string {

@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Download, Wrench } from "lucide-react";
+import { Download, ExternalLink, Wrench } from "lucide-react";
 import { listTools } from "@/lib/tools.functions";
 
 export const Route = createFileRoute("/_authenticated/tools/")({
@@ -96,6 +96,7 @@ function ToolsPage() {
                   <TableHead className="text-start">المنفذ</TableHead>
                   <TableHead className="text-start">الصفحات المرتبطة</TableHead>
                   <TableHead className="text-start">سيرفرات مثبّتة</TableHead>
+                  <TableHead className="text-start">فتح</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -119,10 +120,23 @@ function ToolsPage() {
                     <TableCell>
                       <Badge variant={t.installedCount ? "default" : "secondary"}>{t.installedCount}</Badge>
                     </TableCell>
+                    <TableCell className="flex gap-1">
+                      <Button size="sm" variant="outline" asChild>
+                        <Link to="/tools/$toolId" params={{ toolId: t.slug }}>الأداة</Link>
+                      </Button>
+                      {t.pages?.[0] && (
+                        <Button size="sm" variant="ghost" asChild>
+                          <a href={t.pages[0].page_path}>
+                            <ExternalLink className="me-1 h-4 w-4" />
+                            {t.pages[0].page_label ?? "الصفحة"}
+                          </a>
+                        </Button>
+                      )}
+                    </TableCell>
                   </TableRow>
                 ))}
                 {!rows.length && (
-                  <TableRow><TableCell colSpan={7} className="py-8 text-center text-sm text-muted-foreground">لا نتائج</TableCell></TableRow>
+                  <TableRow><TableCell colSpan={8} className="py-8 text-center text-sm text-muted-foreground">لا نتائج</TableCell></TableRow>
                 )}
               </TableBody>
             </Table>

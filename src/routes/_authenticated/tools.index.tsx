@@ -34,7 +34,7 @@ function ToolsPage() {
   const tools = query.data?.tools ?? [];
 
   const categories = useMemo<string[]>(
-    () => Array.from(new Set(tools.map((t: any) => String(t.category ?? "")))).filter(Boolean),
+    () => Array.from(new Set<string>((tools as any[]).map((t: any) => String(t.category ?? "")))).filter(Boolean),
     [tools],
   );
   const rows = useMemo(
